@@ -54,6 +54,7 @@ namespace SharpTimer
                             continue;
                         }
 
+                        bool isOnBhopBlock = playerTimer.IsOnBhopBlock;
                         bool isTimerRunning = playerTimer.IsTimerRunning;
                         bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
                         bool isTimerBlocked = playerTimer.IsTimerBlocked;
@@ -113,6 +114,13 @@ namespace SharpTimer
                         else if (isBonusTimerRunning)
                         {
                             playerTimer.BonusTimerTicks++;
+                        }
+
+                        if(isOnBhopBlock){
+                            playerTimer.TicksOnBhopBlock++;
+                            if(playerTimer.TicksOnBhopBlock > bhopBlockTime){
+                                RespawnPlayer(player);
+                            }
                         }
 
                         if (useTriggers == false && isTimerBlocked == false)

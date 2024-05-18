@@ -47,11 +47,11 @@ namespace SharpTimer
                 var steamID = player.SteamID.ToString();
                 var callerName = caller.Entity.Name;
 
-                /* if (caller.Entity.Name.ToString() == "bhop_block" && !playerTimers[player.Slot].IsTimerBlocked && playerTimers[player.Slot].TicksOnBhopBlock > bhopBlockTime)
+                if (caller.Entity.Name.ToString() == "bhop_block" && !playerTimers[player.Slot].IsTimerBlocked)
                 {
-                    RespawnPlayer(player);
+                    playerTimers[player.Slot].IsOnBhopBlock = true;
                     return HookResult.Continue;
-                } */
+                }
 
                 if (useStageTriggers == true && stageTriggers.ContainsKey(callerHandle) && playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsTimerRunning == true)
                 {
@@ -182,12 +182,13 @@ namespace SharpTimer
                 var playerName = player.PlayerName;
                 var callerName = caller.Entity.Name;
 
-                /* if (caller.Entity.Name.ToString() == "bhop_block" && IsAllowedPlayer(player) && !playerTimers[player.Slot].IsTimerBlocked)
+                if (caller.Entity.Name.ToString() == "bhop_block" && IsAllowedPlayer(player) && !playerTimers[player.Slot].IsTimerBlocked)
                 {
+                    playerTimers[player.Slot].IsOnBhopBlock = false; 
                     playerTimers[player.Slot].TicksOnBhopBlock = 0;
 
                     return HookResult.Continue;
-                } */
+                }
 
                 if (IsValidStartTriggerName(callerName) && !playerTimers[playerSlot].IsTimerBlocked)
                 {

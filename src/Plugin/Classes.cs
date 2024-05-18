@@ -95,6 +95,8 @@ namespace SharpTimer
     {
         //timer
         public bool IsTimerRunning { get; set; }
+
+        public bool IsOnBhopBlock { get; set; }
         public bool IsTimerBlocked { get; set; }
         public int TimerTicks { get; set; }
         public bool IsBonusTimerRunning { get; set; }

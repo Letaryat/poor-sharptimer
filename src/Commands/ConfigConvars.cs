@@ -596,6 +596,23 @@ namespace SharpTimer
             }
         }
 
+        [ConsoleCommand("sharptimer_bhop_block_ticks", "Ticks allowed on bhop_block. Default value: 16")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerBhopBlockTicksConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (int.TryParse(args, out int bhopTicks) && bhopTicks > 0)
+            {
+                bhopBlockTime = bhopTicks;
+                SharpTimerConPrint($"SharpTimer forced bhop_block ticks to {bhopTicks}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid bhop_block ticks value. Please provide a positive integer.");
+            }
+        }
+
 
         [ConsoleCommand("sharptimer_connect_commands_msg_enabled", "Whether commands on join messages are enabled by default or not. Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
