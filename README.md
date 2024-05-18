@@ -1,5 +1,5 @@
 > [!CAUTION]
-> ORIGINAL CREATOR IS DEAFPS_ I JUST YOINKED THE REMAINING COPIES AND EDITED SO TESTER GIFS WOULD WORK JUST FINE.
+> ORIGINAL CREATOR IS DEAFPS_ I JUST YOINKED THE REMAINING COPY AND EDITED SO TESTER GIFS WOULD WORK JUST FINE.
 
 > [!CAUTION]
 > This project will not receive any further updates as im unable to continue working on it. Thank you for all the support and time spend testing the pre-release versions. Feel free to fork and yoink anything you want and build upon it
