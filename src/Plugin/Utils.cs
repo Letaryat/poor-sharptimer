@@ -32,7 +32,7 @@ namespace SharpTimer
         {
             try
             {
-                string apiUrl = "https://api.github.com/repos/deafps/SharpTimer/releases/latest";
+                string apiUrl = "https://api.github.com/repos/Letaryat/poor-sharptimer/releases/latest";
                 var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
                 request.Headers.Add("User-Agent", "request");
 
