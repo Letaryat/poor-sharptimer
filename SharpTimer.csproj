@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.228">
+        <PrivateAssets>none</PrivateAssets>
+        <ExcludeAssets>runtime</ExcludeAssets>
+        <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Nexd.MySQL" Version="1.0.2" />
+  </ItemGroup>
+
+  <Target Name="Date" BeforeTargets="BeforeBuild">
+    <WriteLinesToFile File="$(IntermediateOutputPath)gen.cs" Lines="static partial class CompileTimeStamp { public static long CompileTime = $([System.DateTime]::UtcNow.Ticks) %3B }" Overwrite="true" />
+    <ItemGroup>
+        <Compile Include="$(IntermediateOutputPath)gen.cs" />
+    </ItemGroup>
+  </Target>
+</Project>
