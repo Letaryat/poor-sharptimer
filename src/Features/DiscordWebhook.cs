@@ -33,7 +33,7 @@ namespace SharpTimer
 
                     discordWebhookBotName = root.TryGetProperty("DiscordWebhookBotName", out var NameProperty) ? NameProperty.GetString()! : "SharpTimer";
                     discordWebhookPFPUrl = root.TryGetProperty("DiscordWebhookPFPUrl", out var PFPurlProperty) ? PFPurlProperty.GetString()! : "https://cdn.discordapp.com/icons/1196646791450472488/634963a8207fdb1b30bf909d31f05e57.webp";
-                    discordWebhookImageRepoURL = root.TryGetProperty("DiscordWebhookMapImageRepoUrl", out var mapImageRepoUrl) ? mapImageRepoUrl.GetString()! : "https://raw.githubusercontent.com/deafps/SharpTimerDiscordWebhookMapPics/main/images/";
+                    discordWebhookImageRepoURL = root.TryGetProperty("DiscordWebhookMapImageRepoUrl", out var mapImageRepoUrl) ? mapImageRepoUrl.GetString()! : "https://raw.githubusercontent.com/Letaryat/poor-sharptimermappics/main/pics/";
                     discordPBWebhookUrl = root.TryGetProperty("DiscordPBWebhookUrl", out var PBurlProperty) ? PBurlProperty.GetString()! : "";
                     discordSRWebhookUrl = root.TryGetProperty("DiscordSRWebhookUrl", out var SRurlProperty) ? SRurlProperty.GetString()! : "";
                     discordPBBonusWebhookUrl = root.TryGetProperty("DiscordPBBonusWebhookUrl", out var PBBonusurlProperty) ? PBBonusurlProperty.GetString()! : "";
