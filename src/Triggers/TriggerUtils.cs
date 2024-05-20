@@ -140,6 +140,36 @@ namespace SharpTimer
             }
         }
 
+        private (bool valid, int X) IsValidBonusCheckpointTriggerName(string triggerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return (false, 0);
+
+                string[] patterns = [
+                    @"^bonus_cp([1-9][0-9]?)$",
+                    @"^bonus_checkpoint([1-9][0-9]?)$"
+                ];
+
+                foreach (var pattern in patterns)
+                {
+                    var match = Regex.Match(triggerName, pattern);
+                    if (match.Success)
+                    {
+                        int X = int.Parse(match.Groups[1].Value);
+                        return (true, X);
+                    }
+                }
+
+                return (false, 0);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidCheckpointTriggerName: {ex.Message}");
+                return (false, 0);
+            }
+        }
+
         private bool IsValidEndTriggerName(string triggerName)
         {
             try
@@ -340,6 +370,30 @@ namespace SharpTimer
 
             SharpTimerDebug($"Found a max of {cpTriggerCount} Checkpoint triggers");
             SharpTimerDebug($"Use useCheckpointTriggers is set to {useCheckpointTriggers}");
+        }
+
+        private void FindBonusCheckpointTriggers()
+        {
+            bonusCheckpointTriggers.Clear();
+
+            foreach (var trigger in entityCache!.Triggers)
+            {
+                if (trigger == null || trigger.Entity!.Name == null) continue;
+
+                var (validCp, X) = IsValidBonusCheckpointTriggerName(trigger.Entity.Name.ToString());
+                if (validCp)
+                {
+                    bonusCheckpointTriggers[trigger.Handle] = X;
+                    SharpTimerDebug($"Added Bonus Checkpoint {X} Trigger {trigger.Handle}");
+                }
+            }
+
+            bonusCheckpointTriggerCount = bonusCheckpointTriggers.Any() ? bonusCheckpointTriggers.OrderByDescending(x => x.Value).First().Value : 0;
+
+            useBonusCheckpointTriggers = bonusCheckpointTriggerCount != 0;
+
+            SharpTimerDebug($"Found a max of {bonusCheckpointTriggerCount} Bonus Checkpoint triggers");
+            SharpTimerDebug($"Use useBonusCheckpointTriggers is set to {useBonusCheckpointTriggers}");
         }
 
         private void FindBonusStartTriggerPos()

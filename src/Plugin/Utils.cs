@@ -828,6 +828,7 @@ namespace SharpTimer
                     bonusRespawnAngs.Clear();
 
                     cpTriggers.Clear();         // make sure old data is flushed in case new map uses fake zones
+                    bonusCheckpointTriggers.Clear();
                     stageTriggers.Clear();
                     stageTriggerAngs.Clear();
                     stageTriggerPoses.Clear();
@@ -1097,6 +1098,7 @@ namespace SharpTimer
                     {
                         FindStageTriggers();
                         FindCheckpointTriggers();
+                        FindBonusCheckpointTriggers();
                     }
 
                     KillServerCommandEnts();
@@ -1116,6 +1118,7 @@ namespace SharpTimer
                     FindBonusStartTriggerPos();
                     FindStageTriggers();
                     FindCheckpointTriggers();
+                    FindBonusCheckpointTriggers();
 
                     if (currentRespawnPos == null)
                         SharpTimerConPrint($"Hooking Trigger RespawnPos Failed!");
@@ -1151,6 +1154,7 @@ namespace SharpTimer
         public void ClearMapData()
         {
             cpTriggers.Clear();
+            bonusCheckpointTriggers.Clear();
             stageTriggers.Clear();
             stageTriggerAngs.Clear();
             stageTriggerPoses.Clear();

@@ -76,12 +76,15 @@ namespace SharpTimer
         private Dictionary<int, QAngle?> bonusRespawnAngs = [];
         private Dictionary<nint, int> stageTriggers = [];
         private Dictionary<nint, int> cpTriggers = [];
+        private Dictionary<nint, int> bonusCheckpointTriggers = [];
         private Dictionary<int, Vector?> stageTriggerPoses = [];
         private Dictionary<int, QAngle?> stageTriggerAngs = [];
         private int stageTriggerCount;
         private int cpTriggerCount;
+        private int bonusCheckpointTriggerCount;
         private bool useStageTriggers = false;
         private bool useCheckpointTriggers = false;
+        private bool useBonusCheckpointTriggers = false;
         public string? currentMapType = null;
         public int? currentMapTier = null;
 

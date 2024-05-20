@@ -73,6 +73,12 @@ namespace SharpTimer
                     return HookResult.Continue;
                 }
 
+                if (useBonusCheckpointTriggers == true && bonusCheckpointTriggers.ContainsKey(callerHandle) && playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsBonusTimerRunning == true)
+                {
+                    _ = Task.Run(async () => await HandlePlayerBonusCheckpointTimes(player, callerHandle, playerSlot, steamID, playerName));
+                    return HookResult.Continue;
+                }
+
                 if (IsValidEndTriggerName(callerName) && playerTimers[playerSlot].IsTimerRunning && !playerTimers[playerSlot].IsTimerBlocked)
                 {
                     OnTimerStop(player);
