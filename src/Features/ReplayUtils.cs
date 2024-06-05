@@ -346,23 +346,23 @@ namespace SharpTimer
             }
         }
 
-        public async Task<bool> CheckSRReplay(string topSteamID = "x")
+        public async Task<bool> CheckSRReplay(string topSteamID = "x", int bonusX = 0)
         {
             var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
 
             if (useMySQL)
             {
-                (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase();
+                (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase(bonusX);
             }
             else
             {
-                (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamID();
+                (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamID(bonusX);
             }
 
             if ((srSteamID == "null" || srPlayerName == "null" || srTime == "null") && topSteamID != "x") return false;
 
             string fileName = $"{(topSteamID == "x" ? $"{srSteamID}" : $"{topSteamID}")}_replay.json";
-            string playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", currentMapName, fileName);
+            string playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", (bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}"), fileName);
 
             try
             {
