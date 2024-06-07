@@ -39,7 +39,7 @@ namespace SharpTimer
                         continue;
                     }
 
-                    if (playerTimers[playerSlot].IsAddingStartZone || playerTimers[playerSlot].IsAddingEndZone)
+                    if (playerTimers[playerSlot].IsAddingStartZone || playerTimers[playerSlot].IsAddingEndZone || playerTimers[playerSlot].IsAddingBonusStartZone || playerTimers[playerSlot].IsAddingBonusEndZone)
                     {
                         OnTickZoneTool(player);
                         continue;

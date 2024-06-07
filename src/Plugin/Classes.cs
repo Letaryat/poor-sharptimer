@@ -58,6 +58,12 @@ namespace SharpTimer
         public string? MapStartC2 { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? BonusStartC1 { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? BonusStartC2 { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? MapEndTrigger { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -67,7 +73,16 @@ namespace SharpTimer
         public string? MapEndC2 { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? BonusEndC1 { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? BonusEndC2 { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? RespawnPos { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? BonusRespawnPos { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? OverrideDisableTelehop { get; set; }
@@ -152,12 +167,19 @@ namespace SharpTimer
         //admin stuff
         public bool IsNoclipEnabled { get; set; }
         public bool IsAddingStartZone { get; set; }
+        public bool IsAddingBonusStartZone { get; set; }
         public string? StartZoneC1 { get; set; }
         public string? StartZoneC2 { get; set; }
+        public string? BonusStartZoneC1 { get; set; }
+        public string? BonusStartZoneC2 { get; set; }
         public bool IsAddingEndZone { get; set; }
+        public bool IsAddingBonusEndZone { get; set; }
         public string? EndZoneC1 { get; set; }
         public string? EndZoneC2 { get; set; }
         public string? RespawnPos { get; set; }
+        public string? BonusEndZoneC1 { get; set; }
+        public string? BonusEndZoneC2 { get; set; }
+        public string? BonusRespawnPos { get; set; }
         public Dictionary<int, CBeam>? ZoneToolWire { get; set; }
 
         //set respawn

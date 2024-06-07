@@ -182,6 +182,18 @@ namespace SharpTimer
 
                 bool isInsideStartBox = IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
                 bool isInsideEndBox = IsVectorInsideBox(playerPos, currentMapEndC1, currentMapEndC2);
+                bool[] isInsideBonusStartBox = new bool[11];
+                bool[] isInsideBonusEndBox = new bool[11];
+                foreach(int bonus in totalBonuses)
+                {
+                    if(bonus == 0){
+
+                    }else{
+                        isInsideBonusStartBox[bonus] = IsVectorInsideBox(playerPos, currentBonusStartC1[bonus], currentBonusStartC2[bonus]);
+                        isInsideBonusEndBox[bonus] = IsVectorInsideBox(playerPos, currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
+                    }    
+                }
+            
 
                 if (!isInsideStartBox && isInsideEndBox)
                 {
@@ -200,6 +212,27 @@ namespace SharpTimer
                         adjustVelocity(player, maxStartingSpeed, true);
                     }
                 }
+                foreach(int bonus in totalBonuses)
+                {
+                    if (!isInsideBonusStartBox[bonus] && isInsideBonusEndBox[bonus])
+                    {
+                        OnBonusTimerStop(player, bonus);
+                        if (enableReplays) OnRecordingStop(player);
+                    }
+                    else if (isInsideBonusStartBox[bonus])
+                    {
+                        OnTimerStart(player, bonus);
+                        if (enableReplays) OnRecordingStart(player, bonus);
+
+                        if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxStartingSpeed) ||
+                            (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxStartingSpeed))
+                        {
+                            Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                            adjustVelocity(player, maxStartingSpeed, true);
+                        }
+                    }
+                }
+                
             }
             catch (Exception ex)
             {
