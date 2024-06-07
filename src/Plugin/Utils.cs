@@ -1258,6 +1258,7 @@ namespace SharpTimer
             useStageTriggers = false;
 
             useTriggers = true;
+            useTriggersAndFakeZones = false;
 
             currentMapStartC1 = new Vector(nint.Zero);
             currentMapStartC2 = new Vector(nint.Zero);

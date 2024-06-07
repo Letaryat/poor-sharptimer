@@ -192,7 +192,6 @@ namespace SharpTimer
                     if(bonus == 0){
                         
                     }else{
-                        SharpTimerDebug($"Setting isInsideBonusStartBox for bonus {bonus}");
                         if (currentBonusStartC1 == null || currentBonusStartC1.Length <= bonus ||
                             currentBonusStartC2 == null || currentBonusStartC2.Length <= bonus ||
                             currentBonusEndC1 == null || currentBonusEndC1.Length <= bonus ||
@@ -231,7 +230,6 @@ namespace SharpTimer
                     if(bonus == 0){
 
                     }else{
-                    SharpTimerDebug($"Setting isInsideBonusStartBox for bonus {bonus}");
                     if (currentBonusStartC1 == null || currentBonusStartC1.Length <= bonus ||
                         currentBonusStartC2 == null || currentBonusStartC2.Length <= bonus ||
                         currentBonusEndC1 == null || currentBonusEndC1.Length <= bonus ||
