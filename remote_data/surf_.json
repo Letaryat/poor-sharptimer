@@ -1,4 +1,100 @@
 {
+    "surf_race": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_genesis": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_inui": {
+        "Tier": 2,
+        "Type": "Staged"
+    },
+    "surf_giza": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_school_kzg": {
+        "Tier": 1,
+        "Type": "Hybrid"
+    },
+    "surf_advanced": {
+        "Tier": 3,
+        "Type": "Staged"
+    },
+    "surf_atlas": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_2pacisalive": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_feverdream": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
+    "surf_frostedge": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "winsurf": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
+    "surf_whatever": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_volvic": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_teho_v1": {
+        "Tier": 2,
+        "Type": "Staged"
+    },
+    "surf_salvador": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_not_so_hentai": {
+        "Tier": 2,
+        "Type": "Staged"
+    },
+    "surf_ninja": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_neon_final": {
+        "Tier": 2,
+        "Type": "Staged"
+    },
+    "surf_for_all": {
+        "Tier": 3,
+        "Type": "Staged"
+    },
+    "surf_ezpz_syntax": {
+        "Tier": 2,
+        "Type": "Staged"
+    },
+    "surf_astra": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_anime_fun": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_abstract_final": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_3": {
+        "Tier": 3,
+        "Type": "Linear"
+    },
     "surf_evo": {
         "Tier": 1,
         "Type": "Staged"
@@ -24,7 +120,7 @@
         "Type": "Linear"
     },
     "surf_longreach": {
-        "Tier": 2,
+        "Tier": 3,
         "Type": "Linear"
     },
     "surf_hyzer": {
@@ -44,6 +140,10 @@
         "Type": "Hybrid"
     },
     "surf_aircontrol": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
+    "surf_aircontrol_ksf": {
         "Tier": 1,
         "Type": "Linear"
     },
@@ -93,6 +193,10 @@
     },
     "surf_borderlands": {
         "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_borderlands_h": {
+        "Tier": 3,
         "Type": "Staged"
     },
     "surf_boreas": {
@@ -188,6 +292,10 @@
         "Type": "Linear"
     },
     "surf_legends": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
+    "surf_legends_lite": {
         "Tier": 1,
         "Type": "Linear"
     },
@@ -376,6 +484,10 @@
         "Type": "Hybrid"
     },
     "surf_aqua": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_aqua_fix": {
         "Tier": 2,
         "Type": "Linear"
     },
