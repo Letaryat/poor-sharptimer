@@ -91,7 +91,7 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 
 ## Install
-* Download the [latest release](https://github.com/DEAFPS/SharpTimer/releases),
+* Download the [latest release](https://github.com/Letaryat/poor-sharptimer/releases),
 
 * Unzip into your servers `game/csgo/` directory,
 
@@ -99,7 +99,7 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 * :exclamation: It is recommended to have a custom server cfg with your desired settings (for example [SURF](https://github.com/DEAFPS/cs-cfg/blob/main/surf.cfg) or [KZ](https://github.com/DEAFPS/cs-cfg/blob/main/kz.cfg)),
 
-# [SharpTimer Wiki/Docs](https://github.com/DEAFPS/SharpTimer/wiki)
+# [SharpTimer Wiki/Docs](https://github.com/Letaryat/poor-sharptimer/wiki)
 
 # TODO List
 - [x] HUD
