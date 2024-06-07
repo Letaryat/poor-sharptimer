@@ -127,6 +127,10 @@ namespace SharpTimer
                         {
                             CheckPlayerCoords(player, playerSpeed);
                         }
+                        if (useTriggers == true && isTimerBlocked == false && useTriggersAndFakeZones == true)
+                        {
+                            CheckPlayerCoords(player, playerSpeed);
+                        }
 
                         if (triggerPushFixEnabled == true)
                         {

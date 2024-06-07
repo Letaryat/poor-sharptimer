@@ -398,8 +398,6 @@ namespace SharpTimer
 
         private void FindBonusStartTriggerPos()
         {
-            bonusRespawnPoses.Clear();
-            bonusRespawnAngs.Clear();
 
             foreach (var trigger in entityCache!.Triggers)
             {

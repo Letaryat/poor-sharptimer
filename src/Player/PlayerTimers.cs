@@ -28,7 +28,7 @@ namespace SharpTimer
 
             if (bonusX != 0)
             {
-                if (useTriggers) SharpTimerDebug($"Starting Bonus Timer for {player!.PlayerName}");
+                if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Starting Bonus Timer for {player!.PlayerName}");
 
                 // Remove checkpoints for the current player
                 playerCheckpoints.Remove(player!.Slot);
@@ -42,7 +42,7 @@ namespace SharpTimer
             }
             else
             {
-                if (useTriggers) SharpTimerDebug($"Starting Timer for {player!.PlayerName}");
+                if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Starting Timer for {player!.PlayerName}");
 
                 // Remove checkpoints for the current player
                 playerCheckpoints.Remove(player!.Slot);
@@ -111,7 +111,7 @@ namespace SharpTimer
                 }
             }
 
-            if (useTriggers) SharpTimerDebug($"Stopping Timer for {playerName}");
+            if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Stopping Timer for {playerName}");
 
             if (!ignoreJSON) SavePlayerTime(player, currentTicks);
             if (useMySQL == true) _ = Task.Run(async () => await SavePlayerTimeToDatabase(player, currentTicks, steamID, playerName, playerSlot));
@@ -130,7 +130,7 @@ namespace SharpTimer
             var playerSlot = player.Slot;
             var steamID = player.SteamID.ToString();
 
-            if (useTriggers) SharpTimerDebug($"Stopping Bonus Timer for {playerName}");
+            if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Stopping Bonus Timer for {playerName}");
 
             int currentTicks = playerTimers[player.Slot].BonusTimerTicks;
 

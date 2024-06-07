@@ -75,7 +75,7 @@ namespace SharpTimer
         public Vector? currentRespawnPos = null;
         public QAngle? currentRespawnAng = null;
         public Vector? currentEndPos = null;
-        public int[] totalBonuses = new int[10];
+        public int[] totalBonuses = new int[11];
         public string[]? currentMapOverrideDisableTelehop = [];
         public string[]? currentMapOverrideMaxSpeedLimit = [];
         public bool currentMapOverrideStageRequirement = false;
@@ -115,6 +115,9 @@ namespace SharpTimer
         public string vipGifHost = "https://files.catbox.moe";
 
         public bool useTriggers = true;
+
+        public bool useTriggersAndFakeZones = false;
+
         public bool respawnEnabled = true;
         public bool respawnEndEnabled = false;
         public bool keysOverlayEnabled = true;
