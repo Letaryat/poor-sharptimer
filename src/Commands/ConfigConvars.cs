@@ -792,7 +792,7 @@ namespace SharpTimer
 
             if (string.IsNullOrEmpty(args))
             {
-                remoteBhopDataSource = $"https://raw.githubusercontent.com/deafps/SharpTimer/remote_data/bhop_.json";
+                remoteBhopDataSource = $"https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/bhop_.json";
                 return;
             }
 
@@ -808,7 +808,7 @@ namespace SharpTimer
 
             if (string.IsNullOrEmpty(args))
             {
-                remoteBhopDataSource = $"https://raw.githubusercontent.com/deafps/SharpTimer/remote_data/kz_.json";
+                remoteKZDataSource = $"https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/kz_.json";
                 return;
             }
 
@@ -824,7 +824,7 @@ namespace SharpTimer
 
             if (string.IsNullOrEmpty(args))
             {
-                remoteBhopDataSource = $"https://raw.githubusercontent.com/deafps/SharpTimer/remote_data/surf_.json";
+                remoteSurfDataSource = $"https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/surf_.json";
                 return;
             }
 
