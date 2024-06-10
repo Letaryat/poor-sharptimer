@@ -46,6 +46,7 @@ namespace SharpTimer
             }
 
             if (jumpStatsEnabled) player.PrintToChat($"{msgPrefix}!jumpstats (css_jumpstats) - Toggles JumpStats");
+            player.PrintToChat($"{msgPrefix}!hideweapon (css_hideweapon) - Toggles weapon visibility");
         }
 
         public void ForcePlayerSpeed(CCSPlayerController player, string activeWeapon)

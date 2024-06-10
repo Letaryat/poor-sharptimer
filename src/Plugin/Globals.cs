@@ -26,7 +26,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.2.8 - 6/6/2024";
+        public override string ModuleVersion => $"0.2.8e - 6/10/2024";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 

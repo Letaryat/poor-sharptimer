@@ -484,6 +484,25 @@ namespace SharpTimer
 
         }
 
+        [ConsoleCommand("css_hideweapon", "Hides the players weapon")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void HideWeaponCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            HideWeapon(player);
+        }
+        public void HideWeapon(CCSPlayerController? player)
+        {
+            if(!player.PlayerPawn!.Value.WeaponServices.ActiveWeapon.IsValid){
+                player.GiveNamedItem("weapon_usp_silencer");
+                player.GiveNamedItem("weapon_knife");
+            }
+            else
+            {
+                player.RemoveWeapons(); 
+            }     
+        }
         [ConsoleCommand("css_fov", "Sets the player's FOV")]
         [CommandHelper(minArgs: 1, usage: "[fov]")]
         public void FovCommand(CCSPlayerController? player, CommandInfo command)

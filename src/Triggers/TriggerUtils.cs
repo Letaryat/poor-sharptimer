@@ -59,7 +59,22 @@ namespace SharpTimer
                     if (match.Success)
                     {
                         int X = int.Parse(match.Groups[1].Value);
-                        return (true, X);
+                        try
+                        {
+                            if(totalBonuses[X] != 0)
+                            {
+                                SharpTimerDebug($"Fake bonus {X} found, overwriting real start trigger");
+                                return(false, X);
+                            }
+                            else
+                            {
+                                return(true, X);
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            return (true, X);
+                        }
                     }
                 }
 
@@ -202,8 +217,25 @@ namespace SharpTimer
                     if (match.Success)
                     {
                         int X = int.Parse(match.Groups[1].Value);
-                        if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
-                        return (true, X);
+                        try
+                        {
+                            if(totalBonuses[X] != 0)
+                            {
+                                SharpTimerDebug($"Fake bonus {X} found, overwriting real end trigger");
+                                return(false, X);
+                            }
+                            else
+                            {
+                                if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
+                                return (true, X);
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
+                            return (true, X);
+                        }
+                        
                     }
                 }
 
@@ -414,18 +446,48 @@ namespace SharpTimer
                         {
                             if (info_tp.CBodyComponent?.SceneNode?.AbsOrigin != null && info_tp.AbsRotation != null)
                             {
-                                bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
-                                bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
-                                SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
-                                bonusPosAndAngSet = true;
+                                try
+                                {
+                                    if(bonusRespawnPoses[bonusX] != null){
+                                        SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
+                                    }
+                                    else
+                                    {
+                                        bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
+                                        bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
+                                        SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
+                                        bonusPosAndAngSet = true;
+                                    }
+                                }
+                                catch(Exception ex)
+                                {
+                                    bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
+                                    bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
+                                    SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
+                                    bonusPosAndAngSet = true;
+                                }
                             }
                         }
                     }
 
                     if (!bonusPosAndAngSet && trigger.CBodyComponent?.SceneNode?.AbsOrigin != null)
                     {
-                        bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
-                        SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
+                        try
+                        {
+                            if(bonusRespawnPoses[bonusX] != null){
+                                SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
+                            }
+                            else
+                            {
+                                bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
+                                SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
+                            SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
+                        }
                     }
                 }
             }
