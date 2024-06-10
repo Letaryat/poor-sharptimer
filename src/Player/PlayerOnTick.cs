@@ -39,7 +39,7 @@ namespace SharpTimer
                         continue;
                     }
 
-                    if (playerTimers[playerSlot].IsAddingStartZone || playerTimers[playerSlot].IsAddingEndZone)
+                    if (playerTimers[playerSlot].IsAddingStartZone || playerTimers[playerSlot].IsAddingEndZone || playerTimers[playerSlot].IsAddingBonusStartZone || playerTimers[playerSlot].IsAddingBonusEndZone)
                     {
                         OnTickZoneTool(player);
                         continue;
@@ -127,6 +127,10 @@ namespace SharpTimer
                         {
                             CheckPlayerCoords(player, playerSpeed);
                         }
+                        if (useTriggers == true && isTimerBlocked == false && useTriggersAndFakeZones == true)
+                        {
+                            CheckPlayerCoords(player, playerSpeed);
+                        }
 
                         if (triggerPushFixEnabled == true)
                         {
@@ -149,6 +153,16 @@ namespace SharpTimer
                             _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true));
 
                             playerTimer.IsRankPbCached = true;
+                        }
+
+                        //attempted bugfix on rank not appearing
+                        if(playerTimer.CachedMapPlacement == null && !playerTimer.IsRankPbReallyCached)
+                        {
+                            var playerName = player.PlayerName;
+                            var steamID = player.SteamID.ToString();
+                            SharpTimerDebug($"{playerName} CachedMapPlacement is still null, calling rank handler once more");
+                            _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true));
+                            playerTimer.IsRankPbReallyCached = true;
                         }
 
                         if (hideAllPlayers == true)
@@ -224,7 +238,7 @@ namespace SharpTimer
 
                         if (enableReplays)
                         {
-                            if (!playerTimer.IsReplaying && timerTicks > 0 && playerTimer.IsRecordingReplay && !isTimerBlocked)
+                            if (!playerTimer.IsReplaying && (timerTicks > 0 || playerTimer.BonusTimerTicks > 0) && playerTimer.IsRecordingReplay && !isTimerBlocked)
                             {
                                 ReplayUpdate(player, timerTicks);
                             }

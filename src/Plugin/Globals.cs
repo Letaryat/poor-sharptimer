@@ -26,7 +26,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.2.7 - 5/18/2024";
+        public override string ModuleVersion => $"0.2.8 - 6/10/2024";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -58,16 +58,24 @@ namespace SharpTimer
         public string endBeamColor = "";
         public bool beamColorOverride = false;
         public string currentMapStartTrigger = "trigger_startzone";
+        public string currentBonusStartTrigger = "b1_start";
         public Vector? currentMapStartTriggerMaxs = null;
         public Vector? currentMapStartTriggerMins = null;
         public string currentMapEndTrigger = "trigger_endzone";
+        public string currentBonusEndTrigger = "b1_end";
         public Vector currentMapStartC1 = new(0, 0, 0);
         public Vector currentMapStartC2 = new(0, 0, 0);
         public Vector currentMapEndC1 = new(0, 0, 0);
         public Vector currentMapEndC2 = new(0, 0, 0);
+        public Vector[] currentBonusStartC1 = new Vector[10];
+        public Vector[] currentBonusStartC2 = new Vector[10];
+        public Vector[] currentBonusEndC1 = new Vector[10];
+        public Vector[] currentBonusEndC2 = new Vector[10];
+        public Vector[] currentBonusEndPos = new Vector[10];
         public Vector? currentRespawnPos = null;
         public QAngle? currentRespawnAng = null;
         public Vector? currentEndPos = null;
+        public int[] totalBonuses = new int[11];
         public string[]? currentMapOverrideDisableTelehop = [];
         public string[]? currentMapOverrideMaxSpeedLimit = [];
         public bool currentMapOverrideStageRequirement = false;
@@ -76,12 +84,15 @@ namespace SharpTimer
         private Dictionary<int, QAngle?> bonusRespawnAngs = [];
         private Dictionary<nint, int> stageTriggers = [];
         private Dictionary<nint, int> cpTriggers = [];
+        private Dictionary<nint, int> bonusCheckpointTriggers = [];
         private Dictionary<int, Vector?> stageTriggerPoses = [];
         private Dictionary<int, QAngle?> stageTriggerAngs = [];
         private int stageTriggerCount;
         private int cpTriggerCount;
+        private int bonusCheckpointTriggerCount;
         private bool useStageTriggers = false;
         private bool useCheckpointTriggers = false;
+        private bool useBonusCheckpointTriggers = false;
         public string? currentMapType = null;
         public int? currentMapTier = null;
 
@@ -104,6 +115,9 @@ namespace SharpTimer
         public string vipGifHost = "https://files.catbox.moe";
 
         public bool useTriggers = true;
+
+        public bool useTriggersAndFakeZones = false;
+
         public bool respawnEnabled = true;
         public bool respawnEndEnabled = false;
         public bool keysOverlayEnabled = true;

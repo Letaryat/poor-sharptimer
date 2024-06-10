@@ -166,40 +166,99 @@ namespace SharpTimer
         {
             try
             {
-                if (player == null || !IsAllowedPlayer(player) || useTriggers == true)
+                if (player == null || !IsAllowedPlayer(player))
                 {
                     return;
                 }
 
                 Vector incorrectVector = new(0, 0, 0);
                 Vector? playerPos = player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin;
+                bool isInsideStartBox = false;
+                bool isInsideEndBox = false;
 
                 if (playerPos == null || currentMapStartC1 == incorrectVector || currentMapStartC2 == incorrectVector ||
                     currentMapEndC1 == incorrectVector || currentMapEndC2 == incorrectVector)
                 {
                     return;
                 }
-
-                bool isInsideStartBox = IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
-                bool isInsideEndBox = IsVectorInsideBox(playerPos, currentMapEndC1, currentMapEndC2);
-
-                if (!isInsideStartBox && isInsideEndBox)
-                {
-                    OnTimerStop(player);
-                    if (enableReplays) OnRecordingStop(player);
+                if(!useTriggersAndFakeZones){
+                    isInsideStartBox = IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
+                    isInsideEndBox = IsVectorInsideBox(playerPos, currentMapEndC1, currentMapEndC2);
                 }
-                else if (isInsideStartBox)
+                bool[] isInsideBonusStartBox = new bool[11];
+                bool[] isInsideBonusEndBox = new bool[11];
+                foreach(int bonus in totalBonuses)
                 {
-                    OnTimerStart(player);
-                    if (enableReplays) OnRecordingStart(player);
-
-                    if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxStartingSpeed))
+                    if(bonus == 0){
+                        
+                    }else{
+                        if (currentBonusStartC1 == null || currentBonusStartC1.Length <= bonus ||
+                            currentBonusStartC2 == null || currentBonusStartC2.Length <= bonus ||
+                            currentBonusEndC1 == null || currentBonusEndC1.Length <= bonus ||
+                            currentBonusEndC2 == null || currentBonusEndC2.Length <= bonus)
+                        {
+                            SharpTimerError($"Invalid bonus coordinates for bonus {bonus}");
+                
+                        }else{
+                        isInsideBonusStartBox[bonus] = IsVectorInsideBox(playerPos, currentBonusStartC1[bonus], currentBonusStartC2[bonus]);
+                        isInsideBonusEndBox[bonus] = IsVectorInsideBox(playerPos, currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
+                        }
+                    }    
+                }
+            
+                if(!useTriggersAndFakeZones){
+                    if (!isInsideStartBox && isInsideEndBox)
                     {
-                        Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, maxStartingSpeed, true);
+                        OnTimerStop(player);
+                        if (enableReplays) OnRecordingStop(player);
+                    }
+                    else if (isInsideStartBox)
+                    {
+                        OnTimerStart(player);
+                        if (enableReplays) OnRecordingStart(player);
+
+                        if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxStartingSpeed) ||
+                            (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxStartingSpeed))
+                        {
+                            Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                            adjustVelocity(player, maxStartingSpeed, true);
+                        }
                     }
                 }
+                foreach(int bonus in totalBonuses)
+                {
+                    if(bonus == 0){
+
+                    }else{
+                    if (currentBonusStartC1 == null || currentBonusStartC1.Length <= bonus ||
+                        currentBonusStartC2 == null || currentBonusStartC2.Length <= bonus ||
+                        currentBonusEndC1 == null || currentBonusEndC1.Length <= bonus ||
+                        currentBonusEndC2 == null || currentBonusEndC2.Length <= bonus)
+                    {
+                        SharpTimerError($"Invalid bonus coordinates for bonus {bonus}");
+                
+                    }else{
+                        if (!isInsideBonusStartBox[bonus] && isInsideBonusEndBox[bonus])
+                        {
+                            OnBonusTimerStop(player, bonus);
+                            if (enableReplays) OnRecordingStop(player);
+                        }
+                        else if (isInsideBonusStartBox[bonus])
+                        {
+                            OnTimerStart(player, bonus);
+                            if (enableReplays) OnRecordingStart(player, bonus);
+
+                            if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxStartingSpeed) ||
+                                (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxStartingSpeed))
+                            {
+                                Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                                adjustVelocity(player, maxStartingSpeed, true);
+                            }
+                        }
+                    }
+                }
+                }
+                
             }
             catch (Exception ex)
             {

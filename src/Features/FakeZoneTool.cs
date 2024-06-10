@@ -51,6 +51,31 @@ namespace SharpTimer
             }
         }
 
+        [ConsoleCommand("css_addbonusstartzone", "Adds a bonus startzone to the mapdata.json file")]
+        [RequiresPermissions("@css/root")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void AddBonusStartZoneCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            if (playerTimers[player!.Slot].IsAddingBonusStartZone == true)
+            {
+                playerTimers[player.Slot].IsAddingBonusStartZone = false;
+                playerTimers[player.Slot].IsAddingBonusEndZone = false;
+                playerTimers[player.Slot].BonusStartZoneC2 = $"{player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.X} {player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin.Y} {player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin.Z}";
+                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Grey}Bonus Startzone set...");
+            }
+            else
+            {
+                playerTimers[player.Slot].BonusStartZoneC1 = $"{player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.X} {player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin.Y} {player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin.Z}";
+                playerTimers[player.Slot].BonusStartZoneC2 = "";
+                playerTimers[player.Slot].IsAddingBonusStartZone = true;
+                playerTimers[player.Slot].IsAddingBonusEndZone = false;
+                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Default} Please go to the opposite zone corner now");
+                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Default} and type {primaryChatColor}!addbonusstartzone {ChatColors.Default}again");
+            }
+        }
+
         [ConsoleCommand("css_addendzone", "Adds a endzone to the mapdata.json file")]
         [RequiresPermissions("@css/root")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
@@ -76,6 +101,31 @@ namespace SharpTimer
             }
         }
 
+        [ConsoleCommand("css_addbonusendzone", "Adds a endzone to the mapdata.json file")]
+        [RequiresPermissions("@css/root")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void AddBonusEndZoneCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            if (playerTimers[player!.Slot].IsAddingBonusEndZone == true)
+            {
+                playerTimers[player.Slot].IsAddingBonusStartZone = false;
+                playerTimers[player.Slot].IsAddingBonusEndZone = false;
+                playerTimers[player.Slot].BonusEndZoneC2 = $"{player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.X} {player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin.Y} {player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin.Z}";
+                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Grey}Bonus Endzone set...");
+            }
+            else
+            {
+                playerTimers[player.Slot].BonusEndZoneC1 = $"{player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.X} {player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin.Y} {player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin.Z}";
+                playerTimers[player.Slot].BonusEndZoneC2 = "";
+                playerTimers[player.Slot].IsAddingBonusStartZone = false;
+                playerTimers[player.Slot].IsAddingBonusEndZone = true;
+                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Default} Please go to the opposite zone corner now");
+                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Default} and type {primaryChatColor}!addbonusendzone {ChatColors.Default}again");
+            }
+        }
+
         [ConsoleCommand("css_addrespawnpos", "Adds a RespawnPos to the mapdata.json file")]
         [RequiresPermissions("@css/root")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
@@ -92,6 +142,22 @@ namespace SharpTimer
             player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Default} RespawnPos added!");
         }
 
+        [ConsoleCommand("css_addbonusrespawnpos", "Adds a RespawnPos to the mapdata.json file")]
+        [RequiresPermissions("@css/root")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void AddBonusRespawnPosCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            // Get the player's current position
+            Vector currentPosition = player!.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
+
+            // Convert position
+            string positionString = $"{currentPosition.X} {currentPosition.Y} {currentPosition.Z}";
+            playerTimers[player.Slot].BonusRespawnPos = positionString;
+            player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Default} Bonus RespawnPos added!");
+        }
+
         [ConsoleCommand("css_savezones", "Saves defined zones")]
         [RequiresPermissions("@css/root")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
@@ -104,7 +170,7 @@ namespace SharpTimer
                 player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Red} Please make sure you have done all 3 zoning steps (!addstartzone, !addendzone, !addrespawnpos)");
                 return;
             }
-
+    
             MapInfo newMapInfo = new()
             {
                 MapStartC1 = playerTimers[player.Slot].StartZoneC1,
@@ -124,6 +190,46 @@ namespace SharpTimer
             Server.ExecuteCommand("mp_restartgame 1");
         }
 
+        [ConsoleCommand("css_savebonuszones", "Saves defined zones")]
+        [RequiresPermissions("@css/root")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void SaveBonusZonesCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            if (playerTimers[player!.Slot].BonusEndZoneC1 == null || playerTimers[player.Slot].BonusEndZoneC2 == null || playerTimers[player.Slot].BonusStartZoneC1 == null || playerTimers[player.Slot].BonusStartZoneC2 == null || playerTimers[player.Slot].BonusRespawnPos == null)
+            {
+                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Red} Please make sure you have done all 3 zoning steps (!addbonusstartzone, !addbonusendzone, !addbonusrespawnpos)");
+                return;
+            }
+
+            if (!int.TryParse(command.ArgString, out int bonusX))
+            {
+                SharpTimerDebug("SaveBonusZones failed, not vaild integer.");
+                player.PrintToChat(msgPrefix + $" Please enter a valid Bonus stage i.e: {primaryChatColor}!savebonuszones <index>");
+                return;
+            }
+    
+            MapInfo newMapInfo = new()
+            {
+                BonusStartC1 = playerTimers[player.Slot].BonusStartZoneC1,
+                BonusStartC2 = playerTimers[player.Slot].BonusStartZoneC2,
+                BonusEndC1 = playerTimers[player.Slot].BonusEndZoneC1,
+                BonusEndC2 = playerTimers[player.Slot].BonusEndZoneC2,
+                BonusRespawnPos = playerTimers[player.Slot].BonusRespawnPos
+            };
+
+            string mapdataFileName = $"SharpTimer/MapData/{currentMapName}_bonus{bonusX}.json"; // Use the map name in the filename
+            string mapdataPath = Path.Join(gameDir + "/csgo/cfg", mapdataFileName);
+
+            string updatedJson = JsonSerializer.Serialize(newMapInfo, jsonSerializerOptions);
+            File.WriteAllText(mapdataPath, updatedJson);
+
+            player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Default}Bonus {bonusX} Zones saved successfully! {ChatColors.Grey}Reloading data...");
+            Server.ExecuteCommand("mp_restartgame 1");
+        }
+
+
         public void OnTickZoneTool(CCSPlayerController? player)
         {
             try
@@ -142,6 +248,16 @@ namespace SharpTimer
                     {
                         Vector pawnPosition = player.Pawn?.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
                         DrawZoneToolWireframe(ParseVector(playerTimer.EndZoneC1!), pawnPosition, player.Slot);
+                    }
+                    else if (playerTimer.IsAddingBonusStartZone)
+                    {
+                        Vector pawnPosition = player.Pawn?.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
+                        DrawZoneToolWireframe(ParseVector(playerTimer.BonusStartZoneC1!), pawnPosition, player.Slot);
+                    }
+                    else if (playerTimer.IsAddingBonusEndZone)
+                    {
+                        Vector pawnPosition = player.Pawn?.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
+                        DrawZoneToolWireframe(ParseVector(playerTimer.BonusEndZoneC1!), pawnPosition, player.Slot);
                     }
                 }
             }

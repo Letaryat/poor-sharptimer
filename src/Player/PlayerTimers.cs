@@ -28,7 +28,7 @@ namespace SharpTimer
 
             if (bonusX != 0)
             {
-                if (useTriggers) SharpTimerDebug($"Starting Bonus Timer for {player!.PlayerName}");
+                if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Starting Bonus Timer for {player!.PlayerName}");
 
                 // Remove checkpoints for the current player
                 playerCheckpoints.Remove(player!.Slot);
@@ -42,7 +42,7 @@ namespace SharpTimer
             }
             else
             {
-                if (useTriggers) SharpTimerDebug($"Starting Timer for {player!.PlayerName}");
+                if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Starting Timer for {player!.PlayerName}");
 
                 // Remove checkpoints for the current player
                 playerCheckpoints.Remove(player!.Slot);
@@ -111,7 +111,7 @@ namespace SharpTimer
                 }
             }
 
-            if (useTriggers) SharpTimerDebug($"Stopping Timer for {playerName}");
+            if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Stopping Timer for {playerName}");
 
             if (!ignoreJSON) SavePlayerTime(player, currentTicks);
             if (useMySQL == true) _ = Task.Run(async () => await SavePlayerTimeToDatabase(player, currentTicks, steamID, playerName, playerSlot));
@@ -130,7 +130,7 @@ namespace SharpTimer
             var playerSlot = player.Slot;
             var steamID = player.SteamID.ToString();
 
-            if (useTriggers) SharpTimerDebug($"Stopping Bonus Timer for {playerName}");
+            if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Stopping Bonus Timer for {playerName}");
 
             int currentTicks = playerTimers[player.Slot].BonusTimerTicks;
 
@@ -371,6 +371,100 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerError($"Error in HandlePlayerCheckpointTimes: {ex.Message}");
+            }
+        }
+
+        private async Task HandlePlayerBonusCheckpointTimes(CCSPlayerController player, nint triggerHandle, int playerSlot, string playerSteamID, string playerName)
+        {
+            try
+            {
+                if (!IsAllowedPlayer(player))
+                {
+                    return;
+                }
+
+                if (bonusCheckpointTriggers.TryGetValue(triggerHandle, out int bonusCheckpointTrigger))
+                {
+                    if (useStageTriggers == true) //use stagetime instead
+                    {
+                        playerTimers[playerSlot].CurrentMapCheckpoint = bonusCheckpointTrigger;
+                        return;
+                    }
+
+                    SharpTimerDebug($"Player {playerName} has a checkpoint trigger with handle {triggerHandle}");
+
+                    var playerTimerTicks = playerTimers[playerSlot].TimerTicks; // store so its in sync with player
+
+                    var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
+                    if (playerTimers[playerSlot].CurrentMapCheckpoint == bonusCheckpointTrigger || playerTimers[playerSlot] == null) return;
+                    if (useMySQL == true)
+                    {
+                        (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase();
+                    }
+                    else
+                    {
+                        (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamID();
+                    }
+
+                    var (previousStageTime, previousStageSpeed) = await GetStageTime(playerSteamID, bonusCheckpointTrigger);
+                    var (srStageTime, srStageSpeed) = await GetStageTime(srSteamID, bonusCheckpointTrigger);
+
+                    Server.NextFrame(() =>
+                    {
+                        if (!IsAllowedPlayer(player)) return;
+                        if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
+                        {
+
+                            if (playerTimer.CurrentMapCheckpoint == bonusCheckpointTrigger || playerTimer == null) return;
+
+                            string currentStageSpeed = Math.Round(use2DSpeed ? Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value.AbsVelocity.X + player.PlayerPawn.Value.AbsVelocity.Y * player.PlayerPawn.Value.AbsVelocity.Y)
+                                                                                : Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value.AbsVelocity.X + player.PlayerPawn.Value.AbsVelocity.Y * player.PlayerPawn.Value.AbsVelocity.Y + player.PlayerPawn.Value.AbsVelocity.Z * player.PlayerPawn.Value.AbsVelocity.Z))
+                                                                                .ToString("0000");
+
+                            if (previousStageTime != 0)
+                            {
+                                player.PrintToChat(msgPrefix + $" Bonus Checkpoint: {bonusCheckpointTrigger}");
+                                player.PrintToChat(msgPrefix + $" Time: {ChatColors.White}[{primaryChatColor}{FormatTime(playerTimerTicks)}{ChatColors.White}] " +
+                                                               $" [{FormatTimeDifference(playerTimerTicks, previousStageTime)}{ChatColors.White}]" +
+                                                               $" {(previousStageTime != srStageTime ? $"[SR {FormatTimeDifference(playerTimerTicks, srStageTime)}{ChatColors.White}]" : "")}");
+
+                                if (float.TryParse(currentStageSpeed, out float speed) && speed >= 100) //workaround for staged maps with not telehops
+                                    player.PrintToChat(msgPrefix + $" Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
+                                                                   $" [{FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
+                                                                   $" {(previousStageSpeed != srStageSpeed ? $"[SR {FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
+                            }
+
+                            if (playerTimer.StageVelos != null && playerTimer.StageTimes != null && playerTimer.IsTimerRunning == true && IsAllowedPlayer(player))
+                            {
+                                if (!playerTimer.StageTimes.ContainsKey(bonusCheckpointTrigger))
+                                {
+                                    SharpTimerDebug($"Player {playerName} cleared StageTimes before (cpTrigger)");
+                                    playerTimer.StageTimes.Add(bonusCheckpointTrigger, playerTimerTicks);
+                                    playerTimer.StageVelos.Add(bonusCheckpointTrigger, $"{currentStageSpeed}");
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        playerTimer.StageTimes[bonusCheckpointTrigger] = playerTimerTicks;
+                                        playerTimer.StageVelos[bonusCheckpointTrigger] = $"{currentStageSpeed}";
+                                        SharpTimerDebug($"Player {playerName} Entering checkpoint {bonusCheckpointTrigger} Time {playerTimer.StageTimes[bonusCheckpointTrigger]}");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        SharpTimerError($"Error updating StageTimes dictionary: {ex.Message}");
+                                        SharpTimerDebug($"Player {playerName} dictionary keys: {string.Join(", ", playerTimer.StageTimes.Keys)}");
+                                    }
+                                }
+                            }
+                            playerTimer.CurrentMapCheckpoint = bonusCheckpointTrigger;
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in HandlePlayerBonusCheckpointTimes: {ex.Message}");
             }
         }
 

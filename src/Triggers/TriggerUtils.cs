@@ -59,7 +59,22 @@ namespace SharpTimer
                     if (match.Success)
                     {
                         int X = int.Parse(match.Groups[1].Value);
-                        return (true, X);
+                        try
+                        {
+                            if(totalBonuses[X] != 0)
+                            {
+                                SharpTimerDebug($"Fake bonus {X} found, overwriting real start trigger");
+                                return(false, X);
+                            }
+                            else
+                            {
+                                return(true, X);
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            return (true, X);
+                        }
                     }
                 }
 
@@ -140,6 +155,36 @@ namespace SharpTimer
             }
         }
 
+        private (bool valid, int X) IsValidBonusCheckpointTriggerName(string triggerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return (false, 0);
+
+                string[] patterns = [
+                    @"^bonus_cp([1-9][0-9]?)$",
+                    @"^bonus_checkpoint([1-9][0-9]?)$"
+                ];
+
+                foreach (var pattern in patterns)
+                {
+                    var match = Regex.Match(triggerName, pattern);
+                    if (match.Success)
+                    {
+                        int X = int.Parse(match.Groups[1].Value);
+                        return (true, X);
+                    }
+                }
+
+                return (false, 0);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidCheckpointTriggerName: {ex.Message}");
+                return (false, 0);
+            }
+        }
+
         private bool IsValidEndTriggerName(string triggerName)
         {
             try
@@ -172,8 +217,25 @@ namespace SharpTimer
                     if (match.Success)
                     {
                         int X = int.Parse(match.Groups[1].Value);
-                        if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
-                        return (true, X);
+                        try
+                        {
+                            if(totalBonuses[X] != 0)
+                            {
+                                SharpTimerDebug($"Fake bonus {X} found, overwriting real end trigger");
+                                return(false, X);
+                            }
+                            else
+                            {
+                                if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
+                                return (true, X);
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
+                            return (true, X);
+                        }
+                        
                     }
                 }
 
@@ -342,10 +404,32 @@ namespace SharpTimer
             SharpTimerDebug($"Use useCheckpointTriggers is set to {useCheckpointTriggers}");
         }
 
+        private void FindBonusCheckpointTriggers()
+        {
+            bonusCheckpointTriggers.Clear();
+
+            foreach (var trigger in entityCache!.Triggers)
+            {
+                if (trigger == null || trigger.Entity!.Name == null) continue;
+
+                var (validCp, X) = IsValidBonusCheckpointTriggerName(trigger.Entity.Name.ToString());
+                if (validCp)
+                {
+                    bonusCheckpointTriggers[trigger.Handle] = X;
+                    SharpTimerDebug($"Added Bonus Checkpoint {X} Trigger {trigger.Handle}");
+                }
+            }
+
+            bonusCheckpointTriggerCount = bonusCheckpointTriggers.Any() ? bonusCheckpointTriggers.OrderByDescending(x => x.Value).First().Value : 0;
+
+            useBonusCheckpointTriggers = bonusCheckpointTriggerCount != 0;
+
+            SharpTimerDebug($"Found a max of {bonusCheckpointTriggerCount} Bonus Checkpoint triggers");
+            SharpTimerDebug($"Use useBonusCheckpointTriggers is set to {useBonusCheckpointTriggers}");
+        }
+
         private void FindBonusStartTriggerPos()
         {
-            bonusRespawnPoses.Clear();
-            bonusRespawnAngs.Clear();
 
             foreach (var trigger in entityCache!.Triggers)
             {
@@ -362,18 +446,48 @@ namespace SharpTimer
                         {
                             if (info_tp.CBodyComponent?.SceneNode?.AbsOrigin != null && info_tp.AbsRotation != null)
                             {
-                                bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
-                                bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
-                                SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
-                                bonusPosAndAngSet = true;
+                                try
+                                {
+                                    if(bonusRespawnPoses[bonusX] != null){
+                                        SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
+                                    }
+                                    else
+                                    {
+                                        bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
+                                        bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
+                                        SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
+                                        bonusPosAndAngSet = true;
+                                    }
+                                }
+                                catch(Exception ex)
+                                {
+                                    bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
+                                    bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
+                                    SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
+                                    bonusPosAndAngSet = true;
+                                }
                             }
                         }
                     }
 
                     if (!bonusPosAndAngSet && trigger.CBodyComponent?.SceneNode?.AbsOrigin != null)
                     {
-                        bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
-                        SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
+                        try
+                        {
+                            if(bonusRespawnPoses[bonusX] != null){
+                                SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
+                            }
+                            else
+                            {
+                                bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
+                                SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
+                            SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
+                        }
                     }
                 }
             }
