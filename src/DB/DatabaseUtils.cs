@@ -845,7 +845,7 @@ namespace SharpTimer
 
         public async Task<(string, string, string)> GetMapRecordSteamIDFromDatabase(int bonusX = 0, int top10 = 0)
         {
-            SharpTimerDebug($"Trying to get map record steamid from mysql");
+            SharpTimerDebug($"Trying to get {(bonusX != 0 ? $"bonus {bonusX}" : "map")} record steamid from mysql");
             try
             {
                 using (var connection = await OpenDatabaseConnectionAsync())
@@ -870,7 +870,7 @@ namespace SharpTimer
 
                     using (var selectCommand = new MySqlCommand(selectQuery, connection))
                     {
-                        selectCommand.Parameters.AddWithValue("@MapName", currentMapName);
+                        selectCommand.Parameters.AddWithValue("@MapName", bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}");
 
                         var row = await selectCommand.ExecuteReaderAsync();
 

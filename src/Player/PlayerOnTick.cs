@@ -238,7 +238,7 @@ namespace SharpTimer
 
                         if (enableReplays)
                         {
-                            if (!playerTimer.IsReplaying && timerTicks > 0 && playerTimer.IsRecordingReplay && !isTimerBlocked)
+                            if (!playerTimer.IsReplaying && (timerTicks > 0 || playerTimer.BonusTimerTicks > 0) && playerTimer.IsRecordingReplay && !isTimerBlocked)
                             {
                                 ReplayUpdate(player, timerTicks);
                             }

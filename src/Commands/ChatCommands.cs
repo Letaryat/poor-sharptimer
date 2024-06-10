@@ -238,11 +238,11 @@ namespace SharpTimer
             {
                 if (useMySQL)
                 {
-                    (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase(0, top10);
+                    (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase(bonusX, top10);
                 }
                 else
                 {
-                    (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamID();
+                    (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamID(bonusX, top10);
                 }
             }
 
@@ -656,7 +656,7 @@ namespace SharpTimer
                 int timerTicks = kvp.Value.TimerTicks;
 
                 bool showReplays = false;
-                if (enableReplays == true) showReplays = await CheckSRReplay(kvp.Key);
+                if (enableReplays == true) showReplays = await CheckSRReplay(kvp.Key, bonusX);
 
                 printStatements.Add($"{msgPrefix} #{rank}: {primaryChatColor}{_playerName} {ChatColors.White}- {(enableReplays ? $"{(showReplays ? $" {ChatColors.Red}◉" : "")}" : "")}{primaryChatColor}{FormatTime(timerTicks)}");
                 rank++;
