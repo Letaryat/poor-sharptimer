@@ -125,10 +125,13 @@ namespace SharpTimer
 
                     string[] adMessages = [ $"{msgPrefix} Type {primaryChatColor}!sthelp{ChatColors.Default} to see all commands!",
                                     $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaypb{ChatColors.Default} to watch a replay of your personal best run!" : "")}",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaysr{ChatColors.Default} to watch a replay of the SR on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaytop <#>{ChatColors.Default} to watch a replay top run on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
+                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replay or {primaryChatColor}!replaysr{ChatColors.Default} to watch a replay of the SR on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
+                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaytop <1-10>{ChatColors.Default} to watch a replay of a top run on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
+                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaybonus <1-10> <bonus #> (or !replayb){ChatColors.Default} to watch a replay of a top run on a bonus stage{ChatColors.Default}!" : "")}",
+                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaybonuspb <bonus #> (or !replaybpb){ChatColors.Default} to watch a replay of your personal best run on a bonus stage{ChatColors.Default}!" : "")}",
                                     $"{(globalRanksEnabled ? $"{msgPrefix} Type {primaryChatColor}!points{ChatColors.Default} to see the top 10 players with the most points!" : "")}",
                                     $"{(respawnEnabled ? $"{msgPrefix} Type {primaryChatColor}!r{ChatColors.Default} to respawn back to start!" : "")}",
+                                    $"{(respawnEnabled ? $"{msgPrefix} Type {primaryChatColor}!setresp (or !startpos){ChatColors.Default} to to save a custom respawn point within the start trigger!" : "")}",
                                     $"{(topEnabled ? $"{msgPrefix} Type {primaryChatColor}!top{ChatColors.Default} to see the top 10 players on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
                                     $"{(rankEnabled ? $"{msgPrefix} Type {primaryChatColor}!rank{ChatColors.Default} to see your current PB and Rank!" : "")}",
                                     $"{(cpEnabled ? $"{msgPrefix} Type {primaryChatColor}{(currentMapName!.Contains("surf_") ? "!saveloc" : "!cp")}{ChatColors.Default} to {(currentMapName.Contains("surf_") ? "save a new loc" : "set a new checkpoint")}!" : "")}",
@@ -138,7 +141,7 @@ namespace SharpTimer
                                     $"{msgPrefix} Type {primaryChatColor}!sounds{ChatColors.Default} to toggle timer sounds!",
                                     $"{msgPrefix} Type {primaryChatColor}!hud{ChatColors.Default} to toggle timer hud!",
                                     $"{msgPrefix} Type {primaryChatColor}!keys{ChatColors.Default} to toggle hud keys!",
-                                    $"{(jumpStatsEnabled ? $"{msgPrefix} Type {primaryChatColor}!jumpstats{ChatColors.Default} to toggle JumpStats!" : "")}",];
+                                    $"{(jumpStatsEnabled ? $"{msgPrefix} Type {primaryChatColor}!jumpstats{ChatColors.Default} to toggle JumpStats!" : "")}"];
 
                     var nonEmptyAds = adMessages.Where(ad => !string.IsNullOrEmpty(ad)).ToArray();
 

@@ -78,12 +78,12 @@ namespace SharpTimer
 
             if (playerTimers[playerSlot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
             player.PrintToChat(msgPrefix + $" Available replay cmds: {primaryChatColor}!replaypb{ChatColors.Default} | {primaryChatColor}!replaytop <1-10>{ChatColors.Default} | {primaryChatColor}!replaysr{ChatColors.Default}");
-            player.PrintToChat(msgPrefix + $" Replaying the Server Map Record, type {primaryChatColor}!stopreplay {ChatColors.White}to exit the replay");
+            player.PrintToChat(msgPrefix + $" Replaying the Server Map Record, type {primaryChatColor}!stop or {primaryChatColor}!stopreplay {ChatColors.White}to exit the replay");
 
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "1"));
         }
@@ -106,7 +106,7 @@ namespace SharpTimer
 
             if (playerTimers[playerSlot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -129,7 +129,7 @@ namespace SharpTimer
 
             if (playerTimers[playerSlot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -152,7 +152,7 @@ namespace SharpTimer
 
             if (playerTimers[playerSlot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -161,6 +161,7 @@ namespace SharpTimer
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, arg));
         }
 
+        [ConsoleCommand("css_replayb", "Replay a top 10 server bonus record")]
         [ConsoleCommand("css_replaybonus", "Replay a top 10 server bonus record")]
         [CommandHelper(minArgs: 1, usage: "[1-10] [bonus stage]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void ReplayBonusCommand(CCSPlayerController? player, CommandInfo command)
@@ -177,7 +178,7 @@ namespace SharpTimer
 
             if (playerTimers[playerSlot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -186,7 +187,8 @@ namespace SharpTimer
 
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, arg, "69", "unknown", Int16.Parse(arg2)));
         }
-
+        
+        [ConsoleCommand("css_replaybpb", "Replay your bonus pb")]
         [ConsoleCommand("css_replaybonuspb", "Replay your bonus pb")]
         [CommandHelper(minArgs: 1, usage: "[bonus stage]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void ReplayBonusPBCommand(CCSPlayerController? player, CommandInfo command)
@@ -205,7 +207,7 @@ namespace SharpTimer
 
             if (playerTimers[playerSlot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -272,7 +274,7 @@ namespace SharpTimer
 
             if (IsAllowedPlayer(player))
             {
-                Server.NextFrame(() => player.PrintToChat(msgPrefix + $" Replaying {(!self ? "the Server Top" + top10 : "your PB")}, type {primaryChatColor}!stopreplay {ChatColors.White}to exit the replay"));
+                Server.NextFrame(() => player.PrintToChat(msgPrefix + $" Replaying {(!self ? "the Server Top" + top10 : "your PB")}, type {primaryChatColor}!stop or {primaryChatColor}!stopreplay {ChatColors.White}to exit the replay"));
             }
             else
             {
@@ -280,6 +282,7 @@ namespace SharpTimer
             }
         }
 
+        [ConsoleCommand("css_stop", "stops the current replay")]
         [ConsoleCommand("css_stopreplay", "stops the current replay")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void StopReplayCommand(CCSPlayerController? player, CommandInfo command)
@@ -839,7 +842,7 @@ namespace SharpTimer
 
                 if (playerTimers[player.Slot].IsReplaying)
                 {
-                    player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                    player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                     return;
                 }
 
@@ -893,6 +896,7 @@ namespace SharpTimer
             }
         }
 
+        [ConsoleCommand("css_startpos", "Saves a custom respawn point within the start trigger")]
         [ConsoleCommand("css_setresp", "Saves a custom respawn point within the start trigger")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void SetRespawnCommand(CCSPlayerController? player, CommandInfo command)
@@ -909,7 +913,7 @@ namespace SharpTimer
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -976,7 +980,7 @@ namespace SharpTimer
 
                 if (playerTimers[player.Slot].IsReplaying)
                 {
-                    player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                    player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                     return;
                 }
 
@@ -1052,7 +1056,7 @@ namespace SharpTimer
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -1076,7 +1080,7 @@ namespace SharpTimer
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -1224,7 +1228,7 @@ namespace SharpTimer
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -1287,7 +1291,7 @@ namespace SharpTimer
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -1366,7 +1370,7 @@ namespace SharpTimer
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -1439,7 +1443,7 @@ namespace SharpTimer
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -1450,7 +1454,7 @@ namespace SharpTimer
         {
             if (playerTimers[player!.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -1512,7 +1516,7 @@ namespace SharpTimer
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
@@ -1577,7 +1581,7 @@ namespace SharpTimer
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stopreplay");
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
 
