@@ -154,13 +154,15 @@ namespace SharpTimer
 
                             playerTimer.IsRankPbCached = true;
                         }
+
                         //attempted bugfix on rank not appearing
-                        if(playerTimer.CachedMapPlacement == null)
+                        if(playerTimer.CachedMapPlacement == null && !playerTimer.IsRankPbReallyCached)
                         {
                             var playerName = player.PlayerName;
                             var steamID = player.SteamID.ToString();
                             SharpTimerDebug($"{playerName} CachedMapPlacement is still null, calling rank handler once more");
                             _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true));
+                            playerTimer.IsRankPbReallyCached = true;
                         }
 
                         if (hideAllPlayers == true)

@@ -127,6 +127,7 @@ namespace SharpTimer
         public string? RankHUDIcon { get; set; }
         public string? CachedRank { get; set; }
         public bool IsRankPbCached { get; set; }
+        public bool IsRankPbReallyCached { get; set; }
         public bool IsSpecTargetCached { get; set; }
         public string? PreSpeed { get; set; }
         public string? CachedPB { get; set; }
