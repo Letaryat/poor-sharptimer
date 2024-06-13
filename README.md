@@ -1,13 +1,12 @@
-> [!CAUTION]
-> ORIGINAL CREATOR IS DEAFPS_ I JUST YOINKED THE REMAINING COPY AND EDITED SO TESTER GIFS WOULD WORK JUST FINE.
+> [!NOTE]
+> The original creator of SharpTimer is deafps, who discontinued support for the project after version 0.2.6. This fork is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
 
-> [!CAUTION]
-> This project will not receive any further updates as im unable to continue working on it. Thank you for all the support and time spend testing the pre-release versions. Feel free to fork and yoink anything you want and build upon it
+
 
 [**Discord**](https://discord.com/invite/SmQXeyMcny)
 
 <div align="center">
-  <img src="https://github.com/DEAFPS/SharpTimer/assets/43534349/c353662a-eb64-43e7-9294-40cfed3d58af" alt="" style="margin: 0;">
+  <img src="https://files.catbox.moe/qvawnf.png" alt="" style="margin: 0;">
 </div>
 
 
@@ -87,19 +86,21 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 [**MovementUnlocker** *(optional but recommended)*](https://github.com/Source2ZE/MovementUnlocker)
 
+[**CS2Fixes-RampbugFix** *(optional but recommended)*](https://github.com/Interesting-exe/CS2Fixes-RampbugFix)
+
 [**Web panel** *(optional but recommended)*](https://github.com/Letaryat/sharptimer-web-panel)
 
 
 ## Install
-* Download the [latest release](https://github.com/DEAFPS/SharpTimer/releases),
+* Download the [latest release](https://github.com/Letaryat/poor-sharptimer/releases),
 
 * Unzip into your servers `game/csgo/` directory,
 
 * :exclamation: See `game/csgo/cfg/SharpTimer/config.cfg` for basic plugin configuration,
 
-* :exclamation: It is recommended to have a custom server cfg with your desired settings (for example [SURF](https://github.com/DEAFPS/cs-cfg/blob/main/surf.cfg) or [KZ](https://github.com/DEAFPS/cs-cfg/blob/main/kz.cfg)),
+* :exclamation: It is recommended to have a custom server cfg with your desired settings (for example [SURF](https://github.com/rcnoob/cs-cfg/blob/main/surf.cfg) or [BHOP](https://github.com/rcnoob/cs-cfg/blob/main/bhop.cfg)),
 
-# [SharpTimer Wiki/Docs](https://github.com/DEAFPS/SharpTimer/wiki)
+# [SharpTimer Wiki/Docs](https://github.com/Letaryat/poor-sharptimer/wiki)
 
 # TODO List
 - [x] HUD

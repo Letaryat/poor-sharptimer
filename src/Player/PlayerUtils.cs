@@ -38,8 +38,8 @@ namespace SharpTimer
             if (goToEnabled) player.PrintToChat($"{msgPrefix}!goto <name> (css_goto) - Teleports you to a player");
             if (stageTriggerPoses.Count != 0) player.PrintToChat($"{msgPrefix}!stage <#> (css_stage) - Teleports you to a stage");
             player.PrintToChat($"{msgPrefix}!sounds (css_sounds) - Toggle timer sounds!");
-            player.PrintToChat($"{msgPrefix}!hud (css_hud) - oggle timer hud!");
-            player.PrintToChat($"{msgPrefix}!keys (css_keys) - oggle hud keys!");
+            player.PrintToChat($"{msgPrefix}!hud (css_hud) - Toggle timer hud!");
+            player.PrintToChat($"{msgPrefix}!keys (css_keys) - Toggle hud keys!");
             player.PrintToChat($"{msgPrefix}!fov <0-140> (css_fov) - Change your field of view!");
 
             if (cpEnabled)
