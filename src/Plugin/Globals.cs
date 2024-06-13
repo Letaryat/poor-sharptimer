@@ -127,7 +127,6 @@ namespace SharpTimer
         public bool helpEnabled = true;
         public bool alternativeSpeedometer = false;
         public bool startzoneJumping = true;
-        public bool inStartzone = false;
         public bool removeLegsEnabled = false;
         public bool hideAllPlayers = false;
         public bool removeCollisionEnabled = true;

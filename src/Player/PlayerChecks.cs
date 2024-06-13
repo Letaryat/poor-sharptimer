@@ -221,10 +221,13 @@ namespace SharpTimer
                     }
                     else if (isInsideStartBox)
                     {
-                        inStartzone = true;
+                        if(playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
+                        {
+                            playerTimer.inStartzone = true;
+                        }
                         if (!startzoneJumping)
                         {
-                            _ = Task.Run(async () => await DisableJumping(player));
+                            _ = Task.Run(async () => await DisableJumping(player, player.Slot));
                         }
                         OnTimerStart(player);
                         if (enableReplays) OnRecordingStart(player);
@@ -236,9 +239,9 @@ namespace SharpTimer
                             adjustVelocity(player, maxStartingSpeed, true);
                         }
                     }
-                    else if (!isInsideStartBox)
+                    else if (!isInsideStartBox && playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
                     {
-                        inStartzone = false;
+                        playerTimer.inStartzone = false;
                     }
                 }
                 foreach (int bonus in totalBonuses)
@@ -266,10 +269,13 @@ namespace SharpTimer
                             }
                             else if (isInsideBonusStartBox[bonus])
                             {
-                                inStartzone = true;
+                                if(playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
+                                {
+                                    playerTimer.inStartzone = true;
+                                }
                                 if (!startzoneJumping)
                                 {
-                                    _ = Task.Run(async () => await DisableJumping(player));
+                                    _ = Task.Run(async () => await DisableJumping(player, player.Slot));
                                 }
                                 OnTimerStart(player, bonus);
                                 if (enableReplays) OnRecordingStart(player, bonus);
@@ -283,7 +289,11 @@ namespace SharpTimer
                             }
                             else if (!isInsideBonusStartBox[bonus])
                             {
-                                inStartzone = false;
+                                if(playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
+                                {
+                                    playerTimer.inStartzone = false;
+                                }
+                                
                             }
                         }
                     }

@@ -89,7 +89,10 @@ namespace SharpTimer
 
                 if (IsValidStartTriggerName(callerName))
                 {
-                    inStartzone = true;
+                    if(playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
+                    {
+                        playerTimer.inStartzone = true;
+                    }
                     if (!playerTimers[playerSlot].IsTimerBlocked)
                     {
                         playerCheckpoints.Remove(playerSlot);
@@ -97,7 +100,7 @@ namespace SharpTimer
 
                     if (!startzoneJumping)
                     {
-                        _ = Task.Run(async () => await DisableJumping(player));
+                        _ = Task.Run(async () => await DisableJumping(player, playerSlot));
                     }
 
                     InvalidateTimer(player, callerHandle);
@@ -204,7 +207,10 @@ namespace SharpTimer
 
                 if (IsValidStartTriggerName(callerName) && !playerTimers[playerSlot].IsTimerBlocked)
                 {
-                    inStartzone = false;
+                    if(playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
+                    {
+                        playerTimer.inStartzone = false;
+                    }
                     OnTimerStart(player);
                     if (enableReplays) OnRecordingStart(player);
 

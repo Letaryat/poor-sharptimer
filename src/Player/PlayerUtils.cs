@@ -224,19 +224,22 @@ namespace SharpTimer
             return (0, string.Empty);
         }
 
-        public async Task DisableJumping(CCSPlayerController player)
+        public async Task DisableJumping(CCSPlayerController player, int playerSlot)
         {
-            while(inStartzone)
+            if(playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
             {
-                if(player!.PlayerPawn.Value!.AbsVelocity.Z < 0f)
+                while (playerTimer.inStartzone)
                 {
-                    //Player is falling, not jumping
+                    if (player!.PlayerPawn.Value!.AbsVelocity.Z < 0f)
+                    {
+                        //Player is falling, not jumping
+                    }
+                    else
+                    {
+                        player!.PlayerPawn.Value!.AbsVelocity.Z = 0f;
+                    }
+
                 }
-                else
-                {
-                    player!.PlayerPawn.Value!.AbsVelocity.Z = 0f;
-                }
-                
             }
         }
 

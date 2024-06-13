@@ -117,6 +117,7 @@ namespace SharpTimer
         public bool IsBonusTimerRunning { get; set; }
         public int BonusTimerTicks { get; set; }
         public int BonusStage { get; set; }
+        public bool inStartzone { get; set; }
 
         //replay
         public bool IsReplaying { get; set; }
