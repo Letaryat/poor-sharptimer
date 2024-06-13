@@ -398,7 +398,7 @@ namespace SharpTimer
                             $"Pre: {primaryChatColor}{Math.Round(ParseVector(playerJumpStat.LastSpeed!).Length2D(), 2)}{ChatColors.Grey} | " +
                             $"Max: {primaryChatColor}{Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2)}{ChatColors.Grey} | " +
                             $"Strafes: {primaryChatColor}{strafes}{ChatColors.Grey} | ";
-            string msg2 =   $"{ChatColors.Grey}Height: {primaryChatColor}{Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2)}{ChatColors.Grey} | " +
+            string msg2 = $"{ChatColors.Grey}Height: {primaryChatColor}{Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2)}{ChatColors.Grey} | " +
                             $"Width: {primaryChatColor}{GetMaxWidth(playerpos, playerJumpStat)}{ChatColors.Grey} | " +
                             $"WT: {primaryChatColor}{playerJumpStat.WTicks}{ChatColors.Grey} | " +
                             $"Sync: {primaryChatColor}{sync}%";

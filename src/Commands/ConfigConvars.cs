@@ -783,6 +783,15 @@ namespace SharpTimer
             }
         }
 
+        [ConsoleCommand("sharptimer_allow_startzone_jump", "Enable or disable jumping in startzone. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerStartzoneJumpConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            startzoneJumping = bool.TryParse(args, out bool startzoneJumpingValue) ? startzoneJumpingValue : args != "0" && startzoneJumping;
+        }
+
         [ConsoleCommand("sharptimer_remote_data_bhop", "Override for bhop remote_data")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerRemoteDataOverrideBhop(CCSPlayerController? player, CommandInfo command)

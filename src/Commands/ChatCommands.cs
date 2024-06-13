@@ -187,7 +187,7 @@ namespace SharpTimer
 
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, arg, "69", "unknown", Int16.Parse(arg2)));
         }
-        
+
         [ConsoleCommand("css_replaybpb", "Replay your bonus pb")]
         [ConsoleCommand("css_replaybonuspb", "Replay your bonus pb")]
         [CommandHelper(minArgs: 1, usage: "[bonus stage]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
@@ -497,14 +497,15 @@ namespace SharpTimer
         }
         public void HideWeapon(CCSPlayerController? player)
         {
-            if(!player.PlayerPawn!.Value.WeaponServices.ActiveWeapon.IsValid){
+            if (!player.PlayerPawn!.Value.WeaponServices.ActiveWeapon.IsValid)
+            {
                 player.GiveNamedItem("weapon_usp_silencer");
                 player.GiveNamedItem("weapon_knife");
             }
             else
             {
-                player.RemoveWeapons(); 
-            }     
+                player.RemoveWeapons();
+            }
         }
         [ConsoleCommand("css_fov", "Sets the player's FOV")]
         [CommandHelper(minArgs: 1, usage: "[fov]")]

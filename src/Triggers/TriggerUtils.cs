@@ -61,17 +61,17 @@ namespace SharpTimer
                         int X = int.Parse(match.Groups[1].Value);
                         try
                         {
-                            if(totalBonuses[X] != 0)
+                            if (totalBonuses[X] != 0)
                             {
                                 SharpTimerDebug($"Fake bonus {X} found, overwriting real start trigger");
-                                return(false, X);
+                                return (false, X);
                             }
                             else
                             {
-                                return(true, X);
+                                return (true, X);
                             }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             return (true, X);
                         }
@@ -219,10 +219,10 @@ namespace SharpTimer
                         int X = int.Parse(match.Groups[1].Value);
                         try
                         {
-                            if(totalBonuses[X] != 0)
+                            if (totalBonuses[X] != 0)
                             {
                                 SharpTimerDebug($"Fake bonus {X} found, overwriting real end trigger");
-                                return(false, X);
+                                return (false, X);
                             }
                             else
                             {
@@ -230,12 +230,12 @@ namespace SharpTimer
                                 return (true, X);
                             }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
                             return (true, X);
                         }
-                        
+
                     }
                 }
 
@@ -448,7 +448,8 @@ namespace SharpTimer
                             {
                                 try
                                 {
-                                    if(bonusRespawnPoses[bonusX] != null){
+                                    if (bonusRespawnPoses[bonusX] != null)
+                                    {
                                         SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
                                     }
                                     else
@@ -459,7 +460,7 @@ namespace SharpTimer
                                         bonusPosAndAngSet = true;
                                     }
                                 }
-                                catch(Exception ex)
+                                catch (Exception ex)
                                 {
                                     bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
                                     bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
@@ -474,7 +475,8 @@ namespace SharpTimer
                     {
                         try
                         {
-                            if(bonusRespawnPoses[bonusX] != null){
+                            if (bonusRespawnPoses[bonusX] != null)
+                            {
                                 SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
                             }
                             else
@@ -483,7 +485,7 @@ namespace SharpTimer
                                 SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
                             }
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
                             SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");

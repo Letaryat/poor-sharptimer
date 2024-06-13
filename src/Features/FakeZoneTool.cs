@@ -170,7 +170,7 @@ namespace SharpTimer
                 player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL]{ChatColors.Red} Please make sure you have done all 3 zoning steps (!addstartzone, !addendzone, !addrespawnpos)");
                 return;
             }
-    
+
             MapInfo newMapInfo = new()
             {
                 MapStartC1 = playerTimers[player.Slot].StartZoneC1,
@@ -209,7 +209,7 @@ namespace SharpTimer
                 player.PrintToChat(msgPrefix + $" Please enter a valid Bonus stage i.e: {primaryChatColor}!savebonuszones <index>");
                 return;
             }
-    
+
             MapInfo newMapInfo = new()
             {
                 BonusStartC1 = playerTimers[player.Slot].BonusStartZoneC1,

@@ -871,59 +871,70 @@ namespace SharpTimer
                 string[] bonusdataFileNames = new string[11];
                 string[] bonusdataPaths = new string[11];
 
-                foreach (string file in files){
-                    if(file.Contains($"{currentMapName}_bonus1")){
+                foreach (string file in files)
+                {
+                    if (file.Contains($"{currentMapName}_bonus1"))
+                    {
                         totalBonuses[1] = 1;
                         bonusdataFileNames[1] = $"/SharpTimer/MapData/{currentMapName}_bonus1.json";
                         bonusdataPaths[1] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[1]);
                     }
-                    else if(file.Contains($"{currentMapName}_bonus2")){
+                    else if (file.Contains($"{currentMapName}_bonus2"))
+                    {
                         totalBonuses[2] = 2;
                         bonusdataFileNames[2] = $"/SharpTimer/MapData/{currentMapName}_bonus2.json";
                         bonusdataPaths[2] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[2]);
                     }
-                    else if(file.Contains($"{currentMapName}_bonus3")){
+                    else if (file.Contains($"{currentMapName}_bonus3"))
+                    {
                         totalBonuses[3] = 3;
                         SharpTimerDebug($"Found bonus 3 in {currentMapName}");
                         bonusdataFileNames[3] = $"/SharpTimer/MapData/{currentMapName}_bonus3.json";
                         bonusdataPaths[3] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[3]);
                     }
-                    else if(file.Contains($"{currentMapName}_bonus4")){
+                    else if (file.Contains($"{currentMapName}_bonus4"))
+                    {
                         totalBonuses[4] = 4;
                         bonusdataFileNames[4] = $"/SharpTimer/MapData/{currentMapName}_bonus4.json";
                         bonusdataPaths[4] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[4]);
                     }
-                    else if(file.Contains($"{currentMapName}_bonus5")){
+                    else if (file.Contains($"{currentMapName}_bonus5"))
+                    {
                         totalBonuses[5] = 5;
                         bonusdataFileNames[5] = $"/SharpTimer/MapData/{currentMapName}_bonus5.json";
                         bonusdataPaths[5] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[5]);
                     }
-                    else if(file.Contains($"{currentMapName}_bonus6")){
+                    else if (file.Contains($"{currentMapName}_bonus6"))
+                    {
                         totalBonuses[6] = 6;
                         bonusdataFileNames[6] = $"/SharpTimer/MapData/{currentMapName}_bonus6.json";
                         bonusdataPaths[6] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[6]);
                     }
-                    else if(file.Contains($"{currentMapName}_bonus7")){
+                    else if (file.Contains($"{currentMapName}_bonus7"))
+                    {
                         totalBonuses[7] = 7;
                         bonusdataFileNames[7] = $"/SharpTimer/MapData/{currentMapName}_bonus7.json";
                         bonusdataPaths[7] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[7]);
                     }
-                    else if(file.Contains($"{currentMapName}_bonus8")){
+                    else if (file.Contains($"{currentMapName}_bonus8"))
+                    {
                         totalBonuses[8] = 8;
                         bonusdataFileNames[8] = $"/SharpTimer/MapData/{currentMapName}_bonus8.json";
                         bonusdataPaths[8] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[8]);
                     }
-                    else if(file.Contains($"{currentMapName}_bonus9")){
+                    else if (file.Contains($"{currentMapName}_bonus9"))
+                    {
                         totalBonuses[9] = 9;
                         bonusdataFileNames[9] = $"/SharpTimer/MapData/{currentMapName}_bonus9.json";
                         bonusdataPaths[9] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[9]);
                     }
-                    else if(file.Contains($"{currentMapName}_bonus10")){
+                    else if (file.Contains($"{currentMapName}_bonus10"))
+                    {
                         totalBonuses[10] = 10;
                         bonusdataFileNames[10] = $"/SharpTimer/MapData/{currentMapName}_bonus10.json";
                         bonusdataPaths[10] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[10]);
                     }
-                }              
+                }
                 Server.ExecuteCommand($"execifexists SharpTimer/config.cfg");
                 SharpTimerDebug("Re-Executing custom_exec with 1sec delay...");
                 var custom_exec_delay = AddTimer(1.0f, () =>
@@ -968,36 +979,37 @@ namespace SharpTimer
 
                 SharpTimerConPrint($"Trying to find Map data json for map: {currentMapName}!");
                 //Bonus fake zone check
-                foreach (int bonus in totalBonuses){
-                    if(bonus == 0){}
+                foreach (int bonus in totalBonuses)
+                {
+                    if (bonus == 0) { }
                     else
-                    {             
-                    using JsonDocument? bonusJsonDocument = LoadJsonOnMainThread(bonusdataPaths[bonus]);
-                    if (bonusJsonDocument != null)
                     {
-                        var mapInfo = JsonSerializer.Deserialize<MapInfo>(bonusJsonDocument.RootElement.GetRawText());
-                        SharpTimerDebug($"Map data json found for map: {currentMapName}, bonus {bonus}!");
+                        using JsonDocument? bonusJsonDocument = LoadJsonOnMainThread(bonusdataPaths[bonus]);
+                        if (bonusJsonDocument != null)
+                        {
+                            var mapInfo = JsonSerializer.Deserialize<MapInfo>(bonusJsonDocument.RootElement.GetRawText());
+                            SharpTimerDebug($"Map data json found for map: {currentMapName}, bonus {bonus}!");
 
-                        if (!string.IsNullOrEmpty(mapInfo!.BonusStartC1) && !string.IsNullOrEmpty(mapInfo.BonusStartC2) && !string.IsNullOrEmpty(mapInfo.BonusEndC1) && !string.IsNullOrEmpty(mapInfo.BonusEndC2) && !string.IsNullOrEmpty(mapInfo.BonusRespawnPos))
-                        {
-                            useTriggers = false;
-                            if(FindEndTriggerPos() != null)
-                                useTriggersAndFakeZones = true;
-                            SharpTimerConPrint($"useTriggers: {useTriggers}!");
-                            currentBonusStartC1[bonus] = ParseVector(mapInfo.BonusStartC1);
-                            currentBonusStartC2[bonus] = ParseVector(mapInfo.BonusStartC2);
-                            currentBonusEndC1[bonus] = ParseVector(mapInfo.BonusEndC1);
-                            currentBonusEndC2[bonus] = ParseVector(mapInfo.BonusEndC2);
-                            currentBonusEndPos[bonus] = CalculateMiddleVector(currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
-                            bonusRespawnPoses[bonus] = ParseVector(mapInfo.BonusRespawnPos);
-                            SharpTimerConPrint($"Found Fake Bonus {bonus} Trigger Corners: START {currentBonusStartC1[bonus]}, {currentBonusStartC2[bonus]} | END {currentBonusEndC1[bonus]}, {currentBonusEndC2[bonus]}");
+                            if (!string.IsNullOrEmpty(mapInfo!.BonusStartC1) && !string.IsNullOrEmpty(mapInfo.BonusStartC2) && !string.IsNullOrEmpty(mapInfo.BonusEndC1) && !string.IsNullOrEmpty(mapInfo.BonusEndC2) && !string.IsNullOrEmpty(mapInfo.BonusRespawnPos))
+                            {
+                                useTriggers = false;
+                                if (FindEndTriggerPos() != null)
+                                    useTriggersAndFakeZones = true;
+                                SharpTimerConPrint($"useTriggers: {useTriggers}!");
+                                currentBonusStartC1[bonus] = ParseVector(mapInfo.BonusStartC1);
+                                currentBonusStartC2[bonus] = ParseVector(mapInfo.BonusStartC2);
+                                currentBonusEndC1[bonus] = ParseVector(mapInfo.BonusEndC1);
+                                currentBonusEndC2[bonus] = ParseVector(mapInfo.BonusEndC2);
+                                currentBonusEndPos[bonus] = CalculateMiddleVector(currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
+                                bonusRespawnPoses[bonus] = ParseVector(mapInfo.BonusRespawnPos);
+                                SharpTimerConPrint($"Found Fake Bonus {bonus} Trigger Corners: START {currentBonusStartC1[bonus]}, {currentBonusStartC2[bonus]} | END {currentBonusEndC1[bonus]}, {currentBonusEndC2[bonus]}");
+                            }
+                            if (currentBonusStartC1[bonus] != null && currentBonusStartC2[bonus] != null && currentBonusEndC1[bonus] != null && currentBonusEndC2[bonus] != null)
+                            {
+                                DrawWireframe3D(currentBonusStartC1[bonus], currentBonusStartC2[bonus], startBeamColor);
+                                DrawWireframe3D(currentBonusEndC1[bonus], currentBonusEndC2[bonus], endBeamColor);
+                            }
                         }
-                        if (currentBonusStartC1[bonus] != null && currentBonusStartC2[bonus] != null && currentBonusEndC1[bonus] != null && currentBonusEndC2[bonus] != null)
-                        {
-                            DrawWireframe3D(currentBonusStartC1[bonus], currentBonusStartC2[bonus], startBeamColor);
-                            DrawWireframe3D(currentBonusEndC1[bonus], currentBonusEndC2[bonus], endBeamColor);
-                        }
-                    }
                     }
                 }
                 //Main fake zone check
@@ -1278,7 +1290,7 @@ namespace SharpTimer
             currentBonusEndC1 = new Vector[10];
             currentBonusEndC2 = new Vector[10];
 
-           // totalBonuses = new int[10];
+            // totalBonuses = new int[10];
             currentMapStartTriggerMaxs = null;
             currentMapStartTriggerMins = null;
 

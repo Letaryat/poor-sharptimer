@@ -116,9 +116,11 @@ namespace SharpTimer
                             playerTimer.BonusTimerTicks++;
                         }
 
-                        if(isOnBhopBlock){
+                        if (isOnBhopBlock)
+                        {
                             playerTimer.TicksOnBhopBlock++;
-                            if(playerTimer.TicksOnBhopBlock > bhopBlockTime){
+                            if (playerTimer.TicksOnBhopBlock > bhopBlockTime)
+                            {
                                 RespawnPlayer(player);
                             }
                         }
@@ -156,7 +158,7 @@ namespace SharpTimer
                         }
 
                         //attempted bugfix on rank not appearing
-                        if(playerTimer.CachedMapPlacement == null && !playerTimer.IsRankPbReallyCached)
+                        if (playerTimer.CachedMapPlacement == null && !playerTimer.IsRankPbReallyCached)
                         {
                             var playerName = player.PlayerName;
                             var steamID = player.SteamID.ToString();
