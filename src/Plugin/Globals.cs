@@ -99,6 +99,7 @@ namespace SharpTimer
         public bool enableDebug = true;
         public bool killServerCommands = true;
         public bool useMySQL = false;
+        public bool usePostgres = false;
         public bool ignoreJSON = false;
         public bool enableReplays = false;
         public bool enableSRreplayBot = false;
@@ -174,6 +175,7 @@ namespace SharpTimer
         public string tpSound = "sounds/ui/buttonclick.vsnd";
         public string? gameDir;
         public string? mySQLpath;
+        public string? postgresPath;
         public string? playerRecordsPath;
         public string? currentMapName;
         public string? defaultServerHostname = ConVar.Find("hostname")?.StringValue;

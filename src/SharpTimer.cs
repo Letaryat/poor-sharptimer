@@ -126,7 +126,7 @@ namespace SharpTimer
                         {
                             if (!player.IsValid || player == null || !IsAllowedPlayer(player)) return;
 
-                            if (useMySQL && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
+                            if ((useMySQL || usePostgres) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
                             {
                                 SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
                                 SetFov(player, playerTimers[player.Slot].PlayerFov, true);

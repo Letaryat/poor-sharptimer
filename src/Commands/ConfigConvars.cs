@@ -348,6 +348,15 @@ namespace SharpTimer
             useMySQL = bool.TryParse(args, out bool useMySQLValue) ? useMySQLValue : args != "0" && useMySQL;
         }
 
+        [ConsoleCommand("sharptimer_postgres_enabled", "Whether player times should be put into a postgres database by default or not. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerPostgresConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            usePostgres = bool.TryParse(args, out bool usePostgresValue) ? usePostgresValue : args != "0" && usePostgres;
+        }
+
         [ConsoleCommand("sharptimer_discordwebhook_enabled", "Whether player PBs or SRs should be printed into a discord channel or not. Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerDiscordWebhookConvar(CCSPlayerController? player, CommandInfo command)

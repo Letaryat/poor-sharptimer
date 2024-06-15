@@ -238,7 +238,7 @@ namespace SharpTimer
 
             if (!self)
             {
-                if (useMySQL)
+                if (useMySQL || usePostgres)
                 {
                     (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase(bonusX, top10);
                 }
@@ -259,7 +259,7 @@ namespace SharpTimer
 
             if (playerReplays[playerSlot].replayFrames.Count == 0) return;
 
-            if (useMySQL) await GetReplayVIPGif(!self ? srSteamID : pbSteamID, playerSlot);
+            if (useMySQL || usePostgres) await GetReplayVIPGif(!self ? srSteamID : pbSteamID, playerSlot);
 
             playerTimers[playerSlot].IsReplaying = !playerTimers[playerSlot].IsReplaying;
             playerTimers[playerSlot].ReplayHUDString = !self ? $"{srPlayerName} | {srTime}" : $"{playerName} | {playerTimers[playerSlot].CachedPB}";
@@ -374,7 +374,7 @@ namespace SharpTimer
             player.PrintToChat(msgPrefix + $" Hud is now: {(playerTimers[playerSlot].HideTimerHud ? $"{ChatColors.Red} Hidden" : $"{ChatColors.Green} Shown")}");
             SharpTimerDebug($"Hide Timer HUD set to: {playerTimers[playerSlot].HideTimerHud} for {playerName}");
 
-            if (useMySQL == true)
+            if (useMySQL || usePostgres)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -409,7 +409,7 @@ namespace SharpTimer
             player.PrintToChat(msgPrefix + $" Keys are now: {(playerTimers[playerSlot].HideKeys ? $"{ChatColors.Red} Hidden" : $"{ChatColors.Green} Shown")}");
             SharpTimerDebug($"Hide Timer HUD set to: {playerTimers[playerSlot].HideKeys} for {playerName}");
 
-            if (useMySQL == true)
+            if (useMySQL || usePostgres)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -445,7 +445,7 @@ namespace SharpTimer
             player.PrintToChat(msgPrefix + $"Sounds are now:{(playerTimers[playerSlot].SoundsEnabled ? $"{ChatColors.Green} ON" : $"{ChatColors.Red} OFF")}");
             SharpTimerDebug($"Timer Sounds set to: {playerTimers[playerSlot].SoundsEnabled} for {playerName}");
 
-            if (useMySQL == true)
+            if (useMySQL || usePostgres)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -480,7 +480,7 @@ namespace SharpTimer
             player.PrintToChat(msgPrefix + $"Jump Stats are now:{(playerTimers[playerSlot].HideJumpStats ? $"{ChatColors.Red} Hidden" : $"{ChatColors.Green} Shown")}");
             SharpTimerDebug($"Hide Jump Stats set to: {playerTimers[playerSlot].HideJumpStats} for {playerName}");
 
-            if (useMySQL == true)
+            if (useMySQL || usePostgres)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -529,6 +529,10 @@ namespace SharpTimer
 
             if (noMySql == false) playerTimers[player.Slot].PlayerFov = desiredFov;
             if (useMySQL == true && noMySql == false)
+            {
+                _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
+            }
+            if (usePostgres == true && noMySql == false)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -632,7 +636,7 @@ namespace SharpTimer
                 currentMapNamee = mapName;
 
             Dictionary<string, PlayerRecord> sortedRecords;
-            if (useMySQL == true)
+            if (useMySQL || usePostgres)
             {
                 sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, mapName);
             }
@@ -716,7 +720,7 @@ namespace SharpTimer
                 //SharpTimerDebug($"Handling !rank for {playerName}...");
 
                 string ranking, rankIcon, mapPlacement, serverPoints = "", serverPlacement = "";
-                bool useGlobalRanks = useMySQL && globalRanksEnabled;
+                bool useGlobalRanks = (useMySQL || usePostgres) && globalRanksEnabled;
 
                 ranking = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName);
                 rankIcon = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName, true) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, true);
@@ -728,7 +732,7 @@ namespace SharpTimer
                     serverPlacement = await GetPlayerServerPlacement(player, steamId, playerName, false, true, false);
                 }
 
-                int pbTicks = useMySQL ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName) : await GetPreviousPlayerRecord(player, steamId);
+                int pbTicks = (useMySQL || usePostgres) ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName) : await GetPreviousPlayerRecord(player, steamId);
 
                 Server.NextFrame(() =>
                 {
@@ -793,7 +797,7 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || rankEnabled == false) return;
             SharpTimerDebug($"Handling !sr for {_playerName}...");
             Dictionary<string, PlayerRecord> sortedRecords;
-            if (useMySQL == false)
+            if (!useMySQL && !usePostgres)
             {
                 sortedRecords = await GetSortedRecords();
             }

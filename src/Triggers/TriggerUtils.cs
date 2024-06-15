@@ -180,7 +180,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidCheckpointTriggerName: {ex.Message}");
+                SharpTimerError($"Exception in IsValidBonusCheckpointTriggerName: {ex.Message}");
                 return (false, 0);
             }
         }
@@ -243,7 +243,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidStartTriggerName: {ex.Message}");
+                SharpTimerError($"Exception in IsValidEndBonusTriggerName: {ex.Message}");
                 return (false, 0);
             }
         }
@@ -383,6 +383,7 @@ namespace SharpTimer
         private void FindCheckpointTriggers()
         {
             cpTriggers.Clear();
+            cpTriggerCount = 0;
 
             foreach (var trigger in entityCache!.Triggers)
             {

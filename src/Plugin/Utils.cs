@@ -95,7 +95,7 @@ namespace SharpTimer
                 Task.Run(async () =>
                 {
                     Dictionary<string, PlayerRecord> sortedRecords;
-                    if (useMySQL == false)
+                    if (!useMySQL && !usePostgres)
                     {
                         SharpTimerDebug($"Getting Server Record AD using json");
                         sortedRecords = await GetSortedRecords();
@@ -826,11 +826,12 @@ namespace SharpTimer
                     }
 
                     if (removeCrouchFatigueEnabled == true) Server.ExecuteCommand("sv_timebetweenducks 0");
-
+                    if(usePostgres) _ = Task.Run(async () => await CheckPostgresTablesAsync());
                     //bonusRespawnPoses.Clear();
                     bonusRespawnAngs.Clear();
 
                     cpTriggers.Clear();         // make sure old data is flushed in case new map uses fake zones
+                    cpTriggerCount = 0;
                     bonusCheckpointTriggers.Clear();
                     stageTriggers.Clear();
                     stageTriggerAngs.Clear();
@@ -858,6 +859,9 @@ namespace SharpTimer
 
                 string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
                 mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
+
+                string postgresConfigFileName = "SharpTimer/postgresConfig.json";
+                postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
 
                 string discordConfigFileName = "SharpTimer/discordConfig.json";
                 string discordCFGpath = Path.Join(gameDir + "/csgo/cfg", discordConfigFileName);
@@ -1264,6 +1268,7 @@ namespace SharpTimer
         public void ClearMapData()
         {
             cpTriggers.Clear();
+            cpTriggerCount = 0;
             bonusCheckpointTriggers.Clear();
             stageTriggers.Clear();
             stageTriggerAngs.Clear();
