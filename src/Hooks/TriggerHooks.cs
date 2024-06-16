@@ -98,11 +98,6 @@ namespace SharpTimer
                         playerCheckpoints.Remove(playerSlot);
                     }
 
-                    if (!startzoneJumping)
-                    {
-                        _ = Task.Run(async () => await DisableJumping(player, playerSlot));
-                    }
-
                     InvalidateTimer(player, callerHandle);
 
                     if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxStartingSpeed) ||

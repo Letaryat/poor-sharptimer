@@ -116,6 +116,14 @@ namespace SharpTimer
                             playerTimer.BonusTimerTicks++;
                         }
 
+                        if(!startzoneJumping && playerTimer.inStartzone)
+                        {
+                            if(!player.PlayerPawn.Value.GroundEntity.IsValid && player!.PlayerPawn.Value!.AbsVelocity.Z > 0f)
+                            {
+                                player!.PlayerPawn.Value!.AbsVelocity.Z = 0f;
+                            }
+                        }
+
                         if (isOnBhopBlock)
                         {
                             playerTimer.TicksOnBhopBlock++;

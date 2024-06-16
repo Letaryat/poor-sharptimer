@@ -225,10 +225,7 @@ namespace SharpTimer
                         {
                             playerTimer.inStartzone = true;
                         }
-                        if (!startzoneJumping)
-                        {
-                            _ = Task.Run(async () => await DisableJumping(player, player.Slot));
-                        }
+
                         OnTimerStart(player);
                         if (enableReplays) OnRecordingStart(player);
 
@@ -273,10 +270,7 @@ namespace SharpTimer
                                 {
                                     playerTimer.inStartzone = true;
                                 }
-                                if (!startzoneJumping)
-                                {
-                                    _ = Task.Run(async () => await DisableJumping(player, player.Slot));
-                                }
+
                                 OnTimerStart(player, bonus);
                                 if (enableReplays) OnRecordingStart(player, bonus);
 
