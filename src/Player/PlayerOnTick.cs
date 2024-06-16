@@ -163,7 +163,7 @@ namespace SharpTimer
                             var playerName = player.PlayerName;
                             var steamID = player.SteamID.ToString();
                             SharpTimerDebug($"{playerName} CachedMapPlacement is still null, calling rank handler once more");
-                            _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true));
+                            AddTimer(3.0f, () => { _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true)); });                           
                             playerTimer.IsRankPbReallyCached = true;
                         }
 

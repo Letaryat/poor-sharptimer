@@ -185,7 +185,7 @@ namespace SharpTimer
         private async Task CreatePostgresPlayerStatsTableAsync(NpgsqlConnection connection)
         {
             string createTableQuery = @"CREATE TABLE IF NOT EXISTS ""PlayerStats"" (
-                                            ""SteamID"" VARCHAR(20),
+                                            ""SteamID"" VARCHAR(20) UNIQUE,
                                             ""PlayerName"" VARCHAR(32),
                                             ""TimesConnected"" INT,
                                             ""LastConnected"" INT,

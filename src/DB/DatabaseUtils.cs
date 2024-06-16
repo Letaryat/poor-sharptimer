@@ -318,7 +318,21 @@ namespace SharpTimer
 
                                 await row.CloseAsync();
                                 // Update or insert the record
-                                string upsertQuery = @"REPLACE INTO ""PlayerRecords"" (""MapName"", ""SteamID"", ""PlayerName"", ""TimerTicks"", ""LastFinished"", ""TimesFinished"", ""FormattedTime"", ""UnixStamp"") VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp)";
+                                string upsertQuery = @"
+                                                    INSERT INTO ""PlayerRecords"" 
+                                                    (""MapName"", ""SteamID"", ""PlayerName"", ""TimerTicks"", ""LastFinished"", ""TimesFinished"", ""FormattedTime"", ""UnixStamp"")
+                                                    VALUES 
+                                                    (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp)
+                                                    ON CONFLICT (""MapName"", ""SteamID"")
+                                                    DO UPDATE SET
+                                                    ""MapName"" = EXCLUDED.""MapName"",
+                                                    ""PlayerName"" = EXCLUDED.""PlayerName"",
+                                                    ""TimerTicks"" = EXCLUDED.""TimerTicks"",
+                                                    ""LastFinished"" = EXCLUDED.""LastFinished"",
+                                                    ""TimesFinished"" = EXCLUDED.""TimesFinished"",
+                                                    ""FormattedTime"" = EXCLUDED.""FormattedTime"",
+                                                    ""UnixStamp"" = EXCLUDED.""UnixStamp"";
+                                                    ";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     upsertCommand.Parameters.AddWithValue("@MapName", currentMapNamee);
@@ -332,7 +346,7 @@ namespace SharpTimer
                                     if (usePostgres == true && globalRanksEnabled == true && ((dBtimesFinished <= maxGlobalFreePoints && globalRanksFreePointsEnabled == true) || beatPB)) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX);
                                     if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && useMySQL == true && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                                     await upsertCommand.ExecuteNonQueryAsync();
-                                    Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to MySQL for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
+                                    Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to Postgres for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
                                     if (usePostgres == true && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true);
                                     if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, dBtimesFinished)));
                                 }
@@ -343,7 +357,7 @@ namespace SharpTimer
                                 Server.NextFrame(() => SharpTimerDebug($"No player record yet"));
                                 if (enableReplays == true && usePostgres == true) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX));
                                 await row.CloseAsync();
-                                string upsertQuery = @"REPLACE INTO ""PlayerRecords"" (""MapName"", ""SteamID"", ""PlayerName"", ""TimerTicks"", ""LastFinished"", ""TimesFinished"", ""FormattedTime"", ""UnixStamp"") VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp)";
+                                string upsertQuery = @"INSERT INTO ""PlayerRecords"" (""MapName"", ""SteamID"", ""PlayerName"", ""TimerTicks"", ""LastFinished"", ""TimesFinished"", ""FormattedTime"", ""UnixStamp"") VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp)";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     upsertCommand.Parameters.AddWithValue("@MapName", currentMapNamee);
@@ -357,7 +371,7 @@ namespace SharpTimer
                                     await upsertCommand.ExecuteNonQueryAsync();
                                     if (usePostgres == true && globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX);
                                     if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && useMySQL == true) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
-                                    Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to MySQL for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
+                                    Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to Postgres for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
                                     if (usePostgres == true && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true);
                                     if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, 1)));
                                 }
@@ -570,7 +584,25 @@ namespace SharpTimer
                                 await row.CloseAsync();
                                 // Update or insert the record
 
-                                string upsertQuery = @"REPLACE INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = @"
+                                                    INSERT INTO ""PlayerStats"" 
+                                                    (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"")
+                                                    VALUES 
+                                                    (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)
+                                                    ON CONFLICT (""SteamID"")
+                                                    DO UPDATE SET
+                                                    ""PlayerName"" = EXCLUDED.""PlayerName"",
+                                                    ""TimesConnected"" = EXCLUDED.""TimesConnected"",
+                                                    ""LastConnected"" = EXCLUDED.""LastConnected"",
+                                                    ""HideTimerHud"" = EXCLUDED.""HideTimerHud"",
+                                                    ""HideKeys"" = EXCLUDED.""HideKeys"",
+                                                    ""HideJS"" = EXCLUDED.""HideJS"",
+                                                    ""SoundsEnabled"" = EXCLUDED.""SoundsEnabled"",
+                                                    ""PlayerFov"" = EXCLUDED.""PlayerFov"",
+                                                    ""IsVip"" = EXCLUDED.""IsVip"",
+                                                    ""BigGifID"" = EXCLUDED.""BigGifID"",
+                                                    ""GlobalPoints"" = EXCLUDED.""GlobalPoints"";
+                                                    ";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     upsertCommand.Parameters.AddWithValue("@PlayerName", playerName);
@@ -597,7 +629,7 @@ namespace SharpTimer
                                 Server.NextFrame(() => SharpTimerDebug($"No player stats yet"));
                                 await row.CloseAsync();
 
-                                string upsertQuery = @"REPLACE INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     upsertCommand.Parameters.AddWithValue("@PlayerName", playerName);
@@ -806,7 +838,25 @@ namespace SharpTimer
                                 await row.CloseAsync();
                                 // Update or insert the record
 
-                                string upsertQuery = @"REPLACE INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = @"
+                                                    INSERT INTO ""PlayerStats"" 
+                                                    (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"")
+                                                    VALUES 
+                                                    (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)
+                                                    ON CONFLICT (""SteamID"")
+                                                    DO UPDATE SET
+                                                    ""PlayerName"" = EXCLUDED.""PlayerName"",
+                                                    ""TimesConnected"" = EXCLUDED.""TimesConnected"",
+                                                    ""LastConnected"" = EXCLUDED.""LastConnected"",
+                                                    ""HideTimerHud"" = EXCLUDED.""HideTimerHud"",
+                                                    ""HideKeys"" = EXCLUDED.""HideKeys"",
+                                                    ""HideJS"" = EXCLUDED.""HideJS"",
+                                                    ""SoundsEnabled"" = EXCLUDED.""SoundsEnabled"",
+                                                    ""PlayerFov"" = EXCLUDED.""PlayerFov"",
+                                                    ""IsVip"" = EXCLUDED.""IsVip"",
+                                                    ""BigGifID"" = EXCLUDED.""BigGifID"",
+                                                    ""GlobalPoints"" = EXCLUDED.""GlobalPoints"";
+                                                    ";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value))
@@ -841,7 +891,7 @@ namespace SharpTimer
                                 Server.NextFrame(() => SharpTimerDebug($"No player stats yet"));
                                 await row.CloseAsync();
 
-                                string upsertQuery = @"REPLACE INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value))
@@ -1053,7 +1103,25 @@ namespace SharpTimer
                                 // Update or insert the record
 
                                 // string upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, GlobalPoints) VALUES (@PlayerName, @SteamID, @GlobalPoints)";
-                                string upsertQuery = @"REPLACE INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = @"
+                                                    INSERT INTO ""PlayerStats"" 
+                                                    (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"")
+                                                    VALUES 
+                                                    (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)
+                                                    ON CONFLICT (""SteamID"")
+                                                    DO UPDATE SET
+                                                    ""PlayerName"" = EXCLUDED.""PlayerName"",
+                                                    ""TimesConnected"" = EXCLUDED.""TimesConnected"",
+                                                    ""LastConnected"" = EXCLUDED.""LastConnected"",
+                                                    ""HideTimerHud"" = EXCLUDED.""HideTimerHud"",
+                                                    ""HideKeys"" = EXCLUDED.""HideKeys"",
+                                                    ""HideJS"" = EXCLUDED.""HideJS"",
+                                                    ""SoundsEnabled"" = EXCLUDED.""SoundsEnabled"",
+                                                    ""PlayerFov"" = EXCLUDED.""PlayerFov"",
+                                                    ""IsVip"" = EXCLUDED.""IsVip"",
+                                                    ""BigGifID"" = EXCLUDED.""BigGifID"",
+                                                    ""GlobalPoints"" = EXCLUDED.""GlobalPoints"";
+                                                    ";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value) || playerSlot == -1)
@@ -1092,7 +1160,7 @@ namespace SharpTimer
                                                                         : (Convert.ToInt32(CalculatePoints(timerTicks)! - CalculatePoints(oldTicks)) * globalPointsMultiplier! + playerPoints + (310 * (bonusX == 0 ? mapTier : mapTier * 0.5))));
                                 await row.CloseAsync();
 
-                                string upsertQuery = @"REPLACE INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value) || playerSlot == -1)
