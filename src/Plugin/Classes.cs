@@ -112,6 +112,7 @@ namespace SharpTimer
         public bool IsTimerRunning { get; set; }
 
         public bool IsOnBhopBlock { get; set; }
+        public bool IsNoclip { get; set; }
         public bool IsTimerBlocked { get; set; }
         public int TimerTicks { get; set; }
         public bool IsBonusTimerRunning { get; set; }
@@ -167,7 +168,6 @@ namespace SharpTimer
         public string? VipBigGif { get; set; }
 
         //admin stuff
-        public bool IsNoclipEnabled { get; set; }
         public bool IsAddingStartZone { get; set; }
         public bool IsAddingBonusStartZone { get; set; }
         public string? StartZoneC1 { get; set; }

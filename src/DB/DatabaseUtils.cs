@@ -1552,7 +1552,7 @@ namespace SharpTimer
                             // Get the top N records based on TimerTicks
                             selectQuery = @"SELECT ""SteamID"", ""PlayerName"", ""TimerTicks"" " +
                                             @"FROM ""PlayerRecords"" " +
-                                            @"WHERE ""MapName"" = ""@MapName"" " +
+                                            @"WHERE ""MapName"" = @MapName " +
                                             @"ORDER BY ""TimerTicks"" ASC " +
                                             $"LIMIT 1 OFFSET {top10 - 1};";
                         }

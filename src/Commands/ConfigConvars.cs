@@ -801,6 +801,15 @@ namespace SharpTimer
             startzoneJumping = bool.TryParse(args, out bool startzoneJumpingValue) ? startzoneJumpingValue : args != "0" && startzoneJumping;
         }
 
+        [ConsoleCommand("sharptimer_enable_noclip", "Enable or disable noclip for regular players. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnableNoclipConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            enableNoclip = bool.TryParse(args, out bool enableNoclipValue) ? enableNoclipValue : args != "0" && enableNoclip;
+        }
+
         [ConsoleCommand("sharptimer_remote_data_bhop", "Override for bhop remote_data")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerRemoteDataOverrideBhop(CCSPlayerController? player, CommandInfo command)

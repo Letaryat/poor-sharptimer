@@ -19,6 +19,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Modules.Memory;
 
 
 namespace SharpTimer
@@ -1096,6 +1097,42 @@ namespace SharpTimer
             playerTimers[player.Slot].BonusTimerTicks = 0;
 
             Server.NextFrame(() => RespawnPlayer(player, true));
+        }
+
+        [ConsoleCommand("css_noclip", "Noclip")]
+        [ConsoleCommand("css_nc", "Noclip")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void NoclipCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (enableNoclip == false) return;
+            SharpTimerDebug($"{player!.PlayerName} calling css_noclip...");
+
+            if (playerTimers[player.Slot].IsReplaying)
+            {
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+                return;
+            }
+
+            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            playerTimers[player.Slot].IsTimerRunning = false;
+            playerTimers[player.Slot].TimerTicks = 0;
+            playerTimers[player.Slot].IsBonusTimerRunning = false;
+            playerTimers[player.Slot].BonusTimerTicks = 0;
+
+            if (player!.Pawn.Value!.MoveType == MoveType_t.MOVETYPE_NOCLIP)
+		    {
+			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_WALK;
+			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
+			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
+                playerTimers[player.Slot].IsNoclip = false;
+		    }
+		    else
+		    {
+			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NOCLIP;
+			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
+			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
+                playerTimers[player.Slot].IsNoclip = true;
+		    }   
         }
 
         public void RespawnPlayer(CCSPlayerController? player, bool toEnd = false)

@@ -26,7 +26,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.2.9b";
+        public override string ModuleVersion => $"0.2.9c";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -128,6 +128,7 @@ namespace SharpTimer
         public bool helpEnabled = true;
         public bool alternativeSpeedometer = false;
         public bool startzoneJumping = true;
+        public bool enableNoclip = false;
         public bool removeLegsEnabled = false;
         public bool hideAllPlayers = false;
         public bool removeCollisionEnabled = true;
