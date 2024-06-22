@@ -26,7 +26,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.2.9e";
+        public override string ModuleVersion => $"0.2.9f";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -96,6 +96,7 @@ namespace SharpTimer
         public string? currentMapType = null;
         public int? currentMapTier = null;
 
+        public bool isLinux = true;
         public bool enableDebug = true;
         public bool killServerCommands = true;
         public bool useMySQL = false;
@@ -158,7 +159,6 @@ namespace SharpTimer
         public int altVeloMaxSpeed = 3000;
         public bool forcePlayerSpeedEnabled = false;
         public float forcedPlayerSpeed = 250;
-
         public int bhopBlockTime = 16;
 
         public bool jumpStatsEnabled = false;

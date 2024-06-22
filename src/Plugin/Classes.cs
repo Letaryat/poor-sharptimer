@@ -119,6 +119,8 @@ namespace SharpTimer
         public int BonusTimerTicks { get; set; }
         public int BonusStage { get; set; }
         public bool inStartzone { get; set; }
+        public int currentStyle { get; set; }
+        public bool changedStyle { get; set; }
 
         //replay
         public bool IsReplaying { get; set; }
@@ -232,6 +234,7 @@ namespace SharpTimer
     {
         public int CurrentPlaybackFrame { get; set; }
         public int BonusX { get; set; }
+        public int Style { get; set; }
         public List<ReplayFrames> replayFrames { get; set; } = [];
 
         public class ReplayFrames

@@ -17,6 +17,7 @@ using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
+using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 
 namespace SharpTimer
@@ -82,6 +83,7 @@ namespace SharpTimer
                         string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{secondaryHUDcolor}'>{formattedPlayerVel}</font><font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> u/s</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre} u/s)</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
                         string infoLine = !playerTimer.IsReplaying
                                             ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>🏆 {playerTimer.CachedPB} " + $"({playerTimer.CachedMapPlacement}) | </font>" + $"{playerTimer.RankHUDIcon} <font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                                              $" | {GetNamedStyle(playerTimer.currentStyle)}" +
                                               $"{(currentMapTier != null ? $" | Tier: {currentMapTier}" : "")}" +
                                               $"{(currentMapType != null ? $" | {currentMapType}" : "")}" +
                                               $"{((currentMapType == null && currentMapTier == null) ? $" | {currentMapName} " : "")} </font>"
@@ -93,6 +95,14 @@ namespace SharpTimer
                                                 $"{((playerButtons & PlayerButtons.Back) != 0 ? "S" : "_")} " +
                                                 $"{((playerButtons & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.OldJumpPressed ? "J" : "_")} " +
                                                 $"{((playerButtons & PlayerButtons.Duck) != 0 ? "C" : "_")}";
+
+                        if (!startzoneJumping && playerTimers[player.Slot].inStartzone)
+                        {
+                            if((playerButtons & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.OldJumpPressed)
+                            {
+                                player!.Pawn.Value!.AbsVelocity.Z = 0f;
+                            }
+                        }
 
                         if (playerTimer.MovementService!.OldJumpPressed == true) playerTimer.MovementService.OldJumpPressed = false;
 
@@ -116,12 +126,9 @@ namespace SharpTimer
                             playerTimer.BonusTimerTicks++;
                         }
 
-                        if(!startzoneJumping && playerTimer.inStartzone)
+                        if(playerTimer.currentStyle.Equals(4))
                         {
-                            if(!player.PlayerPawn.Value.GroundEntity.IsValid && player!.PlayerPawn.Value!.AbsVelocity.Z > 0f)
-                            {
-                                player!.PlayerPawn.Value!.AbsVelocity.Z = 0f;
-                            }
+                            SetVelocity(player, player!.Pawn.Value!.AbsVelocity, 400);
                         }
 
                         if (isOnBhopBlock)
@@ -160,7 +167,7 @@ namespace SharpTimer
                             var playerName = player.PlayerName;
                             var steamID = player.SteamID.ToString();
                             SharpTimerDebug($"{playerName} has rank and pb null... calling handler");
-                            _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true));
+                            _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true, playerTimer.currentStyle));
 
                             playerTimer.IsRankPbCached = true;
                         }
@@ -171,8 +178,16 @@ namespace SharpTimer
                             var playerName = player.PlayerName;
                             var steamID = player.SteamID.ToString();
                             SharpTimerDebug($"{playerName} CachedMapPlacement is still null, calling rank handler once more");
-                            AddTimer(3.0f, () => { _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true)); });                           
+                            AddTimer(3.0f, () => { _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true, playerTimer.currentStyle)); });                           
                             playerTimer.IsRankPbReallyCached = true;
+                        }
+
+                        if (playerTimer.changedStyle)
+                        {
+                            var playerName = player.PlayerName;
+                            var steamID = player.SteamID.ToString();
+                            _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true, playerTimer.currentStyle));                           
+                            playerTimer.changedStyle = false;
                         }
 
                         if (hideAllPlayers == true)

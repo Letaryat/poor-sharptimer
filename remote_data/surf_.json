@@ -1,4 +1,8 @@
 {
+    "surf_newbie": {
+        "Tier": 2,
+        "Type": "Staged"
+    },
     "surf_race": {
         "Tier": 1,
         "Type": "Staged"
@@ -288,6 +292,10 @@
         "Type": "Linear"
     },
     "surf_leet_xl": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
+    "surf_leet_xl_beta7z": {
         "Tier": 1,
         "Type": "Linear"
     },
@@ -808,7 +816,7 @@
         "Type": "Staged"
     },
     "surf_lullaby": {
-        "Tier": 2,
+        "Tier": 1,
         "Type": "Linear"
     },
     "surf_mate": {
@@ -1208,6 +1216,10 @@
         "Type": "Staged"
     },
     "surf_cyka": {
+        "Tier": 3,
+        "Type": "Staged"
+    },
+    "surf_cyka_ksf": {
         "Tier": 3,
         "Type": "Staged"
     },

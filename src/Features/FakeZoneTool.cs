@@ -27,7 +27,7 @@ namespace SharpTimer
     public partial class SharpTimer
     {
         [ConsoleCommand("css_addstartzone", "Adds a startzone to the mapdata.json file")]
-        [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/cheats")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void AddStartZoneCommand(CCSPlayerController? player, CommandInfo command)
         {
@@ -52,7 +52,7 @@ namespace SharpTimer
         }
 
         [ConsoleCommand("css_addbonusstartzone", "Adds a bonus startzone to the mapdata.json file")]
-        [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/cheats")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void AddBonusStartZoneCommand(CCSPlayerController? player, CommandInfo command)
         {
@@ -77,7 +77,7 @@ namespace SharpTimer
         }
 
         [ConsoleCommand("css_addendzone", "Adds a endzone to the mapdata.json file")]
-        [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/cheats")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void AddEndZoneCommand(CCSPlayerController? player, CommandInfo command)
         {
@@ -102,7 +102,7 @@ namespace SharpTimer
         }
 
         [ConsoleCommand("css_addbonusendzone", "Adds a endzone to the mapdata.json file")]
-        [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/cheats")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void AddBonusEndZoneCommand(CCSPlayerController? player, CommandInfo command)
         {
@@ -127,7 +127,7 @@ namespace SharpTimer
         }
 
         [ConsoleCommand("css_addrespawnpos", "Adds a RespawnPos to the mapdata.json file")]
-        [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/cheats")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void AddRespawnPosCommand(CCSPlayerController? player, CommandInfo command)
         {
@@ -143,7 +143,7 @@ namespace SharpTimer
         }
 
         [ConsoleCommand("css_addbonusrespawnpos", "Adds a RespawnPos to the mapdata.json file")]
-        [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/cheats")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void AddBonusRespawnPosCommand(CCSPlayerController? player, CommandInfo command)
         {
@@ -159,7 +159,7 @@ namespace SharpTimer
         }
 
         [ConsoleCommand("css_savezones", "Saves defined zones")]
-        [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/cheats")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void SaveZonesCommand(CCSPlayerController? player, CommandInfo command)
         {
@@ -191,7 +191,7 @@ namespace SharpTimer
         }
 
         [ConsoleCommand("css_savebonuszones", "Saves defined zones")]
-        [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/cheats")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void SaveBonusZonesCommand(CCSPlayerController? player, CommandInfo command)
         {

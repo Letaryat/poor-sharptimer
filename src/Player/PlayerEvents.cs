@@ -62,6 +62,7 @@ namespace SharpTimer
                     if (jumpStatsEnabled) playerJumpStats[playerSlot] = new PlayerJumpStats();
                     playerTimers[playerSlot].CurrentMapStage = 0;
                     playerTimers[playerSlot].CurrentMapCheckpoint = 0;
+                    SetNormalStyle(player);
                     playerTimers[playerSlot].IsRecordingReplay = false;
                     playerTimers[playerSlot].SetRespawnPos = null;
                     playerTimers[playerSlot].SetRespawnAng = null;

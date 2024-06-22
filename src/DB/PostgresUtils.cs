@@ -50,7 +50,8 @@ namespace SharpTimer
                                                     @"""FormattedTime"" VARCHAR(255) DEFAULT ''",
                                                     @"""UnixStamp"" INT DEFAULT 0",
                                                     @"""LastFinished"" INT DEFAULT 0",
-                                                    @"""TimesFinished"" INT DEFAULT 0"
+                                                    @"""TimesFinished"" INT DEFAULT 0", 
+                                                    @"""Style"" INT DEFAULT 0"
                                                 ];
 
             string[] playerStatsColumns = [   @"""SteamID"" VARCHAR(20) DEFAULT ''",
@@ -80,7 +81,6 @@ namespace SharpTimer
                     SharpTimerDebug($"Checking PlayerStats Table...");
                     await CreatePostgresPlayerStatsTableAsync(connection);
                     await UpdatePostgresTableColumnsAsync(connection, "PlayerStats", playerStatsColumns);
-                    await connection.CloseAsync();
                 }
                 catch (Exception ex)
                 {
@@ -96,8 +96,10 @@ namespace SharpTimer
                 foreach (string columnDefinition in columns)
                 {
                     string columnName = columnDefinition.Split(' ')[0];
+                    SharpTimerDebug($"checking {columnName}");
                     if (!await PostgresColumnExistsAsync(connection, tableName, columnName))
                     {
+                        SharpTimerDebug($"column {columnName} does not exist");
                         await AddPostgresColumnToTableAsync(connection, tableName, columnDefinition);
                     }
                 }
@@ -124,7 +126,7 @@ namespace SharpTimer
 
         private async Task<bool> PostgresColumnExistsAsync(NpgsqlConnection connection, string tableName, string columnName)
         {
-            string query = $@"SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '""{tableName}""' AND column_name = '""{columnName}""'";
+            string query = $@"SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '{tableName}' AND column_name = '{columnName}'";
             using (NpgsqlCommand command = new(query, connection))
             {
                 try
@@ -142,7 +144,12 @@ namespace SharpTimer
 
         private async Task AddPostgresColumnToTableAsync(NpgsqlConnection connection, string tableName, string columnDefinition)
         {
-            string query = $@"ALTER TABLE ""{tableName}"" ADD COLUMN ""{columnDefinition}""";
+            var parts = columnDefinition.Split(new[] { ' ' }, 2);
+            var columnName = parts[0].Trim('"'); // Remove any existing quotes around the column name
+            var columnTypeAndConstraints = parts.Length > 1 ? parts[1] : "";
+
+                // Construct the SQL query with the column name and type/constraints separated
+            string query = $@"ALTER TABLE ""{tableName}"" ADD ""{columnName}"" {columnTypeAndConstraints}";
             using (NpgsqlCommand command = new(query, connection))
             {
                 try
@@ -167,7 +174,8 @@ namespace SharpTimer
                                             ""UnixStamp"" INT,
                                             ""TimesFinished"" INT,
                                             ""LastFinished"" INT,
-                                            PRIMARY KEY (""MapName"", ""SteamID"")
+                                            ""Style"" INT,
+                                            PRIMARY KEY (""MapName"", ""SteamID"", ""Style"")
                                         )";
             using (var createTableCommand = new NpgsqlCommand(createTableQuery, connection))
             {

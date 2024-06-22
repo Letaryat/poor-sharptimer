@@ -219,11 +219,12 @@ namespace SharpTimer
             }
         }
 
-        public double CalculatePoints(int timerTicks)
+        public double CalculatePoints(int timerTicks, int style)
         {
             double basePoints = 10000.0;
             double timeFactor = 0.0001;
             double tierMult = 0.1;
+            double styleMult = GetStyleMultiplier(style);
 
             if (currentMapTier != null)
             {
@@ -231,14 +232,15 @@ namespace SharpTimer
             }
 
             double points = basePoints / (timerTicks * timeFactor);
-            return points * tierMult;
+            return points * tierMult * styleMult;
         }
 
-        public double CalculatePBPoints(int timerTicks)
+        public double CalculatePBPoints(int timerTicks, int style)
         {
             double basePoints = 10000.0;
             double timeFactor = 0.01;
             double tierMult = 0.1;
+            double styleMult = GetStyleMultiplier(style);
 
             if (currentMapTier != null)
             {
@@ -246,7 +248,7 @@ namespace SharpTimer
             }
 
             double points = basePoints / (timerTicks * timeFactor);
-            return points * tierMult;
+            return points * tierMult * styleMult;
         }
 
         static string ReplaceVars(string loc_string, params string[] args)
@@ -830,6 +832,7 @@ namespace SharpTimer
 
                     if (removeCrouchFatigueEnabled == true) Server.ExecuteCommand("sv_timebetweenducks 0");
                     if(usePostgres) _ = Task.Run(async () => await CheckPostgresTablesAsync());
+                    if(useMySQL) _ = Task.Run(async () => await CheckTablesAsync());
                     //bonusRespawnPoses.Clear();
                     bonusRespawnAngs.Clear();
 
