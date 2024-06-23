@@ -73,9 +73,6 @@ namespace SharpTimer
 
             currentMapName = Server.MapName;
 
-            if(usePostgres) _ = Task.Run(async () => await CheckPostgresTablesAsync());
-            if(useMySQL) _ = Task.Run(async () => await CheckTablesAsync());
-
             RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);
 
             RegisterEventHandler<EventPlayerConnectFull>((@event, info) =>

@@ -99,6 +99,7 @@ namespace SharpTimer
                     string columnName = columnDefinition.Split(' ')[0];
                     if (!await ColumnExistsAsync(connection, tableName, columnName))
                     {
+                        SharpTimerDebug($"Adding column {columnName} to {tableName}...");
                         await AddColumnToTableAsync(connection, tableName, columnDefinition);
                     }
                 }
@@ -495,16 +496,19 @@ namespace SharpTimer
                                 // Update or insert the record
                                 string upsertQuery = @"
                                                     INSERT INTO PlayerRecords 
-                                                    (MapName, SteamID, PlayerName, TimerTicks, LastFinished, TimesFinished, FormattedTime, UnixStamp, Style) 
+                                                    (MapName, SteamID, PlayerName, TimerTicks, LastFinished, TimesFinished, FormattedTime, UnixStamp, Style)
                                                     VALUES 
                                                     (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)
-                                                    ON DUPLICATE KEY UPDATE 
-                                                    PlayerName = VALUES(PlayerName), 
-                                                    TimerTicks = VALUES(TimerTicks), 
-                                                    LastFinished = VALUES(LastFinished), 
-                                                    TimesFinished = VALUES(TimesFinished), 
-                                                    FormattedTime = VALUES(FormattedTime), 
-                                                    UnixStamp = VALUES(UnixStamp);
+                                                    ON CONFLICT (MapName, SteamID, Style)
+                                                    DO UPDATE SET
+                                                    MapName = EXCLUDED.MapName,
+                                                    PlayerName = EXCLUDED.PlayerName,
+                                                    TimerTicks = EXCLUDED.TimerTicks,
+                                                    LastFinished = EXCLUDED.LastFinished,
+                                                    TimesFinished = EXCLUDED.TimesFinished,
+                                                    FormattedTime = EXCLUDED.FormattedTime,
+                                                    UnixStamp = EXCLUDED.UnixStamp,
+                                                    Style = EXCLUDED.Style;
                                                     ";
                                 using (var upsertCommand = new MySqlCommand(upsertQuery, connection))
                                 {
