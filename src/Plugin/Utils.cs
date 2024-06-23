@@ -831,8 +831,7 @@ namespace SharpTimer
                     }
 
                     if (removeCrouchFatigueEnabled == true) Server.ExecuteCommand("sv_timebetweenducks 0");
-                    if(usePostgres) _ = Task.Run(async () => await CheckPostgresTablesAsync());
-                    if(useMySQL) _ = Task.Run(async () => await CheckTablesAsync());
+
                     //bonusRespawnPoses.Clear();
                     bonusRespawnAngs.Clear();
 

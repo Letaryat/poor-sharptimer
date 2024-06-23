@@ -159,7 +159,19 @@ namespace SharpTimer
 
         private async Task AddConstraintsToRecordsTableAsync(MySqlConnection connection, string tableName)
         {
+            string dropquery = $"ALTER TABLE {tableName} DROP PRIMARY KEY";
             string query = $"ALTER TABLE {tableName} ADD CONSTRAINT pk_Records PRIMARY KEY (MapName, SteamID, Style)";
+            using (MySqlCommand command = new(dropquery, connection))
+            {
+                try
+                {
+                    await command.ExecuteNonQueryAsync();
+                }
+                catch (Exception ex)
+                {
+                    SharpTimerError($"Error removing previous constraints: {ex.Message}");
+                }
+            }
             using (MySqlCommand command = new(query, connection))
             {
                 try
@@ -168,7 +180,7 @@ namespace SharpTimer
                 }
                 catch (Exception ex)
                 {
-                    SharpTimerDebug($"Table already has primary key constraint");
+                    SharpTimerError($"Error setting constraints: {ex.Message}");
                 }
             }
         }
