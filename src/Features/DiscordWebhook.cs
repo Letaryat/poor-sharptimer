@@ -17,6 +17,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Xml;
+using CounterStrikeSharp.API.Core;
 
 namespace SharpTimer
 {
@@ -53,7 +54,7 @@ namespace SharpTimer
             }
         }
 
-        public async Task DiscordRecordMessage(string playerName, string runTime, string steamID, string placement, int timesFinished, bool isSR = false, string timeDifference = "", int bonusX = 0)
+        public async Task DiscordRecordMessage(CCSPlayerController? player, string playerName, string runTime, string steamID, string placement, int timesFinished, bool isSR = false, string timeDifference = "", int bonusX = 0)
         {
             try
             {
@@ -147,6 +148,11 @@ namespace SharpTimer
                                 {
                                     name = "🛈 SteamID64:",
                                     value = $"[{steamID}](https://steamcommunity.com/profiles/{steamID})"
+                                },
+                                new
+                                {
+                                    name = "🛹 Style:",
+                                    value = $"{GetNamedStyle(playerTimers[player.Slot].currentStyle)}"
                                 }
                             },
                             author = new

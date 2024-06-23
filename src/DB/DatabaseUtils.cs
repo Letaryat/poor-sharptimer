@@ -499,16 +499,15 @@ namespace SharpTimer
                                                     (MapName, SteamID, PlayerName, TimerTicks, LastFinished, TimesFinished, FormattedTime, UnixStamp, Style)
                                                     VALUES 
                                                     (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)
-                                                    ON CONFLICT (MapName, SteamID, Style)
-                                                    DO UPDATE SET
-                                                    MapName = EXCLUDED.MapName,
-                                                    PlayerName = EXCLUDED.PlayerName,
-                                                    TimerTicks = EXCLUDED.TimerTicks,
-                                                    LastFinished = EXCLUDED.LastFinished,
-                                                    TimesFinished = EXCLUDED.TimesFinished,
-                                                    FormattedTime = EXCLUDED.FormattedTime,
-                                                    UnixStamp = EXCLUDED.UnixStamp,
-                                                    Style = EXCLUDED.Style;
+                                                    ON DUPLICATE KEY UPDATE
+                                                    MapName = VALUES(MapName),
+                                                    PlayerName = VALUES(PlayerName),
+                                                    TimerTicks = VALUES(TimerTicks),
+                                                    LastFinished = VALUES(LastFinished),
+                                                    TimesFinished = VALUES(TimesFinished),
+                                                    FormattedTime = VALUES(FormattedTime),
+                                                    UnixStamp = VALUES(UnixStamp),
+                                                    Style = VALUES(Style);
                                                     ";
                                 using (var upsertCommand = new MySqlCommand(upsertQuery, connection))
                                 {
