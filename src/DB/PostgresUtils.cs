@@ -76,6 +76,7 @@ namespace SharpTimer
                     SharpTimerDebug($"Checking PlayerRecords Table...");
                     await CreatePostgresPlayerRecordsTableAsync(connection);
                     await UpdatePostgresTableColumnsAsync(connection, "PlayerRecords", playerRecordsColumns);
+                    await AddConstraintsToPostgresRecordsTableAsync(connection, "PlayerRecords");
 
                     // Check PlayerStats
                     SharpTimerDebug($"Checking PlayerStats Table...");
@@ -96,7 +97,7 @@ namespace SharpTimer
                 foreach (string columnDefinition in columns)
                 {
                     string columnName = columnDefinition.Split(' ')[0];
-                    SharpTimerDebug($"checking {columnName}");
+
                     if (!await PostgresColumnExistsAsync(connection, tableName, columnName))
                     {
                         SharpTimerDebug($"column {columnName} does not exist");
@@ -145,10 +146,9 @@ namespace SharpTimer
         private async Task AddPostgresColumnToTableAsync(NpgsqlConnection connection, string tableName, string columnDefinition)
         {
             var parts = columnDefinition.Split(new[] { ' ' }, 2);
-            var columnName = parts[0].Trim('"'); // Remove any existing quotes around the column name
+            var columnName = parts[0].Trim('"');
             var columnTypeAndConstraints = parts.Length > 1 ? parts[1] : "";
 
-                // Construct the SQL query with the column name and type/constraints separated
             string query = $@"ALTER TABLE ""{tableName}"" ADD ""{columnName}"" {columnTypeAndConstraints}";
             using (NpgsqlCommand command = new(query, connection))
             {
@@ -159,6 +159,21 @@ namespace SharpTimer
                 catch (Exception ex)
                 {
                     SharpTimerError($"Error in AddPostgresColumnToTableAsync: {ex.Message}");
+                }
+            }
+        }
+        private async Task AddConstraintsToPostgresRecordsTableAsync(NpgsqlConnection connection, string tableName)
+        {
+            string query = $@"ALTER TABLE ""{tableName}"" ADD CONSTRAINT pk_Records PRIMARY KEY (""MapName"", ""SteamID"", ""Style"")";
+            using (NpgsqlCommand command = new(query, connection))
+            {
+                try
+                {
+                    await command.ExecuteNonQueryAsync();
+                }
+                catch (Exception ex)
+                {
+                    SharpTimerDebug($"Table already has primary key constraint");
                 }
             }
         }

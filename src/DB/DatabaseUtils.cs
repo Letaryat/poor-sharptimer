@@ -76,6 +76,7 @@ namespace SharpTimer
                     SharpTimerDebug($"Checking PlayerRecords Table...");
                     await CreatePlayerRecordsTableAsync(connection);
                     await UpdateTableColumnsAsync(connection, "PlayerRecords", playerRecordsColumns);
+                    await AddConstraintsToRecordsTableAsync(connection, "PlayerRecords");
 
                     // Check PlayerStats
                     SharpTimerDebug($"Checking PlayerStats Table...");
@@ -152,6 +153,22 @@ namespace SharpTimer
                 catch (Exception ex)
                 {
                     SharpTimerError($"Error in AddColumnToTableAsync: {ex.Message}");
+                }
+            }
+        }
+
+        private async Task AddConstraintsToRecordsTableAsync(MySqlConnection connection, string tableName)
+        {
+            string query = $"ALTER TABLE {tableName} ADD CONSTRAINT pk_Records PRIMARY KEY (MapName, SteamID, Style)";
+            using (MySqlCommand command = new(query, connection))
+            {
+                try
+                {
+                    await command.ExecuteNonQueryAsync();
+                }
+                catch (Exception ex)
+                {
+                    SharpTimerDebug($"Table already has primary key constraint");
                 }
             }
         }
@@ -464,7 +481,19 @@ namespace SharpTimer
 
                                 await row.CloseAsync();
                                 // Update or insert the record
-                                string upsertQuery = @"REPLACE INTO PlayerRecords (MapName, SteamID, PlayerName, TimerTicks, LastFinished, TimesFinished, FormattedTime, UnixStamp, Style) VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)";
+                                string upsertQuery = @"
+                                                    INSERT INTO PlayerRecords 
+                                                    (MapName, SteamID, PlayerName, TimerTicks, LastFinished, TimesFinished, FormattedTime, UnixStamp, Style) 
+                                                    VALUES 
+                                                    (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)
+                                                    ON DUPLICATE KEY UPDATE 
+                                                    PlayerName = VALUES(PlayerName), 
+                                                    TimerTicks = VALUES(TimerTicks), 
+                                                    LastFinished = VALUES(LastFinished), 
+                                                    TimesFinished = VALUES(TimesFinished), 
+                                                    FormattedTime = VALUES(FormattedTime), 
+                                                    UnixStamp = VALUES(UnixStamp);
+                                                    ";
                                 using (var upsertCommand = new MySqlCommand(upsertQuery, connection))
                                 {
                                     upsertCommand.Parameters.AddWithValue("@MapName", currentMapNamee);
