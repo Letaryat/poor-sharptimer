@@ -126,7 +126,7 @@ namespace SharpTimer
                             playerTimer.BonusTimerTicks++;
                         }
 
-                        if(playerTimer.currentStyle.Equals(4))
+                        if(playerTimer.currentStyle.Equals(4)) //check if 400vel
                         {
                             SetVelocity(player, player!.Pawn.Value!.AbsVelocity, 400);
                         }

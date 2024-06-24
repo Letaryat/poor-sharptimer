@@ -26,7 +26,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.2.9j";
+        public override string ModuleVersion => $"0.2.9k";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -130,6 +130,7 @@ namespace SharpTimer
         public bool alternativeSpeedometer = false;
         public bool startzoneJumping = true;
         public bool enableNoclip = false;
+        public bool enableStyles = true;
         public bool removeLegsEnabled = false;
         public bool hideAllPlayers = false;
         public bool removeCollisionEnabled = true;
@@ -160,6 +161,14 @@ namespace SharpTimer
         public bool forcePlayerSpeedEnabled = false;
         public float forcedPlayerSpeed = 250;
         public int bhopBlockTime = 16;
+        public double lowgravPointModifier = 1.1;
+        public double sidewaysPointModifier = 1.3;
+        public double onlywPointModifier = 1.33;
+        public double onlyaPointModifier = 1.33;
+        public double onlysPointModifier = 1.33;
+        public double onlydPointModifier = 1.33;
+        public double velPointModifier = 1.5;
+        public double highgravPointModifier = 1.3;
 
         public bool jumpStatsEnabled = false;
         public float jumpStatsMinDist = 175;
@@ -168,6 +177,8 @@ namespace SharpTimer
         public float movementUnlockerCapValue = 250;
 
         public bool execCustomMapCFG = false;
+
+        public bool sqlCheck = false;
 
         public string beepSound = "sounds/ui/csgo_ui_button_rollover_large.vsnd";
         public string respawnSound = "sounds/ui/menu_accept.vsnd";

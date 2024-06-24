@@ -293,6 +293,27 @@ namespace SharpTimer
                         baseCmd.DisableForwardMove(); //set forward move to 0 ONLY if player is moving backwards; ie: disable s
                         return HookResult.Changed;
                     }
+                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(6) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Right") || getMovementButton.Contains("Backward"))) //only a
+                    {
+                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1048); //disable backward (16) + forward (8) + right (1024) = 1048
+                        baseCmd.DisableSideMove(); //disable only right movement
+                        baseCmd.DisableForwardMove(); //disable forward movement
+                        return HookResult.Changed;
+                    }
+                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(7) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Left") || getMovementButton.Contains("Backward"))) //only d
+                    {
+                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 536); //disable backward (16) + forward (8) + left (512) = 536
+                        baseCmd.DisableSideMove(); //disable only left movement
+                        baseCmd.DisableForwardMove(); //disable forward movement
+                        return HookResult.Changed;
+                    }
+                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(8) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Left") || getMovementButton.Contains("Right"))) //only s
+                    {
+                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1544); //disable right (1024) + forward (8) + left (512) = 1544
+                        baseCmd.DisableSideMove(); //disable side movement
+                        baseCmd.DisableForwardMove(); //disable only forward movement
+                        return HookResult.Changed;
+                    }
                     return HookResult.Changed;
                 }
                 catch (Exception ex)

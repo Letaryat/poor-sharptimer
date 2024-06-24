@@ -1179,6 +1179,11 @@ namespace SharpTimer
                 player.PrintToChat(msgPrefix + $" Styles are currently not supported on local records :(");
                 return;
             }
+            if(!enableStyles)
+            {
+                player.PrintToChat(msgPrefix + $" Styles are currently disabled on this server");
+                return;
+            }
 
             SharpTimerDebug($"{player!.PlayerName} calling css_style...");
 
@@ -1211,7 +1216,7 @@ namespace SharpTimer
                     case 3:
                         SetNormalStyle(player);
                         SetOnlyW(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}W-Only");
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyW");
                         break;
                     case 4:
                         SetNormalStyle(player);
@@ -1222,6 +1227,21 @@ namespace SharpTimer
                         SetNormalStyle(player);
                         SetHighGravity(player);
                         player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}High-Gravity");
+                        break;
+                    case 6:
+                        SetNormalStyle(player);
+                        SetOnlyA(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyA");
+                        break;
+                    case 7:
+                        SetNormalStyle(player);
+                        SetOnlyD(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyD");
+                        break;
+                    case 8:
+                        SetNormalStyle(player);
+                        SetOnlyS(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyS");
                         break;
                     default:
                         player.PrintToChat(msgPrefix + $" Style {desiredStyleInt} does not exist");
@@ -1269,12 +1289,42 @@ namespace SharpTimer
                     case "wonly":
                         SetNormalStyle(player);
                         SetOnlyW(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}W-Only");
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyW");
                         break;
                     case "onlyw":
                         SetNormalStyle(player);
                         SetOnlyW(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}W-Only");
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyW");
+                        break;
+                    case "aonly":
+                        SetNormalStyle(player);
+                        SetOnlyA(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyA");
+                        break;
+                    case "onlya":
+                        SetNormalStyle(player);
+                        SetOnlyA(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyA");
+                        break;
+                    case "donly":
+                        SetNormalStyle(player);
+                        SetOnlyD(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyD");
+                        break;
+                    case "onlyd":
+                        SetNormalStyle(player);
+                        SetOnlyD(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyD");
+                        break;
+                    case "sonly":
+                        SetNormalStyle(player);
+                        SetOnlyS(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyS");
+                        break;
+                    case "onlys":
+                        SetNormalStyle(player);
+                        SetOnlyS(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyS");
                         break;
                     case "400vel":
                         SetNormalStyle(player);
@@ -1299,9 +1349,14 @@ namespace SharpTimer
                 player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
                 return;
             }
+            if(!enableStyles)
+            {
+                player.PrintToChat(msgPrefix + $" Styles are currently disabled on this server");
+                return;
+            }
 
             SharpTimerDebug($"{player!.PlayerName} calling css_styles...");
-            for (int i = 0; i < 6; i++) //runs 6 times for the 6 styles (i=0-5)
+            for (int i = 0; i < 9; i++) //runs 9 times for the 9 styles (i=0-8)
             {
                 player.PrintToChat(msgPrefix + $"[Style] {primaryChatColor}{GetNamedStyle(i)}");
             }

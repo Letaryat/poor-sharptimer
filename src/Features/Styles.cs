@@ -51,6 +51,21 @@ namespace SharpTimer
             playerTimers[player.Slot].currentStyle = 3; // 3 = only w
             playerTimers[player.Slot].changedStyle = true;
         }
+        public void SetOnlyA(CCSPlayerController player)
+        {
+            playerTimers[player.Slot].currentStyle = 6; // 6 = only a
+            playerTimers[player.Slot].changedStyle = true;
+        }
+        public void SetOnlyD(CCSPlayerController player)
+        {
+            playerTimers[player.Slot].currentStyle = 7; // 7 = only d
+            playerTimers[player.Slot].changedStyle = true;
+        }
+        public void SetOnlyS(CCSPlayerController player)
+        {
+            playerTimers[player.Slot].currentStyle = 8; // 8 = only s
+            playerTimers[player.Slot].changedStyle = true;
+        }
 
         public void Set400Vel(CCSPlayerController player)
         {
@@ -64,8 +79,7 @@ namespace SharpTimer
             if(currentVel.X < -desiredVel) player!.PlayerPawn.Value!.AbsVelocity.X = -desiredVel;
             if(currentVel.Y > desiredVel) player!.PlayerPawn.Value!.AbsVelocity.Y = desiredVel;
             if(currentVel.Y < -desiredVel) player!.PlayerPawn.Value!.AbsVelocity.Y = -desiredVel;
-            if(currentVel.Z > desiredVel) player!.PlayerPawn.Value!.AbsVelocity.Z = desiredVel;
-            if(currentVel.Z < -desiredVel) player!.PlayerPawn.Value!.AbsVelocity.Z = -desiredVel;
+            //do not cap z velocity
         }
 
 
@@ -86,6 +100,12 @@ namespace SharpTimer
                     return "400vel";
                 case 5:
                     return "High Gravity";
+                case 6:
+                    return "OnlyA";
+                case 7:
+                    return "OnlyD";
+                case 8:
+                    return "OnlyS";
                 default:
                     return "null";
             }
@@ -97,15 +117,21 @@ namespace SharpTimer
                 case 0:
                     return 1; // 1.0x for normal
                 case 1:
-                    return 1.1; //1.1x for lowgrav
+                    return lowgravPointModifier; //1.1x for lowgrav
                 case 2:
-                    return 1.3; // 1.3x for sideways
+                    return sidewaysPointModifier; // 1.3x for sideways
                 case 3:
-                    return 1.33; // 1.33x for onlyw
+                    return onlywPointModifier; // 1.33x for onlyw
                 case 4:
-                    return 1.5; // 1.5x for 400vel
+                    return velPointModifier; // 1.5x for 400vel
                 case 5:
-                    return 1.3; // 1.3x for highgrav
+                    return highgravPointModifier; // 1.3x for highgrav
+                case 6:
+                    return onlyaPointModifier; // 1.33x for onlya
+                case 7:
+                    return onlydPointModifier; // 1.33x for onlyd
+                case 8:
+                    return onlysPointModifier; // 1.33x for onlys
                 default:
                     return 1;
             }
