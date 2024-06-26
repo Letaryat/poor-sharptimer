@@ -1511,7 +1511,7 @@ namespace SharpTimer
                                 if (isVip)
                                 {
                                     Server.NextFrame(() => SharpTimerDebug($"Replay is VIP setting gif..."));
-                                    value.VipReplayGif = $"<br><img src='{vipGifHost}/{row.GetString("BigGifID")}.gif'><br>";
+                                    value.VipReplayGif = $"<br><img src='https://files.catbox.moe/{row.GetString("BigGifID")}.gif'><br>";
                                 }
                                 else
                                 {
@@ -1563,7 +1563,7 @@ namespace SharpTimer
                                 if (isVip)
                                 {
                                     Server.NextFrame(() => SharpTimerDebug($"Replay is VIP setting gif..."));
-                                    value.VipReplayGif = $"<br><img src='{vipGifHost}/{row.GetString("BigGifID")}.gif'><br>";
+                                    value.VipReplayGif = $"<br><img src='https://files.catbox.moe/{row.GetString("BigGifID")}.gif'><br>";
                                 }
                                 else
                                 {

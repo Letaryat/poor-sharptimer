@@ -109,7 +109,7 @@ namespace SharpTimer
                         string hudContent = (hudEnabled ? timerLine + veloLine + infoLine : "") +
                                             (keyEnabled ? keysLineNoHtml : "") +
                                             ((playerTimer.IsTester && !playerTimer.IsReplaying) ? $"{(!keyEnabled ? "<br>" : "")}" + playerTimer.TesterBigGif : "") +
-                                            ((playerTimer.IsVip && !playerTimer.IsTester && !playerTimer.IsReplaying) ? $"{(!keyEnabled ? "<br><br>" : "")}" + $"<br><img src='{vipGifHost}/{playerTimer.VipBigGif}.gif'><br>" : "") +
+                                            ((playerTimer.IsVip && !playerTimer.IsTester && !playerTimer.IsReplaying) ? $"{(!keyEnabled ? "<br><br>" : "")}" + $"<br><img src='https://files.catbox.moe/{playerTimer.VipBigGif}.gif'><br>" : "") +
                                             ((playerTimer.IsReplaying && playerTimer.VipReplayGif != "x") ? playerTimer.VipReplayGif : "");
 
                         if (hudEnabled || keyEnabled)
@@ -341,7 +341,7 @@ namespace SharpTimer
                     string hudContent = (hudEnabled ? timerLine + veloLine + infoLine : "") +
                                         (keyEnabled ? keysLineNoHtml : "") +
                                         ((playerTimer.IsTester && !playerTimer.IsReplaying) ? playerTimer.TesterBigGif : "") +
-                                        ((playerTimer.IsVip && !playerTimer.IsTester && !playerTimer.IsReplaying) ? $"<br><img src='{vipGifHost}/{playerTimer.VipBigGif}.gif'><br>" : "") +
+                                        ((playerTimer.IsVip && !playerTimer.IsTester && !playerTimer.IsReplaying) ? $"<br><img src='https://files.catbox.moe/{playerTimer.VipBigGif}.gif'><br>" : "") +
                                         ((playerTimer.IsReplaying && playerTimer.VipReplayGif != "x") ? playerTimer.VipReplayGif : "");
 
                     if (hudEnabled || keyEnabled)

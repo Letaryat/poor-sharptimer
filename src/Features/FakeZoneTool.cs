@@ -229,6 +229,16 @@ namespace SharpTimer
             Server.ExecuteCommand("mp_restartgame 1");
         }
 
+        [ConsoleCommand("css_reloadzones", "Reloads zones")]
+        [RequiresPermissions("@css/cheats")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void ReloadZonesCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            Server.ExecuteCommand("mp_restartgame 1");
+        }
+
 
         public void OnTickZoneTool(CCSPlayerController? player)
         {

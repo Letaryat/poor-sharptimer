@@ -26,7 +26,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.2.9k";
+        public override string ModuleVersion => $"0.2.9";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -114,7 +114,7 @@ namespace SharpTimer
         public bool displayChatTags = true;
         public bool displayScoreboardTags = true;
         public string customVIPTag = "VIP";
-        public string vipGifHost = "https://files.catbox.moe";
+        //public string vipGifHost = "https://files.catbox.moe";
 
         public bool useTriggers = true;
 
@@ -181,10 +181,11 @@ namespace SharpTimer
         public bool sqlCheck = false;
 
         public string beepSound = "sounds/ui/csgo_ui_button_rollover_large.vsnd";
-        public string respawnSound = "sounds/ui/menu_accept.vsnd";
+        public string respawnSound = "sounds/buttons/button8.vsnd";
         public string cpSound = "sounds/ui/counter_beep.vsnd";
         public string cpSoundAir = "sounds/ui/weapon_cant_buy.vsnd";
         public string tpSound = "sounds/ui/buttonclick.vsnd";
+        public string pbSound = "sounds/buttons/bell1.vsnd";
         public string? gameDir;
         public string? mySQLpath;
         public string? postgresPath;

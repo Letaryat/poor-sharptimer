@@ -115,6 +115,8 @@ namespace SharpTimer
 
             if (!ignoreJSON) SavePlayerTime(player, currentTicks);
             if (useMySQL || usePostgres) _ = Task.Run(async () => await SavePlayerTimeToDatabase(player, currentTicks, steamID, playerName, playerSlot, 0, playerTimer.currentStyle));
+            if (IsAllowedPlayer(player) && playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {pbSound}");
+
             //if (enableReplays == true) _ = Task.Run(async () => await DumpReplayToJson(player!, steamID, playerSlot));
             playerTimer.IsTimerRunning = false;
             playerTimer.IsRecordingReplay = false;
@@ -136,6 +138,7 @@ namespace SharpTimer
 
             if (!ignoreJSON) SavePlayerTime(player, currentTicks, bonusX);
             if (useMySQL || usePostgres) _ = Task.Run(async () => await SavePlayerTimeToDatabase(player, currentTicks, steamID, playerName, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
+            if (IsAllowedPlayer(player) && playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {pbSound}");
             //if (enableReplays == true) _ = Task.Run(async () => await DumpReplayToJson(player!, steamID, playerSlot, bonusX));
             playerTimers[player.Slot].IsBonusTimerRunning = false;
             playerTimers[player.Slot].IsRecordingReplay = false;
@@ -183,7 +186,7 @@ namespace SharpTimer
                             string updatedJson = JsonSerializer.Serialize(records, jsonSerializerOptions);
                             File.WriteAllText(mapRecordsPath, updatedJson);
 
-                            if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && (!useMySQL || !usePostgres)) _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot));
+                            if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && (!useMySQL || !usePostgres) && playerTimers[player.Slot].currentStyle == 0) _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot));
                             if (enableReplays == true && !useMySQL && !usePostgres) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
                         }
                         else

@@ -141,6 +141,7 @@ namespace SharpTimer
                                     $"{msgPrefix} Type {primaryChatColor}!sounds{ChatColors.Default} to toggle timer sounds!",
                                     $"{msgPrefix} Type {primaryChatColor}!hud{ChatColors.Default} to toggle timer hud!",
                                     $"{msgPrefix} Type {primaryChatColor}!keys{ChatColors.Default} to toggle hud keys!",
+                                    $"{msgPrefix} Type {primaryChatColor}!styles{ChatColors.Default} to list all available styles!",
                                     $"{(jumpStatsEnabled ? $"{msgPrefix} Type {primaryChatColor}!jumpstats{ChatColors.Default} to toggle JumpStats!" : "")}"];
 
                     var nonEmptyAds = adMessages.Where(ad => !string.IsNullOrEmpty(ad)).ToArray();

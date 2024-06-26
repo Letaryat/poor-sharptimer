@@ -869,6 +869,35 @@ namespace SharpTimer
 
                 playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
+                //defaults to !b 1 without any args
+                if(command.ArgString == null || command.ArgString == "")
+                {
+                    if (bonusRespawnPoses[1] != null)
+                    {
+                        if (bonusRespawnAngs.TryGetValue(1, out QAngle? bonusAng) && bonusAng != null)
+                        {
+                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, bonusRespawnAngs[1]!, new Vector(0, 0, 0));
+                        }
+                        else
+                        {
+                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, new QAngle(player.PlayerPawn.Value.EyeAngles.X, player.PlayerPawn.Value.EyeAngles.Y, player.PlayerPawn.Value.EyeAngles.Z) ?? new QAngle(0, 0, 0), new Vector(0, 0, 0));
+                        }
+                        SharpTimerDebug($"{player.PlayerName} css_rb {1} to {bonusRespawnPoses[1]}");
+                    }
+                    else
+                    {
+                        player.PrintToChat(msgPrefix + $" {ChatColors.LightRed} No RespawnBonusPos with index {1} found for current map!");
+                    }
+                    Server.NextFrame(() =>
+                    {
+                        playerTimers[player.Slot].IsTimerRunning = false;
+                        playerTimers[player.Slot].TimerTicks = 0;
+                        playerTimers[player.Slot].IsBonusTimerRunning = false;
+                        playerTimers[player.Slot].BonusTimerTicks = 0;
+                    });
+                    return;
+                }
+
                 if (!int.TryParse(command.ArgString, out int bonusX))
                 {
                     SharpTimerDebug("css_rb conversion failed. The input string is not a valid integer.");
