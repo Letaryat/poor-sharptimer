@@ -90,6 +90,8 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 [**Web panel** *(optional but recommended)*](https://github.com/Letaryat/sharptimer-web-panel)
 
+[**SharpTimer-WallLists** *(optional but recommended)*](https://github.com/M-archand/SharpTimer-WallLists/tree/PointsList)
+
 
 ## Install
 * Download the [latest release](https://github.com/Letaryat/poor-sharptimer/releases),
