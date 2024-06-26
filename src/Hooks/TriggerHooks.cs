@@ -89,6 +89,10 @@ namespace SharpTimer
 
                 if (IsValidStartTriggerName(callerName))
                 {
+                    if(playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
+                    {
+                        playerTimer.inStartzone = true;
+                    }
                     if (!playerTimers[playerSlot].IsTimerBlocked)
                     {
                         playerCheckpoints.Remove(playerSlot);
@@ -126,7 +130,7 @@ namespace SharpTimer
                     {
                         playerCheckpoints.Remove(playerSlot);
                     }
-                    
+
                     InvalidateTimer(player, callerHandle);
 
                     if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxStartingSpeed) ||
@@ -190,7 +194,7 @@ namespace SharpTimer
 
                 if (caller.Entity.Name.ToString() == "bhop_block" && IsAllowedPlayer(player) && !playerTimers[player.Slot].IsTimerBlocked)
                 {
-                    playerTimers[player.Slot].IsOnBhopBlock = false; 
+                    playerTimers[player.Slot].IsOnBhopBlock = false;
                     playerTimers[player.Slot].TicksOnBhopBlock = 0;
 
                     return HookResult.Continue;
@@ -198,6 +202,10 @@ namespace SharpTimer
 
                 if (IsValidStartTriggerName(callerName) && !playerTimers[playerSlot].IsTimerBlocked)
                 {
+                    if(playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
+                    {
+                        playerTimer.inStartzone = false;
+                    }
                     OnTimerStart(player);
                     if (enableReplays) OnRecordingStart(player);
 

@@ -162,7 +162,7 @@ namespace SharpTimer
             enableSRreplayBot = bool.TryParse(args, out bool enableSRreplayBotValue) ? enableSRreplayBotValue : args != "0" && enableSRreplayBot;
         }
 
-        [ConsoleCommand("sharptimer_vip_gif_host", "URL where VIP gifs are being hosted on. Default: 'https://files.catbox.moe'")]
+        /*[ConsoleCommand("sharptimer_vip_gif_host", "URL where VIP gifs are being hosted on. Default: 'https://files.catbox.moe'")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerVipGifHost(CCSPlayerController? player, CommandInfo command)
         {
@@ -175,7 +175,7 @@ namespace SharpTimer
             }
 
             vipGifHost = $"{args}";
-        }
+        }*/
 
         [ConsoleCommand("sharptimer_jumpstats_enabled", "Whether JumpStats are enabled or not. Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
@@ -346,6 +346,15 @@ namespace SharpTimer
             string args = command.ArgString;
 
             useMySQL = bool.TryParse(args, out bool useMySQLValue) ? useMySQLValue : args != "0" && useMySQL;
+        }
+
+        [ConsoleCommand("sharptimer_postgres_enabled", "Whether player times should be put into a postgres database by default or not. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerPostgresConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            usePostgres = bool.TryParse(args, out bool usePostgresValue) ? usePostgresValue : args != "0" && usePostgres;
         }
 
         [ConsoleCommand("sharptimer_discordwebhook_enabled", "Whether player PBs or SRs should be printed into a discord channel or not. Default value: false")]
@@ -780,6 +789,168 @@ namespace SharpTimer
             else
             {
                 SharpTimerConPrint("Invalid fake trigger height value. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_allow_startzone_jump", "Enable or disable jumping in startzone. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerStartzoneJumpConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            startzoneJumping = bool.TryParse(args, out bool startzoneJumpingValue) ? startzoneJumpingValue : args != "0" && startzoneJumping;
+        }
+
+        [ConsoleCommand("sharptimer_enable_noclip", "Enable or disable noclip for regular players. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnableNoclipConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            enableNoclip = bool.TryParse(args, out bool enableNoclipValue) ? enableNoclipValue : args != "0" && enableNoclip;
+        }
+
+        [ConsoleCommand("sharptimer_styles_enabled", "Enable or disable styles. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnableStylesConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            enableStyles = bool.TryParse(args, out bool enableStylesValue) ? enableStylesValue : args != "0" && enableStyles;
+        }
+
+        [ConsoleCommand("sharptimer_style_multiplier_lowgrav", "Point modifier for lowgrav. Default value: 1.1")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerLowGravMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                lowgravPointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer low grav point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid low grav point modifier. Please provide a positive integer.");
+            }
+        }
+        [ConsoleCommand("sharptimer_style_multiplier_sideways", "Point modifier for sidways. Default value: 1.3")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSidewaysMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                sidewaysPointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer sideways point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid sideways point modifier. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_style_multiplier_onlyw", "Point modifier for onlyw. Default value: 1.33")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerOnlyWMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                onlywPointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer onlyw point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid onlyw point modifier. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_style_multiplier_onlya", "Point modifier for onlya. Default value: 1.33")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerOnlyAMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                onlyaPointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer onlya point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid onlya point modifier. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_style_multiplier_onlyw", "Point modifier for onlys. Default value: 1.33")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerOnlySMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                onlysPointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer onlys point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid onlys point modifier. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_style_multiplier_onlyw", "Point modifier for onlyd. Default value: 1.33")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerOnlyDMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                onlydPointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer onlyd point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid onlyd point modifier. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_style_multiplier_400vel", "Point modifier for 400vel. Default value: 1.5")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimer400velConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                velPointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer 400vel point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid 400vel point modifier. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_style_multiplier_highgrav", "Point modifier for 400vel. Default value: 1.3")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerHighGravConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                highgravPointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer highgrav point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid highgrav point modifier. Please provide a positive integer.");
             }
         }
 

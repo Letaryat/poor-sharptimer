@@ -19,6 +19,8 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Modules.Memory;
+using System.Drawing;
 
 
 namespace SharpTimer
@@ -70,6 +72,8 @@ namespace SharpTimer
             var steamID = player.SteamID.ToString();
             var playerName = player.PlayerName;
 
+            QuietStopTimer(player);
+
             if (!playerTimers[playerSlot].IsTimerBlocked)
             {
                 player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
@@ -98,6 +102,8 @@ namespace SharpTimer
             var steamID = player.SteamID.ToString();
             var playerName = player.PlayerName;
 
+            QuietStopTimer(player);
+
             if (!playerTimers[playerSlot].IsTimerBlocked)
             {
                 player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
@@ -110,7 +116,7 @@ namespace SharpTimer
                 return;
             }
 
-            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "self", steamID, playerName));
+            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "self", steamID, playerName, 0, playerTimers[playerSlot].currentStyle));
         }
 
         [ConsoleCommand("css_replaysr", "Replay server map record")]
@@ -121,6 +127,8 @@ namespace SharpTimer
 
             var playerSlot = player!.Slot;
 
+            QuietStopTimer(player);
+
             if (!playerTimers[playerSlot].IsTimerBlocked)
             {
                 player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
@@ -133,7 +141,7 @@ namespace SharpTimer
                 return;
             }
 
-            _ = Task.Run(async () => await ReplayHandler(player, playerSlot));
+            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "1", "69", "unknown", 0, playerTimers[playerSlot].currentStyle));
         }
 
         [ConsoleCommand("css_replaytop", "Replay a top 10 server map record")]
@@ -143,6 +151,8 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || enableReplays == false) return;
 
             var playerSlot = player!.Slot;
+
+            QuietStopTimer(player);
 
             if (!playerTimers[playerSlot].IsTimerBlocked)
             {
@@ -158,7 +168,7 @@ namespace SharpTimer
 
             string arg = command.ArgByIndex(1);
 
-            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, arg));
+            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, arg, "69", "unknown", 0, playerTimers[playerSlot].currentStyle));
         }
 
         [ConsoleCommand("css_replayb", "Replay a top 10 server bonus record")]
@@ -169,6 +179,8 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || enableReplays == false) return;
 
             var playerSlot = player!.Slot;
+
+            QuietStopTimer(player);
 
             if (!playerTimers[playerSlot].IsTimerBlocked)
             {
@@ -185,9 +197,9 @@ namespace SharpTimer
             string arg = command.ArgByIndex(1);
             string arg2 = command.ArgByIndex(2);
 
-            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, arg, "69", "unknown", Int16.Parse(arg2)));
+            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, arg, "69", "unknown", Int16.Parse(arg2), playerTimers[playerSlot].currentStyle));
         }
-        
+
         [ConsoleCommand("css_replaybpb", "Replay your bonus pb")]
         [ConsoleCommand("css_replaybonuspb", "Replay your bonus pb")]
         [CommandHelper(minArgs: 1, usage: "[bonus stage]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
@@ -198,6 +210,8 @@ namespace SharpTimer
             var playerSlot = player!.Slot;
             var steamID = player.SteamID.ToString();
             var playerName = player.PlayerName;
+
+            QuietStopTimer(player);
 
             if (!playerTimers[playerSlot].IsTimerBlocked)
             {
@@ -214,10 +228,10 @@ namespace SharpTimer
             string arg = command.ArgByIndex(1);
             int bonusX = Int16.Parse(arg);
 
-            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "self", steamID, playerName, bonusX));
+            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "self", steamID, playerName, bonusX, playerTimers[playerSlot].currentStyle));
         }
 
-        public async Task ReplayHandler(CCSPlayerController player, int playerSlot, string arg = "1", string pbSteamID = "69", string playerName = "unknown", int bonusX = 0)
+        public async Task ReplayHandler(CCSPlayerController player, int playerSlot, string arg = "1", string pbSteamID = "69", string playerName = "unknown", int bonusX = 0, int style = 0)
         {
             bool self = false;
 
@@ -238,9 +252,9 @@ namespace SharpTimer
 
             if (!self)
             {
-                if (useMySQL)
+                if (useMySQL || usePostgres)
                 {
-                    (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase(bonusX, top10);
+                    (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase(bonusX, top10, style);
                 }
                 else
                 {
@@ -252,14 +266,15 @@ namespace SharpTimer
             if ((srSteamID == "null" || srPlayerName == "null" || srTime == "null") && !self)
             {
                 Server.NextFrame(() => player.PrintToChat(msgPrefix + $"No Server Record to replay!"));
+                playerTimers[player.Slot].IsTimerBlocked = false;
                 return;
             }
 
-            await ReadReplayFromJson(player, !self ? srSteamID : pbSteamID, playerSlot, bonusX);
+            await ReadReplayFromJson(player, !self ? srSteamID : pbSteamID, playerSlot, bonusX, style);
 
             if (playerReplays[playerSlot].replayFrames.Count == 0) return;
 
-            if (useMySQL) await GetReplayVIPGif(!self ? srSteamID : pbSteamID, playerSlot);
+            if (useMySQL || usePostgres) await GetReplayVIPGif(!self ? srSteamID : pbSteamID, playerSlot);
 
             playerTimers[playerSlot].IsReplaying = !playerTimers[playerSlot].IsReplaying;
             playerTimers[playerSlot].ReplayHUDString = !self ? $"{srPlayerName} | {srTime}" : $"{playerName} | {playerTimers[playerSlot].CachedPB}";
@@ -305,6 +320,7 @@ namespace SharpTimer
                 RespawnPlayerCommand(player, command);
                 playerReplays.Remove(playerSlot);
                 playerReplays[playerSlot] = new PlayerReplays();
+                playerTimers[playerSlot].IsTimerBlocked = false;
                 playerTimers[playerSlot].IsTimerRunning = false;
                 playerTimers[playerSlot].TimerTicks = 0;
                 playerTimers[playerSlot].IsBonusTimerRunning = false;
@@ -374,7 +390,7 @@ namespace SharpTimer
             player.PrintToChat(msgPrefix + $" Hud is now: {(playerTimers[playerSlot].HideTimerHud ? $"{ChatColors.Red} Hidden" : $"{ChatColors.Green} Shown")}");
             SharpTimerDebug($"Hide Timer HUD set to: {playerTimers[playerSlot].HideTimerHud} for {playerName}");
 
-            if (useMySQL == true)
+            if (useMySQL || usePostgres)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -409,7 +425,7 @@ namespace SharpTimer
             player.PrintToChat(msgPrefix + $" Keys are now: {(playerTimers[playerSlot].HideKeys ? $"{ChatColors.Red} Hidden" : $"{ChatColors.Green} Shown")}");
             SharpTimerDebug($"Hide Timer HUD set to: {playerTimers[playerSlot].HideKeys} for {playerName}");
 
-            if (useMySQL == true)
+            if (useMySQL || usePostgres)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -445,7 +461,7 @@ namespace SharpTimer
             player.PrintToChat(msgPrefix + $"Sounds are now:{(playerTimers[playerSlot].SoundsEnabled ? $"{ChatColors.Green} ON" : $"{ChatColors.Red} OFF")}");
             SharpTimerDebug($"Timer Sounds set to: {playerTimers[playerSlot].SoundsEnabled} for {playerName}");
 
-            if (useMySQL == true)
+            if (useMySQL || usePostgres)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -480,7 +496,7 @@ namespace SharpTimer
             player.PrintToChat(msgPrefix + $"Jump Stats are now:{(playerTimers[playerSlot].HideJumpStats ? $"{ChatColors.Red} Hidden" : $"{ChatColors.Green} Shown")}");
             SharpTimerDebug($"Hide Jump Stats set to: {playerTimers[playerSlot].HideJumpStats} for {playerName}");
 
-            if (useMySQL == true)
+            if (useMySQL || usePostgres)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -497,14 +513,15 @@ namespace SharpTimer
         }
         public void HideWeapon(CCSPlayerController? player)
         {
-            if(!player.PlayerPawn!.Value.WeaponServices.ActiveWeapon.IsValid){
+            if (!player!.PlayerPawn.Value!.WeaponServices!.ActiveWeapon.IsValid)
+            {
                 player.GiveNamedItem("weapon_usp_silencer");
                 player.GiveNamedItem("weapon_knife");
             }
             else
             {
-                player.RemoveWeapons(); 
-            }     
+                player.RemoveWeapons();
+            }
         }
         [ConsoleCommand("css_fov", "Sets the player's FOV")]
         [CommandHelper(minArgs: 1, usage: "[fov]")]
@@ -528,6 +545,10 @@ namespace SharpTimer
 
             if (noMySql == false) playerTimers[player.Slot].PlayerFov = desiredFov;
             if (useMySQL == true && noMySql == false)
+            {
+                _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
+            }
+            if (usePostgres == true && noMySql == false)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -558,7 +579,7 @@ namespace SharpTimer
 
             var mapName = command.ArgByIndex(1);
 
-            _ = Task.Run(async () => await PrintTopRecordsHandler(player, playerName, 0, string.IsNullOrEmpty(mapName) ? "" : mapName));
+            _ = Task.Run(async () => await PrintTopRecordsHandler(player, playerName, 0, string.IsNullOrEmpty(mapName) ? "" : mapName, playerTimers[player.Slot].currentStyle));
         }
 
         [ConsoleCommand("css_points", "Prints top points")]
@@ -619,7 +640,7 @@ namespace SharpTimer
             _ = Task.Run(async () => await PrintTopRecordsHandler(player, playerName, bonusX));
         }
 
-        public async Task PrintTopRecordsHandler(CCSPlayerController? player, string playerName, int bonusX = 0, string mapName = "")
+        public async Task PrintTopRecordsHandler(CCSPlayerController? player, string playerName, int bonusX = 0, string mapName = "", int style = 0)
         {
             if (!IsAllowedPlayer(player) || topEnabled == false) return;
             SharpTimerDebug($"Handling !top for {playerName}");
@@ -631,9 +652,9 @@ namespace SharpTimer
                 currentMapNamee = mapName;
 
             Dictionary<string, PlayerRecord> sortedRecords;
-            if (useMySQL == true)
+            if (useMySQL || usePostgres)
             {
-                sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, mapName);
+                sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, mapName, style);
             }
             else
             {
@@ -649,7 +670,7 @@ namespace SharpTimer
                 return;
             }
 
-            List<string> printStatements = [$"{msgPrefix} Top 10 Records for{(bonusX != 0 ? $" Bonus {bonusX} on" : "")} {currentMapNamee}:"];
+            List<string> printStatements = [$"{msgPrefix} Top 10 {GetNamedStyle(style)} Records for{(bonusX != 0 ? $" Bonus {bonusX} on" : "")} {currentMapNamee}:"];
 
             int rank = 1;
 
@@ -702,7 +723,7 @@ namespace SharpTimer
             _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName));
         }
 
-        public async Task RankCommandHandler(CCSPlayerController? player, string steamId, int playerSlot, string playerName, bool sendRankToHUD = false)
+        public async Task RankCommandHandler(CCSPlayerController? player, string steamId, int playerSlot, string playerName, bool sendRankToHUD = false, int style = 0)
         {
             try
             {
@@ -715,11 +736,11 @@ namespace SharpTimer
                 //SharpTimerDebug($"Handling !rank for {playerName}...");
 
                 string ranking, rankIcon, mapPlacement, serverPoints = "", serverPlacement = "";
-                bool useGlobalRanks = useMySQL && globalRanksEnabled;
+                bool useGlobalRanks = (useMySQL || usePostgres) && globalRanksEnabled;
 
-                ranking = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName);
-                rankIcon = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName, true) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, true);
-                mapPlacement = await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, true);
+                ranking = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, false, 0, style);
+                rankIcon = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName, true) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, true, false, 0, style);
+                mapPlacement = await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, true, style);
 
                 if (useGlobalRanks)
                 {
@@ -727,7 +748,7 @@ namespace SharpTimer
                     serverPlacement = await GetPlayerServerPlacement(player, steamId, playerName, false, true, false);
                 }
 
-                int pbTicks = useMySQL ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName) : await GetPreviousPlayerRecord(player, steamId);
+                int pbTicks = (useMySQL || usePostgres) ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName, 0, style) : await GetPreviousPlayerRecord(player, steamId, 0, style);
 
                 Server.NextFrame(() =>
                 {
@@ -792,7 +813,7 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || rankEnabled == false) return;
             SharpTimerDebug($"Handling !sr for {_playerName}...");
             Dictionary<string, PlayerRecord> sortedRecords;
-            if (useMySQL == false)
+            if (!useMySQL && !usePostgres)
             {
                 sortedRecords = await GetSortedRecords();
             }
@@ -847,6 +868,35 @@ namespace SharpTimer
                 }
 
                 playerTimers[player.Slot].TicksSinceLastCmd = 0;
+
+                //defaults to !b 1 without any args
+                if(command.ArgString == null || command.ArgString == "")
+                {
+                    if (bonusRespawnPoses[1] != null)
+                    {
+                        if (bonusRespawnAngs.TryGetValue(1, out QAngle? bonusAng) && bonusAng != null)
+                        {
+                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, bonusRespawnAngs[1]!, new Vector(0, 0, 0));
+                        }
+                        else
+                        {
+                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, new QAngle(player.PlayerPawn.Value.EyeAngles.X, player.PlayerPawn.Value.EyeAngles.Y, player.PlayerPawn.Value.EyeAngles.Z) ?? new QAngle(0, 0, 0), new Vector(0, 0, 0));
+                        }
+                        SharpTimerDebug($"{player.PlayerName} css_rb {1} to {bonusRespawnPoses[1]}");
+                    }
+                    else
+                    {
+                        player.PrintToChat(msgPrefix + $" {ChatColors.LightRed} No RespawnBonusPos with index {1} found for current map!");
+                    }
+                    Server.NextFrame(() =>
+                    {
+                        playerTimers[player.Slot].IsTimerRunning = false;
+                        playerTimers[player.Slot].TimerTicks = 0;
+                        playerTimers[player.Slot].IsBonusTimerRunning = false;
+                        playerTimers[player.Slot].BonusTimerTicks = 0;
+                    });
+                    return;
+                }
 
                 if (!int.TryParse(command.ArgString, out int bonusX))
                 {
@@ -1056,13 +1106,26 @@ namespace SharpTimer
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
-                return;
+                player.PrintToChat(msgPrefix + $" Ending Replay!");
+                playerTimers[player.Slot].IsReplaying = false;
+                if (player.PlayerPawn.Value!.MoveType != MoveType_t.MOVETYPE_WALK || player.PlayerPawn.Value.ActualMoveType == MoveType_t.MOVETYPE_WALK) SetMoveType(player, MoveType_t.MOVETYPE_WALK);
+                RespawnPlayer(player);
+                playerReplays.Remove(player.Slot);
+                playerReplays[player.Slot] = new PlayerReplays();
+                playerTimers[player.Slot].IsTimerBlocked = false;
+                playerTimers[player.Slot].IsTimerRunning = false;
+                playerTimers[player.Slot].TimerTicks = 0;
+                playerTimers[player.Slot].IsBonusTimerRunning = false;
+                playerTimers[player.Slot].BonusTimerTicks = 0;
+                playerReplays[player.Slot].CurrentPlaybackFrame = 0;
+                if (stageTriggers.Count != 0) playerTimers[player.Slot].StageTimes!.Clear(); //remove previous stage times if the map has stages
+                if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear(); //remove previous stage times if the map has stages
             }
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
-
-            RespawnPlayer(player);
+            else
+            {
+                playerTimers[player.Slot].TicksSinceLastCmd = 0;
+                RespawnPlayer(player);
+            }
         }
 
         [ConsoleCommand("css_end", "Teleports you to end")]
@@ -1093,6 +1156,240 @@ namespace SharpTimer
             Server.NextFrame(() => RespawnPlayer(player, true));
         }
 
+        [ConsoleCommand("css_noclip", "Noclip")]
+        [ConsoleCommand("css_nc", "Noclip")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void NoclipCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (enableNoclip == false) return;
+            SharpTimerDebug($"{player!.PlayerName} calling css_noclip...");
+
+            if (playerTimers[player.Slot].IsReplaying)
+            {
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+                return;
+            }
+
+            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            playerTimers[player.Slot].IsTimerRunning = false;
+            playerTimers[player.Slot].TimerTicks = 0;
+            playerTimers[player.Slot].IsBonusTimerRunning = false;
+            playerTimers[player.Slot].BonusTimerTicks = 0;
+
+            if (player!.Pawn.Value!.MoveType == MoveType_t.MOVETYPE_NOCLIP)
+		    {
+			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_WALK;
+			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
+			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
+                playerTimers[player.Slot].IsNoclip = false;
+		    }
+		    else
+		    {
+			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NOCLIP;
+			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
+			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
+                playerTimers[player.Slot].IsNoclip = true;
+		    }   
+        }
+
+        [ConsoleCommand("css_style", "Enable style")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void StyleCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            if (playerTimers[player!.Slot].IsReplaying)
+            {
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+                return;
+            }
+            if(!usePostgres && !useMySQL)
+            {
+                player.PrintToChat(msgPrefix + $" Styles are currently not supported on local records :(");
+                return;
+            }
+            if(!enableStyles)
+            {
+                player.PrintToChat(msgPrefix + $" Styles are currently disabled on this server");
+                return;
+            }
+
+            SharpTimerDebug($"{player!.PlayerName} calling css_style...");
+
+            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            playerTimers[player.Slot].IsTimerRunning = false;
+            playerTimers[player.Slot].TimerTicks = 0;
+            playerTimers[player.Slot].IsBonusTimerRunning = false;
+            playerTimers[player.Slot].BonusTimerTicks = 0;
+            
+            var desiredStyle = command.GetArg(1);
+
+            if (Int32.TryParse(command.GetArg(1), out var desiredStyleInt)) 
+            {
+                switch(desiredStyleInt)
+                {
+                    case 0:
+                        SetNormalStyle(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Normal");
+                        break;
+                    case 1:
+                        SetNormalStyle(player);
+                        SetLowGravity(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Low-Gravity");
+                        break;
+                    case 2:
+                        SetNormalStyle(player);
+                        SetSideways(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Sideways");
+                        break;
+                    case 3:
+                        SetNormalStyle(player);
+                        SetOnlyW(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyW");
+                        break;
+                    case 4:
+                        SetNormalStyle(player);
+                        Set400Vel(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}400vel");
+                        break;
+                    case 5:
+                        SetNormalStyle(player);
+                        SetHighGravity(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}High-Gravity");
+                        break;
+                    case 6:
+                        SetNormalStyle(player);
+                        SetOnlyA(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyA");
+                        break;
+                    case 7:
+                        SetNormalStyle(player);
+                        SetOnlyD(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyD");
+                        break;
+                    case 8:
+                        SetNormalStyle(player);
+                        SetOnlyS(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyS");
+                        break;
+                    default:
+                        player.PrintToChat(msgPrefix + $" Style {desiredStyleInt} does not exist");
+                        break;
+                }
+            }
+            else
+            {
+                switch(desiredStyle.ToLower())
+                {
+                    case "normal":
+                        SetNormalStyle(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Normal");
+                        break;
+                    case "lowgravity":
+                        SetNormalStyle(player);
+                        SetLowGravity(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Low-Gravity");
+                        break;
+                    case "highgravity":
+                        SetNormalStyle(player);
+                        SetHighGravity(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}High-Gravity");
+                        break;
+                    case "highgrav":
+                        SetNormalStyle(player);
+                        SetHighGravity(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}High-Gravity");
+                        break;
+                    case "lowgrav":
+                        SetNormalStyle(player);
+                        SetLowGravity(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Low-Gravity");
+                        break;
+                    case "sideways":
+                        SetNormalStyle(player);
+                        SetSideways(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Sideways");
+                        break;
+                    case "sw":
+                        SetNormalStyle(player);
+                        SetSideways(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Sideways");
+                        break;
+                    case "wonly":
+                        SetNormalStyle(player);
+                        SetOnlyW(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyW");
+                        break;
+                    case "onlyw":
+                        SetNormalStyle(player);
+                        SetOnlyW(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyW");
+                        break;
+                    case "aonly":
+                        SetNormalStyle(player);
+                        SetOnlyA(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyA");
+                        break;
+                    case "onlya":
+                        SetNormalStyle(player);
+                        SetOnlyA(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyA");
+                        break;
+                    case "donly":
+                        SetNormalStyle(player);
+                        SetOnlyD(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyD");
+                        break;
+                    case "onlyd":
+                        SetNormalStyle(player);
+                        SetOnlyD(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyD");
+                        break;
+                    case "sonly":
+                        SetNormalStyle(player);
+                        SetOnlyS(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyS");
+                        break;
+                    case "onlys":
+                        SetNormalStyle(player);
+                        SetOnlyS(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyS");
+                        break;
+                    case "400vel":
+                        SetNormalStyle(player);
+                        Set400Vel(player);
+                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}400vel");
+                        break;
+                    default:
+                        player.PrintToChat(msgPrefix + $" Style {desiredStyle} does not exist");
+                        break;
+                }
+            }
+        }
+
+        [ConsoleCommand("css_styles", "List styles")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void ListStylesCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            if (playerTimers[player!.Slot].IsReplaying)
+            {
+                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+                return;
+            }
+            if(!enableStyles)
+            {
+                player.PrintToChat(msgPrefix + $" Styles are currently disabled on this server");
+                return;
+            }
+
+            SharpTimerDebug($"{player!.PlayerName} calling css_styles...");
+            for (int i = 0; i < 9; i++) //runs 9 times for the 9 styles (i=0-8)
+            {
+                player.PrintToChat(msgPrefix + $"[Style] {primaryChatColor}{GetNamedStyle(i)}");
+            }
+        }
         public void RespawnPlayer(CCSPlayerController? player, bool toEnd = false)
         {
             try
@@ -1249,6 +1546,21 @@ namespace SharpTimer
             if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear(); //remove previous stage times if the map has stages
             if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {beepSound}");
             SharpTimerDebug($"{player.PlayerName} css_timer to {playerTimers[player.Slot].IsTimerBlocked}");
+        }
+
+        public void QuietStopTimer(CCSPlayerController? player)
+        {
+            playerCheckpoints.Remove(player.Slot);
+
+            playerTimers[player.Slot].IsTimerBlocked = true;
+            playerTimers[player.Slot].IsRecordingReplay = false;
+            playerTimers[player.Slot].IsTimerRunning = false;
+            playerTimers[player.Slot].TimerTicks = 0;
+            playerTimers[player.Slot].IsBonusTimerRunning = false;
+            playerTimers[player.Slot].BonusTimerTicks = 0;
+
+            if (stageTriggers.Count != 0) playerTimers[player.Slot].StageTimes!.Clear();
+            if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear();
         }
 
         [ConsoleCommand("css_stver", "Prints SharpTimer Version")]
@@ -1555,9 +1867,10 @@ namespace SharpTimer
                 // Convert position and rotation strings to Vector and QAngle
                 Vector position = ParseVector(previousCheckpoint.PositionString ?? "0 0 0");
                 QAngle rotation = ParseQAngle(previousCheckpoint.RotationString ?? "0 0 0");
+                Vector speed = ParseVector(previousCheckpoint.SpeedString ?? "0 0 0");
 
                 // Teleport the player to the previous checkpoint, including the saved rotation
-                player.PlayerPawn.Value!.Teleport(position, rotation, new Vector(0, 0, 0));
+                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
                 // Play a sound or provide feedback to the player
                 if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {tpSound}");
                 player.PrintToChat(msgPrefix + $"Teleported to the previous {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")}!");
@@ -1620,9 +1933,10 @@ namespace SharpTimer
                 // Convert position and rotation strings to Vector and QAngle
                 Vector position = ParseVector(nextCheckpoint.PositionString ?? "0 0 0");
                 QAngle rotation = ParseQAngle(nextCheckpoint.RotationString ?? "0 0 0");
+                Vector speed = ParseVector(nextCheckpoint.SpeedString ?? "0 0 0");
 
                 // Teleport the player to the next checkpoint, including the saved rotation
-                player.PlayerPawn.Value!.Teleport(position, rotation, new Vector(0, 0, 0));
+                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
 
                 // Play a sound or provide feedback to the player
                 if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {tpSound}");

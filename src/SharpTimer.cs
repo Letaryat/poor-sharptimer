@@ -13,16 +13,25 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using System.Security.Cryptography.X509Certificates;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Cvars;
+using System.Runtime.CompilerServices;
+using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using System.Runtime.InteropServices;
 
 namespace SharpTimer
 {
     [MinimumApiVersion(228)]
     public partial class SharpTimer : BasePlugin
     {
+        public required MemoryFunctionVoid<CCSPlayer_MovementServices, IntPtr> RunCommandLinux;
+        public required MemoryFunctionVoid<IntPtr, IntPtr, IntPtr, CCSPlayer_MovementServices> RunCommandWindows;
+        private int movementServices;
+        private int movementPtr;
         public override void Load(bool hotReload)
         {
             SharpTimerConPrint("Loading Plugin...");
@@ -40,6 +49,27 @@ namespace SharpTimer
             string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
             mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
             SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
+
+            string postgresConfigFileName = "SharpTimer/postgresConfig.json";
+            postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) isLinux = true;
+            else isLinux = false;
+
+            if (isLinux)
+            {
+                movementServices = 0;
+                movementPtr = 1;
+                RunCommandLinux = new(GameData.GetSignature("RunCommand"));
+                RunCommandLinux.Hook(OnRunCommand, HookMode.Pre);
+            }
+            else if (!isLinux)
+            {
+                movementServices = 3;
+                movementPtr = 2;
+                RunCommandWindows = new(GameData.GetSignature("RunCommand"));
+                RunCommandWindows.Hook(OnRunCommand, HookMode.Pre);
+            }
 
             currentMapName = Server.MapName;
 
@@ -126,7 +156,7 @@ namespace SharpTimer
                         {
                             if (!player.IsValid || player == null || !IsAllowedPlayer(player)) return;
 
-                            if (useMySQL && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
+                            if ((useMySQL || usePostgres) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
                             {
                                 SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
                                 SetFov(player, playerTimers[player.Slot].PlayerFov, true);
@@ -236,13 +266,74 @@ namespace SharpTimer
 
             SharpTimerConPrint("Plugin Loaded");
         }
+        private HookResult OnRunCommand(DynamicHook h)
+        {
+            var player = h.GetParam<CCSPlayer_MovementServices>(movementServices).Pawn.Value.Controller.Value?.As<CCSPlayerController>();
 
+            if (player == null || player.IsBot || !player.IsValid || player.IsHLTV) return HookResult.Continue;
+
+            var userCmd = new CUserCmd(h.GetParam<IntPtr>(movementPtr));
+            var baseCmd = userCmd.GetBaseCmd();
+            var getMovementButton = userCmd.GetMovementButton();
+
+            if (player != null && !player.IsBot && player.IsValid && !player.IsHLTV)
+            {
+                try
+                {
+                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(2) && (getMovementButton.Contains("Left") || getMovementButton.Contains("Right"))) //sideways
+                    {
+                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1536); //disable left (512) + right (1024) = 1536
+                        baseCmd.DisableSideMove(); //disable side movement
+                        return HookResult.Changed;
+                    }
+                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(3) && (getMovementButton.Contains("Left") || getMovementButton.Contains("Right") || getMovementButton.Contains("Backward"))) //only w
+                    {
+                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1552); //disable backward (16) + left (512) + right (1024) = 1552
+                        baseCmd.DisableSideMove(); //disable side movement
+                        baseCmd.DisableForwardMove(); //set forward move to 0 ONLY if player is moving backwards; ie: disable s
+                        return HookResult.Changed;
+                    }
+                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(6) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Right") || getMovementButton.Contains("Backward"))) //only a
+                    {
+                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1048); //disable backward (16) + forward (8) + right (1024) = 1048
+                        baseCmd.DisableSideMove(); //disable only right movement
+                        baseCmd.DisableForwardMove(); //disable forward movement
+                        return HookResult.Changed;
+                    }
+                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(7) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Left") || getMovementButton.Contains("Backward"))) //only d
+                    {
+                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 536); //disable backward (16) + forward (8) + left (512) = 536
+                        baseCmd.DisableSideMove(); //disable only left movement
+                        baseCmd.DisableForwardMove(); //disable forward movement
+                        return HookResult.Changed;
+                    }
+                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(8) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Left") || getMovementButton.Contains("Right"))) //only s
+                    {
+                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1544); //disable right (1024) + forward (8) + left (512) = 1544
+                        baseCmd.DisableSideMove(); //disable side movement
+                        baseCmd.DisableForwardMove(); //disable only forward movement
+                        return HookResult.Changed;
+                    }
+                    return HookResult.Changed;
+                }
+                catch (Exception ex)
+                {
+                    //i dont fucking know why it spams errors when the player disconnects but is also passing all the null checks
+                    //so here lies my humble try catch
+                    return HookResult.Continue; // :)
+                }
+            }
+
+            return HookResult.Continue;
+        }
         public override void Unload(bool hotReload)
         {
             DamageUnHook();
             RemoveCommandListener("say", OnPlayerChatAll, HookMode.Pre);
             RemoveCommandListener("say_team", OnPlayerChatTeam, HookMode.Pre);
             RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
+            if (isLinux) RunCommandLinux.Unhook(OnRunCommand, HookMode.Pre);
+            else RunCommandWindows.Unhook(OnRunCommand, HookMode.Pre);
             SharpTimerConPrint("Plugin Unloaded");
         }
     }

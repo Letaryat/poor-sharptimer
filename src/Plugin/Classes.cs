@@ -112,11 +112,15 @@ namespace SharpTimer
         public bool IsTimerRunning { get; set; }
 
         public bool IsOnBhopBlock { get; set; }
+        public bool IsNoclip { get; set; }
         public bool IsTimerBlocked { get; set; }
         public int TimerTicks { get; set; }
         public bool IsBonusTimerRunning { get; set; }
         public int BonusTimerTicks { get; set; }
         public int BonusStage { get; set; }
+        public bool inStartzone { get; set; }
+        public int currentStyle { get; set; }
+        public bool changedStyle { get; set; }
 
         //replay
         public bool IsReplaying { get; set; }
@@ -166,7 +170,6 @@ namespace SharpTimer
         public string? VipBigGif { get; set; }
 
         //admin stuff
-        public bool IsNoclipEnabled { get; set; }
         public bool IsAddingStartZone { get; set; }
         public bool IsAddingBonusStartZone { get; set; }
         public string? StartZoneC1 { get; set; }
@@ -231,6 +234,7 @@ namespace SharpTimer
     {
         public int CurrentPlaybackFrame { get; set; }
         public int BonusX { get; set; }
+        public int Style { get; set; }
         public List<ReplayFrames> replayFrames { get; set; } = [];
 
         public class ReplayFrames

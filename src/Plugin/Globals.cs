@@ -26,7 +26,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.2.8 - 6/10/2024";
+        public override string ModuleVersion => $"0.2.9";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -96,9 +96,11 @@ namespace SharpTimer
         public string? currentMapType = null;
         public int? currentMapTier = null;
 
+        public bool isLinux = true;
         public bool enableDebug = true;
         public bool killServerCommands = true;
         public bool useMySQL = false;
+        public bool usePostgres = false;
         public bool ignoreJSON = false;
         public bool enableReplays = false;
         public bool enableSRreplayBot = false;
@@ -112,7 +114,7 @@ namespace SharpTimer
         public bool displayChatTags = true;
         public bool displayScoreboardTags = true;
         public string customVIPTag = "VIP";
-        public string vipGifHost = "https://files.catbox.moe";
+        //public string vipGifHost = "https://files.catbox.moe";
 
         public bool useTriggers = true;
 
@@ -126,6 +128,9 @@ namespace SharpTimer
         public bool rankEnabled = true;
         public bool helpEnabled = true;
         public bool alternativeSpeedometer = false;
+        public bool startzoneJumping = true;
+        public bool enableNoclip = false;
+        public bool enableStyles = true;
         public bool removeLegsEnabled = false;
         public bool hideAllPlayers = false;
         public bool removeCollisionEnabled = true;
@@ -155,8 +160,15 @@ namespace SharpTimer
         public int altVeloMaxSpeed = 3000;
         public bool forcePlayerSpeedEnabled = false;
         public float forcedPlayerSpeed = 250;
-
         public int bhopBlockTime = 16;
+        public double lowgravPointModifier = 1.1;
+        public double sidewaysPointModifier = 1.3;
+        public double onlywPointModifier = 1.33;
+        public double onlyaPointModifier = 1.33;
+        public double onlysPointModifier = 1.33;
+        public double onlydPointModifier = 1.33;
+        public double velPointModifier = 1.5;
+        public double highgravPointModifier = 1.3;
 
         public bool jumpStatsEnabled = false;
         public float jumpStatsMinDist = 175;
@@ -166,13 +178,17 @@ namespace SharpTimer
 
         public bool execCustomMapCFG = false;
 
+        public bool sqlCheck = false;
+
         public string beepSound = "sounds/ui/csgo_ui_button_rollover_large.vsnd";
-        public string respawnSound = "sounds/ui/menu_accept.vsnd";
+        public string respawnSound = "sounds/buttons/button8.vsnd";
         public string cpSound = "sounds/ui/counter_beep.vsnd";
         public string cpSoundAir = "sounds/ui/weapon_cant_buy.vsnd";
         public string tpSound = "sounds/ui/buttonclick.vsnd";
+        public string pbSound = "sounds/buttons/bell1.vsnd";
         public string? gameDir;
         public string? mySQLpath;
+        public string? postgresPath;
         public string? playerRecordsPath;
         public string? currentMapName;
         public string? defaultServerHostname = ConVar.Find("hostname")?.StringValue;
