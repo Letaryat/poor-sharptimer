@@ -801,6 +801,15 @@ namespace SharpTimer
             startzoneJumping = bool.TryParse(args, out bool startzoneJumpingValue) ? startzoneJumpingValue : args != "0" && startzoneJumping;
         }
 
+        [ConsoleCommand("sharptimer_spawn_on_respawnpos", "Teleports player to respawnpos on spawn. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSpawnOnRespawnPos(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            spawnOnRespawnPos = bool.TryParse(args, out bool spawnOnRespawnPosValue) ? spawnOnRespawnPosValue : args != "0" && spawnOnRespawnPos;
+        }
+
         [ConsoleCommand("sharptimer_enable_noclip", "Enable or disable noclip for regular players. Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerEnableNoclipConvar(CCSPlayerController? player, CommandInfo command)
