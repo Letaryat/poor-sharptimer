@@ -72,14 +72,6 @@ namespace SharpTimer
             var steamID = player.SteamID.ToString();
             var playerName = player.PlayerName;
 
-            QuietStopTimer(player);
-
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
-                return;
-            }
-
             if (playerTimers[playerSlot].IsReplaying)
             {
                 player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
@@ -102,14 +94,6 @@ namespace SharpTimer
             var steamID = player.SteamID.ToString();
             var playerName = player.PlayerName;
 
-            QuietStopTimer(player);
-
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
-                return;
-            }
-
             if (playerTimers[playerSlot].IsReplaying)
             {
                 player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
@@ -127,14 +111,6 @@ namespace SharpTimer
 
             var playerSlot = player!.Slot;
 
-            QuietStopTimer(player);
-
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
-                return;
-            }
-
             if (playerTimers[playerSlot].IsReplaying)
             {
                 player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
@@ -151,14 +127,6 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || enableReplays == false) return;
 
             var playerSlot = player!.Slot;
-
-            QuietStopTimer(player);
-
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
-                return;
-            }
 
             if (playerTimers[playerSlot].IsReplaying)
             {
@@ -179,14 +147,6 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || enableReplays == false) return;
 
             var playerSlot = player!.Slot;
-
-            QuietStopTimer(player);
-
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
-                return;
-            }
 
             if (playerTimers[playerSlot].IsReplaying)
             {
@@ -210,14 +170,6 @@ namespace SharpTimer
             var playerSlot = player!.Slot;
             var steamID = player.SteamID.ToString();
             var playerName = player.PlayerName;
-
-            QuietStopTimer(player);
-
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
-                return;
-            }
 
             if (playerTimers[playerSlot].IsReplaying)
             {
@@ -269,6 +221,7 @@ namespace SharpTimer
                 playerTimers[player.Slot].IsTimerBlocked = false;
                 return;
             }
+            QuietStopTimer(player);
 
             await ReadReplayFromJson(player, !self ? srSteamID : pbSteamID, playerSlot, bonusX, style);
 
@@ -317,7 +270,6 @@ namespace SharpTimer
                 player.PrintToChat(msgPrefix + $" Ending Replay!");
                 playerTimers[playerSlot].IsReplaying = false;
                 if (player.PlayerPawn.Value!.MoveType != MoveType_t.MOVETYPE_WALK || player.PlayerPawn.Value.ActualMoveType == MoveType_t.MOVETYPE_WALK) SetMoveType(player, MoveType_t.MOVETYPE_WALK);
-                RespawnPlayerCommand(player, command);
                 playerReplays.Remove(playerSlot);
                 playerReplays[playerSlot] = new PlayerReplays();
                 playerTimers[playerSlot].IsTimerBlocked = false;
@@ -328,6 +280,7 @@ namespace SharpTimer
                 playerReplays[playerSlot].CurrentPlaybackFrame = 0;
                 if (stageTriggers.Count != 0) playerTimers[playerSlot].StageTimes!.Clear(); //remove previous stage times if the map has stages
                 if (stageTriggers.Count != 0) playerTimers[playerSlot].StageVelos!.Clear(); //remove previous stage times if the map has stages
+                RespawnPlayerCommand(player, command);
             }
         }
 
@@ -936,6 +889,7 @@ namespace SharpTimer
                     playerTimers[player.Slot].TimerTicks = 0;
                     playerTimers[player.Slot].IsBonusTimerRunning = false;
                     playerTimers[player.Slot].BonusTimerTicks = 0;
+                    playerTimers[player.Slot].IsTimerBlocked = false;
                 });
 
                 if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {respawnSound}");
@@ -1109,7 +1063,6 @@ namespace SharpTimer
                 player.PrintToChat(msgPrefix + $" Ending Replay!");
                 playerTimers[player.Slot].IsReplaying = false;
                 if (player.PlayerPawn.Value!.MoveType != MoveType_t.MOVETYPE_WALK || player.PlayerPawn.Value.ActualMoveType == MoveType_t.MOVETYPE_WALK) SetMoveType(player, MoveType_t.MOVETYPE_WALK);
-                RespawnPlayer(player);
                 playerReplays.Remove(player.Slot);
                 playerReplays[player.Slot] = new PlayerReplays();
                 playerTimers[player.Slot].IsTimerBlocked = false;
@@ -1120,6 +1073,7 @@ namespace SharpTimer
                 playerReplays[player.Slot].CurrentPlaybackFrame = 0;
                 if (stageTriggers.Count != 0) playerTimers[player.Slot].StageTimes!.Clear(); //remove previous stage times if the map has stages
                 if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear(); //remove previous stage times if the map has stages
+                RespawnPlayer(player);
             }
             else
             {
@@ -1451,6 +1405,7 @@ namespace SharpTimer
                     playerTimers[player.Slot].TimerTicks = 0;
                     playerTimers[player.Slot].IsBonusTimerRunning = false;
                     playerTimers[player.Slot].BonusTimerTicks = 0;
+                    playerTimers[player.Slot].IsTimerBlocked = false;
                 });
                 if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {respawnSound}");
             }

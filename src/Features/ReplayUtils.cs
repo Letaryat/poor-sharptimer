@@ -173,7 +173,7 @@ namespace SharpTimer
             }
         }
 
-        private async Task DumpReplayToJson(CCSPlayerController player, string steamID, int playerSlot, int bonusX = 0, int style = 0)
+        public async Task DumpReplayToJson(CCSPlayerController player, string steamID, int playerSlot, int bonusX = 0, int style = 0)
         {
             await Task.Run(() =>
             {

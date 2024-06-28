@@ -22,6 +22,7 @@ using System.Runtime.CompilerServices;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 
 namespace SharpTimer
 {
