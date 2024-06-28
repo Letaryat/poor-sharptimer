@@ -1,7 +1,4 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Memory;
-using CounterStrikeSharp.API.Modules.Utils;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace SharpTimer
@@ -110,6 +107,7 @@ namespace SharpTimer
                     return "null";
             }
         }
+
         public double GetStyleMultiplier(int style)
         {
             switch(style)

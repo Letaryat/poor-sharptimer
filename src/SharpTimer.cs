@@ -133,7 +133,7 @@ namespace SharpTimer
                 return HookResult.Continue;
             }, HookMode.Pre);
 
-            RegisterEventHandler<EventPlayerSpawned>((@event, info) =>
+            RegisterEventHandler<EventPlayerSpawn>((@event, info) =>
             {
                 if (@event.Userid!.IsValid)
                 {

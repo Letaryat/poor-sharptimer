@@ -82,11 +82,11 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 [**CounterStrikeSharp** *(v215 and up)*](https://github.com/roflmuffin/CounterStrikeSharp/releases)
 
-[**SharpTimerModelSetter** *(optional but recommended for custom player models)*](https://github.com/DEAFPS/SharpTimerModelSetter/)
+[**SharpTimerModelSetter** *(optional but recommended for custom player models)*](https://github.com/johandrevwyk/STCustomModels)
 
 [**MovementUnlocker** *(optional but recommended)*](https://github.com/Source2ZE/MovementUnlocker)
 
-[**CS2Fixes-RampbugFix** *(optional but recommended)*](https://github.com/Interesting-exe/CS2Fixes-RampbugFix)
+[**RampBugFix** *(optional but recommended for surf servers)*](https://github.com/Interesting-exe/CS2Fixes-RampbugFix/)
 
 [**Web panel** *(optional but recommended)*](https://github.com/Letaryat/sharptimer-web-panel)
 
@@ -160,4 +160,4 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
   - [ ] Strafe Sync Bar on HUD
 
 
-## Author: [@DEAFPS_](https://twitter.com/deafps_)
+## Author: [@DEA_BB](https://twitter.com/dea_bb)
