@@ -486,8 +486,6 @@ namespace SharpTimer
                     playerTimers[player.Slot].StageVelos!.Clear();
                     playerTimers[player.Slot].CurrentMapCheckpoint = 0;
                 }
-                if (spawnOnRespawnPos && currentRespawnPos != null)
-                    player.Teleport(currentRespawnPos!, null, null);
             }
         }
 

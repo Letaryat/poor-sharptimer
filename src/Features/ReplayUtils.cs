@@ -246,13 +246,13 @@ namespace SharpTimer
                     else
                     {
                         SharpTimerError($"Error: Failed to deserialize replay frames from {playerReplaysPath}");
-                        Server.NextFrame(() => player.PrintToChat(msgPrefix + $" The requested replay seems to be corrupted"));
+                        Server.NextFrame(() => player.PrintToChat($" {Localizer["prefix"]} {Localizer["replay_corrupt"]}"));
                     }
                 }
                 else
                 {
                     SharpTimerError($"File does not exist: {playerReplaysPath}");
-                    Server.NextFrame(() => player.PrintToChat(msgPrefix + $" The requested replay does not exist"));
+                    Server.NextFrame(() => player.PrintToChat($" {Localizer["prefix"]} {Localizer["replay_dont_exist"]}"));
                 }
             }
             catch (Exception ex)

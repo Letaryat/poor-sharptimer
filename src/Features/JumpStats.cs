@@ -393,23 +393,13 @@ namespace SharpTimer
 
             double sync = (strafeFrames != 0) ? Math.Round(syncedFrames * 100f / strafeFrames, 2) : 0;
 
-            string msg1 = $"{primaryChatColor}JS: {ChatColors.Grey}" +
-                            $"{playerJumpStat.LastJumpType}: {color}{Math.Round(distance, 2)}{ChatColors.Grey} | " +
-                            $"Pre: {primaryChatColor}{Math.Round(ParseVector(playerJumpStat.LastSpeed!).Length2D(), 2)}{ChatColors.Grey} | " +
-                            $"Max: {primaryChatColor}{Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2)}{ChatColors.Grey} | " +
-                            $"Strafes: {primaryChatColor}{strafes}{ChatColors.Grey} | ";
-            string msg2 = $"{ChatColors.Grey}Height: {primaryChatColor}{Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2)}{ChatColors.Grey} | " +
-                            $"Width: {primaryChatColor}{GetMaxWidth(playerpos, playerJumpStat)}{ChatColors.Grey} | " +
-                            $"WT: {primaryChatColor}{playerJumpStat.WTicks}{ChatColors.Grey} | " +
-                            $"Sync: {primaryChatColor}{sync}%";
-
-            player.PrintToChat(msgPrefix + msg1);
-            //print on next server frame so client chat does not bug out that much
-            player.PrintToChat(msgPrefix + msg2);
+            player.PrintToChat($" {Localizer["js_msg1", playerJumpStat.LastJumpType!, color, Math.Round(distance, 2), Math.Round(ParseVector(playerJumpStat.LastSpeed!).Length2D(), 2), Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2), strafes]}");
+            player.PrintToChat($" {Localizer["js_msg2", Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2), GetMaxWidth(playerpos, playerJumpStat), playerJumpStat.WTicks, sync]}");
 
             player.PrintToConsole($"-----------------------------------------------------------------------------------------------------------------------");
-            player.PrintToConsole(msg1);
-            player.PrintToConsole(msg2);
+            player.PrintToConsole($" {Localizer["js_msg1", playerJumpStat.LastJumpType!, color, Math.Round(distance, 2), Math.Round(ParseVector(playerJumpStat.LastSpeed!).Length2D(), 2), Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2), strafes]}");
+            player.PrintToConsole($" {Localizer["js_msg2", Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2), GetMaxWidth(playerpos, playerJumpStat), playerJumpStat.WTicks, sync]}");
+
             /* this is shit
             string alertMsg = msg1 + "\n" + msg2;
             VirtualFunctions.ClientPrint(player.Handle, HudDestination.Alert, alertMsg, 0, 0, 0, 0); */

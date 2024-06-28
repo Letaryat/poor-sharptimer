@@ -164,6 +164,9 @@ namespace SharpTimer
                             }
                         });
 
+                        if (spawnOnRespawnPos == true && currentRespawnPos != null)
+                            player.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
+
                         Server.NextFrame(() => InvalidateTimer(player));
                     }
                 }
