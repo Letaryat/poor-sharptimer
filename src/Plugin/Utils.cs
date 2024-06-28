@@ -169,7 +169,7 @@ namespace SharpTimer
             Logger.LogInformation($"\u001b[36m[SharpTimer] \u001b[37m{msg}");
         }
 
-        private static string FormatTime(int ticks)
+        public static string FormatTime(int ticks)
         {
             TimeSpan timeSpan = TimeSpan.FromSeconds(ticks / 64.0);
 
