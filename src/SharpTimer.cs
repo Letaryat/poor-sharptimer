@@ -30,7 +30,7 @@ namespace SharpTimer
     public partial class SharpTimer : BasePlugin
     {
         public required MemoryFunctionVoid<CCSPlayer_MovementServices, IntPtr> RunCommandLinux;
-        public required MemoryFunctionVoid<IntPtr, IntPtr, IntPtr, CCSPlayer_MovementServices> RunCommandWindows;
+        //public required MemoryFunctionVoid<IntPtr, IntPtr, IntPtr, CCSPlayer_MovementServices> RunCommandWindows;
         private int movementServices;
         private int movementPtr;
         public override void Load(bool hotReload)
@@ -57,23 +57,20 @@ namespace SharpTimer
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) isLinux = true;
             else isLinux = false;
 
-            if(enableStyles)
+            if(isLinux)
             {
-                if (isLinux)
-                {
-                    movementServices = 0;
-                    movementPtr = 1;
-                    RunCommandLinux = new(GameData.GetSignature("RunCommand"));
-                    RunCommandLinux.Hook(OnRunCommand, HookMode.Pre);
-                }
-                else if (!isLinux)
-                {
-                    movementServices = 3;
-                    movementPtr = 2;
-                    RunCommandWindows = new(GameData.GetSignature("RunCommand"));
-                    RunCommandWindows.Hook(OnRunCommand, HookMode.Pre);
-                }
+                movementServices = 0;
+                movementPtr = 1;
+                RunCommandLinux = new(GameData.GetSignature("RunCommand"));
+                RunCommandLinux.Hook(OnRunCommand, HookMode.Pre);
             }
+            /*else if (!isLinux)
+            {
+                movementServices = 3;
+                movementPtr = 2;
+                RunCommandWindows = new(GameData.GetSignature("RunCommand"));
+                RunCommandWindows.Hook(OnRunCommand, HookMode.Pre);
+            }*/
 
             currentMapName = Server.MapName;
 
@@ -339,11 +336,9 @@ namespace SharpTimer
             RemoveCommandListener("say", OnPlayerChatAll, HookMode.Pre);
             RemoveCommandListener("say_team", OnPlayerChatTeam, HookMode.Pre);
             RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
-            if(enableStyles)
-            {
-                if (isLinux) RunCommandLinux.Unhook(OnRunCommand, HookMode.Pre);
-                else RunCommandWindows.Unhook(OnRunCommand, HookMode.Pre);
-            }
+
+            if(isLinux) RunCommandLinux.Unhook(OnRunCommand, HookMode.Pre);
+            //else RunCommandWindows.Unhook(OnRunCommand, HookMode.Pre);
 
             SharpTimerConPrint("Plugin Unloaded");
         }

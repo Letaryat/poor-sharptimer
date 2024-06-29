@@ -825,6 +825,12 @@ namespace SharpTimer
         {
             string args = command.ArgString;
 
+            if(!isLinux)
+            {
+                enableStyles = false;
+                return;
+            }
+
             enableStyles = bool.TryParse(args, out bool enableStylesValue) ? enableStylesValue : args != "0" && enableStyles;
         }
 
