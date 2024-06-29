@@ -26,11 +26,11 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.2.9";
+        public override string ModuleVersion => $"0.3.0c";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
-        private Dictionary<int, PlayerTimerInfo> playerTimers = [];
+        public Dictionary<int, PlayerTimerInfo> playerTimers = [];
         private Dictionary<int, PlayerJumpStats> playerJumpStats = [];
         private Dictionary<int, PlayerReplays> playerReplays = [];
         private Dictionary<int, List<PlayerCheckpoint>> playerCheckpoints = [];
@@ -87,8 +87,8 @@ namespace SharpTimer
         private Dictionary<nint, int> bonusCheckpointTriggers = [];
         private Dictionary<int, Vector?> stageTriggerPoses = [];
         private Dictionary<int, QAngle?> stageTriggerAngs = [];
-        private int stageTriggerCount;
-        private int cpTriggerCount;
+        public int stageTriggerCount;
+        public int cpTriggerCount;
         private int bonusCheckpointTriggerCount;
         private bool useStageTriggers = false;
         private bool useCheckpointTriggers = false;
@@ -129,8 +129,10 @@ namespace SharpTimer
         public bool helpEnabled = true;
         public bool alternativeSpeedometer = false;
         public bool startzoneJumping = true;
+        public bool spawnOnRespawnPos = false;
         public bool enableNoclip = false;
         public bool enableStyles = true;
+        public bool enableStylePoints = true;
         public bool removeLegsEnabled = false;
         public bool hideAllPlayers = false;
         public bool removeCollisionEnabled = true;

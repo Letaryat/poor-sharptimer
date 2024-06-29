@@ -27,6 +27,47 @@ namespace SharpTimer
 {
     public partial class SharpTimer
     {
+        public bool CommandCooldown(CCSPlayerController? player)
+        {
+            if (playerTimers[player!.Slot].TicksSinceLastCmd < cmdCooldown)
+            {
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["command_cooldown"]}");
+                return true;
+            }
+            return false;
+        }
+
+        public bool IsTimerBlocked(CCSPlayerController? player)
+        {
+            if (!playerTimers[player!.Slot].IsTimerBlocked)
+            {
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["stop_using_timer"]}");
+                return true;
+            }
+            return false;
+        }
+
+        public bool ReplayCheck(CCSPlayerController? player)
+        {
+            if (playerTimers[player!.Slot].IsReplaying)
+            {
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["end_your_replay"]}");
+                return true;
+            }
+            return false;
+        }
+
+        public bool CanCheckpoint(CCSPlayerController? player)
+        {
+            if (cpOnlyWhenTimerStopped == true && playerTimers[player!.Slot].IsTimerBlocked == false)
+            {
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["cant_use_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
+                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {cpSoundAir}");
+                return true;
+            }
+            return false;
+        }
+
         [ConsoleCommand("css_dp_timers", "Prints playerTimers")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void DeepPrintPlayerTimers(CCSPlayerController? player, CommandInfo command)
@@ -74,20 +115,14 @@ namespace SharpTimer
 
             QuietStopTimer(player);
 
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
+            if (IsTimerBlocked(player))
                 return;
-            }
 
-            if (playerTimers[playerSlot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
-            player.PrintToChat(msgPrefix + $" Available replay cmds: {primaryChatColor}!replaypb{ChatColors.Default} | {primaryChatColor}!replaytop <1-10>{ChatColors.Default} | {primaryChatColor}!replaysr{ChatColors.Default}");
-            player.PrintToChat(msgPrefix + $" Replaying the Server Map Record, type {primaryChatColor}!stop or {primaryChatColor}!stopreplay {ChatColors.White}to exit the replay");
+            player.PrintToChat($" {Localizer["prefix"]} {Localizer["available_replay_cmds"]}");
+            player.PrintToChat($" {Localizer["prefix"]} {Localizer["replaying_server_record"]}");
 
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "1"));
         }
@@ -104,17 +139,11 @@ namespace SharpTimer
 
             QuietStopTimer(player);
 
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
+            if (IsTimerBlocked(player))
                 return;
-            }
 
-            if (playerTimers[playerSlot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "self", steamID, playerName, 0, playerTimers[playerSlot].currentStyle));
         }
@@ -129,17 +158,11 @@ namespace SharpTimer
 
             QuietStopTimer(player);
 
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
+            if (IsTimerBlocked(player))
                 return;
-            }
 
-            if (playerTimers[playerSlot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "1", "69", "unknown", 0, playerTimers[playerSlot].currentStyle));
         }
@@ -154,17 +177,11 @@ namespace SharpTimer
 
             QuietStopTimer(player);
 
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
+            if (IsTimerBlocked(player))
                 return;
-            }
 
-            if (playerTimers[playerSlot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             string arg = command.ArgByIndex(1);
 
@@ -182,17 +199,11 @@ namespace SharpTimer
 
             QuietStopTimer(player);
 
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
+            if (IsTimerBlocked(player))
                 return;
-            }
 
-            if (playerTimers[playerSlot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             string arg = command.ArgByIndex(1);
             string arg2 = command.ArgByIndex(2);
@@ -213,17 +224,11 @@ namespace SharpTimer
 
             QuietStopTimer(player);
 
-            if (!playerTimers[playerSlot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
+            if (IsTimerBlocked(player))
                 return;
-            }
 
-            if (playerTimers[playerSlot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             string arg = command.ArgByIndex(1);
             int bonusX = Int16.Parse(arg);
@@ -265,8 +270,10 @@ namespace SharpTimer
 
             if ((srSteamID == "null" || srPlayerName == "null" || srTime == "null") && !self)
             {
-                Server.NextFrame(() => player.PrintToChat(msgPrefix + $"No Server Record to replay!"));
-                playerTimers[player.Slot].IsTimerBlocked = false;
+                Server.NextFrame(() => {
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_sr_replay"]}");
+                    RespawnPlayer(player);
+                }); 
                 return;
             }
 
@@ -289,7 +296,10 @@ namespace SharpTimer
 
             if (IsAllowedPlayer(player))
             {
-                Server.NextFrame(() => player.PrintToChat(msgPrefix + $" Replaying {(!self ? "the Server Top" + top10 : "your PB")}, type {primaryChatColor}!stop or {primaryChatColor}!stopreplay {ChatColors.White}to exit the replay"));
+                if (!self)
+                    Server.NextFrame(() => player.PrintToChat($" {Localizer["prefix"]} {Localizer["replaying_server_top", top10]}"));
+                else
+                    Server.NextFrame(() => player.PrintToChat($" {Localizer["prefix"]} {Localizer["replaying_pb"]}"));
             }
             else
             {
@@ -308,16 +318,15 @@ namespace SharpTimer
 
             if (!playerTimers[playerSlot].IsTimerBlocked || !playerTimers[playerSlot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" No Replay playing currently");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_replay"]}");
                 return;
             }
 
             if (playerTimers[playerSlot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Ending Replay!");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["ending_replay"]}");
                 playerTimers[playerSlot].IsReplaying = false;
                 if (player.PlayerPawn.Value!.MoveType != MoveType_t.MOVETYPE_WALK || player.PlayerPawn.Value.ActualMoveType == MoveType_t.MOVETYPE_WALK) SetMoveType(player, MoveType_t.MOVETYPE_WALK);
-                RespawnPlayerCommand(player, command);
                 playerReplays.Remove(playerSlot);
                 playerReplays[playerSlot] = new PlayerReplays();
                 playerTimers[playerSlot].IsTimerBlocked = false;
@@ -328,6 +337,7 @@ namespace SharpTimer
                 playerReplays[playerSlot].CurrentPlaybackFrame = 0;
                 if (stageTriggers.Count != 0) playerTimers[playerSlot].StageTimes!.Clear(); //remove previous stage times if the map has stages
                 if (stageTriggers.Count != 0) playerTimers[playerSlot].StageVelos!.Clear(); //remove previous stage times if the map has stages
+                RespawnPlayerCommand(player, command);
             }
         }
 
@@ -377,17 +387,18 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_hud...");
 
-            if (playerTimers[playerSlot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
             playerTimers[playerSlot].TicksSinceLastCmd = 0;
 
             playerTimers[playerSlot].HideTimerHud = !playerTimers[playerSlot].HideTimerHud;
 
-            player.PrintToChat(msgPrefix + $" Hud is now: {(playerTimers[playerSlot].HideTimerHud ? $"{ChatColors.Red} Hidden" : $"{ChatColors.Green} Shown")}");
+            if (playerTimers[playerSlot].HideTimerHud)
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["hud_hidden"]}");
+            else
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["hud_shown"]}");
+
             SharpTimerDebug($"Hide Timer HUD set to: {playerTimers[playerSlot].HideTimerHud} for {playerName}");
 
             if (useMySQL || usePostgres)
@@ -412,17 +423,17 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_keys...");
 
-            if (playerTimers[playerSlot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
-                return;
-            }
+            if (CommandCooldown(player))
 
             playerTimers[playerSlot].TicksSinceLastCmd = 0;
 
             playerTimers[playerSlot].HideKeys = playerTimers[playerSlot].HideKeys ? false : true;
 
-            player.PrintToChat(msgPrefix + $" Keys are now: {(playerTimers[playerSlot].HideKeys ? $"{ChatColors.Red} Hidden" : $"{ChatColors.Green} Shown")}");
+            if (playerTimers[playerSlot].HideKeys)
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["keys_hidden"]}");
+            else
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["keys_shown"]}");
+
             SharpTimerDebug($"Hide Timer HUD set to: {playerTimers[playerSlot].HideKeys} for {playerName}");
 
             if (useMySQL || usePostgres)
@@ -448,17 +459,18 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_sounds...");
 
-            if (playerTimers[playerSlot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
             playerTimers[playerSlot].TicksSinceLastCmd = 0;
 
             playerTimers[playerSlot].SoundsEnabled = playerTimers[playerSlot].SoundsEnabled ? false : true;
 
-            player.PrintToChat(msgPrefix + $"Sounds are now:{(playerTimers[playerSlot].SoundsEnabled ? $"{ChatColors.Green} ON" : $"{ChatColors.Red} OFF")}");
+            if (playerTimers[playerSlot].SoundsEnabled)
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["sounds_on"]}");
+            else
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["sounds_off"]}");
+
             SharpTimerDebug($"Timer Sounds set to: {playerTimers[playerSlot].SoundsEnabled} for {playerName}");
 
             if (useMySQL || usePostgres)
@@ -483,17 +495,18 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_jumpstats...");
 
-            if (playerTimers[playerSlot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
             playerTimers[playerSlot].TicksSinceLastCmd = 0;
 
             playerTimers[playerSlot].HideJumpStats = playerTimers[playerSlot].HideJumpStats ? false : true;
 
-            player.PrintToChat(msgPrefix + $"Jump Stats are now:{(playerTimers[playerSlot].HideJumpStats ? $"{ChatColors.Red} Hidden" : $"{ChatColors.Green} Shown")}");
+            if (playerTimers[playerSlot].HideJumpStats)
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["jumpstats_hidden"]}");
+            else
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["jumpstats_shown"]}");
+
             SharpTimerDebug($"Hide Jump Stats set to: {playerTimers[playerSlot].HideJumpStats} for {playerName}");
 
             if (useMySQL || usePostgres)
@@ -569,11 +582,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_top...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
@@ -596,11 +606,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_points...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
@@ -622,18 +629,16 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_topbonus...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
             if (!int.TryParse(command.ArgString, out int bonusX))
             {
                 SharpTimerDebug("css_topbonus conversion failed. The input string is not a valid integer.");
-                player.PrintToChat(msgPrefix + $" Please enter a valid Bonus stage i.e: {primaryChatColor}!topbonus 1");
+
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["invalid_bonus_stage"]}");
                 return;
             }
 
@@ -665,12 +670,23 @@ namespace SharpTimer
             {
                 Server.NextFrame(() =>
                 {
-                    if (IsAllowedPlayer(player)) player!.PrintToChat(msgPrefix + $" No records available for{(bonusX != 0 ? $" Bonus {bonusX} on" : "")} {currentMapNamee}.");
+                    if (IsAllowedPlayer(player))
+                    {
+                        if (bonusX != 0)
+                            player!.PrintToChat($" {Localizer["prefix"]} {Localizer["no_records_available_bonus", bonusX, currentMapNamee]}");
+                        else
+                            player!.PrintToChat($" {Localizer["prefix"]} {Localizer["no_records_available", currentMapNamee]}");
+                    }
                 });
                 return;
             }
 
-            List<string> printStatements = [$"{msgPrefix} Top 10 {GetNamedStyle(style)} Records for{(bonusX != 0 ? $" Bonus {bonusX} on" : "")} {currentMapNamee}:"];
+            List<string> printStatements;
+
+            if (bonusX != 0)
+                printStatements = [$" {Localizer["prefix"]} {Localizer["top10_records_bonus", GetNamedStyle(style), bonusX, currentMapNamee]}"];
+            else
+                printStatements = [$" {Localizer["prefix"]} {Localizer["top10_records", GetNamedStyle(style), currentMapNamee]}"];
 
             int rank = 1;
 
@@ -682,7 +698,9 @@ namespace SharpTimer
                 bool showReplays = false;
                 if (enableReplays == true) showReplays = await CheckSRReplay(kvp.Key, bonusX);
 
-                printStatements.Add($"{msgPrefix} #{rank}: {primaryChatColor}{_playerName} {ChatColors.White}- {(enableReplays ? $"{(showReplays ? $" {ChatColors.Red}◉" : "")}" : "")}{primaryChatColor}{FormatTime(timerTicks)}");
+                string replayIndicator = enableReplays ? (showReplays ? $"{ChatColors.Red}◉" : "") : "";
+
+                printStatements.Add($" {Localizer["prefix"]} {Localizer["records_map", rank, _playerName, replayIndicator, FormatTime(timerTicks)]}");
                 rank++;
             }
 
@@ -714,11 +732,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_rank...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
             _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName));
         }
@@ -766,15 +781,15 @@ namespace SharpTimer
                     Server.NextFrame(() =>
                     {
                         if (!IsAllowedPlayer(player)) return;
-                        string rankMessage = $"{msgPrefix} You are currently {primaryChatColor}{ranking}";
+                        string rankMessage = $" {Localizer["prefix"]} {Localizer["current_rank", GetRankColorForChat(player!), ranking]}";
                         if (useGlobalRanks)
                         {
-                            rankMessage += $" {ChatColors.Default}({primaryChatColor}{serverPoints}{ChatColors.Default}) [{primaryChatColor}{serverPlacement}{ChatColors.Default}]";
+                            rankMessage += $" {Localizer["current_rank_points", serverPoints, serverPlacement]}";
                         }
                         player!.PrintToChat(rankMessage);
                         if (pbTicks != 0)
                         {
-                            player.PrintToChat($"{msgPrefix} Your current PB on {primaryChatColor}{currentMapName}{ChatColors.Default}: {primaryChatColor}{FormatTime(pbTicks)}{ChatColors.Default} [{primaryChatColor}{mapPlacement}{ChatColors.Default}]");
+                            player.PrintToChat($"{Localizer["prefix"]} {Localizer["current_pb", currentMapName!, FormatTime(pbTicks), mapPlacement]}");
                         }
                     });
                 }
@@ -799,11 +814,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_sr...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
             _ = Task.Run(async () => await SRCommandHandler(player, playerName));
         }
@@ -830,7 +842,7 @@ namespace SharpTimer
             Server.NextFrame(() =>
             {
                 if (!IsAllowedPlayer(player)) return;
-                player!.PrintToChat($"{msgPrefix} Current Server Record on {primaryChatColor}{currentMapName}{ChatColors.White}: ");
+                player!.PrintToChat($" {Localizer["prefix"]} {Localizer["current_sr", currentMapName!]}");
             });
 
             foreach (var kvp in sortedRecords.Take(1))
@@ -840,7 +852,7 @@ namespace SharpTimer
                 Server.NextFrame(() =>
                 {
                     if (!IsAllowedPlayer(player)) return;
-                    player!.PrintToChat(msgPrefix + $" {primaryChatColor}{playerName} {ChatColors.White}- {primaryChatColor}{FormatTime(timerTicks)}");
+                    player!.PrintToChat($" {Localizer["prefix"]} {Localizer["current_sr_player", playerName!, FormatTime(timerTicks)]}");
                 });
             }
         }
@@ -855,17 +867,11 @@ namespace SharpTimer
                 if (!IsAllowedPlayer(player) || respawnEnabled == false) return;
                 SharpTimerDebug($"{player!.PlayerName} calling css_rb...");
 
-                if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-                {
-                    player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+                if (CommandCooldown(player))
                     return;
-                }
 
-                if (playerTimers[player.Slot].IsReplaying)
-                {
-                    player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+                if (ReplayCheck(player))
                     return;
-                }
 
                 playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
@@ -886,7 +892,7 @@ namespace SharpTimer
                     }
                     else
                     {
-                        player.PrintToChat(msgPrefix + $" {ChatColors.LightRed} No RespawnBonusPos with index {1} found for current map!");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_respawnpos_bonus_index", 1]}");
                     }
                     Server.NextFrame(() =>
                     {
@@ -901,7 +907,7 @@ namespace SharpTimer
                 if (!int.TryParse(command.ArgString, out int bonusX))
                 {
                     SharpTimerDebug("css_rb conversion failed. The input string is not a valid integer.");
-                    player.PrintToChat(msgPrefix + $" Please enter a valid Bonus stage i.e: {primaryChatColor}!rb <index>");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_respawnpos_bonus_rb"]}");
                     return;
                 }
 
@@ -927,7 +933,7 @@ namespace SharpTimer
                 }
                 else
                 {
-                    player.PrintToChat(msgPrefix + $" {ChatColors.LightRed} No RespawnBonusPos with index {bonusX} found for current map!");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_respawnpos_bonus"]}");
                 }
 
                 Server.NextFrame(() =>
@@ -936,6 +942,7 @@ namespace SharpTimer
                     playerTimers[player.Slot].TimerTicks = 0;
                     playerTimers[player.Slot].IsBonusTimerRunning = false;
                     playerTimers[player.Slot].BonusTimerTicks = 0;
+                    playerTimers[player.Slot].IsTimerBlocked = false;
                 });
 
                 if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {respawnSound}");
@@ -955,21 +962,15 @@ namespace SharpTimer
 
             SharpTimerDebug($"{player!.PlayerName} calling css_rank...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
-            if (playerTimers[player.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             if (useTriggers == false)
             {
-                player.PrintToChat(msgPrefix + $" Current Map is using manual zones");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["map_using_manual_zones"]}");
                 return;
             }
 
@@ -987,11 +988,11 @@ namespace SharpTimer
 
                     playerTimers[player.Slot].SetRespawnPos = positionString;
                     playerTimers[player.Slot].SetRespawnAng = rotationString;
-                    player.PrintToChat(msgPrefix + $" Saved custom Start Zone RespawnPos!");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["saved_custom_respawnpos"]}");
                 }
                 else
                 {
-                    player.PrintToChat(msgPrefix + $" You are not inside the Start Zone!");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["not_inside_startzone"]}");
                 }
             }
             else
@@ -1004,11 +1005,11 @@ namespace SharpTimer
 
                     playerTimers[player.Slot].SetRespawnPos = positionString;
                     playerTimers[player.Slot].SetRespawnAng = rotationString;
-                    player.PrintToChat(msgPrefix + $" Saved custom Start Zone RespawnPos!");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["saved_custom_respawnpos"]}");
                 }
                 else
                 {
-                    player.PrintToChat(msgPrefix + $" You are not inside the Start Zone!");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["not_inside_startzone"]}");
                 }
             }
         }
@@ -1022,38 +1023,28 @@ namespace SharpTimer
                 if (!IsAllowedPlayer(player) || respawnEnabled == false) return;
                 SharpTimerDebug($"{player!.PlayerName} calling css_stage...");
 
-                if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-                {
-                    player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+                if (CommandCooldown(player))
                     return;
-                }
 
-                if (playerTimers[player.Slot].IsReplaying)
-                {
-                    player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+                if (ReplayCheck(player))
                     return;
-                }
 
                 playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
-                if (playerTimers[player.Slot].IsTimerBlocked == false)
-                {
-                    SharpTimerDebug($"css_stage failed. Player {player.PlayerName} had timer running.");
-                    player.PrintToChat(msgPrefix + $" Please stop your timer first using: {primaryChatColor}!timer");
+                if (IsTimerBlocked(player))
                     return;
-                }
 
                 if (!int.TryParse(command.ArgString, out int stageX))
                 {
                     SharpTimerDebug("css_stage conversion failed. The input string is not a valid integer.");
-                    player.PrintToChat(msgPrefix + $" Please enter a valid stage i.e: {primaryChatColor}!stage <index>");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["stages_enter_valid"]}");
                     return;
                 }
 
                 if (useStageTriggers == false)
                 {
                     SharpTimerDebug("css_stage failed useStages is false.");
-                    player.PrintToChat(msgPrefix + $" Stages unavalible");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["stages_unavalible"]}");
                     return;
                 }
 
@@ -1072,7 +1063,7 @@ namespace SharpTimer
                 }
                 else
                 {
-                    player.PrintToChat(msgPrefix + $" {ChatColors.LightRed} No RespawnStagePos with index {stageX} found for current map!");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["stages_unavalible_respawnpos", stageX]}");
                 }
 
                 Server.NextFrame(() =>
@@ -1098,18 +1089,14 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || respawnEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_r...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
             if (playerTimers[player.Slot].IsReplaying)
             {
-                player.PrintToChat(msgPrefix + $" Ending Replay!");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["ending_replay"]}");
                 playerTimers[player.Slot].IsReplaying = false;
                 if (player.PlayerPawn.Value!.MoveType != MoveType_t.MOVETYPE_WALK || player.PlayerPawn.Value.ActualMoveType == MoveType_t.MOVETYPE_WALK) SetMoveType(player, MoveType_t.MOVETYPE_WALK);
-                RespawnPlayer(player);
                 playerReplays.Remove(player.Slot);
                 playerReplays[player.Slot] = new PlayerReplays();
                 playerTimers[player.Slot].IsTimerBlocked = false;
@@ -1120,6 +1107,7 @@ namespace SharpTimer
                 playerReplays[player.Slot].CurrentPlaybackFrame = 0;
                 if (stageTriggers.Count != 0) playerTimers[player.Slot].StageTimes!.Clear(); //remove previous stage times if the map has stages
                 if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear(); //remove previous stage times if the map has stages
+                RespawnPlayer(player);
             }
             else
             {
@@ -1135,17 +1123,11 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || respawnEndEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_end...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
-            if (playerTimers[player.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
             playerTimers[player.Slot].IsTimerRunning = false;
@@ -1164,11 +1146,8 @@ namespace SharpTimer
             if (enableNoclip == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_noclip...");
 
-            if (playerTimers[player.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
             playerTimers[player.Slot].IsTimerRunning = false;
@@ -1192,25 +1171,25 @@ namespace SharpTimer
 		    }   
         }
 
-        [ConsoleCommand("css_style", "Enable style")]
+
+        [ConsoleCommand("css_styles", "Styles command")]
+        [ConsoleCommand("css_style", "Styles command")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void StyleCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsAllowedPlayer(player)) return;
 
-            if (playerTimers[player!.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
-            if(!usePostgres && !useMySQL)
+
+            if (!usePostgres && !useMySQL)
             {
-                player.PrintToChat(msgPrefix + $" Styles are currently not supported on local records :(");
+                player!.PrintToChat($" {Localizer["prefix"]} {Localizer["styles_not_supported"]}");
                 return;
             }
             if(!enableStyles)
             {
-                player.PrintToChat(msgPrefix + $" Styles are currently disabled on this server");
+                player!.PrintToChat($" {Localizer["prefix"]} {Localizer["styles_disabled"]}");
                 return;
             }
 
@@ -1224,56 +1203,66 @@ namespace SharpTimer
             
             var desiredStyle = command.GetArg(1);
 
+            if (command.ArgByIndex(1) == "")
+            {
+                for (int i = 0; i < 9; i++) //runs 9 times for the 9 styles (i=0-8)
+                {
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["styles_list", i, GetNamedStyle(i)]}");
+                }
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_example"]}");
+                return;
+            }
+
             if (Int32.TryParse(command.GetArg(1), out var desiredStyleInt)) 
             {
                 switch(desiredStyleInt)
                 {
                     case 0:
                         SetNormalStyle(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Normal");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
                     case 1:
                         SetNormalStyle(player);
                         SetLowGravity(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Low-Gravity");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
                     case 2:
                         SetNormalStyle(player);
                         SetSideways(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Sideways");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
                     case 3:
                         SetNormalStyle(player);
                         SetOnlyW(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyW");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
                     case 4:
                         SetNormalStyle(player);
                         Set400Vel(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}400vel");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
                     case 5:
                         SetNormalStyle(player);
                         SetHighGravity(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}High-Gravity");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
                     case 6:
                         SetNormalStyle(player);
                         SetOnlyA(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyA");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
                     case 7:
                         SetNormalStyle(player);
                         SetOnlyD(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyD");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
                     case 8:
                         SetNormalStyle(player);
                         SetOnlyS(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyS");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
                     default:
-                        player.PrintToChat(msgPrefix + $" Style {desiredStyleInt} does not exist");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_not_found", desiredStyleInt]}");
                         break;
                 }
             }
@@ -1281,115 +1270,96 @@ namespace SharpTimer
             {
                 switch(desiredStyle.ToLower())
                 {
+                    case "default":
+                        SetNormalStyle(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(0)]}");
+                        break;
                     case "normal":
                         SetNormalStyle(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Normal");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(0)]}");
                         break;
                     case "lowgravity":
                         SetNormalStyle(player);
                         SetLowGravity(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Low-Gravity");
-                        break;
-                    case "highgravity":
-                        SetNormalStyle(player);
-                        SetHighGravity(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}High-Gravity");
-                        break;
-                    case "highgrav":
-                        SetNormalStyle(player);
-                        SetHighGravity(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}High-Gravity");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(1)]}");
                         break;
                     case "lowgrav":
                         SetNormalStyle(player);
                         SetLowGravity(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Low-Gravity");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(1)]}");
                         break;
                     case "sideways":
                         SetNormalStyle(player);
                         SetSideways(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Sideways");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(2)]}");
                         break;
                     case "sw":
                         SetNormalStyle(player);
                         SetSideways(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}Sideways");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(2)]}");
                         break;
                     case "wonly":
                         SetNormalStyle(player);
                         SetOnlyW(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyW");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(3)]}");
                         break;
                     case "onlyw":
                         SetNormalStyle(player);
                         SetOnlyW(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyW");
-                        break;
-                    case "aonly":
-                        SetNormalStyle(player);
-                        SetOnlyA(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyA");
-                        break;
-                    case "onlya":
-                        SetNormalStyle(player);
-                        SetOnlyA(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyA");
-                        break;
-                    case "donly":
-                        SetNormalStyle(player);
-                        SetOnlyD(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyD");
-                        break;
-                    case "onlyd":
-                        SetNormalStyle(player);
-                        SetOnlyD(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyD");
-                        break;
-                    case "sonly":
-                        SetNormalStyle(player);
-                        SetOnlyS(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyS");
-                        break;
-                    case "onlys":
-                        SetNormalStyle(player);
-                        SetOnlyS(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}OnlyS");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(3)]}");
                         break;
                     case "400vel":
                         SetNormalStyle(player);
                         Set400Vel(player);
-                        player.PrintToChat(msgPrefix + $" Style set to: {primaryChatColor}400vel");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(4)]}");
+                        break;
+                    case "highgravity":
+                        SetNormalStyle(player);
+                        SetHighGravity(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(5)]}");
+                        break;
+                    case "highgrav":
+                        SetNormalStyle(player);
+                        SetHighGravity(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(5)]}");
+                        break;
+                    case "aonly":
+                        SetNormalStyle(player);
+                        SetOnlyA(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(6)]}");
+                        break;
+                    case "onlya":
+                        SetNormalStyle(player);
+                        SetOnlyA(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(6)]}");
+                        break;
+                    case "donly":
+                        SetNormalStyle(player);
+                        SetOnlyD(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(7)]}");
+                        break;
+                    case "onlyd":
+                        SetNormalStyle(player);
+                        SetOnlyD(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(7)]}");
+                        break;
+                    case "sonly":
+                        SetNormalStyle(player);
+                        SetOnlyS(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(8)]}");
+                        break;
+                    case "onlys":
+                        SetNormalStyle(player);
+                        SetOnlyS(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(8)]}");
                         break;
                     default:
-                        player.PrintToChat(msgPrefix + $" Style {desiredStyle} does not exist");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_not_found", desiredStyle.ToLower()]}");
                         break;
                 }
             }
         }
 
-        [ConsoleCommand("css_styles", "List styles")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void ListStylesCommand(CCSPlayerController? player, CommandInfo command)
-        {
-            if (!IsAllowedPlayer(player)) return;
-
-            if (playerTimers[player!.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
-                return;
-            }
-            if(!enableStyles)
-            {
-                player.PrintToChat(msgPrefix + $" Styles are currently disabled on this server");
-                return;
-            }
-
-            SharpTimerDebug($"{player!.PlayerName} calling css_styles...");
-            for (int i = 0; i < 9; i++) //runs 9 times for the 9 styles (i=0-8)
-            {
-                player.PrintToChat(msgPrefix + $"[Style] {primaryChatColor}{GetNamedStyle(i)}");
-            }
-        }
         public void RespawnPlayer(CCSPlayerController? player, bool toEnd = false)
         {
             try
@@ -1429,7 +1399,7 @@ namespace SharpTimer
                         }
                         else
                         {
-                            player.PrintToChat(msgPrefix + $" {ChatColors.LightRed} No RespawnPos found for current map!");
+                            player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_respawnpos"]}");
                         }
                     }
                 }
@@ -1441,7 +1411,7 @@ namespace SharpTimer
                     }
                     else
                     {
-                        player.PrintToChat(msgPrefix + $" {ChatColors.LightRed} No EndPos found for current map!");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_endpos"]}");
                     }
                 }
 
@@ -1451,6 +1421,7 @@ namespace SharpTimer
                     playerTimers[player.Slot].TimerTicks = 0;
                     playerTimers[player.Slot].IsBonusTimerRunning = false;
                     playerTimers[player.Slot].BonusTimerTicks = 0;
+                    playerTimers[player.Slot].IsTimerBlocked = false;
                 });
                 if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {respawnSound}");
             }
@@ -1466,23 +1437,20 @@ namespace SharpTimer
         {
             if (!IsAllowedPlayer(player)) return;
 
-            if (playerTimers[player!.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
             SharpTimerDebug($"{player.PlayerName} calling css_rs...");
 
             if (stageTriggerCount == 0)
             {
-                player.PrintToChat(msgPrefix + $" {ChatColors.LightRed} Current map has no stages!");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["map_no_stages"]}");
                 return;
             }
 
             if (!playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer) || playerTimer.CurrentMapStage == 0)
             {
-                player.PrintToChat(msgPrefix + $" {ChatColors.LightRed} Error occured.");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["error_occured"]}");
                 SharpTimerDebug("Failed to get playerTimer or playerTimer.CurrentMapStage == 0.");
                 return;
             }
@@ -1501,7 +1469,7 @@ namespace SharpTimer
                 }
                 else
                 {
-                    player.PrintToChat(msgPrefix + $" {ChatColors.LightRed} No RespawnStagePos with index {currStage} found for current map!");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["stages_unavalible_respawnpos"]}");
                 }
             }
             catch (Exception ex)
@@ -1517,17 +1485,11 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player)) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_timer...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
-            if (playerTimers[player.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
@@ -1536,7 +1498,13 @@ namespace SharpTimer
 
             playerTimers[player.Slot].IsTimerBlocked = playerTimers[player.Slot].IsTimerBlocked ? false : true;
             playerTimers[player.Slot].IsRecordingReplay = false;
-            player.PrintToChat(msgPrefix + $" Timer: {(playerTimers[player.Slot].IsTimerBlocked ? $"{ChatColors.Red} Disabled" : $"{ChatColors.Green} Enabled")}");
+
+
+            if (playerTimers[player.Slot].IsTimerBlocked)
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_disabled"]}");
+            else
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_enabled"]}");
+
             playerTimers[player.Slot].IsTimerRunning = false;
             playerTimers[player.Slot].TimerTicks = 0;
             playerTimers[player.Slot].IsBonusTimerRunning = false;
@@ -1550,6 +1518,9 @@ namespace SharpTimer
 
         public void QuietStopTimer(CCSPlayerController? player)
         {
+            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+
+            // Remove checkpoints for the current player
             playerCheckpoints.Remove(player.Slot);
 
             playerTimers[player.Slot].IsTimerBlocked = true;
@@ -1559,8 +1530,9 @@ namespace SharpTimer
             playerTimers[player.Slot].IsBonusTimerRunning = false;
             playerTimers[player.Slot].BonusTimerTicks = 0;
 
-            if (stageTriggers.Count != 0) playerTimers[player.Slot].StageTimes!.Clear();
-            if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear();
+            if (stageTriggers.Count != 0) playerTimers[player.Slot].StageTimes!.Clear(); //remove previous stage times if the map has stages
+            if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear(); //remove previous stage times if the map has stages
+            if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {beepSound}");
         }
 
         [ConsoleCommand("css_stver", "Prints SharpTimer Version")]
@@ -1575,17 +1547,14 @@ namespace SharpTimer
                 return;
             }
 
-            if (playerTimers[player!.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            playerTimers[player!.Slot].TicksSinceLastCmd = 0;
 
-            player.PrintToChat($"This server is running SharpTimer v{ModuleVersion}");
-            player.PrintToChat($"OS: {RuntimeInformation.OSDescription}");
-            player.PrintToChat($"Runtime: {RuntimeInformation.RuntimeIdentifier}");
+            player.PrintToChat($" {Localizer["prefix"]} {Localizer["info_version", ModuleVersion]}");
+            player.PrintToChat($" {Localizer["prefix"]} {Localizer["info_os", RuntimeInformation.OSDescription]}");
+            player.PrintToChat($" {Localizer["prefix"]} {Localizer["info_runtime", RuntimeInformation.RuntimeIdentifier]}");
         }
 
         [ConsoleCommand("css_goto", "Teleports you to a player")]
@@ -1595,30 +1564,20 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || goToEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_goto...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
-            if (playerTimers[player.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
-            if (!playerTimers[player.Slot].IsTimerBlocked)
-            {
-                player.PrintToChat(msgPrefix + $" Please stop your timer using {primaryChatColor}!timer{ChatColors.White} first!");
+            if (IsTimerBlocked(player))
                 return;
-            }
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
             var name = command.GetArg(1);
             bool isPlayerFound = false;
             CCSPlayerController foundPlayer = null!;
-
 
             foreach (var playerEntry in connectedPlayers.Values)
             {
@@ -1632,7 +1591,7 @@ namespace SharpTimer
 
             if (!isPlayerFound)
             {
-                player.PrintToChat(msgPrefix + $"{ChatColors.LightRed} Player name not found! If the name contains spaces please try {primaryChatColor}!goto 'some name'");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["goto_player_not_found"]}");
                 return;
             }
 
@@ -1650,7 +1609,7 @@ namespace SharpTimer
 
             if (foundPlayer != null && playerTimers[player.Slot].IsTimerBlocked)
             {
-                player.PrintToChat(msgPrefix + $"Teleporting to {primaryChatColor}{foundPlayer.PlayerName}");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["goto_player", foundPlayer.PlayerName]}");
 
                 if (player != null && IsAllowedPlayer(foundPlayer) && playerTimers[player.Slot].IsTimerBlocked)
                 {
@@ -1662,7 +1621,7 @@ namespace SharpTimer
             }
             else
             {
-                player.PrintToChat(msgPrefix + $"{ChatColors.LightRed} Player name not found! If the name contains spaces please try {primaryChatColor}!goto 'some name'");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["goto_player_not_found"]}");
             }
         }
 
@@ -1674,17 +1633,11 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || cpEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_cp...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
-            if (playerTimers[player.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             SetPlayerCP(player, command);
         }
@@ -1693,17 +1646,13 @@ namespace SharpTimer
         {
             if (((PlayerFlags)player!.Pawn.Value!.Flags & PlayerFlags.FL_ONGROUND) != PlayerFlags.FL_ONGROUND && removeCpRestrictEnabled == false)
             {
-                player.PrintToChat(msgPrefix + $"{ChatColors.LightRed}Cant set {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")} while in air");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["cant_use_checkpoint_in_air", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
                 if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {cpSoundAir}");
                 return;
             }
 
-            if (cpOnlyWhenTimerStopped == true && playerTimers[player.Slot].IsTimerBlocked == false)
-            {
-                player.PrintToChat(msgPrefix + $"{ChatColors.LightRed}Cant set {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")} while timer is on, use {ChatColors.White}!timer");
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {cpSoundAir}");
+            if (CanCheckpoint(player))
                 return;
-            }
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
@@ -1734,7 +1683,7 @@ namespace SharpTimer
             int checkpointCount = playerCheckpoints[player.Slot].Count;
 
             // Print the chat message with the checkpoint count
-            player.PrintToChat(msgPrefix + $"{(currentMapName!.Contains("surf_") ? "Loc" : "Checkpoint")} set! {primaryChatColor}#{checkpointCount}");
+            player.PrintToChat($" {Localizer["prefix"]} {Localizer["checkpoint_set", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint"), checkpointCount]}");
             if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {cpSound}");
             SharpTimerDebug($"{player.PlayerName} css_cp to {checkpointCount} {positionString} {rotationString} {speedString}");
         }
@@ -1747,42 +1696,29 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || cpEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_tp...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
-            if (playerTimers[player.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
             TpPlayerCP(player, command);
         }
 
         public void TpPlayerCP(CCSPlayerController? player, CommandInfo command)
         {
-            if (playerTimers[player!.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
-            if (cpOnlyWhenTimerStopped == true && playerTimers[player.Slot].IsTimerBlocked == false)
-            {
-                player.PrintToChat(msgPrefix + $"{ChatColors.LightRed}Cant use {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")} while timer is on, use {ChatColors.White}!timer");
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {cpSoundAir}");
+            if (CanCheckpoint(player))
                 return;
-            }
 
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            playerTimers[player!.Slot].TicksSinceLastCmd = 0;
 
             // Check if the player has any checkpoints
             if (!playerCheckpoints.ContainsKey(player.Slot) || playerCheckpoints[player.Slot].Count == 0)
             {
-                player.PrintToChat(msgPrefix + $"No {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")} set!");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_checkpoint_set", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
                 return;
             }
 
@@ -1808,7 +1744,7 @@ namespace SharpTimer
 
             // Play a sound or provide feedback to the player
             if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {tpSound}");
-            player.PrintToChat(msgPrefix + $"Teleported to most recent {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")}!");
+            player.PrintToChat($" {Localizer["prefix"]} {Localizer["used_recent_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
             SharpTimerDebug($"{player.PlayerName} css_tp to {position} {rotation} {speed}");
         }
 
@@ -1820,30 +1756,20 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || cpEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_prevcp...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
-            if (playerTimers[player.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
-            if (cpOnlyWhenTimerStopped == true && playerTimers[player.Slot].IsTimerBlocked == false)
-            {
-                player.PrintToChat(msgPrefix + $"{ChatColors.LightRed}Cant use {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")} while timer is on, use {ChatColors.White}!timer");
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {cpSoundAir}");
+            if (CanCheckpoint(player))
                 return;
-            }
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
             if (!playerCheckpoints.TryGetValue(player.Slot, out List<PlayerCheckpoint>? checkpoints) || checkpoints.Count == 0)
             {
-                player.PrintToChat(msgPrefix + $"No {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")} set!");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_checkpoint_set", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
                 return;
             }
 
@@ -1873,7 +1799,7 @@ namespace SharpTimer
                 player.PlayerPawn.Value!.Teleport(position, rotation, speed);
                 // Play a sound or provide feedback to the player
                 if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {tpSound}");
-                player.PrintToChat(msgPrefix + $"Teleported to the previous {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")}!");
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["used_previous_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
                 SharpTimerDebug($"{player.PlayerName} css_prevcp to {position} {rotation}");
             }
         }
@@ -1886,30 +1812,20 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || cpEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_nextcp...");
 
-            if (playerTimers[player.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat(msgPrefix + $" Command is on cooldown. Chill...");
+            if (CommandCooldown(player))
                 return;
-            }
 
-            if (playerTimers[player.Slot].IsReplaying)
-            {
-                player.PrintToChat(msgPrefix + $" Please end your current replay first {primaryChatColor}!stop or {primaryChatColor}!stopreplay");
+            if (ReplayCheck(player))
                 return;
-            }
 
-            if (cpOnlyWhenTimerStopped == true && playerTimers[player.Slot].IsTimerBlocked == false)
-            {
-                player.PrintToChat(msgPrefix + $"{ChatColors.LightRed}Cant use {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")} while timer is on, use {ChatColors.White}!timer");
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {cpSoundAir}");
+            if (CanCheckpoint(player))
                 return;
-            }
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
             if (!playerCheckpoints.TryGetValue(player.Slot, out List<PlayerCheckpoint>? checkpoints) || checkpoints.Count == 0)
             {
-                player.PrintToChat(msgPrefix + $"No {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")} set!");
+                player!.PrintToChat($" {Localizer["prefix"]} {Localizer["no_checkpoint_set", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
                 return;
             }
 
@@ -1940,7 +1856,7 @@ namespace SharpTimer
 
                 // Play a sound or provide feedback to the player
                 if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {tpSound}");
-                player.PrintToChat(msgPrefix + $"Teleported to the next {(currentMapName!.Contains("surf_") ? "loc" : "checkpoint")}!");
+                player!.PrintToChat($" {Localizer["prefix"]} {Localizer["used_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
                 SharpTimerDebug($"{player.PlayerName} css_nextcp to {position} {rotation}");
             }
         }

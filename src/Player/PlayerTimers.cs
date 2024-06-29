@@ -296,7 +296,7 @@ namespace SharpTimer
                 {
                     if (useStageTriggers == true) //use stagetime instead
                     {
-                        playerTimers[playerSlot].CurrentMapCheckpoint = cpTrigger;
+                        playerTimers[playerSlot].CurrentMapCheckpoint += 1;
                         return;
                     }
 
@@ -390,7 +390,7 @@ namespace SharpTimer
                 {
                     if (useStageTriggers == true) //use stagetime instead
                     {
-                        playerTimers[playerSlot].CurrentMapCheckpoint = bonusCheckpointTrigger;
+                        playerTimers[playerSlot].CurrentMapCheckpoint += 1;
                         return;
                     }
 

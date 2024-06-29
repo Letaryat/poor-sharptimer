@@ -147,12 +147,14 @@ namespace SharpTimer
                                 new
                                 {
                                     name = "🛈 SteamID64:",
-                                    value = $"[{steamID}](https://steamcommunity.com/profiles/{steamID})"
+                                    value = $"[{steamID}](https://steamcommunity.com/profiles/{steamID})",
+                                    inline = true
                                 },
                                 new
                                 {
                                     name = "🛹 Style:",
-                                    value = $"{GetNamedStyle(playerTimers[player.Slot].currentStyle)}"
+                                    value = $"{GetNamedStyle(playerTimers[player.Slot].currentStyle)}",
+                                    inline = true
                                 }
                             },
                             author = new

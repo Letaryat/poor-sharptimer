@@ -801,6 +801,15 @@ namespace SharpTimer
             startzoneJumping = bool.TryParse(args, out bool startzoneJumpingValue) ? startzoneJumpingValue : args != "0" && startzoneJumping;
         }
 
+        [ConsoleCommand("sharptimer_spawn_on_respawnpos", "Teleports player to respawnpos on spawn. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSpawnOnRespawnPos(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            spawnOnRespawnPos = bool.TryParse(args, out bool spawnOnRespawnPosValue) ? spawnOnRespawnPosValue : args != "0" && spawnOnRespawnPos;
+        }
+
         [ConsoleCommand("sharptimer_enable_noclip", "Enable or disable noclip for regular players. Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerEnableNoclipConvar(CCSPlayerController? player, CommandInfo command)
@@ -816,7 +825,22 @@ namespace SharpTimer
         {
             string args = command.ArgString;
 
+            if(!isLinux)
+            {
+                enableStyles = false;
+                return;
+            }
+
             enableStyles = bool.TryParse(args, out bool enableStylesValue) ? enableStylesValue : args != "0" && enableStyles;
+        }
+
+        [ConsoleCommand("sharptimer_style_points_enabled", "Enable or disable points granted for style runs. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnableStylePointsConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            enableStylePoints = bool.TryParse(args, out bool enableStylePointsValue) ? enableStylePointsValue : args != "0" && enableStylePoints;
         }
 
         [ConsoleCommand("sharptimer_style_multiplier_lowgrav", "Point modifier for lowgrav. Default value: 1.1")]

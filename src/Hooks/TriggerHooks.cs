@@ -146,14 +146,14 @@ namespace SharpTimer
                 if (IsValidStopTriggerName(callerName))
                 {
                     InvalidateTimer(player, callerHandle);
-                    player.PrintToChat(msgPrefix + $"Timer cancelled due to illegal skip attempt");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_cancelled"]}");
                 }
 
                 if (IsValidResetTriggerName(callerName))
                 {
                     InvalidateTimer(player, callerHandle);
                     RespawnPlayer(player);
-                    player.PrintToChat(msgPrefix + $"You got reset due to illegal skip attempt");
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_reset"]}");
                 }
 
                 return HookResult.Continue;

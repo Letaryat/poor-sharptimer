@@ -324,6 +324,7 @@ namespace SharpTimer
                     string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{secondaryHUDcolor}'>{formattedPlayerVel}</font><font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> u/s</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre} u/s)</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
                     string infoLine = !playerTimer.IsReplaying
                                         ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>🏆 {playerTimer.CachedPB} " + $"({playerTimer.CachedMapPlacement}) | </font>" + $"{playerTimer.RankHUDIcon} <font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                                          $" | {GetNamedStyle(playerTimer.currentStyle)}" +
                                           $"{(currentMapTier != null ? $" | Tier: {currentMapTier}" : "")}" +
                                           $"{(currentMapType != null ? $" | {currentMapType}" : "")}" +
                                           $"{((currentMapType == null && currentMapTier == null) ? $" | {currentMapName} " : "")} </font>"

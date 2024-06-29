@@ -4,7 +4,7 @@ namespace SharpTimer.Database
 {
     public class PostgreSqlDatabase : Database
     {
-        public PostgreSqlDatabase(string connectionString) : base(connectionString, DatabaseType.PostgreSQL)
+        public PostgreSqlDatabase(string dbPath) : base(dbPath, DatabaseType.PostgreSQL)
         {
         }
     }

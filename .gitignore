@@ -1,3 +1,5 @@
 CounterStrikeSharp.API.dll
-bin/
-obj/
+**/obj
+**/bin
+.vscode/
+.vs/

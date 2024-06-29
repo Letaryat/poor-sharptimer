@@ -23,6 +23,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
+using CounterStrikeSharp.API.Modules.Entities;
 
 namespace SharpTimer
 {
@@ -116,11 +117,12 @@ namespace SharpTimer
                             return;
                         }
 
-                        Server.NextFrame(() => Server.PrintToChatAll($"{msgPrefix} Current Server Record on {primaryChatColor}{currentMapName}{ChatColors.White}: "));
+                        Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr", currentMapName!]}"));
+
                         var serverRecord = sortedRecords.FirstOrDefault();
                         string playerName = serverRecord.Value.PlayerName!; // Get the player name from the dictionary value
                         int timerTicks = serverRecord.Value.TimerTicks; // Get the timer ticks from the dictionary value
-                        Server.NextFrame(() => Server.PrintToChatAll($"{msgPrefix} {primaryChatColor}{playerName} {ChatColors.White}- {primaryChatColor}{FormatTime(timerTicks)}"));
+                        Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr_player", playerName, FormatTime(timerTicks)]}"));
                     }
 
                     string[] adMessages = [ $"{msgPrefix} Type {primaryChatColor}!sthelp{ChatColors.Default} to see all commands!",
@@ -169,7 +171,7 @@ namespace SharpTimer
             Logger.LogInformation($"\u001b[36m[SharpTimer] \u001b[37m{msg}");
         }
 
-        private static string FormatTime(int ticks)
+        public static string FormatTime(int ticks)
         {
             TimeSpan timeSpan = TimeSpan.FromSeconds(ticks / 64.0);
 
