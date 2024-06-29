@@ -57,19 +57,22 @@ namespace SharpTimer
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) isLinux = true;
             else isLinux = false;
 
-            if (isLinux)
+            if(enableStyles)
             {
-                movementServices = 0;
-                movementPtr = 1;
-                RunCommandLinux = new(GameData.GetSignature("RunCommand"));
-                RunCommandLinux.Hook(OnRunCommand, HookMode.Pre);
-            }
-            else if (!isLinux)
-            {
-                movementServices = 3;
-                movementPtr = 2;
-                RunCommandWindows = new(GameData.GetSignature("RunCommand"));
-                RunCommandWindows.Hook(OnRunCommand, HookMode.Pre);
+                if (isLinux)
+                {
+                    movementServices = 0;
+                    movementPtr = 1;
+                    RunCommandLinux = new(GameData.GetSignature("RunCommand"));
+                    RunCommandLinux.Hook(OnRunCommand, HookMode.Pre);
+                }
+                else if (!isLinux)
+                {
+                    movementServices = 3;
+                    movementPtr = 2;
+                    RunCommandWindows = new(GameData.GetSignature("RunCommand"));
+                    RunCommandWindows.Hook(OnRunCommand, HookMode.Pre);
+                }
             }
 
             currentMapName = Server.MapName;
@@ -281,34 +284,34 @@ namespace SharpTimer
             {
                 try
                 {
-                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(2) && (getMovementButton.Contains("Left") || getMovementButton.Contains("Right"))) //sideways
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(2) && (getMovementButton.Contains("Left") || getMovementButton.Contains("Right"))) //sideways
                     {
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1536); //disable left (512) + right (1024) = 1536
                         baseCmd.DisableSideMove(); //disable side movement
                         return HookResult.Changed;
                     }
-                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(3) && (getMovementButton.Contains("Left") || getMovementButton.Contains("Right") || getMovementButton.Contains("Backward"))) //only w
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(3) && (getMovementButton.Contains("Left") || getMovementButton.Contains("Right") || getMovementButton.Contains("Backward"))) //only w
                     {
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1552); //disable backward (16) + left (512) + right (1024) = 1552
                         baseCmd.DisableSideMove(); //disable side movement
                         baseCmd.DisableForwardMove(); //set forward move to 0 ONLY if player is moving backwards; ie: disable s
                         return HookResult.Changed;
                     }
-                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(6) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Right") || getMovementButton.Contains("Backward"))) //only a
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(6) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Right") || getMovementButton.Contains("Backward"))) //only a
                     {
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1048); //disable backward (16) + forward (8) + right (1024) = 1048
                         baseCmd.DisableSideMove(); //disable only right movement
                         baseCmd.DisableForwardMove(); //disable forward movement
                         return HookResult.Changed;
                     }
-                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(7) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Left") || getMovementButton.Contains("Backward"))) //only d
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(7) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Left") || getMovementButton.Contains("Backward"))) //only d
                     {
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 536); //disable backward (16) + forward (8) + left (512) = 536
                         baseCmd.DisableSideMove(); //disable only left movement
                         baseCmd.DisableForwardMove(); //disable forward movement
                         return HookResult.Changed;
                     }
-                    if (playerTimers[player.Slot].IsTimerRunning && playerTimers[player.Slot].currentStyle.Equals(8) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Left") || getMovementButton.Contains("Right"))) //only s
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(8) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Left") || getMovementButton.Contains("Right"))) //only s
                     {
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1544); //disable right (1024) + forward (8) + left (512) = 1544
                         baseCmd.DisableSideMove(); //disable side movement
@@ -333,8 +336,12 @@ namespace SharpTimer
             RemoveCommandListener("say", OnPlayerChatAll, HookMode.Pre);
             RemoveCommandListener("say_team", OnPlayerChatTeam, HookMode.Pre);
             RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
-            if (isLinux) RunCommandLinux.Unhook(OnRunCommand, HookMode.Pre);
-            else RunCommandWindows.Unhook(OnRunCommand, HookMode.Pre);
+            if(enableStyles)
+            {
+                if (isLinux) RunCommandLinux.Unhook(OnRunCommand, HookMode.Pre);
+                else RunCommandWindows.Unhook(OnRunCommand, HookMode.Pre);
+            }
+
             SharpTimerConPrint("Plugin Unloaded");
         }
     }

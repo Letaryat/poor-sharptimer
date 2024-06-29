@@ -270,11 +270,12 @@ namespace SharpTimer
 
             if ((srSteamID == "null" || srPlayerName == "null" || srTime == "null") && !self)
             {
-                Server.NextFrame(() => player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_sr_replay"]}"));
-                playerTimers[player.Slot].IsTimerBlocked = false;
+                Server.NextFrame(() => {
+                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_sr_replay"]}");
+                    RespawnPlayer(player);
+                }); 
                 return;
             }
-            QuietStopTimer(player);
 
             await ReadReplayFromJson(player, !self ? srSteamID : pbSteamID, playerSlot, bonusX, style);
 
@@ -1532,7 +1533,10 @@ namespace SharpTimer
 
         public void QuietStopTimer(CCSPlayerController? player)
         {
-            playerCheckpoints.Remove(player!.Slot);
+            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+
+            // Remove checkpoints for the current player
+            playerCheckpoints.Remove(player.Slot);
 
             playerTimers[player.Slot].IsTimerBlocked = true;
             playerTimers[player.Slot].IsRecordingReplay = false;
@@ -1541,8 +1545,9 @@ namespace SharpTimer
             playerTimers[player.Slot].IsBonusTimerRunning = false;
             playerTimers[player.Slot].BonusTimerTicks = 0;
 
-            if (stageTriggers.Count != 0) playerTimers[player.Slot].StageTimes!.Clear();
-            if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear();
+            if (stageTriggers.Count != 0) playerTimers[player.Slot].StageTimes!.Clear(); //remove previous stage times if the map has stages
+            if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear(); //remove previous stage times if the map has stages
+            if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {beepSound}");
         }
 
         [ConsoleCommand("css_stver", "Prints SharpTimer Version")]
