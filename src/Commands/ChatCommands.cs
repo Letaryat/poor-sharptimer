@@ -681,7 +681,12 @@ namespace SharpTimer
                 return;
             }
 
-            List<string> printStatements = [$"{msgPrefix} Top 10 {GetNamedStyle(style)} Records for{(bonusX != 0 ? $" Bonus {bonusX} on" : "")} {currentMapNamee}:"];
+            List<string> printStatements;
+
+            if (bonusX != 0)
+                printStatements = [$" {Localizer["prefix"]} {Localizer["top10_records_bonus", GetNamedStyle(style), bonusX, currentMapNamee]}"];
+            else
+                printStatements = [$" {Localizer["prefix"]} {Localizer["top10_records", GetNamedStyle(style), currentMapNamee]}"];
 
             int rank = 1;
 
@@ -1166,7 +1171,9 @@ namespace SharpTimer
 		    }   
         }
 
-        [ConsoleCommand("css_style", "Enable style")]
+
+        [ConsoleCommand("css_styles", "Styles command")]
+        [ConsoleCommand("css_style", "Styles command")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void StyleCommand(CCSPlayerController? player, CommandInfo command)
         {
@@ -1353,28 +1360,6 @@ namespace SharpTimer
             }
         }
 
-        [ConsoleCommand("css_styles", "List styles")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void ListStylesCommand(CCSPlayerController? player, CommandInfo command)
-        {
-            if (!IsAllowedPlayer(player)) return;
-
-            if (ReplayCheck(player))
-                return;
-
-            if (!enableStyles)
-            {
-                player!.PrintToChat($" {Localizer["prefix"]} {Localizer["styles_disabled"]}");
-                return;
-            }
-
-            SharpTimerDebug($"{player!.PlayerName} calling css_styles...");
-            for (int i = 0; i < 9; i++) //runs 9 times for the 9 styles (i=0-8)
-            {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["styles_list", i, GetNamedStyle(i)]}");
-            }
-            player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_example"]}");
-        }
         public void RespawnPlayer(CCSPlayerController? player, bool toEnd = false)
         {
             try
@@ -1567,9 +1552,9 @@ namespace SharpTimer
 
             playerTimers[player!.Slot].TicksSinceLastCmd = 0;
 
-            player.PrintToChat($"This server is running SharpTimer v{ModuleVersion}");
-            player.PrintToChat($"OS: {RuntimeInformation.OSDescription}");
-            player.PrintToChat($"Runtime: {RuntimeInformation.RuntimeIdentifier}");
+            player.PrintToChat($" {Localizer["prefix"]} {Localizer["info_version", ModuleVersion]}");
+            player.PrintToChat($" {Localizer["prefix"]} {Localizer["info_os", RuntimeInformation.OSDescription]}");
+            player.PrintToChat($" {Localizer["prefix"]} {Localizer["info_runtime", RuntimeInformation.RuntimeIdentifier]}");
         }
 
         [ConsoleCommand("css_goto", "Teleports you to a player")]
