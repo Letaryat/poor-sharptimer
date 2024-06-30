@@ -70,6 +70,14 @@ namespace SharpTimer
 
             if (!IsAllowedPlayer(player) || playerTimer.IsTimerRunning == false) return;
 
+            if(currentTicks == 0)
+            {
+                player.PrintToChat(msgPrefix + $"{ChatColors.LightRed} Error Saving Time: Player time is 0 ticks");
+                playerTimer.IsTimerRunning = false;
+                playerTimer.IsRecordingReplay = false;
+                return;
+            }
+
             if (useStageTriggers == true && useCheckpointTriggers == true)
             {
                 if (playerTimer.CurrentMapStage != stageTriggerCount && currentMapOverrideStageRequirement == true)
@@ -130,11 +138,20 @@ namespace SharpTimer
 
             var playerName = player.PlayerName;
             var playerSlot = player.Slot;
+            var playerTimer = playerTimers[playerSlot];
             var steamID = player.SteamID.ToString();
 
             if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Stopping Bonus Timer for {playerName}");
 
             int currentTicks = playerTimers[player.Slot].BonusTimerTicks;
+
+            if(currentTicks == 0)
+            {
+                player.PrintToChat(msgPrefix + $"{ChatColors.LightRed} Error Saving Time: Player time is 0 ticks");
+                playerTimer.IsTimerRunning = false;
+                playerTimer.IsRecordingReplay = false;
+                return;
+            }
 
             if (!ignoreJSON) SavePlayerTime(player, currentTicks, bonusX);
             if (useMySQL || usePostgres) _ = Task.Run(async () => await SavePlayerTimeToDatabase(player, currentTicks, steamID, playerName, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));

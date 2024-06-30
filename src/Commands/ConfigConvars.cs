@@ -978,6 +978,40 @@ namespace SharpTimer
             }
         }
 
+        [ConsoleCommand("sharptimer_style_multiplier_halfsideways", "Point modifier for 400vel. Default value: 1.3")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerHalfSidewaysConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                halfSidewaysPointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer halfsideways point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid halfsideways point modifier. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_style_multiplier_fastforward", "Point modifier for 400vel. Default value: 1.3")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerFastForwardConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                fastForwardPointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer fastforward point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid fastforward point modifier. Please provide a positive integer.");
+            }
+        }
+
         [ConsoleCommand("sharptimer_remote_data_bhop", "Override for bhop remote_data")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerRemoteDataOverrideBhop(CCSPlayerController? player, CommandInfo command)
