@@ -692,7 +692,7 @@ namespace SharpTimer
                                     upsertCommand.Parameters.AddWithValue("@HideTimerHud", false);
                                     upsertCommand.Parameters.AddWithValue("@HideKeys", false);
                                     upsertCommand.Parameters.AddWithValue("@HideJS", false);
-                                    upsertCommand.Parameters.AddWithValue("@SoundsEnabled", false);
+                                    upsertCommand.Parameters.AddWithValue("@SoundsEnabled", soundsEnabledByDefault);
                                     upsertCommand.Parameters.AddWithValue("@PlayerFov", 0);
                                     upsertCommand.Parameters.AddWithValue("@IsVip", false);
                                     upsertCommand.Parameters.AddWithValue("@BigGifID", "x");
@@ -820,7 +820,7 @@ namespace SharpTimer
                                     upsertCommand.Parameters.AddWithValue("@HideTimerHud", false);
                                     upsertCommand.Parameters.AddWithValue("@HideKeys", false);
                                     upsertCommand.Parameters.AddWithValue("@HideJS", false);
-                                    upsertCommand.Parameters.AddWithValue("@SoundsEnabled", false);
+                                    upsertCommand.Parameters.AddWithValue("@SoundsEnabled", soundsEnabledByDefault);
                                     upsertCommand.Parameters.AddWithValue("@PlayerFov", 0);
                                     upsertCommand.Parameters.AddWithValue("@IsVip", false);
                                     upsertCommand.Parameters.AddWithValue("@BigGifID", "x");

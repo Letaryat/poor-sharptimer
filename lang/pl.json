@@ -80,7 +80,7 @@
     "styles_not_supported": "Style obecnie nie sa wspierane na lokalnych rekordach :(",
 
     //checkpoints
-    "checkpoint_set": "{0}Ustawiono! {lime}#{1}",
+    "checkpoint_set": "{0} Ustawiono! {lime}#{1}",
     "no_checkpoint_set": "Nie {0} zostal ustawiony!",
     "cant_use_checkpoint": "{lightred}Nie mozesz uzywac {0} kiedy timer jest wlaczony! Uzyj {default}!timer",
     "cant_use_checkpoint_in_air": "{lightred}Nie mozna ustawic {0} kiedy jestes w powietrzu",

@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Utils;
 
 
@@ -27,7 +28,6 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerServerHostname(CCSPlayerController? player, CommandInfo command)
         {
-
             string args = command.ArgString.Trim();
 
             if (string.IsNullOrEmpty(args))
@@ -715,7 +715,6 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerChatPrefix(CCSPlayerController? player, CommandInfo command)
         {
-
             string args = command.ArgString.Trim();
 
             if (string.IsNullOrEmpty(args))
@@ -731,7 +730,6 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerPrimaryHUDcolor(CCSPlayerController? player, CommandInfo command)
         {
-
             string args = command.ArgString.Trim();
 
             if (string.IsNullOrEmpty(args))
@@ -747,7 +745,6 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerSecondaryHUDcolor(CCSPlayerController? player, CommandInfo command)
         {
-
             string args = command.ArgString.Trim();
 
             if (string.IsNullOrEmpty(args))
@@ -763,7 +760,6 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerTertiaryHUDcolor(CCSPlayerController? player, CommandInfo command)
         {
-
             string args = command.ArgString.Trim();
 
             if (string.IsNullOrEmpty(args))
@@ -809,6 +805,89 @@ namespace SharpTimer
 
             spawnOnRespawnPos = bool.TryParse(args, out bool spawnOnRespawnPosValue) ? spawnOnRespawnPosValue : args != "0" && spawnOnRespawnPos;
         }
+
+        /* sounds convars */
+        [ConsoleCommand("sharptimer_enable_sounds_by_default", "Whether to enable sounds for players by default.Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundEnableByDefault(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            soundsEnabledByDefault = bool.TryParse(args, out bool soundsEnabledByDefaultValue) ? soundsEnabledByDefaultValue : args != "0" && soundsEnabledByDefault;
+        }
+
+        [ConsoleCommand("sharptimer_sound_timer", "Defines Timer sound. Default value: sounds/ui/counter_beep.vsnd")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundTimer(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+
+            timerSound = $"{args}";
+        }
+
+        [ConsoleCommand("sharptimer_sound_respawn", "Defines Timer sound. Default value: sounds/ui/counter_beep.vsnd")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundRespawn(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+
+            respawnSound = $"{args}";
+        }
+
+        [ConsoleCommand("sharptimer_sound_checkpoint", "Defines Checkpoint sound. Default value: sounds/ui/buttonclick.vsnd")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundCheckpoint(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+
+            cpSound = $"{args}";
+        }
+
+        [ConsoleCommand("sharptimer_sound_checkpoint_error", "Defines Checkpoint Error sound. Default value: sounds/ui/weapon_cant_buy.vsnd")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundCheckpointError(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+
+            cpSoundError = $"{args}";
+        }
+
+        [ConsoleCommand("sharptimer_sound_teleport", "Defines Teleport sound. Default value: sounds/buttons/blip1.vsnd")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundTeleport(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+
+            tpSound = $"{args}";
+        }
+
+        [ConsoleCommand("sharptimer_sound_pb", "Defines PB Sound. Default value: sounds/buttons/bell1.vsnd")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundPersonalBestRecord(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+
+            pbSound = $"{args}";
+        }
+
+        [ConsoleCommand("sharptimer_sound_sr", "Defines SR Sound. Default value: sounds/ui/panorama/round_report_round_won_01.vsnd")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundServerRecord(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+
+            srSound = $"{args}";
+        }
+
+        [ConsoleCommand("sharptimer_sound_sr_all_players", "Whether to play SR sound for all players. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundServerRecordAllPlayers(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            srSoundAll = bool.TryParse(args, out bool soundSRAllValue) ? soundSRAllValue : args != "0" && srSoundAll;
+        }
+        /* sounds convars */
 
         [ConsoleCommand("sharptimer_enable_noclip", "Enable or disable noclip for regular players. Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]

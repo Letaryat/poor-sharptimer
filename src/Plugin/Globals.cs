@@ -13,6 +13,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using System.Runtime.Intrinsics.X86;
 using System.Text.Json;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -182,12 +183,20 @@ namespace SharpTimer
 
         public bool sqlCheck = false;
 
-        public string beepSound = "sounds/ui/csgo_ui_button_rollover_large.vsnd";
+        public bool soundsEnabledByDefault = false;
+        /*public string beepSound = "sounds/ui/csgo_ui_button_rollover_large.vsnd";
         public string respawnSound = "sounds/buttons/button8.vsnd";
         public string cpSound = "sounds/ui/counter_beep.vsnd";
         public string cpSoundAir = "sounds/ui/weapon_cant_buy.vsnd";
-        public string tpSound = "sounds/ui/buttonclick.vsnd";
+        public string tpSound = "sounds/ui/buttonclick.vsnd";*/
+        public string timerSound = "sounds/ui/counter_beep.vsnd";
+        public string respawnSound = "sounds/buttons/button9.vsnd";
+        public string cpSound = "sounds/ui/buttonclick.vsnd";
+        public string cpSoundError = "sounds/ui/weapon_cant_buy.vsnd";
+        public string tpSound = "sounds/buttons/blip1.vsnd";
         public string pbSound = "sounds/buttons/bell1.vsnd";
+        public string srSound = "sounds/ui/panorama/round_report_round_won_01.vsnd";
+        public bool srSoundAll = true;
         public string? gameDir;
         public string? mySQLpath;
         public string? postgresPath;
