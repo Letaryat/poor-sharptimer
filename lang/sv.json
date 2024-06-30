@@ -3,7 +3,7 @@
 
   //timer
   "timer_time": "Tid: [{lime}{0}{default}] {1}",
-  "timer_style": "Style: [{lime}{0}{default]",
+  "timer_style": "Style: [{lime}{0}{default}]",
   "stop_using_timer": "Stäng av din timer med {lime}!timer{default} först!",
   "timer_enabled": "Timer: {green}Aktiverad",
   "timer_disabled": "Timer: {red}Inaktiverad",
