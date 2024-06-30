@@ -80,7 +80,7 @@
   "styles_not_supported": "Styles stöds för närvarande inte på lokala rekord :(",
 
   //checkpoints
-  "checkpoint_set": "{0}placerad! {lime}#{1}",
+  "checkpoint_set": "{0} placerad! {lime}#{1}",
   "no_checkpoint_set": "Inga {0} är placerade!",
   "cant_use_checkpoint": "{lightred}Kan inte använda {0} medans timer är på, använd {default}!timer",
   "cant_use_checkpoint_in_air": "{lightred}Kan inte sätta {0} medans du är i luften",

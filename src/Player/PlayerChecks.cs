@@ -332,5 +332,46 @@ namespace SharpTimer
                 SharpTimerError($"Error in CheckPlayerTriggerPushCoords: {ex.Message}");
             }
         }
+
+        public bool CommandCooldown(CCSPlayerController? player)
+        {
+            if (playerTimers[player!.Slot].TicksSinceLastCmd < cmdCooldown)
+            {
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["command_cooldown"]}");
+                return true;
+            }
+            return false;
+        }
+
+        public bool IsTimerBlocked(CCSPlayerController? player)
+        {
+            if (!playerTimers[player!.Slot].IsTimerBlocked)
+            {
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["stop_using_timer"]}");
+                return true;
+            }
+            return false;
+        }
+
+        public bool ReplayCheck(CCSPlayerController? player)
+        {
+            if (playerTimers[player!.Slot].IsReplaying)
+            {
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["end_your_replay"]}");
+                return true;
+            }
+            return false;
+        }
+
+        public bool CanCheckpoint(CCSPlayerController? player)
+        {
+            if (cpOnlyWhenTimerStopped == true && playerTimers[player!.Slot].IsTimerBlocked == false)
+            {
+                player.PrintToChat($" {Localizer["prefix"]} {Localizer["cant_use_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
+                PlaySound(player, cpSoundError);
+                return true;
+            }
+            return false;
+        }
     }
 }

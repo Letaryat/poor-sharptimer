@@ -506,7 +506,6 @@ namespace SharpTimer
 
             string ranking = await GetPlayerMapPlacementWithTotal(player, steamID, playerName, false, true, bonusX, style);
 
-
             bool newSR = GetNumberBeforeSlash(ranking) == 1 && (oldticks > newticks || oldticks == 0);
             bool beatPB = oldticks > newticks;
             string newTime = FormatTime(newticks);
@@ -525,27 +524,28 @@ namespace SharpTimer
 
                 if (newSR)
                 {
-                    if (bonusX != 0)
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_server_record_bonus", playerName, bonusX]}");
+                    if (bonusX != 0) Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_server_record_bonus", playerName, bonusX]}");
                     else
+                    {
                         Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_server_record", playerName]}");
+                        if (srSoundAll) SendCommandToEveryone($"play {srSound}");
+                        else player.ExecuteClientCommand($"play {srSound}");
+                    }
                     if (discordWebhookPrintSR && discordWebhookEnabled && (useMySQL || usePostgres)) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
                 }
                 else if (beatPB)
                 {
-                    if (bonusX != 0)
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_pb_record_bonus", playerName, bonusX]}");
-                    else
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_pb_record", playerName]}");
+                    if (bonusX != 0) Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_pb_record_bonus", playerName, bonusX]}");
+                    else Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_pb_record", playerName]}");
                     if (discordWebhookPrintPB && discordWebhookEnabled && (useMySQL || usePostgres)) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
+                    PlaySound(player, pbSound);
                 }
                 else
                 {
-                    if (bonusX != 0)
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["map_finish_bonus", playerName, bonusX]}");
-                    else
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["map_finish", playerName]}");
+                    if (bonusX != 0) Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["map_finish_bonus", playerName, bonusX]}");
+                    else Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["map_finish", playerName]}");
                     if (discordWebhookPrintPB && discordWebhookEnabled && timesFinished == 1 && (useMySQL || usePostgres)) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
+                    PlaySound(player, timerSound);
                 }
 
                 if ((useMySQL || usePostgres) || bonusX != 0)
@@ -553,8 +553,6 @@ namespace SharpTimer
 
                 player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_time", newTime, timeDifference]}");
                 player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_style", GetNamedStyle(style)]}");
-
-                if (IsAllowedPlayer(player) && playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {beepSound}");
 
                 if (enableReplays == true && enableSRreplayBot == true && newSR && (oldticks > newticks || oldticks == 0))
                 {
@@ -678,7 +676,7 @@ namespace SharpTimer
         {
             Utilities.GetPlayers().ForEach(player =>
             {
-                if (player is { PawnIsAlive: true, IsValid: true })
+                if (player is { IsValid: true })
                 {
                     player.ExecuteClientCommand(command);
                 }
@@ -702,6 +700,12 @@ namespace SharpTimer
             });
 
             return (ct_count, t_count);
+        }
+
+        public void PlaySound(CCSPlayerController? player, string Sound)
+        {
+            if (playerTimers[player!.Slot].SoundsEnabled != false && IsAllowedPlayer(player))
+                player.ExecuteClientCommand($"play {Sound}");
         }
     }
 }

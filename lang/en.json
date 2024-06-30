@@ -80,7 +80,7 @@
     "styles_not_supported": "Styles are currently not supported on local records :(",
 
     //checkpoints
-    "checkpoint_set": "{0}set! {lime}#{1}",
+    "checkpoint_set": "{0} set! {lime}#{1}",
     "no_checkpoint_set": "No {0} set!",
     "cant_use_checkpoint": "{lightred}Cant use {0} while timer is on, use {default}!timer",
     "cant_use_checkpoint_in_air": "{lightred}Cant set {0} while in air",

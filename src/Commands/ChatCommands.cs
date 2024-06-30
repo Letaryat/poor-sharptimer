@@ -20,53 +20,11 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Memory;
-using System.Drawing;
-
 
 namespace SharpTimer
 {
     public partial class SharpTimer
     {
-        public bool CommandCooldown(CCSPlayerController? player)
-        {
-            if (playerTimers[player!.Slot].TicksSinceLastCmd < cmdCooldown)
-            {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["command_cooldown"]}");
-                return true;
-            }
-            return false;
-        }
-
-        public bool IsTimerBlocked(CCSPlayerController? player)
-        {
-            if (!playerTimers[player!.Slot].IsTimerBlocked)
-            {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["stop_using_timer"]}");
-                return true;
-            }
-            return false;
-        }
-
-        public bool ReplayCheck(CCSPlayerController? player)
-        {
-            if (playerTimers[player!.Slot].IsReplaying)
-            {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["end_your_replay"]}");
-                return true;
-            }
-            return false;
-        }
-
-        public bool CanCheckpoint(CCSPlayerController? player)
-        {
-            if (cpOnlyWhenTimerStopped == true && playerTimers[player!.Slot].IsTimerBlocked == false)
-            {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["cant_use_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {cpSoundAir}");
-                return true;
-            }
-            return false;
-        }
 
         [ConsoleCommand("css_dp_timers", "Prints playerTimers")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
@@ -937,7 +895,7 @@ namespace SharpTimer
                     playerTimers[player.Slot].IsTimerBlocked = false;
                 });
 
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {respawnSound}");
+                PlaySound(player, respawnSound);
             }
             catch (Exception ex)
             {
@@ -1066,7 +1024,7 @@ namespace SharpTimer
                     playerTimers[player.Slot].BonusTimerTicks = 0;
                 });
 
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {respawnSound}");
+                PlaySound(player, respawnSound);
             }
             catch (Exception ex)
             {
@@ -1445,7 +1403,7 @@ namespace SharpTimer
                     playerTimers[player.Slot].BonusTimerTicks = 0;
                     playerTimers[player.Slot].IsTimerBlocked = false;
                 });
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {respawnSound}");
+                PlaySound(player, respawnSound);
             }
             catch (Exception ex)
             {
@@ -1534,7 +1492,7 @@ namespace SharpTimer
 
             if (stageTriggers.Count != 0) playerTimers[player.Slot].StageTimes!.Clear(); //remove previous stage times if the map has stages
             if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear(); //remove previous stage times if the map has stages
-            if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {beepSound}");
+            PlaySound(player, timerSound);
             SharpTimerDebug($"{player.PlayerName} css_timer to {playerTimers[player.Slot].IsTimerBlocked}");
         }
 
@@ -1554,7 +1512,7 @@ namespace SharpTimer
 
             if (stageTriggers.Count != 0) playerTimers[player.Slot].StageTimes!.Clear(); //remove previous stage times if the map has stages
             if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear(); //remove previous stage times if the map has stages
-            if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {beepSound}");
+            PlaySound(player, timerSound);
         }
 
         [ConsoleCommand("css_stver", "Prints SharpTimer Version")]
@@ -1617,17 +1575,13 @@ namespace SharpTimer
                 return;
             }
 
-
             if (!playerTimers[player.Slot].IsTimerBlocked)
-            {
                 playerCheckpoints.Remove(player.Slot);
-            }
 
             playerTimers[player.Slot].IsTimerRunning = false;
             playerTimers[player.Slot].TimerTicks = 0;
 
-            if (playerTimers[player.Slot].SoundsEnabled != false)
-                player.ExecuteClientCommand($"play {respawnSound}");
+            PlaySound(player, respawnSound);
 
             if (foundPlayer != null && playerTimers[player.Slot].IsTimerBlocked)
             {
@@ -1669,7 +1623,7 @@ namespace SharpTimer
             if (((PlayerFlags)player!.Pawn.Value!.Flags & PlayerFlags.FL_ONGROUND) != PlayerFlags.FL_ONGROUND && removeCpRestrictEnabled == false)
             {
                 player.PrintToChat($" {Localizer["prefix"]} {Localizer["cant_use_checkpoint_in_air", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {cpSoundAir}");
+                PlaySound(player, cpSoundError);
                 return;
             }
 
@@ -1706,7 +1660,7 @@ namespace SharpTimer
 
             // Print the chat message with the checkpoint count
             player.PrintToChat($" {Localizer["prefix"]} {Localizer["checkpoint_set", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint"), checkpointCount]}");
-            if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {cpSound}");
+            PlaySound(player, cpSound);
             SharpTimerDebug($"{player.PlayerName} css_cp to {checkpointCount} {positionString} {rotationString} {speedString}");
         }
 
@@ -1741,6 +1695,7 @@ namespace SharpTimer
             if (!playerCheckpoints.ContainsKey(player.Slot) || playerCheckpoints[player.Slot].Count == 0)
             {
                 player.PrintToChat($" {Localizer["prefix"]} {Localizer["no_checkpoint_set", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
+                PlaySound(player, cpSoundError);
                 return;
             }
 
@@ -1765,7 +1720,7 @@ namespace SharpTimer
             }
 
             // Play a sound or provide feedback to the player
-            if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {tpSound}");
+            PlaySound(player, tpSound);
             player.PrintToChat($" {Localizer["prefix"]} {Localizer["used_recent_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
             SharpTimerDebug($"{player.PlayerName} css_tp to {position} {rotation} {speed}");
         }
@@ -1820,7 +1775,7 @@ namespace SharpTimer
                 // Teleport the player to the previous checkpoint, including the saved rotation
                 player.PlayerPawn.Value!.Teleport(position, rotation, speed);
                 // Play a sound or provide feedback to the player
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {tpSound}");
+                PlaySound(player, tpSound);
                 player.PrintToChat($" {Localizer["prefix"]} {Localizer["used_previous_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
                 SharpTimerDebug($"{player.PlayerName} css_prevcp to {position} {rotation}");
             }
@@ -1877,7 +1832,7 @@ namespace SharpTimer
                 player.PlayerPawn.Value!.Teleport(position, rotation, speed);
 
                 // Play a sound or provide feedback to the player
-                if (playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {tpSound}");
+                PlaySound(player, tpSound);
                 player!.PrintToChat($" {Localizer["prefix"]} {Localizer["used_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
                 SharpTimerDebug($"{player.PlayerName} css_nextcp to {position} {rotation}");
             }
