@@ -96,7 +96,7 @@
     "js_msg2": "{grey}Height: {lime}{0}{grey} | Width: {lime}{1}{grey} | WT: {lime}{2}{grey} | Sync: {lime}{3}%",
 
     //other
-    "command_cooldown": "Komenda jest odnowieniu. Poczekaj chwile...",
+    "command_cooldown": "Odczekaj zanim ponownie skorzystasz z komendy!",
     "error_occured": "{lightred}Wystapil blad.",
     "info_version": "Ten serwer uzywa SharpTimer w wersji v{0}",
     "info_os": "System: {0}",
