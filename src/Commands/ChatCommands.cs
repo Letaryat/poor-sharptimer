@@ -484,15 +484,7 @@ namespace SharpTimer
         }
         public void HideWeapon(CCSPlayerController? player)
         {
-            if (!player!.PlayerPawn.Value!.WeaponServices!.ActiveWeapon.IsValid)
-            {
-                player.GiveNamedItem("weapon_usp_silencer");
-                player.GiveNamedItem("weapon_knife");
-            }
-            else
-            {
-                player.RemoveWeapons();
-            }
+            player!.RemoveWeapons();
         }
         [ConsoleCommand("css_fov", "Sets the player's FOV")]
         [CommandHelper(minArgs: 1, usage: "[fov]")]
@@ -1163,7 +1155,7 @@ namespace SharpTimer
 
             if (command.ArgByIndex(1) == "")
             {
-                for (int i = 0; i < 9; i++) //runs 9 times for the 9 styles (i=0-8)
+                for (int i = 0; i < 11; i++) //runs 11 times for the 11 styles (i=0-10)
                 {
                     player.PrintToChat($" {Localizer["prefix"]} {Localizer["styles_list", i, GetNamedStyle(i)]}");
                 }
@@ -1219,6 +1211,16 @@ namespace SharpTimer
                         SetOnlyS(player);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
+                    case 9:
+                        SetNormalStyle(player);
+                        SetHalfSideways(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
+                        break;
+                    case 10:
+                        SetNormalStyle(player);
+                        SetFastForward(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
+                        break;
                     default:
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_not_found", desiredStyleInt]}");
                         break;
@@ -1255,6 +1257,16 @@ namespace SharpTimer
                         SetNormalStyle(player);
                         SetSideways(player);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(2)]}");
+                        break;
+                    case "halfsideways":
+                        SetNormalStyle(player);
+                        SetHalfSideways(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(9)]}");
+                        break;
+                    case "hsw":
+                        SetNormalStyle(player);
+                        SetHalfSideways(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(9)]}");
                         break;
                     case "wonly":
                         SetNormalStyle(player);
@@ -1310,6 +1322,16 @@ namespace SharpTimer
                         SetNormalStyle(player);
                         SetOnlyS(player);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(8)]}");
+                        break;
+                    case "fastforward":
+                        SetNormalStyle(player);
+                        SetFastForward(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(10)]}");
+                        break;
+                    case "ff":
+                        SetNormalStyle(player);
+                        SetFastForward(player);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(10)]}");
                         break;
                     default:
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_not_found", desiredStyle.ToLower()]}");
