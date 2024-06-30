@@ -3,7 +3,7 @@
 
   //timer
   "timer_time": "Temps: [{lime}{0}{default}] {1}",
-  "timer_style": "Style: [{lime}{0}{default]",
+  "timer_style": "Style: [{lime}{0}{default}]",
   "stop_using_timer": "Arrêtez votre minuteur en utilisant {lime}!timer{default} en premier !",
   "timer_enabled": "Timer: {green}Activé",
   "timer_disabled": "Timer: {red}Désactivé",

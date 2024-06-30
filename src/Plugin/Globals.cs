@@ -184,11 +184,6 @@ namespace SharpTimer
         public bool sqlCheck = false;
 
         public bool soundsEnabledByDefault = false;
-        /*public string beepSound = "sounds/ui/csgo_ui_button_rollover_large.vsnd";
-        public string respawnSound = "sounds/buttons/button8.vsnd";
-        public string cpSound = "sounds/ui/counter_beep.vsnd";
-        public string cpSoundAir = "sounds/ui/weapon_cant_buy.vsnd";
-        public string tpSound = "sounds/ui/buttonclick.vsnd";*/
         public string timerSound = "sounds/ui/counter_beep.vsnd";
         public string respawnSound = "sounds/buttons/button9.vsnd";
         public string cpSound = "sounds/ui/buttonclick.vsnd";
