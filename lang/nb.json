@@ -1,0 +1,104 @@
+{
+    "prefix": "{lime}SharpTimer ●{white}",
+
+    //timer
+    "timer_time": "Tid: [{lime}{0}{default}] {1}",
+    "timer_style": "Stil: [{lime}{0}{default}]",
+    "stop_using_timer": "Stopp din tidtaker med bruk av {lime}!timer{default} først!",
+    "timer_enabled": "Tidtaker: {green}På",
+    "timer_disabled": "Tidtaker: {red}Av",
+    "timer_cancelled": "Tidtaker kansellert på grunn av ulovlig skip forsøk",
+    "timer_reset": "Du ble tilbakestilt på grunn av ulovlig skip forsøk",
+
+    //records
+    "no_records_available": "Ingen rekorder tilgjengelig får {0}",
+    "no_records_available_bonus": "Ingen rekorder tilgjengelig får Bonus {0} på {1}",
+    "records_map": "#{0}: {lime}{1} {default}- {2} {lime}{3}",
+    "new_server_record": "{lime}{0} {white}satt en ny SR!",
+    "new_server_record_bonus": "{lime}{0} {white}satt en ny Bonus {1} SR!",
+    "new_pb_record": "{lime}{0} {white}satt en ny Kart PB!",
+    "new_pb_record_bonus": "{lime}{0} {white}satt en ny Bonus {0} PB!",
+    "map_finish": "{lime}{0} {white}fullførte kartet!",
+    "map_finish_bonus": "{lime}{0} {white}fullførte Bonusen {0}!",
+    "map_finish_rank": "Rang: [{lime}{0}{default}] Ganger Fullført: [{lime}{1}{default}]",
+    "top10_records": "Top 10 {0} Recorder får {1}:",
+    "top10_records_bonus": "Top 10 {0} Recorder får Bonus {1} on {2}:",
+    
+    //stages
+    "invalid_bonus_stage": "Tast inn et gyldig bonusstadium, for eksempel: {lime}!topbonus 1",
+    "invalid_bonus_rb": "Tast inn et gyldig bonusstadium, for eksempel: {lime}!rb <index>",
+    "stages_unavalible": "Stadium utilgjengelig",
+    "stages_unavalible_respawnpos": "{lightred}Ingen RespawnStagePos med indeks {0} funnet får gjeldende kartet!",
+    "stages_enter_valid": "Tast inn et gyldig stadium, for eksempel: {lime}!stage <index>",
+    "map_no_stages": "{lightred}Gjeldende kartet har ingen stadium!",
+
+    //rank
+    "current_rank": "Du er for tiden {0}{1}{lime}",
+    "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
+    "current_pb": "Din nåværende PB på {lime}{0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
+    "current_sr": "Nåværende Server Rekord på {lime}{0}{white}:",
+    "current_sr_player": "{lime}{0} {white}- {lime}{1}",
+    "reached_max_free": "Du har nådd dine maksimale gratispoeng belønninger på {lime}{0}{default}!",
+
+    //replay
+    "no_replay": "Ingen repetisjon spilles for øyeblikket",
+    "end_your_replay": "Avslutt den nåværende reprisen først {lime}!stopreplay",
+    "available_replay_cmds": "Tilgjengelig repetisjon kommandoer: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
+    "replaying_server_record": "Spiller av Server Kart Rekord, skriv {lime}!stop eller {lime}!stopreplay {default}får å slutte reprisen",
+    "no_sr_replay": "Ingen Server Rekord og spille av",
+    "replaying_server_top": "Spiller av Server Top {0} skriv {lime}!stop eller {lime}!stopreplay {default}får å slutte reprisen",
+    "replaying_pb": "Spiller av din PB skriv {lime}!stop eller {lime}!stopreplay {default}får å slutte reprisen",
+    "ending_replay": "Slutter reprisen",
+    "replay_corrupt": "Den forespurte reprisen ser ut til å være ødelagt",
+    "replay_dont_exist": "Den forespurte reprisen eksisterer ikke",
+
+    //settings
+    "hud_shown": "Hud er nå: {green}Vist",
+    "hud_hidden": "Hud er nå: {red}Gjemt",
+    "keys_shown": "Keys er nå: {green}Vist",
+    "keys_hidden": "Keys er nå: {red}Gjemt",
+    "jumpstats_shown": "Hoppstatistikk er nå: {green}Vist",
+    "jumpstats_hidden": "Hoppstatistikk er nå: {red}Gjemt",
+    "sounds_on": "Lyder er nå: {green}PÅ",
+    "sounds_off": "Lyder er nå: {red}AV",
+
+    //zones
+    "no_respawnpos": "{lightred}Ingen RespawnPos funnet for gjeldende kart!",
+    "no_respawnpos_bonus": "{lightred}Ingen RespawnBonusPos funnet for gjeldende kart!",
+    "no_respawnpos_bonus_index": "{lightred}Ingen RespawnBonusPos with indeks {0} funnet for gjeldende kart!",
+    "no_endpos": "{lightred}Ingen EndPos funnet for gjeldende kart!",
+    "map_using_manual_zones": "gjeldende kart bruker manuelle soner",
+    "saved_custom_respawnpos": "Lagret egendefinert startsone RespawnPos!",
+    "not_inside_startzone": "Du er ikke i startsonen!",
+
+    //styles
+    "styles_list": "Stil {0}. {lime}{1}",
+    "style_example": "eksempel: {lime}/style 1 eller lowgravity",
+    "style_set": "Stil satt til: {lime}{0}",
+    "style_not_found": "Stil {0} eksisterer ikke",
+    "styles_disabled": "Stiler er for øyeblikket deaktivert på denne serveren",
+    "styles_not_supported": "Stiler støttes for øyeblikket ikke på lokale rekorder",
+
+    //checkpoints
+    "checkpoint_set": "{0}satt! {lime}#{1}",
+    "no_checkpoint_set": "Nei {0} satt!",
+    "cant_use_checkpoint": "{lightred}Kan ikke bruke {0} mens tidtaker er på, bruk {default}!timer",
+    "cant_use_checkpoint_in_air": "{lightred}Kan ikke bruke {0} Mens i lufta",
+    "used_checkpoint": "Teleportert til neste {0}",
+    "used_recent_checkpoint": "Teleportert til mest nylig {0}",
+    "used_previous_checkpoint": "Teleportert til forrige {0}",
+
+    "goto_player": "Teleporterer til {lime}{0}",
+    "goto_player_not_found": "{lightred}Finner ikke spillernavnet! Hvis navnet inneholder mellomrom, prøv {lime}!goto 'et navn'",
+
+    //jumpstats
+    "js_msg1": "{lime}JS: {grey} {0}: {1}{2}{grey} | Pre: {lime}{3}{grey} | Max: {lime}{4}{grey} | Strafes: {lime}{5}",
+    "js_msg2": "{grey}Høyde: {lime}{0}{grey} | Bredde: {lime}{1}{grey} | WT: {lime}{2}{grey} | Sync: {lime}{3}%",
+
+    //other
+    "command_cooldown": "Kommandoen er på nedkjøling. Chill...",
+    "error_occured": "{lightred}Feil oppstod.",
+    "info_version": "Denne serveren kjører SharpTimer v{0}",
+    "info_os": "OS: {0}",
+    "info_runtime": "Kjøretid: {0}"
+}
