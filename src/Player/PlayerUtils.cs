@@ -552,7 +552,7 @@ namespace SharpTimer
                     Server.PrintToChatAll(msgPrefix + $"{(bonusX != 0 ? $"" : $"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] ")}{(timesFinished != 0 && (useMySQL || usePostgres) ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : "")}");
 
                 player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_time", newTime, timeDifference]}");
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_style", GetNamedStyle(style)]}");
+                if (enableStyles) player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_style", GetNamedStyle(style)]}");
 
                 if (enableReplays == true && enableSRreplayBot == true && newSR && (oldticks > newticks || oldticks == 0))
                 {
