@@ -81,7 +81,7 @@ namespace SharpTimer
                     // Check PlayerStats
                     SharpTimerDebug($"Checking PlayerStats Table...");
                     await CreatePlayerStatsTableAsync(connection);
-                    await UpdateTableColumnsAsync(connection, "PlayerStats", playerStatsColumns);
+                    await UpdateTableColumnsAsync(connection, $"{PlayerStatsTable}", playerStatsColumns);
                 }
                 catch (Exception ex)
                 {
@@ -215,7 +215,7 @@ namespace SharpTimer
 
         private async Task CreatePlayerStatsTableAsync(MySqlConnection connection)
         {
-            string createTableQuery = @"CREATE TABLE IF NOT EXISTS PlayerStats (
+            string createTableQuery = $@"CREATE TABLE IF NOT EXISTS {PlayerStatsTable} (
                                             SteamID VARCHAR(20),
                                             PlayerName VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
                                             TimesConnected INT,
@@ -259,6 +259,9 @@ namespace SharpTimer
                         string password = root.TryGetProperty("MySqlPassword", out var passwordProperty) ? passwordProperty.GetString()! : "root";
                         int port = root.TryGetProperty("MySqlPort", out var portProperty) ? portProperty.GetInt32()! : 3306;
                         int timeout = root.TryGetProperty("MySqlTimeout", out var timeoutProperty) ? timeoutProperty.GetInt32()! : 30;
+                        string tableprefix = root.TryGetProperty("MySqlTablePrefix", out var tableprefixProperty) ? tableprefixProperty.GetString()! : "";
+
+                        PlayerStatsTable = $"{(tableprefix != "" ? $"PlayerStats_{tableprefix}" : "PlayerStats")}";
 
                         return $"Server={host};Database={database};User ID={username};Password={password};Port={port};CharSet=utf8mb4;Connection Timeout={timeout};";
                     }
@@ -591,7 +594,7 @@ namespace SharpTimer
                         await CreatePostgresPlayerRecordsTableAsync(connection);
 
 
-                        string selectQuery = @"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
+                        string selectQuery = $@"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""{PlayerStatsTable}"" WHERE ""SteamID"" = @SteamID";
                         using (var selectCommand = new NpgsqlCommand(selectQuery, connection))
                         {
                             selectCommand.Parameters.AddWithValue("@SteamID", steamId);
@@ -637,8 +640,8 @@ namespace SharpTimer
                                 await row.CloseAsync();
                                 // Update or insert the record
 
-                                string upsertQuery = @"
-                                                    INSERT INTO ""PlayerStats"" 
+                                string upsertQuery = $@"
+                                                    INSERT INTO ""{PlayerStatsTable}"" 
                                                     (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"")
                                                     VALUES 
                                                     (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)
@@ -682,7 +685,7 @@ namespace SharpTimer
                                 Server.NextFrame(() => SharpTimerDebug($"No player stats yet"));
                                 await row.CloseAsync();
 
-                                string upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = $@"INSERT INTO ""{PlayerStatsTable}"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     upsertCommand.Parameters.AddWithValue("@PlayerName", playerName);
@@ -738,7 +741,7 @@ namespace SharpTimer
                         await CreatePlayerRecordsTableAsync(connection);
 
 
-                        string selectQuery = "SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                        string selectQuery = $"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                         using (var selectCommand = new MySqlCommand(selectQuery, connection))
                         {
                             selectCommand.Parameters.AddWithValue("@SteamID", steamId);
@@ -784,7 +787,7 @@ namespace SharpTimer
                                 await row.CloseAsync();
                                 // Update or insert the record
 
-                                string upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = $"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new MySqlCommand(upsertQuery, connection))
                                 {
                                     upsertCommand.Parameters.AddWithValue("@PlayerName", playerName);
@@ -810,7 +813,7 @@ namespace SharpTimer
                                 Server.NextFrame(() => SharpTimerDebug($"No player stats yet"));
                                 await row.CloseAsync();
 
-                                string upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = $"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new MySqlCommand(upsertQuery, connection))
                                 {
                                     upsertCommand.Parameters.AddWithValue("@PlayerName", playerName);
@@ -867,7 +870,7 @@ namespace SharpTimer
                         await CreatePostgresPlayerRecordsTableAsync(connection);
 
 
-                        string selectQuery = @"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
+                        string selectQuery = $@"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""{PlayerStatsTable}"" WHERE ""SteamID"" = @SteamID";
                         using (var selectCommand = new NpgsqlCommand(selectQuery, connection))
                         {
                             selectCommand.Parameters.AddWithValue("@SteamID", steamId);
@@ -891,8 +894,8 @@ namespace SharpTimer
                                 await row.CloseAsync();
                                 // Update or insert the record
 
-                                string upsertQuery = @"
-                                                    INSERT INTO ""PlayerStats"" 
+                                string upsertQuery = $@"
+                                                    INSERT INTO ""{PlayerStatsTable}"" 
                                                     (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"")
                                                     VALUES 
                                                     (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)
@@ -944,7 +947,7 @@ namespace SharpTimer
                                 Server.NextFrame(() => SharpTimerDebug($"No player stats yet"));
                                 await row.CloseAsync();
 
-                                string upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = $@"INSERT INTO ""{PlayerStatsTable}"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value))
@@ -1006,7 +1009,7 @@ namespace SharpTimer
                         await CreatePlayerRecordsTableAsync(connection);
 
 
-                        string selectQuery = "SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                        string selectQuery = $"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                         using (var selectCommand = new MySqlCommand(selectQuery, connection))
                         {
                             selectCommand.Parameters.AddWithValue("@SteamID", steamId);
@@ -1030,7 +1033,7 @@ namespace SharpTimer
                                 await row.CloseAsync();
                                 // Update or insert the record
 
-                                string upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = $"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new MySqlCommand(upsertQuery, connection))
                                 {
                                     if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value))
@@ -1063,7 +1066,7 @@ namespace SharpTimer
                                 Server.NextFrame(() => SharpTimerDebug($"No player stats yet"));
                                 await row.CloseAsync();
 
-                                string upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = $"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new MySqlCommand(upsertQuery, connection))
                                 {
                                     if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value))
@@ -1127,7 +1130,7 @@ namespace SharpTimer
                         await CreatePostgresPlayerRecordsTableAsync(connection);
 
                         //string selectQuery = "SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, SoundsEnabled, IsVip, BigGifID FROM PlayerStats WHERE SteamID = @SteamID";
-                        string selectQuery = @"SELECT ""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
+                        string selectQuery = $@"SELECT ""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""{PlayerStatsTable}"" WHERE ""SteamID"" = @SteamID";
                         using (var selectCommand = new NpgsqlCommand(selectQuery, connection))
                         {
                             selectCommand.Parameters.AddWithValue("@SteamID", steamId);
@@ -1160,8 +1163,8 @@ namespace SharpTimer
                                 // Update or insert the record
 
                                 // string upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, GlobalPoints) VALUES (@PlayerName, @SteamID, @GlobalPoints)";
-                                string upsertQuery = @"
-                                                    INSERT INTO ""PlayerStats"" 
+                                string upsertQuery = $@"
+                                                    INSERT INTO ""{PlayerStatsTable}"" 
                                                     (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"")
                                                     VALUES 
                                                     (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)
@@ -1224,7 +1227,7 @@ namespace SharpTimer
 
                                 await row.CloseAsync();
 
-                                string upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = $@"INSERT INTO ""{PlayerStatsTable}"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new NpgsqlCommand(upsertQuery, connection))
                                 {
                                     if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value) || playerSlot == -1)
@@ -1287,7 +1290,7 @@ namespace SharpTimer
                         await CreatePlayerRecordsTableAsync(connection);
 
                         //string selectQuery = "SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, SoundsEnabled, IsVip, BigGifID FROM PlayerStats WHERE SteamID = @SteamID";
-                        string selectQuery = "SELECT PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                        string selectQuery = $"SELECT PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                         using (var selectCommand = new MySqlCommand(selectQuery, connection))
                         {
                             selectCommand.Parameters.AddWithValue("@SteamID", steamId);
@@ -1321,7 +1324,7 @@ namespace SharpTimer
                                 // Update or insert the record
 
                                 // string upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, GlobalPoints) VALUES (@PlayerName, @SteamID, @GlobalPoints)";
-                                string upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = $"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new MySqlCommand(upsertQuery, connection))
                                 {
                                     if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value) || playerSlot == -1)
@@ -1364,7 +1367,7 @@ namespace SharpTimer
                                 
                                 await row.CloseAsync();
 
-                                string upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                string upsertQuery = $"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                 using (var upsertCommand = new MySqlCommand(upsertQuery, connection))
                                 {
                                     if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value) || playerSlot == -1)
@@ -1413,7 +1416,7 @@ namespace SharpTimer
                     {
                         try
                         {
-                            string query = @"SELECT ""PlayerName"", ""GlobalPoints"" FROM ""PlayerStats"" ORDER BY ""GlobalPoints"" DESC LIMIT 10";
+                            string query = $@"SELECT ""PlayerName"", ""GlobalPoints"" FROM ""{PlayerStatsTable}"" ORDER BY ""GlobalPoints"" DESC LIMIT 10";
                             using (NpgsqlCommand command = new(query, connection))
                             {
                                 using (NpgsqlDataReader reader = await command.ExecuteReaderAsync())
@@ -1461,7 +1464,7 @@ namespace SharpTimer
                     {
                         try
                         {
-                            string query = "SELECT PlayerName, GlobalPoints FROM PlayerStats ORDER BY GlobalPoints DESC LIMIT 10";
+                            string query = $"SELECT PlayerName, GlobalPoints FROM {PlayerStatsTable} ORDER BY GlobalPoints DESC LIMIT 10";
                             using (MySqlCommand command = new(query, connection))
                             {
                                 using (MySqlDataReader reader = await command.ExecuteReaderAsync())
@@ -1519,7 +1522,7 @@ namespace SharpTimer
                     using (var connection = await OpenPostgresDatabaseConnectionAsync())
                     {
                         await CreatePostgresPlayerRecordsTableAsync(connection);
-                        string selectQuery = @"SELECT ""IsVip"", ""BigGifID"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
+                        string selectQuery = $@"SELECT ""IsVip"", ""BigGifID"" FROM ""{PlayerStatsTable}"" WHERE ""SteamID"" = @SteamID";
                         using (var selectCommand = new NpgsqlCommand(selectQuery, connection))
                         {
                             selectCommand.Parameters.AddWithValue("@SteamID", steamId);
@@ -1571,7 +1574,7 @@ namespace SharpTimer
                     using (var connection = await OpenDatabaseConnectionAsync())
                     {
                         await CreatePlayerRecordsTableAsync(connection);
-                        string selectQuery = "SELECT IsVip, BigGifID FROM PlayerStats WHERE SteamID = @SteamID";
+                        string selectQuery = $"SELECT IsVip, BigGifID FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                         using (var selectCommand = new MySqlCommand(selectQuery, connection))
                         {
                             selectCommand.Parameters.AddWithValue("@SteamID", steamId);
@@ -1844,7 +1847,7 @@ namespace SharpTimer
                     using (var connection = await OpenPostgresDatabaseConnectionAsync())
                     {
                         await CreatePostgresPlayerStatsTableAsync(connection);
-                        string selectQuery = @"SELECT ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
+                        string selectQuery = $@"SELECT ""GlobalPoints"" FROM ""{PlayerStatsTable}"" WHERE ""SteamID"" = @SteamID";
                         using (var selectCommand = new NpgsqlCommand(selectQuery, connection))
                         {
                             selectCommand.Parameters.AddWithValue("@SteamID", steamId);
@@ -1883,7 +1886,7 @@ namespace SharpTimer
                     using (var connection = await OpenDatabaseConnectionAsync())
                     {
                         await CreatePlayerStatsTableAsync(connection);
-                        string selectQuery = "SELECT GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                        string selectQuery = $"SELECT GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                         using (var selectCommand = new MySqlCommand(selectQuery, connection))
                         {
                             selectCommand.Parameters.AddWithValue("@SteamID", steamId);
@@ -2044,7 +2047,7 @@ namespace SharpTimer
                     {
                         await CreatePostgresPlayerStatsTableAsync(connection);
 
-                        string selectQuery = @"SELECT ""SteamID"", ""PlayerName"", ""GlobalPoints"" FROM ""PlayerStats""";
+                        string selectQuery = $@"SELECT ""SteamID"", ""PlayerName"", ""GlobalPoints"" FROM ""{PlayerStatsTable}""";
                         using (var selectCommand = new NpgsqlCommand(selectQuery, connection))
                         {
                             using (var reader = await selectCommand.ExecuteReaderAsync())
@@ -2091,7 +2094,7 @@ namespace SharpTimer
                     {
                         await CreatePlayerStatsTableAsync(connection);
 
-                        string selectQuery = "SELECT SteamID, PlayerName, GlobalPoints FROM PlayerStats";
+                        string selectQuery = $"SELECT SteamID, PlayerName, GlobalPoints FROM {PlayerStatsTable}";
                         using (var selectCommand = new MySqlCommand(selectQuery, connection))
                         {
                             using (var reader = await selectCommand.ExecuteReaderAsync())

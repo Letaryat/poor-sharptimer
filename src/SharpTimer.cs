@@ -48,12 +48,18 @@ namespace SharpTimer
             string recordsFileName = $"SharpTimer/PlayerRecords/";
             playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
 
-            string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
-            mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
-            SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
+            if (useMySQL)
+            {
+                string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
+                mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
+                SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
+            }
 
-            string postgresConfigFileName = "SharpTimer/postgresConfig.json";
-            postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
+            if (usePostgres)
+            {
+                string postgresConfigFileName = "SharpTimer/postgresConfig.json";
+                postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
+            }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) isLinux = true;
             else isLinux = false;

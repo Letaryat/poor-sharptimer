@@ -67,6 +67,9 @@ namespace SharpTimer.Database
                         string username = root.TryGetProperty("Username", out var usernameProperty) ? usernameProperty.GetString()! : "root";
                         string password = root.TryGetProperty("Password", out var passwordProperty) ? passwordProperty.GetString()! : "root";
                         int port = root.TryGetProperty("Port", out var portProperty) ? portProperty.GetInt32()! : 3306;
+                        string tableprefix = root.TryGetProperty("TablePrefix", out var tableprefixProperty) ? tableprefixProperty.GetString()! : "";
+
+                        PlayerStatsTable = $"{(tableprefix != "" ? $"PlayerStats_{tableprefix}" : "PlayerStats")}";
 
                         if (dbType.Equals(DatabaseType.MySQL))
                         {
@@ -171,7 +174,7 @@ namespace SharpTimer.Database
                     // Check PlayerStats
                     SharpTimerDebug($"Checking PlayerStats Table...");
                     await CreatePlayerStatsTableAsync(connection);
-                    await UpdateTableColumnsAsync(connection, "PlayerStats", playerStats);
+                    await UpdateTableColumnsAsync(connection, $"{PlayerStatsTable}", playerStats);
                 }
                 catch (Exception ex)
                 {
@@ -402,7 +405,7 @@ namespace SharpTimer.Database
             switch (dbType)
             {
                 case DatabaseType.MySQL:
-                    query = @"CREATE TABLE IF NOT EXISTS PlayerStats (
+                    query = $@"CREATE TABLE IF NOT EXISTS {PlayerStatsTable} (
                                             SteamID VARCHAR(20),
                                             PlayerName VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
                                             TimesConnected INT,
@@ -420,7 +423,7 @@ namespace SharpTimer.Database
                     command = new MySqlCommand(query, (MySqlConnection)connection);
                     break;
                 case DatabaseType.PostgreSQL:
-                    query = @"CREATE TABLE IF NOT EXISTS ""PlayerStats"" (
+                    query = $@"CREATE TABLE IF NOT EXISTS ""{PlayerStatsTable}"" (
                                             ""SteamID"" VARCHAR(20) UNIQUE,
                                             ""PlayerName"" VARCHAR(32),
                                             ""TimesConnected"" INT,

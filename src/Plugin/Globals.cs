@@ -223,6 +223,7 @@ namespace SharpTimer
         public string? gameDir;
         public string? mySQLpath;
         public string? postgresPath;
+        public string? PlayerStatsTable;
         public string? playerRecordsPath;
         public string? currentMapName;
         public string? defaultServerHostname = ConVar.Find("hostname")?.StringValue;
