@@ -80,7 +80,7 @@
     "styles_not_supported": "Stiler støttes for øyeblikket ikke på lokale rekorder",
 
     //checkpoints
-    "checkpoint_set": "{0}satt! {lime}#{1}",
+    "checkpoint_set": "{0} satt! {lime}#{1}",
     "no_checkpoint_set": "Nei {0} satt!",
     "cant_use_checkpoint": "{lightred}Kan ikke bruke {0} mens tidtaker er på, bruk {default}!timer",
     "cant_use_checkpoint_in_air": "{lightred}Kan ikke bruke {0} Mens i lufta",

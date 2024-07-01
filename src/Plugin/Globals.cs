@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.0c";
+        public override string ModuleVersion => $"0.3.0d";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -35,7 +35,7 @@ namespace SharpTimer
         private Dictionary<int, PlayerJumpStats> playerJumpStats = [];
         private Dictionary<int, PlayerReplays> playerReplays = [];
         private Dictionary<int, List<PlayerCheckpoint>> playerCheckpoints = [];
-        private Dictionary<int, CCSPlayerController> connectedPlayers = [];
+        public Dictionary<int, CCSPlayerController> connectedPlayers = [];
         private Dictionary<int, CCSPlayerController> connectedReplayBots = [];
         private Dictionary<uint, CCSPlayerController> specTargets = [];
         private Dictionary<nint, TriggerPushData> triggerPushData = [];
@@ -190,12 +190,14 @@ namespace SharpTimer
 
         public double lowgravPointModifier = 1.1;
         public double sidewaysPointModifier = 1.3;
+        public double halfSidewaysPointModifier = 1.3;
         public double onlywPointModifier = 1.33;
         public double onlyaPointModifier = 1.33;
         public double onlysPointModifier = 1.33;
         public double onlydPointModifier = 1.33;
         public double velPointModifier = 1.5;
         public double highgravPointModifier = 1.3;
+        public double fastForwardPointModifier = 1.3;
 
         public bool jumpStatsEnabled = false;
         public float jumpStatsMinDist = 175;
