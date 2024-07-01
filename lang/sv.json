@@ -39,6 +39,9 @@
   "current_sr": "Nuvarande Server Rekord på {lime}{0}{white}:",
   "current_sr_player": "{lime}{0} {white}- {lime}{1}",
   "reached_max_free": "Du har nått dina maximala gratispoäng av {lime}{0}{default}!",
+  "gained_points": "{lime}{0} {default}fick {green}+{1} {default}Poäng {grey}({2})",
+  "top_10_points": "Topp 10 Spelare med mest poäng:",
+  "top_10_points_list": "#{0}: {lime}{1} {default}: {lime}{2} {default}poäng",
 
   //replay
   "no_replay": "Ingen Replay spelas just nu",
@@ -100,5 +103,9 @@
   "error_occured": "{lightred}Fel uppstod.",
   "info_version": "Den här servern kör SharpTimer v{0}",
   "info_os": "OS: {0}",
-  "info_runtime": "Runtime: {0}"
+  "info_runtime": "Runtime: {0}",
+  "connect_message": "Spelare {red}{0} {default}ansluten!",
+  "connected_message": "Spelare {red}{0} {default}ansluten för den {1} gången!",
+  "connected_message_first": "Spleare {red}{0} {default}ansluten för första gången!",
+  "disconnect_message": "Spelare {red}{0} {default}lämnade!"
 }

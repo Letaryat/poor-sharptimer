@@ -58,6 +58,14 @@ namespace SharpTimer
             return isTeamValid && isConnected && isObservingValid;
         }
 
+        public bool IsAllowedClient(CCSPlayerController? player)
+        {
+            if (player == null || !player.IsValid || player.Pawn == null || !player.PlayerPawn.IsValid || player.IsBot)
+                return false;
+
+            return true;
+        }
+
         async Task IsPlayerATester(string steamId64, int playerSlot)
         {
             try

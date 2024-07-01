@@ -81,7 +81,7 @@ namespace SharpTimer
                     // Check PlayerStats
                     SharpTimerDebug($"Checking PlayerStats Table...");
                     await CreatePostgresPlayerStatsTableAsync(connection);
-                    await UpdatePostgresTableColumnsAsync(connection, "PlayerStats", playerStatsColumns);
+                    await UpdatePostgresTableColumnsAsync(connection, $"{PlayerStatsTable}", playerStatsColumns);
                 }
                 catch (Exception ex)
                 {
@@ -207,7 +207,7 @@ namespace SharpTimer
 
         private async Task CreatePostgresPlayerStatsTableAsync(NpgsqlConnection connection)
         {
-            string createTableQuery = @"CREATE TABLE IF NOT EXISTS ""PlayerStats"" (
+            string createTableQuery = $@"CREATE TABLE IF NOT EXISTS ""{PlayerStatsTable}"" (
                                             ""SteamID"" VARCHAR(20) UNIQUE,
                                             ""PlayerName"" VARCHAR(32),
                                             ""TimesConnected"" INT,
@@ -250,6 +250,10 @@ namespace SharpTimer
                         string username = root.TryGetProperty("PostgresUsername", out var usernameProperty) ? usernameProperty.GetString()! : "root";
                         string password = root.TryGetProperty("PostgresPassword", out var passwordProperty) ? passwordProperty.GetString()! : "root";
                         int port = root.TryGetProperty("PostgresPort", out var portProperty) ? portProperty.GetInt32()! : 3306;
+
+                        string tableprefix = root.TryGetProperty("PostgresTablePrefix", out var tableprefixProperty) ? tableprefixProperty.GetString()! : "";
+
+                        PlayerStatsTable = $"{(tableprefix != "" ? $"PlayerStats_{tableprefix}" : "PlayerStats")}";
 
                         return $"Server={host};Database={database};User ID={username};Password={password};Port={port};SslMode=Disable";
                     }
