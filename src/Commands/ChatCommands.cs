@@ -1165,60 +1165,20 @@ namespace SharpTimer
 
             if (Int32.TryParse(command.GetArg(1), out var desiredStyleInt)) 
             {
-                switch(desiredStyleInt)
+                switch (desiredStyleInt)
                 {
                     case 0:
-                        SetNormalStyle(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
-                        break;
                     case 1:
-                        SetNormalStyle(player);
-                        SetLowGravity(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
-                        break;
                     case 2:
-                        SetNormalStyle(player);
-                        SetSideways(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
-                        break;
                     case 3:
-                        SetNormalStyle(player);
-                        SetOnlyW(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
-                        break;
                     case 4:
-                        SetNormalStyle(player);
-                        Set400Vel(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
-                        break;
                     case 5:
-                        SetNormalStyle(player);
-                        SetHighGravity(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
-                        break;
                     case 6:
-                        SetNormalStyle(player);
-                        SetOnlyA(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
-                        break;
                     case 7:
-                        SetNormalStyle(player);
-                        SetOnlyD(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
-                        break;
                     case 8:
-                        SetNormalStyle(player);
-                        SetOnlyS(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
-                        break;
                     case 9:
-                        SetNormalStyle(player);
-                        SetHalfSideways(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
-                        break;
                     case 10:
-                        SetNormalStyle(player);
-                        SetFastForward(player);
+                        setStyle(player, desiredStyleInt);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(desiredStyleInt)]}");
                         break;
                     default:
@@ -1228,113 +1188,65 @@ namespace SharpTimer
             }
             else
             {
-                switch(desiredStyle.ToLower())
+                string styleLowerCase = desiredStyle.ToLower();
+                switch (styleLowerCase)
                 {
                     case "default":
-                        SetNormalStyle(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(0)]}");
-                        break;
                     case "normal":
-                        SetNormalStyle(player);
+                        setStyle(player, 0);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(0)]}");
                         break;
                     case "lowgravity":
-                        SetNormalStyle(player);
-                        SetLowGravity(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(1)]}");
-                        break;
                     case "lowgrav":
-                        SetNormalStyle(player);
-                        SetLowGravity(player);
+                        setStyle(player, 1);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(1)]}");
                         break;
                     case "sideways":
-                        SetNormalStyle(player);
-                        SetSideways(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(2)]}");
-                        break;
                     case "sw":
-                        SetNormalStyle(player);
-                        SetSideways(player);
+                        setStyle(player, 2);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(2)]}");
-                        break;
-                    case "halfsideways":
-                        SetNormalStyle(player);
-                        SetHalfSideways(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(9)]}");
-                        break;
-                    case "hsw":
-                        SetNormalStyle(player);
-                        SetHalfSideways(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(9)]}");
                         break;
                     case "wonly":
-                        SetNormalStyle(player);
-                        SetOnlyW(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(3)]}");
-                        break;
                     case "onlyw":
-                        SetNormalStyle(player);
-                        SetOnlyW(player);
+                        setStyle(player, 3);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(3)]}");
                         break;
                     case "400vel":
-                        SetNormalStyle(player);
-                        Set400Vel(player);
+                        setStyle(player, 4);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(4)]}");
                         break;
                     case "highgravity":
-                        SetNormalStyle(player);
-                        SetHighGravity(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(5)]}");
-                        break;
                     case "highgrav":
-                        SetNormalStyle(player);
-                        SetHighGravity(player);
+                        setStyle(player, 5);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(5)]}");
                         break;
                     case "aonly":
-                        SetNormalStyle(player);
-                        SetOnlyA(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(6)]}");
-                        break;
                     case "onlya":
-                        SetNormalStyle(player);
-                        SetOnlyA(player);
+                        setStyle(player, 6);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(6)]}");
                         break;
                     case "donly":
-                        SetNormalStyle(player);
-                        SetOnlyD(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(7)]}");
-                        break;
                     case "onlyd":
-                        SetNormalStyle(player);
-                        SetOnlyD(player);
+                        setStyle(player, 7);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(7)]}");
                         break;
                     case "sonly":
-                        SetNormalStyle(player);
-                        SetOnlyS(player);
+                    case "onlys":
+                        setStyle(player, 8);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(8)]}");
                         break;
-                    case "onlys":
-                        SetNormalStyle(player);
-                        SetOnlyS(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(8)]}");
+                    case "halfsideways":
+                    case "hsw":
+                        setStyle(player, 9);
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(9)]}");
                         break;
                     case "fastforward":
-                        SetNormalStyle(player);
-                        SetFastForward(player);
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(10)]}");
-                        break;
                     case "ff":
-                        SetNormalStyle(player);
-                        SetFastForward(player);
+                        setStyle(player, 10);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(10)]}");
                         break;
                     default:
-                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_not_found", desiredStyle.ToLower()]}");
+                        player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_not_found", styleLowerCase]}");
                         break;
                 }
             }

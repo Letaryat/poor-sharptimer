@@ -9,6 +9,7 @@ namespace SharpTimer
         {
             AddTimer(0.1f, () =>
             {
+                SetNormalStyle(player);
                 switch (style)
                 {
                     case 0:
@@ -53,8 +54,8 @@ namespace SharpTimer
         public void SetNormalStyle(CCSPlayerController player)
         {
             playerTimers[player.Slot].currentStyle = 0; // reset currentStyle
-            SetNormalGravity(player);
             playerTimers[player.Slot].changedStyle = true;
+            player!.Pawn.Value!.GravityScale = 1f;
         }
 
         public void SetLowGravity(CCSPlayerController player)
@@ -69,11 +70,6 @@ namespace SharpTimer
             player!.Pawn.Value!.GravityScale = 1.5f;
             playerTimers[player.Slot].changedStyle = true;
         }
-        public void SetNormalGravity(CCSPlayerController player)
-        {
-            player!.Pawn.Value!.GravityScale = 1f;
-        }
-
         public void SetSlowMo(CCSPlayerController player)
         {
             //playerTimers[player.Slot].currentStyle = ?; // ? = slowmo (its broken)
