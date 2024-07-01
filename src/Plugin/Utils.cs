@@ -476,9 +476,10 @@ namespace SharpTimer
             Vector corner3 = new(corner8.X, corner8.Y, corner1.Z);
             Vector corner4 = new(corner8.X, corner1.Y, corner1.Z);
 
-            Vector corner5 = new(corner8.X, corner1.Y, corner8.Z);
-            Vector corner6 = new(corner1.X, corner1.Y, corner8.Z);
-            Vector corner7 = new(corner1.X, corner8.Y, corner8.Z);
+            Vector corner5 = new(corner8.X, corner1.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
+            Vector corner6 = new(corner1.X, corner1.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
+            Vector corner7 = new(corner1.X, corner8.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
+            if (Box3DZones) corner8 = new(corner8.X, corner8.Y, corner8.Z + fakeTriggerHeight);
 
             //top square
             DrawLaserBetween(corner1, corner2, _color);

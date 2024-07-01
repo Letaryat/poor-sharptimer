@@ -183,6 +183,7 @@ namespace SharpTimer
         public bool triggerPushFixEnabled = false;
         public int cmdCooldown = 64;
         public float fakeTriggerHeight = 50;
+        public bool Box3DZones = false;
         public int altVeloMaxSpeed = 3000;
         public bool forcePlayerSpeedEnabled = false;
         public float forcedPlayerSpeed = 250;
