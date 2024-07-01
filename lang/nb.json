@@ -39,7 +39,7 @@
     "current_sr": "Nåværende Server Rekord på {lime}{0}{white}:",
     "current_sr_player": "{lime}{0} {white}- {lime}{1}",
     "reached_max_free": "Du har nådd dine maksimale gratispoeng belønninger på {lime}{0}{default}!",
-	"gained_points": "{lime}{0} {default}oppnådde {green}+{1} {default}Poeng {grey}({2})",
+    "gained_points": "{lime}{0} {default}oppnådde {green}+{1} {default}Poeng {grey}({2})",
     "top_10_points": "Top 10 Spillere med mest poeng:",
     "top_10_points_list": "#{0}: {lime}{1} {default}: {lime}{2} {default}poeng",
     
