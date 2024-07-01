@@ -87,11 +87,11 @@ namespace SharpTimer
             }
         }
 
-        private void ServerRecordADtimer()
+        private void ADtimerServerRecord()
         {
-            if (isADTimerRunning) return;
+            if (isADServerRecordTimerRunning) return;
 
-            var timer = AddTimer(adTimer, () =>
+            var timer = AddTimer(adServerRecordTimer, () =>
             {
                 Task.Run(async () =>
                 {
@@ -107,53 +107,79 @@ namespace SharpTimer
                         sortedRecords = await GetSortedRecordsFromDatabase(100);
                     }
 
-                    if (srEnabled == true)
+                    SharpTimerDebug($"Running Server Record AD...");
+
+                    if (sortedRecords.Count == 0)
                     {
-                        SharpTimerDebug($"Running Server Record AD...");
-
-                        if (sortedRecords.Count == 0)
-                        {
-                            SharpTimerDebug($"No Server Records for this map yet!");
-                            return;
-                        }
-
-                        Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr", currentMapName!]}"));
-
-                        var serverRecord = sortedRecords.FirstOrDefault();
-                        string playerName = serverRecord.Value.PlayerName!; // Get the player name from the dictionary value
-                        int timerTicks = serverRecord.Value.TimerTicks; // Get the timer ticks from the dictionary value
-                        Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr_player", playerName, FormatTime(timerTicks)]}"));
+                        SharpTimerDebug($"No Server Records for this map yet!");
+                        return;
                     }
 
-                    string[] adMessages = [ $"{msgPrefix} Type {primaryChatColor}!sthelp{ChatColors.Default} to see all commands!",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaypb{ChatColors.Default} to watch a replay of your personal best run!" : "")}",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replay or {primaryChatColor}!replaysr{ChatColors.Default} to watch a replay of the SR on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaytop <1-10>{ChatColors.Default} to watch a replay of a top run on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaybonus <1-10> <bonus #> (or !replayb){ChatColors.Default} to watch a replay of a top run on a bonus stage{ChatColors.Default}!" : "")}",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaybonuspb <bonus #> (or !replaybpb){ChatColors.Default} to watch a replay of your personal best run on a bonus stage{ChatColors.Default}!" : "")}",
-                                    $"{(globalRanksEnabled ? $"{msgPrefix} Type {primaryChatColor}!points{ChatColors.Default} to see the top 10 players with the most points!" : "")}",
-                                    $"{(respawnEnabled ? $"{msgPrefix} Type {primaryChatColor}!r{ChatColors.Default} to respawn back to start!" : "")}",
-                                    $"{(respawnEnabled ? $"{msgPrefix} Type {primaryChatColor}!setresp (or !startpos){ChatColors.Default} to to save a custom respawn point within the start trigger!" : "")}",
-                                    $"{(topEnabled ? $"{msgPrefix} Type {primaryChatColor}!top{ChatColors.Default} to see the top 10 players on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
-                                    $"{(rankEnabled ? $"{msgPrefix} Type {primaryChatColor}!rank{ChatColors.Default} to see your current PB and Rank!" : "")}",
-                                    $"{(cpEnabled ? $"{msgPrefix} Type {primaryChatColor}{(currentMapName!.Contains("surf_") ? "!saveloc" : "!cp")}{ChatColors.Default} to {(currentMapName.Contains("surf_") ? "save a new loc" : "set a new checkpoint")}!" : "")}",
-                                    $"{(cpEnabled ? $"{msgPrefix} Type {primaryChatColor}{(currentMapName!.Contains("surf_") ? "!loadloc" : "!tp")}{ChatColors.Default} to {(currentMapName.Contains("surf_") ? "load the last loc" : "teleport to your last checkpoint")}!" : "")}",
-                                    $"{(goToEnabled ? $"{msgPrefix} Type {primaryChatColor}!goto <name>{ChatColors.Default} to teleport to a player!" : "")}",
-                                    $"{msgPrefix} Type {primaryChatColor}!fov <0-140>{ChatColors.Default} to change your field of view!",
-                                    $"{msgPrefix} Type {primaryChatColor}!sounds{ChatColors.Default} to toggle timer sounds!",
-                                    $"{msgPrefix} Type {primaryChatColor}!hud{ChatColors.Default} to toggle timer hud!",
-                                    $"{msgPrefix} Type {primaryChatColor}!keys{ChatColors.Default} to toggle hud keys!",
-                                    $"{msgPrefix} Type {primaryChatColor}!styles{ChatColors.Default} to list all available styles!",
-                                    $"{(jumpStatsEnabled ? $"{msgPrefix} Type {primaryChatColor}!jumpstats{ChatColors.Default} to toggle JumpStats!" : "")}"];
+                    Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr", currentMapName!]}"));
 
-                    var nonEmptyAds = adMessages.Where(ad => !string.IsNullOrEmpty(ad)).ToArray();
+                    var serverRecord = sortedRecords.FirstOrDefault();
+                    string playerName = serverRecord.Value.PlayerName!; // Get the player name from the dictionary value
+                    int timerTicks = serverRecord.Value.TimerTicks; // Get the timer ticks from the dictionary value
+                    Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr_player", playerName, FormatTime(timerTicks)]}"));
 
-                    Server.NextFrame(() => Server.PrintToChatAll(nonEmptyAds[new Random().Next(nonEmptyAds.Length)]));
                     SortedCachedRecords = sortedRecords;
                 });
             }, TimerFlags.REPEAT);
 
-            isADTimerRunning = true;
+            isADServerRecordTimerRunning = true;
+        }
+
+        private void ADtimerMessages()
+        {
+            if (isADMessagesTimerRunning) return;
+
+            var timer = AddTimer(adMessagesTimer, () =>
+            {
+                string[] adMessages = File.ReadAllLines(Path.Join(gameDir + "/csgo/cfg/SharpTimer/admessages.txt"));
+                var nonEmptyAds = adMessages.Where(ad => !string.IsNullOrEmpty(ad) && !ad.TrimStart().StartsWith("//")).ToArray();
+                Server.NextFrame(() => Server.PrintToChatAll($"{ReplaceAdMessagePlaceholders(nonEmptyAds[new Random().Next(nonEmptyAds.Length)])}"));
+            }, TimerFlags.REPEAT);
+
+            isADMessagesTimerRunning = true;
+        }
+
+        private string ReplaceAdMessagePlaceholders(string message)
+        {
+            var replacements = new Dictionary<string, string>
+            {
+                { "{prefix}",       $"{Localizer["prefix"]}" },
+                { "{current_map}",  $"{Server.MapName}" },
+                { "{max_players}",  $"{Server.MaxPlayers}" },
+                { "{players}",      $"{Utilities.GetPlayers().Count()}" },
+                { "{current_time}", $"{DateTime.Now.ToString("HH:mm:ss")}" },
+                { "{current_date}", $"{DateTime.Now.ToString("dd.MMM.yyyy")}" },
+                { "{red}",          $"{ChatColors.Red}" },
+                { "{white}",        $"{ChatColors.White}" },
+                { "{default}",      $"{ChatColors.Default}" },
+                { "{darkred}",      $"{ChatColors.DarkRed}" },
+                { "{green}",        $"{ChatColors.Green}" },
+                { "{lightyellow}",  $"{ChatColors.LightYellow}" },
+                { "{lightblue}",    $"{ChatColors.LightBlue}" },
+                { "{olive}",        $"{ChatColors.Olive}" },
+                { "{lime}",         $"{ChatColors.Lime}" },
+                { "{lightpurple}",  $"{ChatColors.LightPurple}" },
+                { "{purple}",       $"{ChatColors.Purple}" },
+                { "{grey}",         $"{ChatColors.Grey}" },
+                { "{yellow}",       $"{ChatColors.Yellow}" },
+                { "{gold}",         $"{ChatColors.Gold}" },
+                { "{silver}",       $"{ChatColors.Silver}" },
+                { "{blue}",         $"{ChatColors.Blue}" },
+                { "{darkblue}",     $"{ChatColors.DarkBlue}" },
+                { "{bluegrey}",     $"{ChatColors.BlueGrey}" },
+                { "{magenta}",      $"{ChatColors.Magenta}" },
+                { "{lightred}",     $"{ChatColors.LightRed}" },
+                { "{orange}",       $"{ChatColors.Orange}" }
+            };
+
+            foreach (var replacement in replacements)
+                message = message.Replace(replacement.Key, replacement.Value);
+
+            return message;
         }
 
         public void SharpTimerDebug(string msg)
@@ -981,7 +1007,8 @@ namespace SharpTimer
                     }
                 });
 
-                if (srEnabled == true) ServerRecordADtimer();
+                if (adServerRecordEnabled == true) ADtimerServerRecord();
+                if (adMessagesEnabled == true) ADtimerMessages();
 
                 entityCache = new EntityCache();
                 UpdateEntityCache();
