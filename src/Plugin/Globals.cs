@@ -151,7 +151,6 @@ namespace SharpTimer
         public bool hideAllPlayers = false;
         public bool removeCollisionEnabled = true;
         public bool disableDamage = true;
-        public bool altDmgHook = false;
         public bool use2DSpeed = false;
 
         public bool cpEnabled = false;

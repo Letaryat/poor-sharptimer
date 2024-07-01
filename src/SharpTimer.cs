@@ -154,12 +154,9 @@ namespace SharpTimer
                     }
                     else if (player.IsValid)
                     {
-                        /* if (removeCollisionEnabled == true && player.PlayerPawn != null)
-                        {
-                            RemovePlayerCollision(player);
-                        }
 
-                        specTargets[player.Pawn.Value.EntityHandle.Index] = new CCSPlayerController(player.Handle); */
+                        //specTargets[player.Pawn.Value.EntityHandle.Index] = new CCSPlayerController(player.Handle);
+
                         AddTimer(5.0f, () =>
                         {
                             if (!player.IsValid || player == null || !IsAllowedPlayer(player)) return;
