@@ -297,7 +297,7 @@ namespace SharpTimer
         {
             try
             {
-                if (!IsAllowedPlayer(player) && !IsAllowedSpectator(player))
+                if (!IsAllowedClient(player))
                     return "";
 
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
@@ -326,7 +326,7 @@ namespace SharpTimer
         {
             try
             {
-                if (!IsAllowedPlayer(player) && !IsAllowedSpectator(player))
+                if (!IsAllowedClient(player))
                     return "";
 
                 int savedPlayerPoints = (useMySQL || usePostgres) ? await GetPlayerPointsFromDatabase(player, steamId, playerName) : 0;

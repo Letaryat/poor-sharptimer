@@ -1423,7 +1423,7 @@ namespace SharpTimer
                                 {
                                     Server.NextFrame(() =>
                                     {
-                                        if (IsAllowedPlayer(player)) player.PrintToChat(msgPrefix + $"Top 10 Players with the most points:");
+                                        if (IsAllowedClient(player)) player.PrintToChat(msgPrefix + $"Top 10 Players with the most points:");
                                     });
 
                                     int rank = 0;
@@ -1438,7 +1438,7 @@ namespace SharpTimer
                                             int currentRank = ++rank;
                                             Server.NextFrame(() =>
                                             {
-                                                if (IsAllowedPlayer(player)) player.PrintToChat(msgPrefix + $"#{currentRank}: {primaryChatColor}{playerName}{ChatColors.Default}: {primaryChatColor}{points}{ChatColors.Default} points");
+                                                if (IsAllowedClient(player)) player.PrintToChat(msgPrefix + $"#{currentRank}: {primaryChatColor}{playerName}{ChatColors.Default}: {primaryChatColor}{points}{ChatColors.Default} points");
                                             });
                                         }
                                     }
@@ -1471,7 +1471,7 @@ namespace SharpTimer
                                 {
                                     Server.NextFrame(() =>
                                     {
-                                        if (IsAllowedPlayer(player)) player.PrintToChat(msgPrefix + $"Top 10 Players with the most points:");
+                                        if (IsAllowedClient(player)) player.PrintToChat(msgPrefix + $"Top 10 Players with the most points:");
                                     });
 
                                     int rank = 0;
@@ -1486,7 +1486,7 @@ namespace SharpTimer
                                             int currentRank = ++rank;
                                             Server.NextFrame(() =>
                                             {
-                                                if (IsAllowedPlayer(player)) player.PrintToChat(msgPrefix + $"#{currentRank}: {primaryChatColor}{playerName}{ChatColors.Default}: {primaryChatColor}{points}{ChatColors.Default} points");
+                                                if (IsAllowedClient(player)) player.PrintToChat(msgPrefix + $"#{currentRank}: {primaryChatColor}{playerName}{ChatColors.Default}: {primaryChatColor}{points}{ChatColors.Default} points");
                                             });
                                         }
                                     }
@@ -1744,7 +1744,7 @@ namespace SharpTimer
                 SharpTimerDebug($"Trying to get Previous {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} from Postgres for {playerName}");
                 try
                 {
-                    if (!IsAllowedPlayer(player))
+                    if (!IsAllowedClient(player))
                     {
                         return 0;
                     }
@@ -1787,7 +1787,7 @@ namespace SharpTimer
                 SharpTimerDebug($"Trying to get Previous {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} from MySQL for {playerName}");
                 try
                 {
-                    if (!IsAllowedPlayer(player))
+                    if (!IsAllowedClient(player))
                     {
                         return 0;
                     }
@@ -1839,7 +1839,7 @@ namespace SharpTimer
 
                 try
                 {
-                    if (!IsAllowedPlayer(player))
+                    if (!IsAllowedClient(player))
                     {
                         return playerPoints;
                     }
@@ -1878,7 +1878,7 @@ namespace SharpTimer
 
                 try
                 {
-                    if (!IsAllowedPlayer(player))
+                    if (!IsAllowedClient(player))
                     {
                         return playerPoints;
                     }
