@@ -650,15 +650,6 @@ namespace SharpTimer
             removeCrouchFatigueEnabled = bool.TryParse(args, out bool removeCrouchFatigueEnabledValue) ? removeCrouchFatigueEnabledValue : args != "0" && removeCrouchFatigueEnabled;
         }
 
-        [ConsoleCommand("sharptimer_ad_enabled", "Whether timed Server Record messages are enabled by default or not. Default value: true")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerSRConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            srEnabled = bool.TryParse(args, out bool srEnabledValue) ? srEnabledValue : args != "0" && srEnabled;
-        }
-
         [ConsoleCommand("sharptimer_checkpoints_only_when_timer_stopped", "Will only allow checkpoints if timer is stopped using !timer")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerCheckpointsOnlyWithStoppedTimer(CCSPlayerController? player, CommandInfo command)
@@ -694,15 +685,25 @@ namespace SharpTimer
             }
         }
 
-        [ConsoleCommand("sharptimer_ad_timer", "Interval how often SR shall be printed to chat. Default value: 120")]
+        /* ad messages */
+        [ConsoleCommand("sharptimer_ad_sr_enabled", "Whether to print sr message or not. Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerMaxSRSpeedConvar(CCSPlayerController? player, CommandInfo command)
+        public void SharpTimerAdServerRecordEnabled(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            adServerRecordEnabled = bool.TryParse(args, out bool adSREnabledValue) ? adSREnabledValue : args != "0" && adServerRecordEnabled;
+        }
+
+        [ConsoleCommand("sharptimer_ad_sr_timer", "Interval how often the messages shall be printed to chat. Default value: 240")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerAdServerRecordTimer(CCSPlayerController? player, CommandInfo command)
         {
             string args = command.ArgString;
 
             if (int.TryParse(args, out int interval) && interval > 0)
             {
-                adTimer = interval;
+                adServerRecordTimer = interval;
                 SharpTimerConPrint($"SharpTimer sr ad interval set to {interval} seconds.");
             }
             else
@@ -710,6 +711,33 @@ namespace SharpTimer
                 SharpTimerConPrint("Invalid sr ad interval value. Please provide a positive integer.");
             }
         }
+
+        [ConsoleCommand("sharptimer_ad_messages_enabled", "Whether to print ad message or not. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerAdMessagesEnabled(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            adMessagesEnabled = bool.TryParse(args, out bool adCommandsEnabledValue) ? adCommandsEnabledValue : args != "0" && adMessagesEnabled;
+        }
+
+        [ConsoleCommand("sharptimer_ad_messages_timer", "Interval how often the messages shall be printed to chat. Default value: 120")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerAdMessagesTimer(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (int.TryParse(args, out int interval) && interval > 0)
+            {
+                adMessagesTimer = interval;
+                SharpTimerConPrint($"SharpTimer messages ad interval set to {interval} seconds.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid messages ad interval value. Please provide a positive integer.");
+            }
+        }
+        /* ad messages */
 
         [ConsoleCommand("sharptimer_chat_prefix", "Default value of chat prefix for SharpTimer messages. Default value: [SharpTimer]")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
