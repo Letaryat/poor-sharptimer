@@ -5,31 +5,71 @@ namespace SharpTimer
 {
     public partial class SharpTimer
     {
+        public void setStyle(CCSPlayerController player, int style)
+        {
+            AddTimer(0.1f, () =>
+            {
+                SetNormalStyle(player);
+                switch (style)
+                {
+                    case 0:
+                        SetNormalStyle(player);
+                        return;
+                    case 1:
+                        SetLowGravity(player);
+                        return;
+                    case 2:
+                        SetSideways(player);
+                        return;
+                    case 3:
+                        SetOnlyW(player);
+                        return;
+                    case 4:
+                        Set400Vel(player);
+                        return;
+                    case 5:
+                        SetHighGravity(player);
+                        return;
+                    case 6:
+                        SetOnlyA(player);
+                        return;
+                    case 7:
+                        SetOnlyD(player);
+                        return;
+                    case 8:
+                        SetOnlyS(player);
+                        return;
+                    case 9:
+                        SetHalfSideways(player);
+                        return;
+                    case 10:
+                        SetFastForward(player);
+                        return;
+                    default:
+                        return;
+                }
+            });
+        }
+
         public void SetNormalStyle(CCSPlayerController player)
         {
             playerTimers[player.Slot].currentStyle = 0; // reset currentStyle
-            SetNormalGravity(player);
             playerTimers[player.Slot].changedStyle = true;
+            player!.Pawn.Value!.GravityScale = 1f;
         }
+
         public void SetLowGravity(CCSPlayerController player)
         {
             playerTimers[player.Slot].currentStyle = 1; // 1 = low-gravity
             player!.Pawn.Value!.GravityScale = 0.5f;
             playerTimers[player.Slot].changedStyle = true;
         }
-
         public void SetHighGravity(CCSPlayerController player)
         {
             playerTimers[player.Slot].currentStyle = 5; // 5 = high-gravity
             player!.Pawn.Value!.GravityScale = 1.5f;
             playerTimers[player.Slot].changedStyle = true;
         }
-
-        public void SetNormalGravity(CCSPlayerController player)
-        {
-            player!.Pawn.Value!.GravityScale = 1f;
-        }
-
         public void SetSlowMo(CCSPlayerController player)
         {
             //playerTimers[player.Slot].currentStyle = ?; // ? = slowmo (its broken)
@@ -96,8 +136,6 @@ namespace SharpTimer
 
             AdjustPlayerVelocity2D(player, (float)targetSpeed);
         }
-
-
 
         public string GetNamedStyle(int style)
         {

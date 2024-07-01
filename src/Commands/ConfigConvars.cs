@@ -799,7 +799,7 @@ namespace SharpTimer
             tertiaryHUDcolor = $"{args}";
         }
 
-        [ConsoleCommand("sharptimer_fake_trigger_height", " ")]
+        [ConsoleCommand("sharptimer_fake_zones_height", "Fake Zones height in units. Default value: 50")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerFakeTriggerHeightConvar(CCSPlayerController? player, CommandInfo command)
         {
@@ -814,6 +814,15 @@ namespace SharpTimer
             {
                 SharpTimerConPrint("Invalid fake trigger height value. Please provide a positive integer.");
             }
+        }
+
+        [ConsoleCommand("sharptimer_zones_box", "Make Zone a 3D Box. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerZones3DBox(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            Box3DZones = bool.TryParse(args, out bool ZoneBoxEnabledValue) ? ZoneBoxEnabledValue : args != "0" && Box3DZones;
         }
 
         [ConsoleCommand("sharptimer_allow_startzone_jump", "Enable or disable jumping in startzone. Default value: true")]

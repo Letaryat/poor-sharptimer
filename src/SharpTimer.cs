@@ -168,6 +168,8 @@ namespace SharpTimer
                         if (spawnOnRespawnPos == true && currentRespawnPos != null)
                             player.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
 
+                        if (enableStyles) setStyle(player, playerTimers[player.Slot].currentStyle);
+
                         Server.NextFrame(() => InvalidateTimer(player));
                     }
                 }
