@@ -730,21 +730,6 @@ namespace SharpTimer
         }
         /* ad messages */
 
-        [ConsoleCommand("sharptimer_chat_prefix", "Default value of chat prefix for SharpTimer messages. Default value: [SharpTimer]")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerChatPrefix(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString.Trim();
-
-            if (string.IsNullOrEmpty(args))
-            {
-                msgPrefix = $" {ChatColors.Green}[SharpTimer] {ChatColors.White}";
-                return;
-            }
-
-            msgPrefix = $" {ParsePrefixColors(args)} {ChatColors.White}";
-        }
-
         [ConsoleCommand("sharptimer_hud_primary_color", "Primary Color for Timer HUD. Default value: green")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerPrimaryHUDcolor(CCSPlayerController? player, CommandInfo command)

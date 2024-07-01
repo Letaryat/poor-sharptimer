@@ -270,8 +270,8 @@ namespace SharpTimer
                 DamageHook();
             });
 
-            AddCommandListener("say", OnPlayerChatAll);
-            AddCommandListener("say_team", OnPlayerChatTeam);
+            AddCommandListener("say", OnPlayerChat);
+            AddCommandListener("say_team", OnPlayerChat);
             AddCommandListener("jointeam", OnCommandJoinTeam);
 
             SharpTimerConPrint("Plugin Loaded");
@@ -356,8 +356,8 @@ namespace SharpTimer
         public override void Unload(bool hotReload)
         {
             DamageUnHook();
-            RemoveCommandListener("say", OnPlayerChatAll, HookMode.Pre);
-            RemoveCommandListener("say_team", OnPlayerChatTeam, HookMode.Pre);
+            RemoveCommandListener("say", OnPlayerChat, HookMode.Pre);
+            RemoveCommandListener("say_team", OnPlayerChat, HookMode.Pre);
             RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
 
             if(isLinux) RunCommand.Unhook(OnRunCommand, HookMode.Pre);

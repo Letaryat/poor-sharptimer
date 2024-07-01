@@ -676,7 +676,7 @@ namespace SharpTimer
 
                                     await upsertCommand.ExecuteNonQueryAsync();
                                     Server.NextFrame(() => SharpTimerDebug($"Got player stats from Postgres for {playerName}"));
-                                    if (connectMsgEnabled) Server.NextFrame(() => Server.PrintToChatAll($"{msgPrefix}Player {ChatColors.Red}{playerName} {ChatColors.White}connected for the {FormatOrdinal(timesConnected)} time!"));
+                                    if (connectMsgEnabled) Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["connected_message", playerName, FormatOrdinal(timesConnected)]}"));
                                 }
                                 
                             }
@@ -703,7 +703,7 @@ namespace SharpTimer
 
                                     await upsertCommand.ExecuteNonQueryAsync();
                                     Server.NextFrame(() => SharpTimerDebug($"Got player stats from Postgres for {playerName}"));
-                                    if (connectMsgEnabled) Server.NextFrame(() => Server.PrintToChatAll($"{msgPrefix}Player {ChatColors.Red}{playerName} {ChatColors.White}connected for the first time!"));
+                                    if (connectMsgEnabled) Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["connected_message_first", playerName]}"));
                                 }
                                 
                             }
@@ -805,7 +805,7 @@ namespace SharpTimer
 
                                     await upsertCommand.ExecuteNonQueryAsync();
                                     Server.NextFrame(() => SharpTimerDebug($"Got player stats from MySQL for {playerName}"));
-                                    if (connectMsgEnabled) Server.NextFrame(() => Server.PrintToChatAll($"{msgPrefix}Player {ChatColors.Red}{playerName} {ChatColors.White}connected for the {FormatOrdinal(timesConnected)} time!"));
+                                    if (connectMsgEnabled) Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["connected_message", playerName, FormatOrdinal(timesConnected)]}"));
                                 }
                             }
                             else
@@ -831,7 +831,7 @@ namespace SharpTimer
 
                                     await upsertCommand.ExecuteNonQueryAsync();
                                     Server.NextFrame(() => SharpTimerDebug($"Got player stats from MySQL for {playerName}"));
-                                    if (connectMsgEnabled) Server.NextFrame(() => Server.PrintToChatAll($"{msgPrefix}Player {ChatColors.Red}{playerName} {ChatColors.White}connected for the first time!"));
+                                    if (connectMsgEnabled) Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["connected_message_first", playerName]}"));
                                 }
                             }
                         }
@@ -1104,6 +1104,11 @@ namespace SharpTimer
             }
         }
 
+        public void GainPointsMessage(string playerName, int newPoints, int playerPoints)
+        {
+            Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["gained_points", playerName, Convert.ToInt32(newPoints - playerPoints), newPoints]}");
+        }
+
         public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0)
         {
             if(usePostgres)
@@ -1200,7 +1205,8 @@ namespace SharpTimer
                                         upsertCommand.Parameters.AddWithValue("@GlobalPoints", newPoints);
 
                                         await upsertCommand.ExecuteNonQueryAsync();
-                                        Server.NextFrame(() => Server.PrintToChatAll(msgPrefix + $"{primaryChatColor}{playerName}{ChatColors.Default} gained {ChatColors.Green}+{Convert.ToInt32(newPoints - playerPoints)}{ChatColors.Default} Points {ChatColors.Grey}({newPoints})"));
+
+                                        Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
                                         Server.NextFrame(() => SharpTimerDebug($"Set points in Postgres for {playerName} from {playerPoints} to {newPoints}"));
                                     }
                                     else
@@ -1246,7 +1252,8 @@ namespace SharpTimer
                                         upsertCommand.Parameters.AddWithValue("@GlobalPoints", newPoints);
 
                                         await upsertCommand.ExecuteNonQueryAsync();
-                                        Server.NextFrame(() => Server.PrintToChatAll(msgPrefix + $"{primaryChatColor}{playerName}{ChatColors.Default} gained {ChatColors.Green}+{Convert.ToInt32(newPoints - playerPoints)}{ChatColors.Default} Points {ChatColors.Grey}({newPoints})"));
+
+                                        Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
                                         Server.NextFrame(() => SharpTimerDebug($"Set points in Postgres for {playerName} from {playerPoints} to {newPoints}"));
                                     }
                                     else
@@ -1343,7 +1350,8 @@ namespace SharpTimer
                                         upsertCommand.Parameters.AddWithValue("@GlobalPoints", newPoints);
 
                                         await upsertCommand.ExecuteNonQueryAsync();
-                                        Server.NextFrame(() => Server.PrintToChatAll(msgPrefix + $"{primaryChatColor}{playerName}{ChatColors.Default} gained {ChatColors.Green}+{Convert.ToInt32(newPoints - playerPoints)}{ChatColors.Default} Points {ChatColors.Grey}({newPoints})"));
+
+                                        Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
                                         Server.NextFrame(() => SharpTimerDebug($"Set points in MySQL for {playerName} from {playerPoints} to {newPoints}"));
                                     }
                                     else
@@ -1386,7 +1394,7 @@ namespace SharpTimer
                                         upsertCommand.Parameters.AddWithValue("@GlobalPoints", newPoints);
 
                                         await upsertCommand.ExecuteNonQueryAsync();
-                                        Server.NextFrame(() => Server.PrintToChatAll(msgPrefix + $"{primaryChatColor}{playerName}{ChatColors.Default} gained {ChatColors.Green}+{Convert.ToInt32(newPoints - playerPoints)}{ChatColors.Default} Points {ChatColors.Grey}({newPoints})"));
+                                        Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
                                         Server.NextFrame(() => SharpTimerDebug($"Set points in MySQL for {playerName} from {playerPoints} to {newPoints}"));
                                     }
                                     else
@@ -1423,7 +1431,7 @@ namespace SharpTimer
                                 {
                                     Server.NextFrame(() =>
                                     {
-                                        if (IsAllowedClient(player)) player.PrintToChat(msgPrefix + $"Top 10 Players with the most points:");
+                                        if (IsAllowedClient(player)) player.PrintToChat($" {Localizer["prefix"]} {Localizer["top_10_points"]}");
                                     });
 
                                     int rank = 0;
@@ -1438,7 +1446,7 @@ namespace SharpTimer
                                             int currentRank = ++rank;
                                             Server.NextFrame(() =>
                                             {
-                                                if (IsAllowedClient(player)) player.PrintToChat(msgPrefix + $"#{currentRank}: {primaryChatColor}{playerName}{ChatColors.Default}: {primaryChatColor}{points}{ChatColors.Default} points");
+                                                if (IsAllowedClient(player)) player.PrintToChat($" {Localizer["prefix"]} {Localizer["top_10_points_list", currentRank, playerName, points]}");
                                             });
                                         }
                                     }
@@ -1471,7 +1479,7 @@ namespace SharpTimer
                                 {
                                     Server.NextFrame(() =>
                                     {
-                                        if (IsAllowedClient(player)) player.PrintToChat(msgPrefix + $"Top 10 Players with the most points:");
+                                        if (IsAllowedClient(player)) player.PrintToChat($" {Localizer["prefix"]} {Localizer["top_10_points"]}");
                                     });
 
                                     int rank = 0;
@@ -1486,7 +1494,7 @@ namespace SharpTimer
                                             int currentRank = ++rank;
                                             Server.NextFrame(() =>
                                             {
-                                                if (IsAllowedClient(player)) player.PrintToChat(msgPrefix + $"#{currentRank}: {primaryChatColor}{playerName}{ChatColors.Default}: {primaryChatColor}{points}{ChatColors.Default} points");
+                                                if (IsAllowedClient(player)) player.PrintToChat($" {Localizer["prefix"]} {Localizer["top_10_points_list", currentRank, playerName, points]}");
                                             });
                                         }
                                     }

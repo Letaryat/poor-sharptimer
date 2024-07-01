@@ -23,7 +23,7 @@
     "map_finish_rank": "Rank: [{lime}{0}{default}] Times Finished: [{lime}{1}{default}]",
     "top10_records": "Top 10 {0} Records for {1}:",
     "top10_records_bonus": "Top 10 {0} Records for Bonus {1} on {2}:",
-    
+
     //stages
     "invalid_bonus_stage": "Please enter a valid Bonus stage i.e: {lime}!topbonus 1",
     "invalid_bonus_rb": "Please enter a valid Bonus stage i.e: {lime}!rb <index>",
@@ -39,6 +39,9 @@
     "current_sr": "Current Server Record on {lime}{0}{white}:",
     "current_sr_player": "{lime}{0} {white}- {lime}{1}",
     "reached_max_free": "You reached your maximum free points rewards of {lime}{0}{default}!",
+    "gained_points": "{lime}{0} {default}gained {green}+{1} {default}Points {grey}({2})",
+    "top_10_points": "Top 10 Players with the most points:",
+    "top_10_points_list": "#{0}: {lime}{1} {default}: {lime}{2} {default}points",
 
     //replay
     "no_replay": "No Replay playing currently",
@@ -100,5 +103,9 @@
     "error_occured": "{lightred}Error occured.",
     "info_version": "This server is running SharpTimer v{0}",
     "info_os": "OS: {0}",
-    "info_runtime": "Runtime: {0}"
+    "info_runtime": "Runtime: {0}",
+    "connect_message": "Player {red}{0} {default}connected!",
+    "connected_message": "Player {red}{0} {default}connected for the {1} time!",
+    "connected_message_first": "Player {red}{0} {default}connected for the first time!",
+    "disconnect_message": "Player {red}{0} {default}disconnected!"
 }

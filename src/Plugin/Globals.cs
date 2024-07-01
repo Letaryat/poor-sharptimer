@@ -49,7 +49,6 @@ namespace SharpTimer
             PropertyNameCaseInsensitive = true
         };
 
-        public string msgPrefix = $" {ChatColors.Green}[SharpTimer]{ChatColors.White} ";
         public string primaryHUDcolor = "green";
         public string secondaryHUDcolor = "orange";
         public string tertiaryHUDcolor = "white";
