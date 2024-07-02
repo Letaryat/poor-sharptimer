@@ -48,12 +48,18 @@ namespace SharpTimer
             string recordsFileName = $"SharpTimer/PlayerRecords/";
             playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
 
-            string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
-            mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
-            SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
+            if (useMySQL)
+            {
+                string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
+                mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
+                SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
+            }
 
-            string postgresConfigFileName = "SharpTimer/postgresConfig.json";
-            postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
+            if (usePostgres)
+            {
+                string postgresConfigFileName = "SharpTimer/postgresConfig.json";
+                postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
+            }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) isLinux = true;
             else isLinux = false;
@@ -148,12 +154,9 @@ namespace SharpTimer
                     }
                     else if (player.IsValid)
                     {
-                        /* if (removeCollisionEnabled == true && player.PlayerPawn != null)
-                        {
-                            RemovePlayerCollision(player);
-                        }
 
-                        specTargets[player.Pawn.Value.EntityHandle.Index] = new CCSPlayerController(player.Handle); */
+                        //specTargets[player.Pawn.Value.EntityHandle.Index] = new CCSPlayerController(player.Handle);
+
                         AddTimer(5.0f, () =>
                         {
                             if (!player.IsValid || player == null || !IsAllowedPlayer(player)) return;
@@ -267,8 +270,8 @@ namespace SharpTimer
                 DamageHook();
             });
 
-            AddCommandListener("say", OnPlayerChatAll);
-            AddCommandListener("say_team", OnPlayerChatTeam);
+            AddCommandListener("say", OnPlayerChat);
+            AddCommandListener("say_team", OnPlayerChat);
             AddCommandListener("jointeam", OnCommandJoinTeam);
 
             SharpTimerConPrint("Plugin Loaded");
@@ -353,8 +356,8 @@ namespace SharpTimer
         public override void Unload(bool hotReload)
         {
             DamageUnHook();
-            RemoveCommandListener("say", OnPlayerChatAll, HookMode.Pre);
-            RemoveCommandListener("say_team", OnPlayerChatTeam, HookMode.Pre);
+            RemoveCommandListener("say", OnPlayerChat, HookMode.Pre);
+            RemoveCommandListener("say_team", OnPlayerChat, HookMode.Pre);
             RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
 
             if(isLinux) RunCommand.Unhook(OnRunCommand, HookMode.Pre);

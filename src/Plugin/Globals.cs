@@ -49,7 +49,6 @@ namespace SharpTimer
             PropertyNameCaseInsensitive = true
         };
 
-        public string msgPrefix = $" {ChatColors.Green}[SharpTimer]{ChatColors.White} ";
         public string primaryHUDcolor = "green";
         public string secondaryHUDcolor = "orange";
         public string tertiaryHUDcolor = "white";
@@ -151,7 +150,6 @@ namespace SharpTimer
         public bool hideAllPlayers = false;
         public bool removeCollisionEnabled = true;
         public bool disableDamage = true;
-        public bool altDmgHook = false;
         public bool use2DSpeed = false;
 
         public bool cpEnabled = false;
@@ -223,6 +221,7 @@ namespace SharpTimer
         public string? gameDir;
         public string? mySQLpath;
         public string? postgresPath;
+        public string? PlayerStatsTable;
         public string? playerRecordsPath;
         public string? currentMapName;
         public string? defaultServerHostname = ConVar.Find("hostname")?.StringValue;
