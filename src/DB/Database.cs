@@ -456,98 +456,96 @@ namespace SharpTimer.Database
 
         public async Task SavePlayerTimeToDatabase(CCSPlayerController? player, int timerTicks, string steamId, string playerName, int playerSlot, int bonusX = 0, int style = 0)
         {
-            if (usePostgres)
+            SharpTimerDebug($"Trying to save player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks}");
+            try
             {
-                SharpTimerDebug($"Trying to save player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to Postgres for {playerName} {timerTicks}");
-                try
+                if (!IsAllowedPlayer(player)) return;
+                //if ((bonusX == 0 && !playerTimers[playerSlot].IsTimerRunning) || (bonusX != 0 && !playerTimers[playerSlot].IsBonusTimerRunning)) return;
+                string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
+
+                int timeNowUnix = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                // get player columns
+                int dBtimesFinished = 0;
+                int dBlastFinished = 0;
+                int dBunixStamp = 0;
+                int dBtimerTicks = 0;
+                string dBFormattedTime;
+
+                // store new value separatley
+                int new_dBtimerTicks = 0;
+                int playerPoints = 0;
+                bool beatPB = false;
+
+                using (var connection = await OpenConnectionAsync(dbPath))
                 {
-                    if (!IsAllowedPlayer(player)) return;
-                    //if ((bonusX == 0 && !playerTimers[playerSlot].IsTimerRunning) || (bonusX != 0 && !playerTimers[playerSlot].IsBonusTimerRunning)) return;
-                    string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
+                    await CreatePlayerRecordsTableAsync(connection);
 
-                    int timeNowUnix = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    // get player columns
-                    int dBtimesFinished = 0;
-                    int dBlastFinished = 0;
-                    int dBunixStamp = 0;
-                    int dBtimerTicks = 0;
-                    string dBFormattedTime;
-
-                    // store new value separatley
-                    int new_dBtimerTicks = 0;
-                    int playerPoints = 0;
-                    bool beatPB = false;
-
-                    using (var connection = await OpenConnectionAsync(dbPath))
+                    string formattedTime = FormatTime(timerTicks);
+                    string selectQuery;
+                    DbCommand selectCommand;
+                    switch (dbType)
                     {
-                        await CreatePlayerRecordsTableAsync(connection);
+                        case DatabaseType.MySQL:
+                            selectQuery = @"SELECT TimesFinished, LastFinished, FormattedTime, TimerTicks, UnixStamp FROM PlayerRecords WHERE MapName = @MapName AND SteamID = @SteamID AND Style = @Style";
+                            selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
+                            break;
+                        case DatabaseType.PostgreSQL:
+                            selectQuery = @"SELECT ""TimesFinished"", ""LastFinished"", ""FormattedTime"", ""TimerTicks"", ""UnixStamp"" FROM ""PlayerRecords"" WHERE ""MapName"" = @MapName AND ""SteamID"" = @SteamID AND ""Style"" = @Style";
+                            selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                            break;
+                        default:
+                            selectQuery = null;
+                            selectCommand = null;
+                            break;
+                    }
+                    // Check if the record already exists or has a higher timer value
+                    selectCommand.AddParameterWithValue("@MapName", currentMapNamee);
+                    selectCommand.AddParameterWithValue("@SteamID", steamId);
+                    selectCommand.AddParameterWithValue("@SteamID", style);
 
-                        string formattedTime = FormatTime(timerTicks);
-                        string selectQuery;
-                        DbCommand selectCommand;
-                        switch (dbType)
+                    var row = await selectCommand.ExecuteReaderAsync();
+
+                    if (row.Read())
+                    {
+                        // get player columns
+                        dBtimesFinished = row.GetInt32("TimesFinished");
+                        dBlastFinished = row.GetInt32("LastFinished");
+                        dBunixStamp = row.GetInt32("UnixStamp");
+                        dBtimerTicks = row.GetInt32("TimerTicks");
+                        dBFormattedTime = row.GetString("FormattedTime");
+
+                        // Modify the stats
+                        dBtimesFinished++;
+                        dBlastFinished = timeNowUnix;
+                        if (timerTicks < dBtimerTicks)
                         {
-                            case DatabaseType.MySQL:
-                                selectQuery = @"SELECT TimesFinished, LastFinished, FormattedTime, TimerTicks, UnixStamp FROM PlayerRecords WHERE MapName = @MapName AND SteamID = @SteamID AND Style = @Style";
-                                selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
-                                break;
-                            case DatabaseType.PostgreSQL:
-                                selectQuery = @"SELECT ""TimesFinished"", ""LastFinished"", ""FormattedTime"", ""TimerTicks"", ""UnixStamp"" FROM ""PlayerRecords"" WHERE ""MapName"" = @MapName AND ""SteamID"" = @SteamID AND ""Style"" = @Style";
-                                selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
-                                break;
-                            default:
-                                selectQuery = null;
-                                selectCommand = null;
-                                break;
-                        }
-                        // Check if the record already exists or has a higher timer value
-                        selectCommand.AddParameterWithValue("@MapName", currentMapNamee);
-                        selectCommand.AddParameterWithValue("@SteamID", steamId);
-                        selectCommand.AddParameterWithValue("@SteamID", style);
-
-                        var row = await selectCommand.ExecuteReaderAsync();
-
-                        if (row.Read())
-                        {
-                            // get player columns
-                            dBtimesFinished = row.GetInt32("TimesFinished");
-                            dBlastFinished = row.GetInt32("LastFinished");
-                            dBunixStamp = row.GetInt32("UnixStamp");
-                            dBtimerTicks = row.GetInt32("TimerTicks");
-                            dBFormattedTime = row.GetString("FormattedTime");
-
-                            // Modify the stats
-                            dBtimesFinished++;
-                            dBlastFinished = timeNowUnix;
-                            if (timerTicks < dBtimerTicks)
+                            new_dBtimerTicks = timerTicks;
+                            dBunixStamp = timeNowUnix;
+                            dBFormattedTime = formattedTime;
+                            playerPoints = timerTicks;
+                            beatPB = true;
+                            if (playerPoints < 32)
                             {
-                                new_dBtimerTicks = timerTicks;
-                                dBunixStamp = timeNowUnix;
-                                dBFormattedTime = formattedTime;
-                                playerPoints = timerTicks;
-                                beatPB = true;
-                                if (playerPoints < 32)
-                                {
-                                    beatPB = false;
-                                    playerPoints = 320000;
-                                }
-                                if (enableReplays == true && usePostgres == true) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
-                            }
-                            else
-                            {
-                                new_dBtimerTicks = dBtimerTicks;
                                 beatPB = false;
                                 playerPoints = 320000;
                             }
+                            if (enableReplays == true && (usePostgres || useMySQL)) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
+                        }
+                        else
+                        {
+                            new_dBtimerTicks = dBtimerTicks;
+                            beatPB = false;
+                            playerPoints = 320000;
+                        }
 
-                            await row.CloseAsync();
-                            // Update or insert the record
-                            string upsertQuery;
-                            DbCommand upsertCommand;
-                            switch (dbType)
-                            {
-                                case DatabaseType.MySQL:
-                                    upsertQuery = @"
+                        await row.CloseAsync();
+                        // Update or insert the record
+                        string upsertQuery;
+                        DbCommand upsertCommand;
+                        switch (dbType)
+                        {
+                            case DatabaseType.MySQL:
+                                upsertQuery = @"
                                                     INSERT INTO PlayerRecords 
                                                     (MapName, SteamID, PlayerName, TimerTicks, LastFinished, TimesFinished, FormattedTime, UnixStamp, Style)
                                                     VALUES 
@@ -562,10 +560,10 @@ namespace SharpTimer.Database
                                                     UnixStamp = VALUES(UnixStamp),
                                                     Style = VALUES(Style);
                                                     ";
-                                    upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
-                                    break;
-                                case DatabaseType.PostgreSQL:
-                                    upsertQuery = @"
+                                upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
+                                break;
+                            case DatabaseType.PostgreSQL:
+                                upsertQuery = @"
                                                     INSERT INTO ""PlayerRecords"" 
                                                     (""MapName"", ""SteamID"", ""PlayerName"", ""TimerTicks"", ""LastFinished"", ""TimesFinished"", ""FormattedTime"", ""UnixStamp"", ""Style"")
                                                     VALUES 
@@ -581,6 +579,202 @@ namespace SharpTimer.Database
                                                     ""UnixStamp"" = EXCLUDED.""UnixStamp"",
                                                     ""Style"" = EXCLUDED.""Style"";
                                                     ";
+                                upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
+                                break;
+                            default:
+                                upsertQuery = null;
+                                upsertCommand = null;
+                                break;
+                        }
+                        using (upsertCommand)
+                        {
+                            upsertCommand.AddParameterWithValue("@MapName", currentMapNamee);
+                            upsertCommand.AddParameterWithValue("@PlayerName", playerName);
+                            upsertCommand.AddParameterWithValue("@TimesFinished", dBtimesFinished);
+                            upsertCommand.AddParameterWithValue("@LastFinished", dBlastFinished);
+                            upsertCommand.AddParameterWithValue("@TimerTicks", new_dBtimerTicks);
+                            upsertCommand.AddParameterWithValue("@FormattedTime", dBFormattedTime);
+                            upsertCommand.AddParameterWithValue("@UnixStamp", dBunixStamp);
+                            upsertCommand.AddParameterWithValue("@SteamID", steamId);
+                            upsertCommand.AddParameterWithValue("@Style", style);
+                            if ((usePostgres || useMySQL) && globalRanksEnabled == true && ((dBtimesFinished <= maxGlobalFreePoints && globalRanksFreePointsEnabled == true) || beatPB)) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX, style);
+                            if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && (usePostgres || useMySQL) && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
+                            await upsertCommand.ExecuteNonQueryAsync();
+                            Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
+                            if ((usePostgres || useMySQL) && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
+                            if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, dBtimesFinished, style)));
+                        }
+
+                    }
+                    else
+                    {
+                        Server.NextFrame(() => SharpTimerDebug($"No player record yet"));
+                        if (enableReplays == true && usePostgres == true) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
+                        await row.CloseAsync();
+
+                        string upsertQuery;
+                        DbCommand upsertCommand;
+                        switch (dbType)
+                        {
+                            case DatabaseType.MySQL:
+                                upsertQuery = @"REPLACE INTO PlayerRecords (MapName, SteamID, PlayerName, TimerTicks, LastFinished, TimesFinished, FormattedTime, UnixStamp, Style) VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)";
+                                upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
+                                break;
+                            case DatabaseType.PostgreSQL:
+                                upsertQuery = @"INSERT INTO ""PlayerRecords"" (""MapName"", ""SteamID"", ""PlayerName"", ""TimerTicks"", ""LastFinished"", ""TimesFinished"", ""FormattedTime"", ""UnixStamp"", ""Style"") VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)";
+                                upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
+                                break;
+                            default:
+                                upsertQuery = null;
+                                upsertCommand = null;
+                                break;
+                        }
+
+                        using (upsertCommand)
+                        {
+                            upsertCommand.AddParameterWithValue("@MapName", currentMapNamee);
+                            upsertCommand.AddParameterWithValue("@PlayerName", playerName);
+                            upsertCommand.AddParameterWithValue("@TimesFinished", 1);
+                            upsertCommand.AddParameterWithValue("@LastFinished", timeNowUnix);
+                            upsertCommand.AddParameterWithValue("@TimerTicks", timerTicks);
+                            upsertCommand.AddParameterWithValue("@FormattedTime", formattedTime);
+                            upsertCommand.AddParameterWithValue("@UnixStamp", timeNowUnix);
+                            upsertCommand.AddParameterWithValue("@SteamID", steamId);
+                            upsertCommand.AddParameterWithValue("@Style", style);
+                            await upsertCommand.ExecuteNonQueryAsync();
+                            if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX, style);
+                            if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
+                            Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
+                            if (IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
+                            if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, 1, style)));
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Server.NextFrame(() => SharpTimerError($"Error saving player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database: {ex.Message}"));
+            }
+        }
+
+        public async Task GetPlayerStats(CCSPlayerController? player, string steamId, string playerName, int playerSlot, bool fromConnect)
+        {
+            SharpTimerDebug($"Trying to get player stats from database for {playerName}");
+            try
+            {
+                if (player == null || !player.IsValid || player.IsBot) return;
+                if (!(connectedPlayers.ContainsKey(playerSlot) && playerTimers.ContainsKey(playerSlot))) return;
+
+                int timeNowUnix = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                // get player columns
+                int timesConnected = 0;
+                int lastConnected = 0;
+                bool hideTimerHud;
+                bool hideKeys;
+                bool hideJS;
+                bool soundsEnabled;
+                int playerFov = 0;
+                bool isVip;
+                string bigGif;
+                int playerPoints;
+
+                using (var connection = await OpenConnectionAsync(dbPath))
+                {
+                    await CreatePlayerRecordsTableAsync(connection);
+
+                    string selectQuery;
+                    DbCommand selectCommand;
+                    switch (dbType)
+                    {
+                        case DatabaseType.MySQL:
+                            selectQuery = @"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
+                            break;
+                        case DatabaseType.PostgreSQL:
+                            selectQuery = @"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
+                            selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                            break;
+                        default:
+                            selectQuery = null;
+                            selectCommand = null;
+                            break;
+                    }
+
+                    using (selectCommand)
+                    {
+                        selectCommand.AddParameterWithValue("@SteamID", steamId);
+
+                        var row = await selectCommand.ExecuteReaderAsync();
+
+                        if (row.Read())
+                        {
+                            // get player columns
+                            timesConnected = row.GetInt32("TimesConnected");
+                            hideTimerHud = row.GetBoolean("HideTimerHud");
+                            hideKeys = row.GetBoolean("HideKeys");
+                            hideJS = row.GetBoolean("HideJS");
+                            soundsEnabled = row.GetBoolean("SoundsEnabled");
+                            playerFov = row.GetInt32("PlayerFov");
+                            isVip = row.GetBoolean("IsVip");
+                            bigGif = row.GetString("BigGifID");
+                            playerPoints = row.GetInt32("GlobalPoints");
+
+                            // Modify the stats
+                            timesConnected++;
+                            lastConnected = timeNowUnix;
+                            Server.NextFrame(() =>
+                            {
+                                if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value))
+                                {
+                                    value.HideTimerHud = hideTimerHud;
+                                    value.HideKeys = hideKeys;
+                                    value.HideJumpStats = hideJS;
+                                    value.SoundsEnabled = soundsEnabled;
+                                    value.PlayerFov = playerFov;
+                                    value.IsVip = isVip;
+                                    value.VipBigGif = bigGif;
+                                    value.TimesConnected = timesConnected;
+                                }
+                                else
+                                {
+                                    SharpTimerError($"Error getting player stats from database for {playerName}: player was not on the server anymore");
+                                    return;
+                                }
+                            });
+
+                            await row.CloseAsync();
+                            // Update or insert the record
+
+                            string upsertQuery;
+                            DbCommand upsertCommand;
+                            switch (dbType)
+                            {
+                                case DatabaseType.MySQL:
+                                    upsertQuery = @"REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) 
+                                                        VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
+                                    break;
+                                case DatabaseType.PostgreSQL:
+                                    upsertQuery = @"
+                                                    INSERT INTO ""PlayerStats"" 
+                                                    (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"")
+                                                    VALUES 
+                                                    (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)
+                                                    ON CONFLICT (""SteamID"")
+                                                    DO UPDATE SET
+                                                    ""PlayerName"" = EXCLUDED.""PlayerName"",
+                                                    ""TimesConnected"" = EXCLUDED.""TimesConnected"",
+                                                    ""LastConnected"" = EXCLUDED.""LastConnected"",
+                                                    ""HideTimerHud"" = EXCLUDED.""HideTimerHud"",
+                                                    ""HideKeys"" = EXCLUDED.""HideKeys"",
+                                                    ""HideJS"" = EXCLUDED.""HideJS"",
+                                                    ""SoundsEnabled"" = EXCLUDED.""SoundsEnabled"",
+                                                    ""PlayerFov"" = EXCLUDED.""PlayerFov"",
+                                                    ""IsVip"" = EXCLUDED.""IsVip"",
+                                                    ""BigGifID"" = EXCLUDED.""BigGifID"",
+                                                    ""GlobalPoints"" = EXCLUDED.""GlobalPoints"";
+                                                    ";
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
                                     break;
                                 default:
@@ -588,30 +782,31 @@ namespace SharpTimer.Database
                                     upsertCommand = null;
                                     break;
                             }
+
                             using (upsertCommand)
                             {
-                                upsertCommand.AddParameterWithValue("@MapName", currentMapNamee);
                                 upsertCommand.AddParameterWithValue("@PlayerName", playerName);
-                                upsertCommand.AddParameterWithValue("@TimesFinished", dBtimesFinished);
-                                upsertCommand.AddParameterWithValue("@LastFinished", dBlastFinished);
-                                upsertCommand.AddParameterWithValue("@TimerTicks", new_dBtimerTicks);
-                                upsertCommand.AddParameterWithValue("@FormattedTime", dBFormattedTime);
-                                upsertCommand.AddParameterWithValue("@UnixStamp", dBunixStamp);
                                 upsertCommand.AddParameterWithValue("@SteamID", steamId);
-                                upsertCommand.AddParameterWithValue("@Style", style);
-                                if (usePostgres == true && globalRanksEnabled == true && ((dBtimesFinished <= maxGlobalFreePoints && globalRanksFreePointsEnabled == true) || beatPB)) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX, style);
-                                if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && useMySQL == true && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
+                                upsertCommand.AddParameterWithValue("@TimesConnected", timesConnected);
+                                upsertCommand.AddParameterWithValue("@LastConnected", lastConnected);
+                                upsertCommand.AddParameterWithValue("@HideTimerHud", hideTimerHud);
+                                upsertCommand.AddParameterWithValue("@HideKeys", hideKeys);
+                                upsertCommand.AddParameterWithValue("@HideJS", hideJS);
+                                upsertCommand.AddParameterWithValue("@SoundsEnabled", soundsEnabled);
+                                upsertCommand.AddParameterWithValue("@PlayerFov", playerFov);
+                                upsertCommand.AddParameterWithValue("@IsVip", isVip);
+                                upsertCommand.AddParameterWithValue("@BigGifID", bigGif);
+                                upsertCommand.AddParameterWithValue("@GlobalPoints", playerPoints);
+
                                 await upsertCommand.ExecuteNonQueryAsync();
-                                Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to Postgres for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
-                                if (usePostgres == true && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
-                                if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, dBtimesFinished, style)));
+                                Server.NextFrame(() => SharpTimerDebug($"Got player stats from database for {playerName}"));
+                                if (connectMsgEnabled) Server.NextFrame(() => Server.PrintToChatAll($"{msgPrefix}Player {ChatColors.Red}{playerName} {ChatColors.White}connected for the {FormatOrdinal(timesConnected)} time!"));
                             }
 
                         }
                         else
                         {
-                            Server.NextFrame(() => SharpTimerDebug($"No player record yet"));
-                            if (enableReplays == true && usePostgres == true) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
+                            Server.NextFrame(() => SharpTimerDebug($"No player stats yet"));
                             await row.CloseAsync();
 
                             string upsertQuery;
@@ -619,11 +814,11 @@ namespace SharpTimer.Database
                             switch (dbType)
                             {
                                 case DatabaseType.MySQL:
-                                    upsertQuery = @"REPLACE INTO PlayerRecords (MapName, SteamID, PlayerName, TimerTicks, LastFinished, TimesFinished, FormattedTime, UnixStamp, Style) VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)";
+                                    upsertQuery = @"REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
                                     break;
                                 case DatabaseType.PostgreSQL:
-                                    upsertQuery = @"INSERT INTO ""PlayerRecords"" (""MapName"", ""SteamID"", ""PlayerName"", ""TimerTicks"", ""LastFinished"", ""TimesFinished"", ""FormattedTime"", ""UnixStamp"", ""Style"") VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)";
+                                    upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
                                     break;
                                 default:
@@ -634,30 +829,219 @@ namespace SharpTimer.Database
 
                             using (upsertCommand)
                             {
-                                upsertCommand.AddParameterWithValue("@MapName", currentMapNamee);
                                 upsertCommand.AddParameterWithValue("@PlayerName", playerName);
-                                upsertCommand.AddParameterWithValue("@TimesFinished", 1);
-                                upsertCommand.AddParameterWithValue("@LastFinished", timeNowUnix);
-                                upsertCommand.AddParameterWithValue("@TimerTicks", timerTicks);
-                                upsertCommand.AddParameterWithValue("@FormattedTime", formattedTime);
-                                upsertCommand.AddParameterWithValue("@UnixStamp", timeNowUnix);
                                 upsertCommand.AddParameterWithValue("@SteamID", steamId);
-                                upsertCommand.AddParameterWithValue("@Style", style);
+                                upsertCommand.AddParameterWithValue("@TimesConnected", 1);
+                                upsertCommand.AddParameterWithValue("@LastConnected", timeNowUnix);
+                                upsertCommand.AddParameterWithValue("@HideTimerHud", false);
+                                upsertCommand.AddParameterWithValue("@HideKeys", false);
+                                upsertCommand.AddParameterWithValue("@HideJS", false);
+                                upsertCommand.AddParameterWithValue("@SoundsEnabled", soundsEnabledByDefault);
+                                upsertCommand.AddParameterWithValue("@PlayerFov", 0);
+                                upsertCommand.AddParameterWithValue("@IsVip", false);
+                                upsertCommand.AddParameterWithValue("@BigGifID", "x");
+                                upsertCommand.AddParameterWithValue("@GlobalPoints", 0);
+
                                 await upsertCommand.ExecuteNonQueryAsync();
-                                if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX, style);
-                                if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
-                                Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to Postgres for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
-                                if (IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
-                                if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, 1, style)));
+                                Server.NextFrame(() => SharpTimerDebug($"Got player stats from database for {playerName}"));
+                                if (connectMsgEnabled) Server.NextFrame(() => Server.PrintToChatAll($"{msgPrefix}Player {ChatColors.Red}{playerName} {ChatColors.White}connected for the first time!"));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Server.NextFrame(() => SharpTimerError($"Error getting player stats from database for {playerName}: {ex}"));
+            }
+        }
+
+        public async Task SetPlayerStats(CCSPlayerController? player, string steamId, string playerName, int playerSlot)
+        {
+            SharpTimerDebug($"Trying to set player stats in database for {playerName}");
+            try
+            {
+                if (!IsAllowedPlayer(player)) return;
+                int timeNowUnix = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                // get player columns
+                int timesConnected = 0;
+                int lastConnected = 0;
+                bool hideTimerHud;
+                bool hideKeys;
+                bool hideJS;
+                bool soundsEnabled;
+                int playerFov = 0;
+                bool isVip;
+                string bigGif;
+                int playerPoints;
+
+                using (var connection = await OpenConnectionAsync(dbPath))
+                {
+                    await CreatePlayerRecordsTableAsync(connection);
+                    string selectQuery;
+                    DbCommand selectCommand;
+                    switch (dbType)
+                    {
+                        case DatabaseType.MySQL:
+                            selectQuery = "SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
+                            break;
+                        case DatabaseType.PostgreSQL:
+                            selectQuery = @"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
+                            selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                            break;
+                        default:
+                            selectQuery = null;
+                            selectCommand = null;
+                            break;
+                    }
+
+                    using (selectCommand)
+                    {
+                        selectCommand.AddParameterWithValue("@SteamID", steamId);
+
+                        var row = await selectCommand.ExecuteReaderAsync();
+
+                        if (row.Read())
+                        {
+                            // get player columns
+                            timesConnected = row.GetInt32("TimesConnected");
+                            lastConnected = row.GetInt32("LastConnected");
+                            hideTimerHud = row.GetBoolean("HideTimerHud");
+                            hideKeys = row.GetBoolean("HideKeys");
+                            hideJS = row.GetBoolean("HideJS");
+                            soundsEnabled = row.GetBoolean("SoundsEnabled");
+                            playerFov = row.GetInt32("PlayerFov");
+                            isVip = row.GetBoolean("IsVip");
+                            bigGif = row.GetString("BigGifID");
+                            playerPoints = row.GetInt32("GlobalPoints");
+
+                            await row.CloseAsync();
+                            // Update or insert the record
+
+                            string upsertQuery;
+                            DbCommand upsertCommand;
+                            switch (dbType)
+                            {
+                                case DatabaseType.MySQL:
+                                    upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
+                                    break;
+                                case DatabaseType.PostgreSQL:
+                                    upsertQuery = @"
+                                                    INSERT INTO ""PlayerStats"" 
+                                                    (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"")
+                                                    VALUES 
+                                                    (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)
+                                                    ON CONFLICT (""SteamID"")
+                                                    DO UPDATE SET
+                                                    ""PlayerName"" = EXCLUDED.""PlayerName"",
+                                                    ""TimesConnected"" = EXCLUDED.""TimesConnected"",
+                                                    ""LastConnected"" = EXCLUDED.""LastConnected"",
+                                                    ""HideTimerHud"" = EXCLUDED.""HideTimerHud"",
+                                                    ""HideKeys"" = EXCLUDED.""HideKeys"",
+                                                    ""HideJS"" = EXCLUDED.""HideJS"",
+                                                    ""SoundsEnabled"" = EXCLUDED.""SoundsEnabled"",
+                                                    ""PlayerFov"" = EXCLUDED.""PlayerFov"",
+                                                    ""IsVip"" = EXCLUDED.""IsVip"",
+                                                    ""BigGifID"" = EXCLUDED.""BigGifID"",
+                                                    ""GlobalPoints"" = EXCLUDED.""GlobalPoints"";
+                                                    ";
+                                    upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
+                                    break;
+                                default:
+                                    upsertQuery = null;
+                                    upsertCommand = null;
+                                    break;
+                            }
+
+                            using (upsertCommand)
+                            {
+                                if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value))
+                                {
+                                    upsertCommand.AddParameterWithValue("@PlayerName", playerName);
+                                    upsertCommand.AddParameterWithValue("@SteamID", steamId);
+                                    upsertCommand.AddParameterWithValue("@TimesConnected", timesConnected);
+                                    upsertCommand.AddParameterWithValue("@LastConnected", lastConnected);
+                                    upsertCommand.AddParameterWithValue("@HideTimerHud", value.HideTimerHud);
+                                    upsertCommand.AddParameterWithValue("@HideKeys", value.HideKeys);
+                                    upsertCommand.AddParameterWithValue("@HideJS", value.HideJumpStats);
+                                    upsertCommand.AddParameterWithValue("@SoundsEnabled", value.SoundsEnabled);
+                                    upsertCommand.AddParameterWithValue("@PlayerFov", value.PlayerFov);
+                                    upsertCommand.AddParameterWithValue("@IsVip", isVip);
+                                    upsertCommand.AddParameterWithValue("@BigGifID", bigGif);
+                                    upsertCommand.AddParameterWithValue("@GlobalPoints", playerPoints);
+
+                                    await upsertCommand.ExecuteNonQueryAsync();
+                                    Server.NextFrame(() => SharpTimerDebug($"Set player stats in database for {playerName}"));
+                                }
+                                else
+                                {
+                                    SharpTimerError($"Error setting player stats in database for {playerName}: player was not on the server anymore");
+
+                                    return;
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            Server.NextFrame(() => SharpTimerDebug($"No player stats yet"));
+                            await row.CloseAsync();
+
+                            string upsertQuery;
+                            DbCommand upsertCommand;
+                            switch (dbType)
+                            {
+                                case DatabaseType.MySQL:
+                                    upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
+                                    break;
+                                case DatabaseType.PostgreSQL:
+                                    upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
+                                    break;
+                                default:
+                                    upsertQuery = null;
+                                    upsertCommand = null;
+                                    break;
+                            }
+
+                            using (upsertCommand)
+                            {
+                                if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value))
+                                {
+                                    upsertCommand.AddParameterWithValue("@PlayerName", playerName);
+                                    upsertCommand.AddParameterWithValue("@SteamID", steamId);
+                                    upsertCommand.AddParameterWithValue("@TimesConnected", 1);
+                                    upsertCommand.AddParameterWithValue("@LastConnected", timeNowUnix);
+                                    upsertCommand.AddParameterWithValue("@HideTimerHud", playerTimers[playerSlot].HideTimerHud);
+                                    upsertCommand.AddParameterWithValue("@HideKeys", playerTimers[playerSlot].HideKeys);
+                                    upsertCommand.AddParameterWithValue("@HideJS", playerTimers[playerSlot].HideJumpStats);
+                                    upsertCommand.AddParameterWithValue("@SoundsEnabled", playerTimers[playerSlot].SoundsEnabled);
+                                    upsertCommand.AddParameterWithValue("@PlayerFov", playerTimers[playerSlot].PlayerFov);
+                                    upsertCommand.AddParameterWithValue("@IsVip", false);
+                                    upsertCommand.AddParameterWithValue("@BigGifID", "x");
+                                    upsertCommand.AddParameterWithValue("@GlobalPoints", 0);
+
+                                    await upsertCommand.ExecuteNonQueryAsync();
+                                    Server.NextFrame(() => SharpTimerDebug($"Set player stats in database for {playerName}"));
+                                }
+                                else
+                                {
+                                    SharpTimerError($"Error setting player stats in database for {playerName}: player was not on the server anymore");
+
+                                    return;
+                                }
                             }
 
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    Server.NextFrame(() => SharpTimerError($"Error saving player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to Postgres: {ex.Message}"));
-                }
+            }
+            catch (Exception ex)
+            {
+                Server.NextFrame(() => SharpTimerError($"Error setting player stats in database for {playerName}: {ex}"));
             }
         }
     }

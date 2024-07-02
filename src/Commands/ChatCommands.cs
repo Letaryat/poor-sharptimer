@@ -20,6 +20,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Admin;
 
 namespace SharpTimer
 {
@@ -1118,6 +1119,37 @@ namespace SharpTimer
 			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
 			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
                 playerTimers[player.Slot].IsNoclip = true;
+		    }   
+        }
+
+        [ConsoleCommand("css_adminnoclip", "Admin Noclip")]
+        [ConsoleCommand("css_adminnc", "Admin Noclip")]
+        [RequiresPermissions("@css/root")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void AdminNoclipCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            SharpTimerDebug($"{player!.PlayerName} calling css_adminnoclip...");
+
+            if (ReplayCheck(player))
+                return;
+
+            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            playerTimers[player.Slot].IsTimerRunning = false;
+            playerTimers[player.Slot].TimerTicks = 0;
+            playerTimers[player.Slot].IsBonusTimerRunning = false;
+            playerTimers[player.Slot].BonusTimerTicks = 0;
+
+            if (player!.Pawn.Value!.MoveType == MoveType_t.MOVETYPE_NOCLIP)
+		    {
+			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_WALK;
+			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
+			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
+		    }
+		    else
+		    {
+			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NOCLIP;
+			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
+			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
 		    }   
         }
 
