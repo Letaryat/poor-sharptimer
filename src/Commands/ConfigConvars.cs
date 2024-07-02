@@ -101,7 +101,7 @@ namespace SharpTimer
 
             if (int.TryParse(args, out int maxFreePoints) && maxFreePoints > 0)
             {
-                maxGlobalFreePoints = maxFreePoints * 64;
+                maxGlobalFreePoints = maxFreePoints;
                 SharpTimerConPrint($"SharpTimer free 'participation' rewards set to {maxFreePoints} times.");
             }
             else
