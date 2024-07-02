@@ -38,16 +38,16 @@ namespace SharpTimer
         {
             var zonesmenu = new ChatMenu("[ZONE TOOL]");
             //menu.Title = "fake zones";
-            zonesmenu.AddMenuOption("add startzone", (player, option) => {
+            zonesmenu.AddMenuOption("startzone", (player, option) => {
                 AddStartZoneCommand(player);
             });
-            zonesmenu.AddMenuOption("add endzone", (player, option) => {
+            zonesmenu.AddMenuOption("endzone", (player, option) => {
                 AddEndZoneCommand(player);
             });
-            zonesmenu.AddMenuOption("add respawnpos", (player, option) => {
+            zonesmenu.AddMenuOption("respawnpos", (player, option) => {
                 AddRespawnPosCommand(player);
             });
-            zonesmenu.AddMenuOption("save zones", (player, option) => {
+            zonesmenu.AddMenuOption("save", (player, option) => {
                 SaveZonesCommand(player);
             });
             zonesmenu.ExitButton = true;
@@ -72,7 +72,7 @@ namespace SharpTimer
                 playerTimers[player.Slot].IsAddingStartZone = true;
                 playerTimers[player.Slot].IsAddingEndZone = false;
                 player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL] {ChatColors.Default}Please go to the opposite zone corner now");
-                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL] {ChatColors.Default}and type {primaryChatColor}!addstartzone {ChatColors.Default}again");
+                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL] {ChatColors.Default}and type {primaryChatColor}!1 {ChatColors.Default}again");
             }
         }
 
@@ -94,7 +94,7 @@ namespace SharpTimer
                 playerTimers[player.Slot].IsAddingStartZone = false;
                 playerTimers[player.Slot].IsAddingEndZone = true;
                 player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL] {ChatColors.Default}Please go to the opposite zone corner now");
-                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL] {ChatColors.Default}and type {primaryChatColor}!addendzone {ChatColors.Default}again");
+                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL] {ChatColors.Default}and type {primaryChatColor}!2 {ChatColors.Default}again");
             }
         }
 
@@ -117,7 +117,7 @@ namespace SharpTimer
 
             if (playerTimers[player!.Slot].EndZoneC1 == null || playerTimers[player.Slot].EndZoneC2 == null || playerTimers[player.Slot].StartZoneC1 == null || playerTimers[player.Slot].StartZoneC2 == null || playerTimers[player.Slot].RespawnPos == null)
             {
-                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL] {ChatColors.Red}Please make sure you have done all 3 zoning steps (!addstartzone, !addendzone, !addrespawnpos)");
+                player.PrintToChat($" {ChatColors.LightPurple}[ZONE TOOL] {ChatColors.Red}Please make sure you have done all 3 zoning steps (startzone, endzone, respawnpos)");
                 return;
             }
 
