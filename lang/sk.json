@@ -80,7 +80,7 @@
     "styles_not_supported": "Štýly momentálne nie sú podporované na miestnych záznamoch :(",
 
     //checkpoints
-    "checkpoint_set": "{0}nastavené! {lime}#{1}",
+    "checkpoint_set": "{0} nastavené! {lime}#{1}",
     "no_checkpoint_set": "Nič {0} nenastavené!",
     "cant_use_checkpoint": "{lightred}Keď je časovač zapnutý, nemožno použiť {0}, použite {default}!timer",
     "cant_use_checkpoint_in_air": "{lightred}Vo vzduchu nie je možné nastaviť {0}",
