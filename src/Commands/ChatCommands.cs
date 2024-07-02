@@ -1138,6 +1138,7 @@ namespace SharpTimer
             playerTimers[player.Slot].TimerTicks = 0;
             playerTimers[player.Slot].IsBonusTimerRunning = false;
             playerTimers[player.Slot].BonusTimerTicks = 0;
+            playerTimers[player.Slot].IsTimerBlocked = false;
 
             if (player!.Pawn.Value!.MoveType == MoveType_t.MOVETYPE_NOCLIP)
 		    {
@@ -1147,6 +1148,7 @@ namespace SharpTimer
 		    }
 		    else
 		    {
+                QuietStopTimer(player);
 			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NOCLIP;
 			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
 			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
