@@ -11,8 +11,8 @@
     "timer_reset": "Du ble tilbakestilt på grunn av ulovlig skip forsøk",
 
     //records
-    "no_records_available": "Ingen rekorder tilgjengelig får {0}",
-    "no_records_available_bonus": "Ingen rekorder tilgjengelig får Bonus {0} på {1}",
+    "no_records_available": "Ingen rekorder tilgjengelig for {0}",
+    "no_records_available_bonus": "Ingen rekorder tilgjengelig for Bonus {0} på {1}",
     "records_map": "#{0}: {lime}{1} {default}- {2} {lime}{3}",
     "new_server_record": "{lime}{0} {white}satt en ny SR!",
     "new_server_record_bonus": "{lime}{0} {white}satt en ny Bonus {1} SR!",
@@ -21,14 +21,14 @@
     "map_finish": "{lime}{0} {white}fullførte kartet!",
     "map_finish_bonus": "{lime}{0} {white}fullførte Bonusen {0}!",
     "map_finish_rank": "Rang: [{lime}{0}{default}] Ganger Fullført: [{lime}{1}{default}]",
-    "top10_records": "Top 10 {0} Recorder får {1}:",
-    "top10_records_bonus": "Top 10 {0} Recorder får Bonus {1} on {2}:",
+    "top10_records": "Top 10 {0} Recorder for {1}:",
+    "top10_records_bonus": "Top 10 {0} Recorder for Bonus {1} on {2}:",
     
     //stages
     "invalid_bonus_stage": "Tast inn et gyldig bonusstadium, for eksempel: {lime}!topbonus 1",
     "invalid_bonus_rb": "Tast inn et gyldig bonusstadium, for eksempel: {lime}!rb <index>",
     "stages_unavalible": "Stadium utilgjengelig",
-    "stages_unavalible_respawnpos": "{lightred}Ingen RespawnStagePos med indeks {0} funnet får gjeldende kartet!",
+    "stages_unavalible_respawnpos": "{lightred}Ingen RespawnStagePos med indeks {0} funnet for gjeldende kartet!",
     "stages_enter_valid": "Tast inn et gyldig stadium, for eksempel: {lime}!stage <index>",
     "map_no_stages": "{lightred}Gjeldende kartet har ingen stadium!",
 
@@ -39,15 +39,18 @@
     "current_sr": "Nåværende Server Rekord på {lime}{0}{white}:",
     "current_sr_player": "{lime}{0} {white}- {lime}{1}",
     "reached_max_free": "Du har nådd dine maksimale gratispoeng belønninger på {lime}{0}{default}!",
-
+    "gained_points": "{lime}{0} {default}oppnådde {green}+{1} {default}Poeng {grey}({2})",
+    "top_10_points": "Top 10 Spillere med mest poeng:",
+    "top_10_points_list": "#{0}: {lime}{1} {default}: {lime}{2} {default}poeng",
+    
     //replay
     "no_replay": "Ingen repetisjon spilles for øyeblikket",
     "end_your_replay": "Avslutt den nåværende reprisen først {lime}!stopreplay",
     "available_replay_cmds": "Tilgjengelig repetisjon kommandoer: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
-    "replaying_server_record": "Spiller av Server Kart Rekord, skriv {lime}!stop eller {lime}!stopreplay {default}får å slutte reprisen",
+    "replaying_server_record": "Spiller av Server Kart Rekord, skriv {lime}!stop eller {lime}!stopreplay {default}for å slutte reprisen",
     "no_sr_replay": "Ingen Server Rekord og spille av",
-    "replaying_server_top": "Spiller av Server Top {0} skriv {lime}!stop eller {lime}!stopreplay {default}får å slutte reprisen",
-    "replaying_pb": "Spiller av din PB skriv {lime}!stop eller {lime}!stopreplay {default}får å slutte reprisen",
+    "replaying_server_top": "Spiller av Server Top {0}, skriv {lime}!stop eller {lime}!stopreplay {default}for å slutte reprisen",
+    "replaying_pb": "Spiller av din PB, skriv {lime}!stop eller {lime}!stopreplay {default}for å slutte reprisen",
     "ending_replay": "Slutter reprisen",
     "replay_corrupt": "Den forespurte reprisen ser ut til å være ødelagt",
     "replay_dont_exist": "Den forespurte reprisen eksisterer ikke",
@@ -65,7 +68,7 @@
     //zones
     "no_respawnpos": "{lightred}Ingen RespawnPos funnet for gjeldende kart!",
     "no_respawnpos_bonus": "{lightred}Ingen RespawnBonusPos funnet for gjeldende kart!",
-    "no_respawnpos_bonus_index": "{lightred}Ingen RespawnBonusPos with indeks {0} funnet for gjeldende kart!",
+    "no_respawnpos_bonus_index": "{lightred}Ingen RespawnBonusPos med indeks {0} funnet for gjeldende kart!",
     "no_endpos": "{lightred}Ingen EndPos funnet for gjeldende kart!",
     "map_using_manual_zones": "gjeldende kart bruker manuelle soner",
     "saved_custom_respawnpos": "Lagret egendefinert startsone RespawnPos!",
@@ -81,7 +84,7 @@
 
     //checkpoints
     "checkpoint_set": "{0} satt! {lime}#{1}",
-    "no_checkpoint_set": "Nei {0} satt!",
+    "no_checkpoint_set": "Ingen {0} satt!",
     "cant_use_checkpoint": "{lightred}Kan ikke bruke {0} mens tidtaker er på, bruk {default}!timer",
     "cant_use_checkpoint_in_air": "{lightred}Kan ikke bruke {0} Mens i lufta",
     "used_checkpoint": "Teleportert til neste {0}",
@@ -100,5 +103,9 @@
     "error_occured": "{lightred}Feil oppstod.",
     "info_version": "Denne serveren kjører SharpTimer v{0}",
     "info_os": "OS: {0}",
-    "info_runtime": "Kjøretid: {0}"
+    "info_runtime": "Kjøretid: {0}",
+    "connect_message": "Spiller {red}{0} {default}koblet til!",
+    "connected_message": "Spiller {red}{0} {default}koblet til for den {1} gang!",
+    "connected_message_first": "Spiller {red}{0} {default}koblet til for første gang!",
+    "disconnect_message": "Spiller {red}{0} {default}frakoblet!"
 }
