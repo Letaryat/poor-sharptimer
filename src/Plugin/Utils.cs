@@ -1423,7 +1423,7 @@ namespace SharpTimer
             return input;
         }
 
-        static string FormatOrdinal(int number)
+        public static string FormatOrdinal(int number)
         {
             if (number % 100 >= 11 && number % 100 <= 13)
             {
