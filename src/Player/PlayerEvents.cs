@@ -73,7 +73,7 @@ namespace SharpTimer
                     //PlayerSettings
                     if ((useMySQL || usePostgres) && isForBot == false) _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, playerSlot, true));
 
-                    if (connectMsgEnabled == true && !useMySQL && !usePostgres) Server.PrintToChatAll($"{msgPrefix}Player {ChatColors.Red}{player.PlayerName} {ChatColors.White}connected!");
+                    if (connectMsgEnabled == true && !useMySQL && !usePostgres) Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["connect_message", player.PlayerName]}");
                     if (cmdJoinMsgEnabled == true && isForBot == false) PrintAllEnabledCommands(player);
 
                     SharpTimerDebug($"Added player {player.PlayerName} with UserID {player.UserId} to connectedPlayers");
@@ -152,7 +152,7 @@ namespace SharpTimer
 
                     if (connectMsgEnabled == true && isForBot == false)
                     {
-                        Server.PrintToChatAll($"{msgPrefix}Player {ChatColors.Red}{connectedPlayer.PlayerName} {ChatColors.White}disconnected!");
+                        Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["disconnect_message", connectedPlayer.PlayerName]}");
                     }
                 }
             }
@@ -162,64 +162,41 @@ namespace SharpTimer
             }
         }
 
-        private HookResult OnPlayerChatTeam(CCSPlayerController? player, CommandInfo message)
+        private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo message)
         {
-            if (displayChatTags == false) return HookResult.Continue;
-            string msg;
-            if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(message.GetArg(1)))
-            {
-                return HookResult.Handled;
-            }
-            else
-            {
-                msg = message.GetArg(1);
-            }
-
-            if (msg.Length > 0 &&
-            (msg[0] == '!' || msg[0] == '/' || msg[0] == '.'))
-            {
+            if (displayChatTags == false)
                 return HookResult.Continue;
-            }
+
+            string msg;
+
+            if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(message.GetArg(1)))
+                return HookResult.Handled;
+            else
+                msg = message.GetArg(1);
+
+            if (msg.Length > 0 && (msg[0] == '!' || msg[0] == '/' || msg[0] == '.'))
+                return HookResult.Continue;
             else
             {
                 char rankColor = GetRankColorForChat(player);
 
                 if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? value))
                 {
-                    Server.PrintToChatAll($" {primaryChatColor}● {(value.IsVip ? $"{ChatColors.Magenta}[{customVIPTag}] " : "")}{rankColor}[{value.CachedRank}]{ChatColors.Default} {player.PlayerName}: {msg}");
+                    string deadText = player.PawnIsAlive ? "" : $"{ChatColors.Grey}*DEAD* ";
+                    string vipText = (value.IsVip ? $"{ChatColors.Magenta}[{customVIPTag}] " : "");
+                    if (player.Team == CsTeam.Terrorist)
+                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}[{value.CachedRank}] {ChatColors.ForTeam(CsTeam.Terrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                    if (player.Team == CsTeam.CounterTerrorist)
+                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}[{value.CachedRank}] {ChatColors.ForTeam(CsTeam.CounterTerrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                    if (player.Team == CsTeam.Spectator)
+                        Server.PrintToChatAll($" {ChatColors.Grey}*SPEC* {ChatColors.ForTeam(CsTeam.Spectator)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                    if (player.Team == CsTeam.None)
+                        Server.PrintToChatAll($" {ChatColors.ForTeam(CsTeam.None)}{player.PlayerName} {ChatColors.Default}: {msg}");
                 }
+
                 return HookResult.Handled;
             }
-        }
 
-        private HookResult OnPlayerChatAll(CCSPlayerController? player, CommandInfo message)
-        {
-            if (displayChatTags == false) return HookResult.Continue;
-            string msg;
-            if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(message.GetArg(1)))
-            {
-                return HookResult.Handled;
-            }
-            else
-            {
-                msg = message.GetArg(1);
-            }
-
-            if (msg.Length > 0 &&
-            (msg[0] == '!' || msg[0] == '/' || msg[0] == '.'))
-            {
-                return HookResult.Continue;
-            }
-            else
-            {
-                char rankColor = GetRankColorForChat(player);
-
-                if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? value))
-                {
-                    Server.PrintToChatAll($" {ChatColors.Grey}[ALL] {primaryChatColor}● {(value.IsVip ? $"{ChatColors.Magenta}[{customVIPTag}] " : "")}{rankColor}[{value.CachedRank}]{ChatColors.Default} {player.PlayerName}: {msg}");
-                }
-                return HookResult.Handled;
-            }
         }
     }
 }

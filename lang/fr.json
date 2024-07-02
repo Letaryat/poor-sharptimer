@@ -39,6 +39,9 @@
   "current_sr": "Record actuel sur le serveur pour {lime}{0}{white}:",
   "current_sr_player": "{lime}{0} {white}- {lime}{1}",
   "reached_max_free": "Vous avez atteint le nombre maximum de points gratuits de {lime}{0}{default}!",
+  "gained_points": "{lime}{0} {default}gagné {green}+{1} {default}Points {grey}({2})",
+  "top_10_points": "Top 10 des joueurs avec le plus de points :",
+  "top_10_points_list": "#{0} : {lime}{1} {default} : {lime}{2} {default}points",
 
   //replay
   "no_replay": "Pas de replay en cours",
@@ -100,5 +103,9 @@
   "error_occured": "{lightred}Une erreur s'est produite.",
   "info_version": "Ce serveur utilise SharpTimer v{0}",
   "info_os": "OS: {0}",
-  "info_runtime": "Runtime: {0}"
+  "info_runtime": "Runtime: {0}",
+  "connect_message": "Joueur {red}{0} {default}connecté!",
+  "connected_message": "Joueur {red}{0} {default}connecté pour la {1} fois!",
+  "connected_message_first": "Le joueur {red}{0} {default} s'est connecté pour la première fois!",
+  "disconnect_message": "Joueur {red}{0} {default}déconnecté!"
 }

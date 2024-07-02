@@ -206,7 +206,7 @@ namespace SharpTimer
             if (!int.TryParse(command.ArgString, out int bonusX))
             {
                 SharpTimerDebug("SaveBonusZones failed, not vaild integer.");
-                player.PrintToChat(msgPrefix + $" Please enter a valid Bonus stage i.e: {primaryChatColor}!savebonuszones <index>");
+                player.PrintToChat($" {Localizer["prefix"]} Please enter a valid Bonus stage i.e: {primaryChatColor}!savebonuszones <index>");
                 return;
             }
 

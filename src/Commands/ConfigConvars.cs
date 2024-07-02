@@ -101,7 +101,7 @@ namespace SharpTimer
 
             if (int.TryParse(args, out int maxFreePoints) && maxFreePoints > 0)
             {
-                maxGlobalFreePoints = maxFreePoints * 64;
+                maxGlobalFreePoints = maxFreePoints;
                 SharpTimerConPrint($"SharpTimer free 'participation' rewards set to {maxFreePoints} times.");
             }
             else
@@ -499,15 +499,6 @@ namespace SharpTimer
             disableDamage = bool.TryParse(args, out bool disableDamageValue) ? disableDamageValue : args != "0" && disableDamage;
         }
 
-        [ConsoleCommand("sharptimer_remove_damage_use_alt", "Whether a much simpler 'nodamage' method should be used or not. Default value: false")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerRemoveDamageAltConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            altDmgHook = bool.TryParse(args, out bool altDmgHookValue) ? altDmgHookValue : args != "0" && altDmgHook;
-        }
-
         [ConsoleCommand("sharptimer_remove_collision", "Whether Player collision should be removed or not. Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerRemoveCollisionConvar(CCSPlayerController? player, CommandInfo command)
@@ -738,21 +729,6 @@ namespace SharpTimer
             }
         }
         /* ad messages */
-
-        [ConsoleCommand("sharptimer_chat_prefix", "Default value of chat prefix for SharpTimer messages. Default value: [SharpTimer]")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerChatPrefix(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString.Trim();
-
-            if (string.IsNullOrEmpty(args))
-            {
-                msgPrefix = $" {ChatColors.Green}[SharpTimer] {ChatColors.White}";
-                return;
-            }
-
-            msgPrefix = $" {ParsePrefixColors(args)} {ChatColors.White}";
-        }
 
         [ConsoleCommand("sharptimer_hud_primary_color", "Primary Color for Timer HUD. Default value: green")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
