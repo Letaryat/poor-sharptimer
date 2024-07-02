@@ -528,8 +528,14 @@ namespace SharpTimer
                     else
                     {
                         Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_server_record", playerName]}");
-                        if (srSoundAll) SendCommandToEveryone($"play {srSound}");
-                        else player.ExecuteClientCommand($"play {srSound}");
+                        if (srSoundAll)
+                        {
+                            SendCommandToEveryone($"play {srSound}");
+                        }
+                        else if (playerTimers[player!.Slot].SoundsEnabled == true)
+                        {
+                            player.ExecuteClientCommand($"play {srSound}");
+                        }
                     }
                     if (discordWebhookPrintSR && discordWebhookEnabled && (useMySQL || usePostgres)) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
                 }
