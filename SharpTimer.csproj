@@ -28,6 +28,9 @@
       <HintPath>SharpTimerAPI\SharpTimerAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="SharpTimerAPI\SharpTimerAPI.csproj" />
+  </ItemGroup>
 
   <Target Name="Date" BeforeTargets="BeforeBuild">
     <WriteLinesToFile File="$(IntermediateOutputPath)gen.cs" Lines="static partial class CompileTimeStamp { public static long CompileTime = $([System.DateTime]::UtcNow.Ticks) %3B }" Overwrite="true" />
