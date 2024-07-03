@@ -529,7 +529,7 @@ namespace SharpTimer
                     {
                         Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_server_record", playerName]}");
                         if (srSoundAll) SendCommandToEveryone($"play {srSound}");
-                        else player.ExecuteClientCommand($"play {srSound}");
+                        else PlaySound(player, srSound);
                     }
                     if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
                 }
