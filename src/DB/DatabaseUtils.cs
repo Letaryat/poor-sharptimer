@@ -499,7 +499,7 @@ namespace SharpTimer
                     // Check if the record already exists or has a higher timer value
                     selectCommand.AddParameterWithValue("@MapName", currentMapNamee);
                     selectCommand.AddParameterWithValue("@SteamID", steamId);
-                    selectCommand.AddParameterWithValue("@SteamID", style);
+                    selectCommand.AddParameterWithValue("@Style", style);
 
                     var row = await selectCommand.ExecuteReaderAsync();
 
