@@ -122,13 +122,13 @@ namespace SharpTimer
             if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Stopping Timer for {playerName}");
 
             if (!ignoreJSON) SavePlayerTime(player, currentTicks);
-            if (useMySQL || usePostgres) _ = Task.Run(async () => await SavePlayerTimeToDatabase(player, currentTicks, steamID, playerName, playerSlot, 0, playerTimer.currentStyle));
+            if (enableDb) _ = Task.Run(async () => await SavePlayerTimeToDatabase(player, currentTicks, steamID, playerName, playerSlot, 0, playerTimer.currentStyle));
 
             //if (enableReplays == true) _ = Task.Run(async () => await DumpReplayToJson(player!, steamID, playerSlot));
             playerTimer.IsTimerRunning = false;
             playerTimer.IsRecordingReplay = false;
 
-            if (!useMySQL && !usePostgres) _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true));
+            if (!enableDb) _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true));
         }
 
         public void OnBonusTimerStop(CCSPlayerController? player, int bonusX)
@@ -153,7 +153,7 @@ namespace SharpTimer
             }
 
             if (!ignoreJSON) SavePlayerTime(player, currentTicks, bonusX);
-            if (useMySQL || usePostgres) _ = Task.Run(async () => await SavePlayerTimeToDatabase(player, currentTicks, steamID, playerName, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
+            if (enableDb) _ = Task.Run(async () => await SavePlayerTimeToDatabase(player, currentTicks, steamID, playerName, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
             //if (enableReplays == true) _ = Task.Run(async () => await DumpReplayToJson(player!, steamID, playerSlot, bonusX));
             playerTimers[player.Slot].IsBonusTimerRunning = false;
             playerTimers[player.Slot].IsRecordingReplay = false;
@@ -190,7 +190,7 @@ namespace SharpTimer
 
                         if (!records.ContainsKey(steamId) || records[steamId].TimerTicks > timerTicks)
                         {
-                            if (!useMySQL && !usePostgres) await PrintMapTimeToChat(player, steamId, playerName, records.GetValueOrDefault(steamId)?.TimerTicks ?? 0, timerTicks, bonusX, 0, playerTimers[player.Slot].currentStyle);
+                            if (!enableDb) await PrintMapTimeToChat(player, steamId, playerName, records.GetValueOrDefault(steamId)?.TimerTicks ?? 0, timerTicks, bonusX, 0, playerTimers[player.Slot].currentStyle);
 
                             records[steamId] = new PlayerRecord
                             {
@@ -201,12 +201,12 @@ namespace SharpTimer
                             string updatedJson = JsonSerializer.Serialize(records, jsonSerializerOptions);
                             File.WriteAllText(mapRecordsPath, updatedJson);
 
-                            if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && (!useMySQL || !usePostgres) && playerTimers[player.Slot].currentStyle == 0) _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot));
-                            if (enableReplays == true && !useMySQL && !usePostgres) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
+                            if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && (!enableDb) && playerTimers[player.Slot].currentStyle == 0) _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot));
+                            if (enableReplays == true && !enableDb) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
                         }
                         else
                         {
-                            if (!useMySQL && !usePostgres) await PrintMapTimeToChat(player, steamId, playerName, records[steamId].TimerTicks, timerTicks, bonusX, 0, playerTimers[player.Slot].currentStyle);
+                            if (!enableDb) await PrintMapTimeToChat(player, steamId, playerName, records[steamId].TimerTicks, timerTicks, bonusX, 0, playerTimers[player.Slot].currentStyle);
                         }
                     }
 
@@ -235,7 +235,7 @@ namespace SharpTimer
 
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     if (playerTimers[playerSlot].CurrentMapStage == stageTrigger || playerTimers[playerSlot] == null) return;
-                    if (useMySQL || usePostgres)
+                    if (enableDb)
                     {
                         (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase();
                     }
@@ -321,7 +321,7 @@ namespace SharpTimer
 
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     if (playerTimers[playerSlot].CurrentMapCheckpoint == cpTrigger || playerTimers[playerSlot] == null) return;
-                    if (useMySQL || usePostgres)
+                    if (enableDb)
                     {
                         (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase();
                     }
@@ -415,7 +415,7 @@ namespace SharpTimer
 
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     if (playerTimers[playerSlot].CurrentMapCheckpoint == bonusCheckpointTrigger || playerTimers[playerSlot] == null) return;
-                    if (useMySQL || usePostgres)
+                    if (enableDb)
                     {
                         (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase();
                     }

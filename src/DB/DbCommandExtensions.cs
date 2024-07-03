@@ -1,6 +1,6 @@
 using System.Data.Common;
 
-namespace SharpTimer.Database
+namespace SharpTimer
 {
     public static class DbCommandExtensions
     {

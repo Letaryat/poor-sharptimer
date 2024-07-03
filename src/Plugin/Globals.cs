@@ -110,6 +110,9 @@ namespace SharpTimer
         public bool killServerCommands = true;
         public bool useMySQL = false;
         public bool usePostgres = false;
+        public DatabaseType dbType;
+        public string dbPath = "";
+        public bool enableDb = false;
         public bool ignoreJSON = false;
         public bool enableReplays = false;
         public bool enableSRreplayBot = false;

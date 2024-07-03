@@ -302,12 +302,12 @@ namespace SharpTimer
 
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
 
-                int savedPlayerTime = (useMySQL || usePostgres) ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapNamee!, playerName, style) : await GetPreviousPlayerRecord(player, steamId, bonusX, style);
+                int savedPlayerTime = enableDb ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapNamee!, playerName, style) : await GetPreviousPlayerRecord(player, steamId, bonusX, style);
 
                 if (savedPlayerTime == 0)
                     return getRankImg ? unrankedIcon : "Unranked";
 
-                Dictionary<string, PlayerRecord> sortedRecords = (useMySQL || usePostgres) ? await GetSortedRecordsFromDatabase(0, bonusX, currentMapNamee, style) : await GetSortedRecords();
+                Dictionary<string, PlayerRecord> sortedRecords = enableDb ? await GetSortedRecordsFromDatabase(0, bonusX, currentMapNamee, style) : await GetSortedRecords();
 
                 int placement = sortedRecords.Count(kv => kv.Value.TimerTicks < savedPlayerTime) + 1;
                 int totalPlayers = sortedRecords.Count;
@@ -329,7 +329,7 @@ namespace SharpTimer
                 if (!IsAllowedClient(player))
                     return "";
 
-                int savedPlayerPoints = (useMySQL || usePostgres) ? await GetPlayerPointsFromDatabase(player, steamId, playerName) : 0;
+                int savedPlayerPoints = enableDb ? await GetPlayerPointsFromDatabase(player, steamId, playerName) : 0;
 
                 if (getPointsOnly)
                     return savedPlayerPoints.ToString();
@@ -337,7 +337,7 @@ namespace SharpTimer
                 if (savedPlayerPoints == 0 || savedPlayerPoints <= minGlobalPointsForRank)
                     return getRankImg ? unrankedIcon : "Unranked";
 
-                Dictionary<string, PlayerPoints> sortedPoints = (useMySQL || usePostgres) ? await GetSortedPointsFromDatabase() : [];
+                Dictionary<string, PlayerPoints> sortedPoints = enableDb ? await GetSortedPointsFromDatabase() : [];
 
                 int placement = sortedPoints.Count(kv => kv.Value.GlobalPoints > savedPlayerPoints) + 1;
                 int totalPlayers = sortedPoints.Count;
@@ -531,25 +531,25 @@ namespace SharpTimer
                         if (srSoundAll) SendCommandToEveryone($"play {srSound}");
                         else player.ExecuteClientCommand($"play {srSound}");
                     }
-                    if (discordWebhookPrintSR && discordWebhookEnabled && (useMySQL || usePostgres)) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
+                    if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
                 }
                 else if (beatPB)
                 {
                     if (bonusX != 0) Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_pb_record_bonus", playerName, bonusX]}");
                     else Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_pb_record", playerName]}");
-                    if (discordWebhookPrintPB && discordWebhookEnabled && (useMySQL || usePostgres)) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
+                    if (discordWebhookPrintPB && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
                     PlaySound(player, pbSound);
                 }
                 else
                 {
                     if (bonusX != 0) Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["map_finish_bonus", playerName, bonusX]}");
                     else Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["map_finish", playerName]}");
-                    if (discordWebhookPrintPB && discordWebhookEnabled && timesFinished == 1 && (useMySQL || usePostgres)) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
+                    if (discordWebhookPrintPB && discordWebhookEnabled && timesFinished == 1 && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
                     PlaySound(player, timerSound);
                 }
 
-                if ((useMySQL || usePostgres) || bonusX != 0)
-                    Server.PrintToChatAll($" {Localizer["prefix"]} {(bonusX != 0 ? $"" : $"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] ")}{(timesFinished != 0 && (useMySQL || usePostgres) ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : "")}");
+                if (enableDb || bonusX != 0)
+                    Server.PrintToChatAll($" {Localizer["prefix"]} {(bonusX != 0 ? $"" : $"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] ")}{(timesFinished != 0 && enableDb ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : "")}");
 
                 player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_time", newTime, timeDifference]}");
                 if (enableStyles) player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_style", GetNamedStyle(style)]}");

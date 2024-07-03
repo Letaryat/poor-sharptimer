@@ -96,7 +96,7 @@ namespace SharpTimer
                 Task.Run(async () =>
                 {
                     Dictionary<string, PlayerRecord> sortedRecords;
-                    if (!useMySQL && !usePostgres)
+                    if (!enableDb)
                     {
                         SharpTimerDebug($"Getting Server Record AD using json");
                         sortedRecords = await GetSortedRecords();
@@ -867,8 +867,7 @@ namespace SharpTimer
                     
                     if(!sqlCheck)
                     {
-                        if(usePostgres) _ = Task.Run(async () => await CheckPostgresTablesAsync());
-                        if(useMySQL) _ = Task.Run(async () => await CheckTablesAsync());
+                        if(enableDb) _ = Task.Run(async () => await CheckTablesAsync());
                         sqlCheck = true;
                     }
 

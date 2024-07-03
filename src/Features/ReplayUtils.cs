@@ -355,7 +355,7 @@ namespace SharpTimer
         {
             var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
 
-            if (useMySQL || usePostgres)
+            if (enableDb)
             {
                 (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase(bonusX);
             }
