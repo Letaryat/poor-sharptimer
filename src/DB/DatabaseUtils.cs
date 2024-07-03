@@ -52,6 +52,7 @@ namespace SharpTimer
             {
                 useMySQL = false;
                 usePostgres = false;
+                enableDb = false;
             }
             return connection;
         }
@@ -527,7 +528,7 @@ namespace SharpTimer
                                 beatPB = false;
                                 playerPoints = 320000;
                             }
-                            if (enableReplays == true && (usePostgres || useMySQL)) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
+                            if (enableReplays == true && enableDb) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
                         }
                         else
                         {
@@ -595,11 +596,11 @@ namespace SharpTimer
                             upsertCommand.AddParameterWithValue("@UnixStamp", dBunixStamp);
                             upsertCommand.AddParameterWithValue("@SteamID", steamId);
                             upsertCommand.AddParameterWithValue("@Style", style);
-                            if ((usePostgres || useMySQL) && globalRanksEnabled == true && ((dBtimesFinished <= maxGlobalFreePoints && globalRanksFreePointsEnabled == true) || beatPB)) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX, style);
-                            if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && (usePostgres || useMySQL) && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
+                            if (enableDb && globalRanksEnabled == true && ((dBtimesFinished <= maxGlobalFreePoints && globalRanksFreePointsEnabled == true) || beatPB)) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX, style);
+                            if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && enableDb && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                             await upsertCommand.ExecuteNonQueryAsync();
                             Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
-                            if ((usePostgres || useMySQL) && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
+                            if (enableDb && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
                             if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, dBtimesFinished, style)));
                         }
 
@@ -1783,7 +1784,7 @@ namespace SharpTimer
                     string playerName = kvp.Value.PlayerName!;
                     int timerTicks = kvp.Value.TimerTicks;
 
-                    if ((usePostgres || useMySQL) && globalRanksEnabled == true)
+                    if (enableDb && globalRanksEnabled == true)
                     {
                         _ = Task.Run(async () => await SavePlayerPoints(playerSteamID, playerName, -1, timerTicks, 0, false, 0, 0));
                         await Task.Delay(100);

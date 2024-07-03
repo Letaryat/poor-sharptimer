@@ -668,7 +668,7 @@ namespace SharpTimer
             if (CommandCooldown(player))
                 return;
 
-            _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName));
+            _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, false, playerTimers[playerSlot].currentStyle));
         }
 
         public async Task RankCommandHandler(CCSPlayerController? player, string steamId, int playerSlot, string playerName, bool sendRankToHUD = false, int style = 0)
@@ -696,7 +696,7 @@ namespace SharpTimer
                     serverPlacement = await GetPlayerServerPlacement(player, steamId, playerName, false, true, false);
                 }
 
-                int pbTicks = enableDb ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName, 0, style) : await GetPreviousPlayerRecord(player, steamId, 0, style);
+                int pbTicks = enableDb ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName, 0, style) : await GetPreviousPlayerRecord(player, steamId, 0);
 
                 Server.NextFrame(() =>
                 {
