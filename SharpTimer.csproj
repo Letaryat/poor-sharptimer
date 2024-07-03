@@ -25,7 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="SharpTimerAPI">
-      <HintPath>SharpTimerAPI\bin\Debug\net8.0\SharpTimerAPI.dll</HintPath>
+      <HintPath>SharpTimerAPI\SharpTimerAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
 
