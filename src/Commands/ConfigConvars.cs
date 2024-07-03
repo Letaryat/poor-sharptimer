@@ -553,7 +553,7 @@ namespace SharpTimer
             maxStartingSpeedEnabled = bool.TryParse(args, out bool maxStartingSpeedEnabledValue) ? maxStartingSpeedEnabledValue : args != "0" && maxStartingSpeedEnabled;
         }
 
-        [ConsoleCommand("sharptimer_max_start_speed", "Defines max speed the player is allowed to have while exiting the start trigger. Default value: 120")]
+        [ConsoleCommand("sharptimer_max_start_speed", "Defines max speed the player is allowed to have while exiting the start trigger. Default value: 320")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerMaxStartSpeedConvar(CCSPlayerController? player, CommandInfo command)
         {
@@ -567,6 +567,23 @@ namespace SharpTimer
             else
             {
                 SharpTimerConPrint("Invalid max trigger speed value. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_max_bonus_start_speed", "Defines max speed the player is allowed to have while exiting the start trigger. Default value: 320")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerMaxBonusStartSpeedConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (int.TryParse(args, out int speed) && speed > 0)
+            {
+                maxBonusStartingSpeed = speed;
+                SharpTimerConPrint($"SharpTimer max bonus trigger speed set to {speed}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid max bonus trigger speed value. Please provide a positive integer.");
             }
         }
 

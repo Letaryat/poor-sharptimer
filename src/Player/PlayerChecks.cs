@@ -282,11 +282,11 @@ namespace SharpTimer
                                 OnTimerStart(player, bonus);
                                 if (enableReplays) OnRecordingStart(player, bonus);
 
-                                if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxStartingSpeed) ||
-                                    (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxStartingSpeed))
+                                if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxBonusStartingSpeed) ||
+                                    (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxBonusStartingSpeed))
                                 {
                                     Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                                    adjustVelocity(player, maxStartingSpeed, true);
+                                    adjustVelocity(player, maxBonusStartingSpeed, true);
                                 }
                             }
                             else if (!isInsideBonusStartBox[bonus])

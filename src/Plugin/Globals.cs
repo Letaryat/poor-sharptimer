@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.0d";
+        public override string ModuleVersion => $"0.3.0e";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -177,6 +177,7 @@ namespace SharpTimer
         public bool resetTriggerTeleportSpeedEnabled = false;
         public bool maxStartingSpeedEnabled = true;
         public int maxStartingSpeed = 320;
+        public int maxBonusStartingSpeed = 320;
 
         public bool removeCrouchFatigueEnabled = true;
         public bool goToEnabled = false;
