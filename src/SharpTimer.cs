@@ -22,13 +22,19 @@ using System.Runtime.CompilerServices;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using System.Runtime.InteropServices;
+using CounterStrikeSharp.API.Core.Capabilities;
 using Microsoft.Extensions.Logging;
+using SharpTimerAPI;
 
 namespace SharpTimer
 {
     [MinimumApiVersion(228)]
     public partial class SharpTimer : BasePlugin
     {
+        public static PluginCapability<ISharpTimerEventSender> StEventSenderCapability { get; } = new("sharptimer:event_sender");
+        public static PluginCapability<ISharpTimerManager> StManagerCapability { get; } = new("sharptimer:manager");
+        public static SharpTimer Instance;
+        
         //public required MemoryFunctionVoid<CCSPlayer_MovementServices, IntPtr> RunCommandLinux;
         //public required MemoryFunctionVoid<IntPtr, IntPtr, IntPtr, CCSPlayer_MovementServices> RunCommandWindows;
         public required IRunCommand RunCommand;
@@ -36,8 +42,15 @@ namespace SharpTimer
         private int movementPtr;
         public override void Load(bool hotReload)
         {
+            Instance = this;
             SharpTimerConPrint("Loading Plugin...");
             CheckForUpdate();
+            
+            var sharpTimerEventSender = new SharpTimerEventSender();
+            Capabilities.RegisterPluginCapability(StEventSenderCapability, () => sharpTimerEventSender);
+            
+            var sharpTimerManager = new SharpTimerManager();
+            Capabilities.RegisterPluginCapability(StManagerCapability, () => sharpTimerManager);
 
             defaultServerHostname = ConVar.Find("hostname")!.StringValue;
             Server.ExecuteCommand($"execifexists SharpTimer/config.cfg");

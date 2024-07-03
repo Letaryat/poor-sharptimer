@@ -1016,6 +1016,7 @@ namespace SharpTimer
         public void RespawnPlayerCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsAllowedPlayer(player) || respawnEnabled == false) return;
+            if (playerTimers[player.Slot].RespawnCmdBlocked) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_r...");
 
             if (CommandCooldown(player))
@@ -1387,6 +1388,7 @@ namespace SharpTimer
         public void ForceStopTimer(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsAllowedPlayer(player)) return;
+            if(playerTimers[player.Slot].TimerCmdBlocked) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_timer...");
 
             if (CommandCooldown(player))
@@ -1400,7 +1402,7 @@ namespace SharpTimer
             // Remove checkpoints for the current player
             playerCheckpoints.Remove(player.Slot);
 
-            playerTimers[player.Slot].IsTimerBlocked = playerTimers[player.Slot].IsTimerBlocked ? false : true;
+            playerTimers[player.Slot].IsTimerBlocked = !playerTimers[player.Slot].IsTimerBlocked;
             playerTimers[player.Slot].IsRecordingReplay = false;
 
 
