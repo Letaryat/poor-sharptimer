@@ -232,7 +232,7 @@ namespace SharpTimer
                 Server.NextFrame(() => {
                     PrintToChat(player, Localizer["no_sr_replay"]);
                     RespawnPlayer(player);
-                }); 
+                });
                 return;
             }
 
@@ -306,7 +306,7 @@ namespace SharpTimer
         public void HelpCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsAllowedClient(player) || !helpEnabled)
-                    return;
+                return;
 
             PrintAllEnabledCommands(player!);
         }
@@ -381,7 +381,7 @@ namespace SharpTimer
 
             if (CommandCooldown(player))
 
-            playerTimers[playerSlot].TicksSinceLastCmd = 0;
+                playerTimers[playerSlot].TicksSinceLastCmd = 0;
 
             playerTimers[playerSlot].HideKeys = playerTimers[playerSlot].HideKeys ? false : true;
 
@@ -690,6 +690,27 @@ namespace SharpTimer
                 rankIcon = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName, true) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, true, false, 0, style);
                 mapPlacement = await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, true, 0, style);
 
+                foreach (var bonusRespawnPose in bonusRespawnPoses)
+                {
+                    var bonusNumber = bonusRespawnPose.Key;
+                    var bonusPbTicks = enableDb ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName, bonusNumber, style) : await GetPreviousPlayerRecord(player, steamId, bonusNumber);
+
+                    /// Skip this bonus since the player doesn't have a saved time
+                    if (bonusPbTicks <= 0) continue;
+
+                    var bonusPlacement = await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, true, bonusNumber, style);
+
+                    SharpTimerDebug($"Adding bonus info for Bonus {bonusNumber}");
+                    SharpTimerDebug($"PbTicks: {bonusPbTicks}");
+                    SharpTimerDebug($"Placement: {bonusPlacement}");
+
+                    playerTimers[playerSlot].CachedBonusInfo[bonusNumber] = new PlayerBonusPlacementInfo()
+                    {
+                        PbTicks = bonusPbTicks,
+                        Placement = bonusPlacement
+                    };
+                }
+
                 if (useGlobalRanks)
                 {
                     serverPoints = await GetPlayerServerPlacement(player, steamId, playerName, false, false, true);
@@ -724,6 +745,14 @@ namespace SharpTimer
 
                         if (pbTicks != 0)
                             PrintToChat(player, Localizer["current_pb", currentMapName!, FormatTime(pbTicks), mapPlacement]);
+                        
+                        if (playerTimers[playerSlot].CachedBonusInfo.Any())
+                        {
+                            foreach (var bonusPb in playerTimers[playerSlot].CachedBonusInfo.OrderBy(x => x.Key))
+                            {
+                                PrintToChat(player, $"{Localizer["current_bonus_pb", bonusPb.Key!, FormatTime(bonusPb.Value.PbTicks), bonusPb.Value.Placement]}");
+                            }
+                        }
                     });
                 }
             }
@@ -738,7 +767,7 @@ namespace SharpTimer
         public void SRCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsAllowedClient(player) || rankEnabled == false)
-                    return;
+                return;
 
             var playerName = player!.PlayerName;
 
@@ -801,7 +830,7 @@ namespace SharpTimer
                 playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
                 //defaults to !b 1 without any args
-                if(command.ArgString == null || command.ArgString == "")
+                if (command.ArgString == null || command.ArgString == "")
                 {
                     if (bonusRespawnPoses[1] != null)
                     {
@@ -1084,19 +1113,19 @@ namespace SharpTimer
             playerTimers[player.Slot].BonusTimerTicks = 0;
 
             if (player!.Pawn.Value!.MoveType == MoveType_t.MOVETYPE_NOCLIP)
-		    {
-			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_WALK;
-			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
-			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
+            {
+                player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_WALK;
+                Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
+                Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
                 playerTimers[player.Slot].IsNoclip = false;
-		    }
-		    else
-		    {
-			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NOCLIP;
-			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
-			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
+            }
+            else
+            {
+                player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NOCLIP;
+                Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
+                Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
                 playerTimers[player.Slot].IsNoclip = true;
-		    }   
+            }
         }
 
         [ConsoleCommand("css_adminnoclip", "Admin Noclip")]
@@ -1118,18 +1147,18 @@ namespace SharpTimer
             playerTimers[player.Slot].IsTimerBlocked = false;
 
             if (player!.Pawn.Value!.MoveType == MoveType_t.MOVETYPE_NOCLIP)
-		    {
-			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_WALK;
-			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
-			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
-		    }
-		    else
-		    {
+            {
+                player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_WALK;
+                Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
+                Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
+            }
+            else
+            {
                 QuietStopTimer(player);
-			    player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NOCLIP;
-			    Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
-			    Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
-		    }   
+                player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NOCLIP;
+                Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
+                Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
+            }
         }
 
 
@@ -1148,7 +1177,7 @@ namespace SharpTimer
                 PrintToChat(player, Localizer["styles_not_supported"]);
                 return;
             }
-            if(!enableStyles)
+            if (!enableStyles)
             {
                 PrintToChat(player, Localizer["styles_disabled"]);
                 return;
@@ -1161,7 +1190,7 @@ namespace SharpTimer
             playerTimers[player.Slot].TimerTicks = 0;
             playerTimers[player.Slot].IsBonusTimerRunning = false;
             playerTimers[player.Slot].BonusTimerTicks = 0;
-            
+
             var desiredStyle = command.GetArg(1);
 
             if (command.ArgByIndex(1) == "")
@@ -1174,7 +1203,7 @@ namespace SharpTimer
                 return;
             }
 
-            if (Int32.TryParse(command.GetArg(1), out var desiredStyleInt)) 
+            if (Int32.TryParse(command.GetArg(1), out var desiredStyleInt))
             {
                 switch (desiredStyleInt)
                 {

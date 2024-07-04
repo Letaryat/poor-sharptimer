@@ -107,6 +107,13 @@ namespace SharpTimer
                         adjustVelocity(player, maxStartingSpeed, false);
                     }
 
+                    playerTimers[playerSlot].CurrentZoneInfo = new()
+                    {
+                        InMainMapStartZone = true,
+                        InBonusStartZone = false,
+                        CurrentBonusNumber = 0
+                    };
+
                     SharpTimerDebug($"Player {playerName} entered StartZone");
 
                     return HookResult.Continue;
@@ -124,7 +131,7 @@ namespace SharpTimer
 
                 var (validStartBonus, startBonusX) = IsValidStartBonusTriggerName(callerName);
 
-                if (validStartBonus)
+                if (validStartBonus || totalBonuses.Contains(startBonusX))
                 {
                     if (!playerTimers[playerSlot].IsTimerBlocked)
                     {
@@ -139,7 +146,15 @@ namespace SharpTimer
                         Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
                         adjustVelocity(player, maxBonusStartingSpeed, false);
                     }
-                    SharpTimerDebug($"Player {playerName} entered Bonus{startBonusX} StartZone");
+
+                    playerTimers[playerSlot].CurrentZoneInfo = new()
+                    {
+                        InMainMapStartZone = false,
+                        InBonusStartZone = true,
+                        CurrentBonusNumber = startBonusX
+                    };
+
+                    SharpTimerDebug($"Player {playerName} entered Bonus {startBonusX} StartZone");
                     return HookResult.Continue;
                 }
 

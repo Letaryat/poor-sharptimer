@@ -81,13 +81,17 @@ namespace SharpTimer
                                                     : "";
 
                         string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{secondaryHUDcolor}'>{formattedPlayerVel}</font><font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> u/s</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre} u/s)</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
-                        string infoLine = !playerTimer.IsReplaying
-                                            ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>🏆 {playerTimer.CachedPB} " + $"({playerTimer.CachedMapPlacement}) | </font>" + $"{playerTimer.RankHUDIcon} <font class='fontSize-s stratum-bold-italic' color='gray'>" +
-                                              $" | {GetNamedStyle(playerTimer.currentStyle)}" +
-                                              $"{(currentMapTier != null ? $" | Tier: {currentMapTier}" : "")}" +
-                                              $"{(currentMapType != null ? $" | {currentMapType}" : "")}" +
-                                              $"{((currentMapType == null && currentMapTier == null) ? $" | {currentMapName} " : "")} </font>"
-                                            : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
+
+                        string infoLine = "";
+
+                        if(playerTimer.CurrentZoneInfo.InBonusStartZone)
+                        {
+                            infoLine = GetBonusInfoLine(playerTimer);
+                        }
+                        else
+                        {
+                            infoLine = GetMainMapInfoLine(playerTimer);
+                        }
 
                         string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-light-mono' color='{tertiaryHUDcolor}'>{((playerButtons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                                 $"{((playerButtons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
@@ -294,6 +298,43 @@ namespace SharpTimer
             }
         }
 
+        private string GetMainMapInfoLine(PlayerTimerInfo playerTimer)
+        {
+           return !playerTimer.IsReplaying
+                     ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                     $"🏆 {playerTimer.CachedPB} " + 
+                     $"({playerTimer.CachedMapPlacement}) | </font>" + 
+                     $"{playerTimer.RankHUDIcon} <font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                     $" | {GetNamedStyle(playerTimer.currentStyle)}" +
+                     $"{(currentMapTier != null ? $" | Tier: {currentMapTier}" : "")}" +
+                     $"{(currentMapType != null ? $" | {currentMapType}" : "")}" +
+                     $"{((currentMapType == null && currentMapTier == null) ? $" | {currentMapName} " : "")} </font>"
+                   : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
+        }
+
+        private string GetBonusInfoLine(PlayerTimerInfo playerTimer)
+        {
+            var currentBonusNumber = playerTimer.CurrentZoneInfo.CurrentBonusNumber;
+
+            if (currentBonusNumber != 0)
+            {
+                var cachedBonusInfo = playerTimer.CachedBonusInfo.FirstOrDefault(x => x.Key == currentBonusNumber);
+
+                return !playerTimer.IsReplaying
+                        ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                          $"🏆 {(cachedBonusInfo.Value != null ? $"{FormatTime(cachedBonusInfo.Value.PbTicks)}" : "Unranked")}" +
+                          $"{(cachedBonusInfo.Value != null ? $" ({cachedBonusInfo.Value.Placement})" : "")}</font>" +
+                          $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                          $" | {GetNamedStyle(playerTimer.currentStyle)}" +
+                          $" | Bonus #{currentBonusNumber} </font>"
+                        : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
+            }
+            else
+            {
+                return GetMainMapInfoLine(playerTimer);
+            }
+        }
+
         public void SpectatorOnTick(CCSPlayerController player)
         {
             if (!IsAllowedSpectator(player)) return;
@@ -327,13 +368,17 @@ namespace SharpTimer
                                                 : "";
 
                     string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{secondaryHUDcolor}'>{formattedPlayerVel}</font><font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> u/s</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre} u/s)</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
-                    string infoLine = !playerTimer.IsReplaying
-                                        ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>🏆 {playerTimer.CachedPB} " + $"({playerTimer.CachedMapPlacement}) | </font>" + $"{playerTimer.RankHUDIcon} <font class='fontSize-s stratum-bold-italic' color='gray'>" +
-                                          $" | {GetNamedStyle(playerTimer.currentStyle)}" +
-                                          $"{(currentMapTier != null ? $" | Tier: {currentMapTier}" : "")}" +
-                                          $"{(currentMapType != null ? $" | {currentMapType}" : "")}" +
-                                          $"{((currentMapType == null && currentMapTier == null) ? $" | {currentMapName} " : "")} </font>"
-                                        : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimers[target.Slot].ReplayHUDString}</font>";
+
+                    string infoLine = "";
+
+                    if (playerTimer.CurrentZoneInfo.InBonusStartZone)
+                    {
+                        infoLine = GetBonusInfoLine(playerTimer);
+                    }
+                    else
+                    {
+                        infoLine = GetMainMapInfoLine(playerTimer);
+                    }
 
                     string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-bold-mono' color='{tertiaryHUDcolor}'>{((playerButtons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                             $"{((playerButtons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +

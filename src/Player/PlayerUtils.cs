@@ -303,7 +303,7 @@ namespace SharpTimer
 
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
 
-                int savedPlayerTime = enableDb ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapNamee!, playerName, bonusX, style) : await GetPreviousPlayerRecord(player, steamId, bonusX);
+                int savedPlayerTime = enableDb ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName, bonusX, style) : await GetPreviousPlayerRecord(player, steamId, bonusX);
 
                 if (savedPlayerTime == 0)
                     return getRankImg ? unrankedIcon : "Unranked";
@@ -550,7 +550,7 @@ namespace SharpTimer
                 }
 
                 if (enableDb || bonusX != 0)
-                    PrintToChatAll((bonusX != 0 ? $"" : $"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] ") + (timesFinished != 0 && enableDb ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : ""));
+                    PrintToChatAll($"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] " + (timesFinished != 0 && enableDb ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : ""));
 
                 PrintToChat(player, Localizer["timer_time", newTime, timeDifference]);
                 if (enableStyles) PrintToChat(player, Localizer["timer_style", GetNamedStyle(style)]);
