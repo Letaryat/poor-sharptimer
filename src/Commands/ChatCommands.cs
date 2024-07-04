@@ -956,6 +956,8 @@ namespace SharpTimer
 
                 playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
+                QuietStopTimer(player);
+
                 if (IsTimerBlocked(player))
                     return;
 
@@ -997,6 +999,7 @@ namespace SharpTimer
                     playerTimers[player.Slot].TimerTicks = 0;
                     playerTimers[player.Slot].IsBonusTimerRunning = false;
                     playerTimers[player.Slot].BonusTimerTicks = 0;
+                    playerTimers[player.Slot].IsTimerBlocked = false;
                 });
 
                 PlaySound(player, respawnSound);
