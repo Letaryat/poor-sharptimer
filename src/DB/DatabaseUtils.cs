@@ -1272,7 +1272,7 @@ namespace SharpTimer
 
         public void GainPointsMessage(string playerName, int newPoints, int playerPoints)
         {
-            Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["gained_points", playerName, Convert.ToInt32(newPoints - playerPoints), newPoints]}");
+            PrintToChatAll(Localizer["gained_points", playerName, Convert.ToInt32(newPoints - playerPoints), newPoints]);
         }
 
         public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0)
@@ -1551,7 +1551,7 @@ namespace SharpTimer
                             {
                                 Server.NextFrame(() =>
                                 {
-                                    if (IsAllowedClient(player)) player.PrintToChat($" {Localizer["prefix"]} {Localizer["top_10_points"]}");
+                                    if (IsAllowedClient(player)) PrintToChat(player, Localizer["top_10_points"]);
                                 });
 
                                 int rank = 0;
@@ -1566,7 +1566,7 @@ namespace SharpTimer
                                         int currentRank = ++rank;
                                         Server.NextFrame(() =>
                                         {
-                                            if (IsAllowedClient(player)) player.PrintToChat($" {Localizer["prefix"]} {Localizer["top_10_points_list", currentRank, playerName, points]}");
+                                            if (IsAllowedClient(player)) PrintToChat(player, Localizer["top_10_points_list", currentRank, playerName, points]);
                                         });
                                     }
                                 }

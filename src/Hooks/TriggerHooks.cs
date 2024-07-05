@@ -146,14 +146,14 @@ namespace SharpTimer
                 if (IsValidStopTriggerName(callerName))
                 {
                     InvalidateTimer(player, callerHandle);
-                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_cancelled"]}");
+                    PrintToChat(player, Localizer["timer_cancelled"]);
                 }
 
                 if (IsValidResetTriggerName(callerName))
                 {
                     InvalidateTimer(player, callerHandle);
                     RespawnPlayer(player);
-                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_reset"]}");
+                    PrintToChat(player, Localizer["timer_reset"]);
                 }
 
                 return HookResult.Continue;

@@ -115,12 +115,12 @@ namespace SharpTimer
                         return;
                     }
 
-                    Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr", currentMapName!]}"));
+                    Server.NextFrame(() => PrintToChatAll(Localizer["current_sr", currentMapName!]));
 
                     var serverRecord = sortedRecords.FirstOrDefault();
                     string playerName = serverRecord.Value.PlayerName!; // Get the player name from the dictionary value
                     int timerTicks = serverRecord.Value.TimerTicks; // Get the timer ticks from the dictionary value
-                    Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr_player", playerName, FormatTime(timerTicks)]}"));
+                    Server.NextFrame(() => PrintToChatAll(Localizer["current_sr_player", playerName, FormatTime(timerTicks)]));
 
                     SortedCachedRecords = sortedRecords;
                 });
@@ -852,9 +852,9 @@ namespace SharpTimer
                                 _ = SpawnReplayBot();
                             else
                             {
-                                Server.PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
-                                Server.PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
-                                Server.PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
+                                PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
+                                PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
+                                PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
                                 SharpTimerError("Couldnt Spawn Replay bot! Please make sure mp_force_pick_time is set to 1 in your custom_exec.cfg");
                             }
                         });
