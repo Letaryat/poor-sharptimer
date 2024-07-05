@@ -133,13 +133,13 @@ namespace SharpTimer
                         dbPath = postgresPath;
                         enableDb = true;
                     }
-                    /*else
+                    else
                     {
                         SharpTimerDebug($"No db set, defaulting to SQLite");
                         dbPath = Path.Join(gameDir + "/csgo/cfg", "SharpTimer/database.db");
                         dbType = DatabaseType.SQLite;
                         enableDb = true;
-                    }*/
+                    }
                     using (var connection = OpenConnection())
                     {
                         ExecuteMigrations(connection);
