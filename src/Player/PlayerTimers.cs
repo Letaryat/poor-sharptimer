@@ -72,7 +72,7 @@ namespace SharpTimer
 
             if(currentTicks == 0)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {ChatColors.LightRed} Error Saving Time: Player time is 0 ticks");
+                PrintToChat(player, $"{ChatColors.LightRed} Error Saving Time: Player time is 0 ticks");
                 playerTimer.IsTimerRunning = false;
                 playerTimer.IsRecordingReplay = false;
                 return;
@@ -82,7 +82,7 @@ namespace SharpTimer
             {
                 if (playerTimer.CurrentMapStage != stageTriggerCount && currentMapOverrideStageRequirement == true)
                 {
-                    player.PrintToChat($" {Localizer["prefix"]} {ChatColors.LightRed}Error Saving Time: Player current stage does not match final one ({stageTriggerCount})");
+                    PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player current stage does not match final one ({stageTriggerCount})");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -90,7 +90,7 @@ namespace SharpTimer
 
                 if (playerTimer.CurrentMapCheckpoint != cpTriggerCount)
                 {
-                    player.PrintToChat($" {Localizer["prefix"]} {ChatColors.LightRed}Error Saving Time: Player current checkpoint does not match final one ({cpTriggerCount})");
+                    PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player current checkpoint does not match final one ({cpTriggerCount})");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -101,7 +101,7 @@ namespace SharpTimer
             {
                 if (playerTimer.CurrentMapStage != stageTriggerCount && currentMapOverrideStageRequirement == true)
                 {
-                    player.PrintToChat($" {Localizer["prefix"]} {ChatColors.LightRed}Error Saving Time: Player current stage does not match final one ({stageTriggerCount})");
+                    PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player current stage does not match final one ({stageTriggerCount})");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -112,7 +112,7 @@ namespace SharpTimer
             {
                 if (playerTimer.CurrentMapCheckpoint != cpTriggerCount)
                 {
-                    player.PrintToChat($" {Localizer["prefix"]} {ChatColors.LightRed}Error Saving Time: Player current checkpoint does not match final one ({cpTriggerCount})");
+                    PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player current checkpoint does not match final one ({cpTriggerCount})");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -146,7 +146,7 @@ namespace SharpTimer
 
             if(currentTicks == 0)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {ChatColors.LightRed}Error Saving Time: Player time is 0 ticks");
+                PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player time is 0 ticks");
                 playerTimer.IsTimerRunning = false;
                 playerTimer.IsRecordingReplay = false;
                 return;
@@ -261,13 +261,13 @@ namespace SharpTimer
 
                             if (previousStageTime != 0)
                             {
-                                player.PrintToChat($" {Localizer["prefix"]} Entering Stage: {stageTrigger}");
-                                player.PrintToChat($" {Localizer["prefix"]} Time: {ChatColors.White}[{primaryChatColor}{FormatTime(playerTimerTicks)}{ChatColors.White}] " +
+                                PrintToChat(player, $"Entering Stage: {stageTrigger}");
+                                PrintToChat(player, $"Time: {ChatColors.White}[{primaryChatColor}{FormatTime(playerTimerTicks)}{ChatColors.White}] " +
                                                                $" [{FormatTimeDifference(playerTimerTicks, previousStageTime)}{ChatColors.White}]" +
                                                                $" {(previousStageTime != srStageTime ? $"[SR {FormatTimeDifference(playerTimerTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                 if (float.TryParse(currentStageSpeed, out float speed) && speed >= 100) //workaround for staged maps with not telehops
-                                    player.PrintToChat($" {Localizer["prefix"]} Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
+                                    PrintToChat(player, $"Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
                                                                    $" [{FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
                                                                    $" {(previousStageSpeed != srStageSpeed ? $"[SR {FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                             }

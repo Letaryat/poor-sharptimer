@@ -17,6 +17,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using Microsoft.Extensions.Localization;
 using System.Text.Json;
 
 namespace SharpTimer
@@ -44,10 +45,10 @@ namespace SharpTimer
 
             if (cpEnabled)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? "!saveloc (css_saveloc) - Saves a Loc" : "!cp (css_cp) - Sets a Checkpoint")}");
-                player.PrintToChat($" {Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? "!loadloc (css_loadloc) - Teleports you to the last Loc" : "!tp (css_tp) - Teleports you to the last Checkpoint")}");
-                player.PrintToChat($" {Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? "!prevloc (css_prevloc) - Teleports you one Loc back" : "!prevcp (css_prevcp) - Teleports you one Checkpoint back")}");
-                player.PrintToChat($" {Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? "!nextloc (css_nextloc) - Teleports you one Loc forward" : "!nextcp (css_nextcp) - Teleports you one Checkpoint forward")}");
+                PrintToChat(player, currentMapName!.Contains("surf_") ? "!saveloc (css_saveloc) - Saves a Loc" : "!cp (css_cp) - Sets a Checkpoint");
+                PrintToChat(player, currentMapName!.Contains("surf_") ? "!loadloc (css_loadloc) - Teleports you to the last Loc" : "!tp (css_tp) - Teleports you to the last Checkpoint");
+                PrintToChat(player, currentMapName!.Contains("surf_") ? "!prevloc (css_prevloc) - Teleports you one Loc back" : "!prevcp (css_prevcp) - Teleports you one Checkpoint back");
+                PrintToChat(player, currentMapName!.Contains("surf_") ? "!nextloc (css_nextloc) - Teleports you one Loc forward" : "!nextcp (css_nextcp) - Teleports you one Checkpoint forward");
             }
 
             if (enableReplays)
@@ -520,14 +521,14 @@ namespace SharpTimer
             Server.NextFrame(() =>
             {
                 if (IsAllowedPlayer(player) && timesFinished > maxGlobalFreePoints && globalRanksFreePointsEnabled == true && oldticks < newticks)
-                    Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["reached_max_free", maxGlobalFreePoints]}");
+                    PrintToChat(player, Localizer["reached_max_free", maxGlobalFreePoints]);
 
                 if (newSR)
                 {
-                    if (bonusX != 0) Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_server_record_bonus", playerName, bonusX]}");
+                    if (bonusX != 0) PrintToChatAll(Localizer["new_server_record_bonus", playerName, bonusX]);
                     else
                     {
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_server_record", playerName]}");
+                        PrintToChatAll(Localizer["new_server_record", playerName]);
                         if (srSoundAll) SendCommandToEveryone($"play {srSound}");
                         else PlaySound(player, srSound);
                     }
@@ -535,24 +536,24 @@ namespace SharpTimer
                 }
                 else if (beatPB)
                 {
-                    if (bonusX != 0) Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_pb_record_bonus", playerName, bonusX]}");
-                    else Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_pb_record", playerName]}");
+                    if (bonusX != 0) PrintToChatAll(Localizer["new_pb_record_bonus", playerName, bonusX]);
+                    else PrintToChatAll(Localizer["new_pb_record", playerName]);
                     if (discordWebhookPrintPB && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
                     PlaySound(player, pbSound);
                 }
                 else
                 {
-                    if (bonusX != 0) Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["map_finish_bonus", playerName, bonusX]}");
-                    else Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["map_finish", playerName]}");
+                    if (bonusX != 0) PrintToChatAll(Localizer["map_finish_bonus", playerName, bonusX]);
+                    else PrintToChatAll(Localizer["map_finish", playerName]);
                     if (discordWebhookPrintPB && discordWebhookEnabled && timesFinished == 1 && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
                     PlaySound(player, timerSound);
                 }
 
                 if (enableDb || bonusX != 0)
-                    Server.PrintToChatAll($" {Localizer["prefix"]} {(bonusX != 0 ? $"" : $"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] ")}{(timesFinished != 0 && enableDb ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : "")}");
+                    PrintToChatAll((bonusX != 0 ? $"" : $"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] ") + (timesFinished != 0 && enableDb ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : ""));
 
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_time", newTime, timeDifference]}");
-                if (enableStyles) player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_style", GetNamedStyle(style)]}");
+                PrintToChat(player, Localizer["timer_time", newTime, timeDifference]);
+                if (enableStyles) PrintToChat(player, Localizer["timer_style", GetNamedStyle(style)]);
 
                 if (enableReplays == true && enableSRreplayBot == true && newSR && (oldticks > newticks || oldticks == 0))
                 {
@@ -706,6 +707,16 @@ namespace SharpTimer
         {
             if (playerTimers[player!.Slot].SoundsEnabled != false && IsAllowedPlayer(player))
                 player.ExecuteClientCommand($"play {Sound}");
+        }
+
+        public void PrintToChat(CCSPlayerController? player, string message)
+        {
+            player?.PrintToChat($" {Localizer["prefix"]} {message}");
+        }
+
+        public void PrintToChatAll(string message)
+        {
+            Server.PrintToChatAll($" {Localizer["prefix"]} {message}");
         }
     }
 }

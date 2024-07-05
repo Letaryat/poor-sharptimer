@@ -345,7 +345,7 @@ namespace SharpTimer
         {
             if (playerTimers[player!.Slot].TicksSinceLastCmd < cmdCooldown)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["command_cooldown"]}");
+                PrintToChat(player, Localizer["command_cooldown"]);
                 return true;
             }
             return false;
@@ -355,7 +355,7 @@ namespace SharpTimer
         {
             if (!playerTimers[player!.Slot].IsTimerBlocked)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["stop_using_timer"]}");
+                PrintToChat(player, Localizer["stop_using_timer"]);
                 return true;
             }
             return false;
@@ -365,7 +365,7 @@ namespace SharpTimer
         {
             if (playerTimers[player!.Slot].IsReplaying)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["end_your_replay"]}");
+                PrintToChat(player, Localizer["end_your_replay"]);
                 return true;
             }
             return false;
@@ -375,7 +375,7 @@ namespace SharpTimer
         {
             if (cpOnlyWhenTimerStopped == true && playerTimers[player!.Slot].IsTimerBlocked == false)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["cant_use_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
+                PrintToChat(player, Localizer["cant_use_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]);
                 PlaySound(player, cpSoundError);
                 return true;
             }
