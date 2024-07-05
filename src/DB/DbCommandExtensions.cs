@@ -1,3 +1,4 @@
+using System.Data;
 using System.Data.Common;
 
 namespace SharpTimer
@@ -10,6 +11,10 @@ namespace SharpTimer
             parameter.ParameterName = parameterName;
             parameter.Value = value;
             command.Parameters.Add(parameter);
+        }
+        public static bool GetSQLiteBool(this DbDataReader reader, string columnName)
+        {
+            return reader.GetInt32(reader.GetOrdinal(columnName)) == 1;
         }
     }
 }

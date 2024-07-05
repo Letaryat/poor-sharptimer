@@ -1143,7 +1143,7 @@ namespace SharpTimer
             if (ReplayCheck(player))
                 return;
 
-            if (!enableDb)
+            if (!isLinux && !enableDb)
             {
                 player!.PrintToChat($" {Localizer["prefix"]} {Localizer["styles_not_supported"]}");
                 return;
@@ -1204,11 +1204,13 @@ namespace SharpTimer
                 {
                     case "default":
                     case "normal":
+                    case "nrm":
                         setStyle(player, 0);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(0)]}");
                         break;
                     case "lowgravity":
                     case "lowgrav":
+                    case "lg":
                         setStyle(player, 1);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(1)]}");
                         break;
@@ -1228,6 +1230,7 @@ namespace SharpTimer
                         break;
                     case "highgravity":
                     case "highgrav":
+                    case "hg":
                         setStyle(player, 5);
                         player.PrintToChat($" {Localizer["prefix"]} {Localizer["style_set", GetNamedStyle(5)]}");
                         break;

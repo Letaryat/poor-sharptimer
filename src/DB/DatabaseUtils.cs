@@ -24,17 +24,20 @@ using CounterStrikeSharp.API.Modules.Utils;
 using System.Data;
 using Npgsql;
 using System.Data.Common;
+using System.Data.SQLite;
+using System.Data.Entity.Migrations.Infrastructure;
 
 namespace SharpTimer
 {
     public enum DatabaseType
     {
         MySQL,
-        PostgreSQL
+        PostgreSQL,
+        SQLite
     }
     partial class SharpTimer
     {
-        private async Task<IDbConnection> OpenConnectionAsync()
+        public async Task<IDbConnection> OpenConnectionAsync()
         {
             IDbConnection connection = null;
             switch (dbType)
@@ -47,6 +50,10 @@ namespace SharpTimer
                     connection = new NpgsqlConnection(await GetConnectionStringFromConfigFile());
                     await (connection as NpgsqlConnection).OpenAsync();
                     break;
+                case DatabaseType.SQLite:
+                    connection = new SQLiteConnection(await GetConnectionStringFromConfigFile());
+                    await (connection as SQLiteConnection).OpenAsync();
+                    break;
             }
             if (connection.State != ConnectionState.Open)
             {
@@ -56,42 +63,135 @@ namespace SharpTimer
             }
             return connection;
         }
+        public IDbConnection OpenConnection()
+        {
+            IDbConnection connection = null;
+            switch (dbType)
+            {
+                case DatabaseType.MySQL:
+                    connection = new MySqlConnection(GetConnectionStringOnMainThread());
+                    (connection as MySqlConnection).Open();
+                    break;
+                case DatabaseType.PostgreSQL:
+                    connection = new NpgsqlConnection(GetConnectionStringOnMainThread());
+                    (connection as NpgsqlConnection).Open();
+                    break;
+                case DatabaseType.SQLite:
+                    connection = new SQLiteConnection(GetConnectionStringOnMainThread());
+                    (connection as SQLiteConnection).Open();
+                    break;
+            }
+            if (connection.State != ConnectionState.Open)
+            {
+                useMySQL = false;
+                usePostgres = false;
+                enableDb = false;
+            }
+            return connection;
+        }
+        private string GetConnectionStringOnMainThread()
+        {
+            try
+            {
+                if (dbType.Equals(DatabaseType.SQLite))
+                {
+                    return $"Data Source={dbPath}";
+                }
+                else
+                {
+                    using (JsonDocument? jsonConfig = LoadJsonOnMainThread(dbPath)!)
+                    {
+                        if (jsonConfig != null)
+                        {
+                            JsonElement root = jsonConfig.RootElement;
+
+                            string host = root.TryGetProperty("Host", out var hostProperty) ? hostProperty.GetString()! : "localhost";
+                            string database = root.TryGetProperty("Database", out var databaseProperty) ? databaseProperty.GetString()! : "database";
+                            string username = root.TryGetProperty("Username", out var usernameProperty) ? usernameProperty.GetString()! : "root";
+                            string password = root.TryGetProperty("Password", out var passwordProperty) ? passwordProperty.GetString()! : "root";
+                            int port = root.TryGetProperty("Port", out var portProperty) ? portProperty.GetInt32()! : 3306;
+                            string tableprefix = root.TryGetProperty("TablePrefix", out var tableprefixProperty) ? tableprefixProperty.GetString()! : "";
+
+                            PlayerStatsTable = $"{(tableprefix != "" ? $"PlayerStats_{tableprefix}" : "PlayerStats")}";
+
+                            if (dbType.Equals(DatabaseType.MySQL))
+                            {
+                                int timeout = root.TryGetProperty("Timeout", out var timeoutProperty) ? timeoutProperty.GetInt32()! : 30;
+                                return $"Server={host};Database={database};User ID={username};Password={password};Port={port};CharSet=utf8mb4;Connection Timeout={timeout};";
+                            }
+                            else if (dbType.Equals(DatabaseType.PostgreSQL))
+                            {
+                                return $"Server={host};Database={database};User ID={username};Password={password};Port={port};SslMode=Disable";
+                            }
+                            else if (dbType.Equals(DatabaseType.SQLite))
+                            {
+                                return $"Data Source={dbPath}";
+                            }
+                            else
+                            {
+                                SharpTimerError($"Database type not supported");
+                            }
+                        }
+                        else
+                        {
+                            SharpTimerError($"Database json was null");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in GetConnectionString: {ex.Message}");
+            }
+            return "Server=localhost;Database=database;User ID=root;Password=root;Port=3306;";
+        }
         private async Task<string> GetConnectionStringFromConfigFile()
         {
             try
             {
-                using (JsonDocument? jsonConfig = await LoadJson(dbPath)!)
+                if (dbType.Equals(DatabaseType.SQLite))
                 {
-                    if (jsonConfig != null)
+                    return $"Data Source={dbPath}";
+                }
+                else
+                {
+                    using (JsonDocument? jsonConfig = await LoadJson(dbPath)!)
                     {
-                        JsonElement root = jsonConfig.RootElement;
-
-                        string host = root.TryGetProperty("Host", out var hostProperty) ? hostProperty.GetString()! : "localhost";
-                        string database = root.TryGetProperty("Database", out var databaseProperty) ? databaseProperty.GetString()! : "database";
-                        string username = root.TryGetProperty("Username", out var usernameProperty) ? usernameProperty.GetString()! : "root";
-                        string password = root.TryGetProperty("Password", out var passwordProperty) ? passwordProperty.GetString()! : "root";
-                        int port = root.TryGetProperty("Port", out var portProperty) ? portProperty.GetInt32()! : 3306;
-                        string tableprefix = root.TryGetProperty("TablePrefix", out var tableprefixProperty) ? tableprefixProperty.GetString()! : "";
-
-                        PlayerStatsTable = $"{(tableprefix != "" ? $"PlayerStats_{tableprefix}" : "PlayerStats")}";
-
-                        if (dbType.Equals(DatabaseType.MySQL))
+                        if (jsonConfig != null)
                         {
-                            int timeout = root.TryGetProperty("Timeout", out var timeoutProperty) ? timeoutProperty.GetInt32()! : 30;
-                            return $"Server={host};Database={database};User ID={username};Password={password};Port={port};CharSet=utf8mb4;Connection Timeout={timeout};";
-                        }
-                        else if (dbType.Equals(DatabaseType.PostgreSQL))
-                        {
-                            return $"Server={host};Database={database};User ID={username};Password={password};Port={port};SslMode=Disable";
+                            JsonElement root = jsonConfig.RootElement;
+
+                            string host = root.TryGetProperty("Host", out var hostProperty) ? hostProperty.GetString()! : "localhost";
+                            string database = root.TryGetProperty("Database", out var databaseProperty) ? databaseProperty.GetString()! : "database";
+                            string username = root.TryGetProperty("Username", out var usernameProperty) ? usernameProperty.GetString()! : "root";
+                            string password = root.TryGetProperty("Password", out var passwordProperty) ? passwordProperty.GetString()! : "root";
+                            int port = root.TryGetProperty("Port", out var portProperty) ? portProperty.GetInt32()! : 3306;
+                            string tableprefix = root.TryGetProperty("TablePrefix", out var tableprefixProperty) ? tableprefixProperty.GetString()! : "";
+
+                            PlayerStatsTable = $"{(tableprefix != "" ? $"PlayerStats_{tableprefix}" : "PlayerStats")}";
+
+                            if (dbType.Equals(DatabaseType.MySQL))
+                            {
+                                int timeout = root.TryGetProperty("Timeout", out var timeoutProperty) ? timeoutProperty.GetInt32()! : 30;
+                                return $"Server={host};Database={database};User ID={username};Password={password};Port={port};CharSet=utf8mb4;Connection Timeout={timeout};";
+                            }
+                            else if (dbType.Equals(DatabaseType.PostgreSQL))
+                            {
+                                return $"Server={host};Database={database};User ID={username};Password={password};Port={port};SslMode=Disable";
+                            }
+                            else if (dbType.Equals(DatabaseType.SQLite))
+                            {
+                                return $"Data Source={dbPath}";
+                            }
+                            else
+                            {
+                                SharpTimerError($"Database type not supported");
+                            }
                         }
                         else
                         {
-                            SharpTimerError($"Database type not supported");
+                            SharpTimerError($"Database json was null");
                         }
-                    }
-                    else
-                    {
-                        SharpTimerError($"Database json was null");
                     }
                 }
             }
@@ -102,11 +202,10 @@ namespace SharpTimer
             return "Server=localhost;Database=database;User ID=root;Password=root;Port=3306;";
         }
 
-        private async Task CheckTablesAsync()
+        public async Task CheckTablesAsync()
         {
             string[] playerRecords;
             string[] playerStats;
-
             switch (dbType)
             {
                 case DatabaseType.MySQL:
@@ -159,6 +258,31 @@ namespace SharpTimer
                                                     @"""BigGifID"" VARCHAR(16) DEFAULT 'x'"
                                                 ];
                     break;
+                case DatabaseType.SQLite:
+                    playerRecords = [       "MapName TEXT DEFAULT ''",
+                                                    "SteamID TEXT DEFAULT ''",
+                                                    "PlayerName TEXT DEFAULT ''",
+                                                    "TimerTicks INT DEFAULT 0",
+                                                    "FormattedTime TEXT DEFAULT ''",
+                                                    "UnixStamp INT DEFAULT 0",
+                                                    "LastFinished INT DEFAULT 0",
+                                                    "TimesFinished INT DEFAULT 0",
+                                                    "Style INT DEFAULT 0"
+                                                ];
+                    playerStats = [         "SteamID TEXT DEFAULT ''",
+                                                    "PlayerName TEXT DEFAULT ''",
+                                                    "TimesConnected INTEGER DEFAULT 0",
+                                                    "LastConnected INTEGER DEFAULT 0",
+                                                    "GlobalPoints INTEGER DEFAULT 0",
+                                                    "HideTimerHud INTEGER DEFAULT 0",
+                                                    "HideKeys INTEGER DEFAULT 0",
+                                                    "HideJS INTEGER DEFAULT 0",
+                                                    "SoundsEnabled INTEGER DEFAULT 1",
+                                                    "PlayerFov INTEGER DEFAULT 0",
+                                                    "IsVip INTEGER DEFAULT 0",
+                                                    "BigGifID TEXT DEFAULT 'x'"
+                                                ];
+                    break;
                 default:
                     playerRecords = null;
                     playerStats = null;
@@ -173,7 +297,6 @@ namespace SharpTimer
                     SharpTimerDebug($"Checking PlayerRecords Table...");
                     await CreatePlayerRecordsTableAsync(connection);
                     await UpdateTableColumnsAsync(connection, "PlayerRecords", playerRecords);
-                    await AddConstraintsToRecordsTableAsync(connection, "PlayerRecords");
 
                     // Check PlayerStats
                     SharpTimerDebug($"Checking PlayerStats Table...");
@@ -222,6 +345,21 @@ namespace SharpTimer
                                         )";
                     createTableCommand = new NpgsqlCommand(createTableQuery, (NpgsqlConnection)connection);
                     break;
+                case DatabaseType.SQLite:
+                    createTableQuery = @"CREATE TABLE IF NOT EXISTS PlayerRecords (
+                                            MapName TEXT,
+                                            SteamID TEXT,
+                                            PlayerName TEXT,
+                                            TimerTicks INT,
+                                            FormattedTime TEXT,
+                                            UnixStamp INT,
+                                            TimesFinished INT,
+                                            LastFinished INT,
+                                            Style INT,
+                                            PRIMARY KEY (MapName, SteamID, Style)
+                                        )";
+                    createTableCommand = new SQLiteCommand(createTableQuery, (SQLiteConnection)connection);
+                    break;
                 default:
                     createTableCommand = null;
                     break;
@@ -267,6 +405,10 @@ namespace SharpTimer
                     query = $@"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '""{tableName}""'";
                     command = new NpgsqlCommand(query, (NpgsqlConnection)connection);
                     break;
+                case DatabaseType.SQLite:
+                    query = $"SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '{tableName}'";
+                    command = new SQLiteCommand(query, (SQLiteConnection)connection);
+                    break;
                 default:
                     command = null;
                     break;
@@ -296,8 +438,12 @@ namespace SharpTimer
                     command = new MySqlCommand(query, (MySqlConnection)connection);
                     break;
                 case DatabaseType.PostgreSQL:
-                    query = query = $@"SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '{tableName}' AND column_name = '{columnName}'";
+                    query = $@"SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '{tableName}' AND column_name = '{columnName}'";
                     command = new NpgsqlCommand(query, (NpgsqlConnection)connection);
+                    break;
+                case DatabaseType.SQLite:
+                    query = $"PRAGMA table_info({tableName})";
+                    command = new SQLiteCommand(query, (SQLiteConnection)connection);
                     break;
                 default:
                     command = null;
@@ -305,18 +451,41 @@ namespace SharpTimer
             }
             using (command)
             {
-                try
+                if (dbType == DatabaseType.SQLite)
                 {
-                    int count = Convert.ToInt32(await command.ExecuteScalarAsync());
-                    return count > 0;
+                    try
+                    {
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                if (reader.GetString(1) == columnName) return true;
+                            }
+                            return false;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        SharpTimerError($"Error in ColumnExistsAsync: {ex.Message}");
+                        return false;
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    SharpTimerError($"Error in ColumnExistsAsync: {ex.Message}");
-                    return false;
+                    try
+                    {
+                        int count = Convert.ToInt32(await command.ExecuteScalarAsync());
+                        return count > 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        SharpTimerError($"Error in ColumnExistsAsync: {ex.Message}");
+                        return false;
+                    }
                 }
             }
         }
+
         private async Task AddColumnToTableAsync(IDbConnection connection, string tableName, string columnDefinition)
         {
             DbCommand command;
@@ -331,6 +500,10 @@ namespace SharpTimer
                     query = $@"ALTER TABLE ""{tableName}"" ADD ""{columnDefinition}""";
                     command = new NpgsqlCommand(query, (NpgsqlConnection)connection);
                     break;
+                case DatabaseType.SQLite:
+                    query = $"ALTER TABLE {tableName} ADD COLUMN {columnDefinition}";
+                    command = new SQLiteCommand(query, (SQLiteConnection)connection);
+                    break;
                 default:
                     command = null;
                     break;
@@ -344,54 +517,6 @@ namespace SharpTimer
                 catch (Exception ex)
                 {
                     SharpTimerError($"Error in AddColumnToTableAsync: {ex.Message}");
-                }
-            }
-        }
-        private async Task AddConstraintsToRecordsTableAsync(IDbConnection connection, string tableName)
-        {
-            DbCommand dropCommand;
-            DbCommand command;
-            string dropQuery;
-            string query;
-            switch (dbType)
-            {
-                case DatabaseType.MySQL:
-                    dropQuery = $"ALTER TABLE {tableName} DROP PRIMARY KEY";
-                    query = $"ALTER TABLE {tableName} ADD CONSTRAINT pk_Records PRIMARY KEY (MapName, SteamID, Style)";
-                    dropCommand = new MySqlCommand(dropQuery, (MySqlConnection)connection);
-                    command = new MySqlCommand(query, (MySqlConnection)connection);
-                    break;
-                case DatabaseType.PostgreSQL:
-                    dropQuery = $"ALTER TABLE {tableName} DROP CONSTRAINT pk_Records";
-                    query = $@"ALTER TABLE ""{tableName}"" ADD CONSTRAINT pk_Records PRIMARY KEY (""MapName"", ""SteamID"", ""Style"")";
-                    dropCommand = new NpgsqlCommand(dropQuery, (NpgsqlConnection)connection);
-                    command = new NpgsqlCommand(query, (NpgsqlConnection)connection);
-                    break;
-                default:
-                    dropCommand = null;
-                    command = null;
-                    break;
-            }
-            using (dropCommand)
-            {
-                try
-                {
-                    await command.ExecuteNonQueryAsync();
-                }
-                catch (Exception ex)
-                {
-                    SharpTimerError($"Error removing previous constraints: {ex.Message}");
-                }
-            }
-            using (command)
-            {
-                try
-                {
-                    await command.ExecuteNonQueryAsync();
-                }
-                catch (Exception ex)
-                {
-                    SharpTimerError($"Error setting constraints: {ex.Message}");
                 }
             }
         }
@@ -436,6 +561,22 @@ namespace SharpTimer
                                             PRIMARY KEY (""SteamID"")
                                         )";
                     command = new NpgsqlCommand(query, (NpgsqlConnection)connection);
+                    break;
+                case DatabaseType.SQLite:
+                    query = $@"CREATE TABLE IF NOT EXISTS {PlayerStatsTable} (
+                                            SteamID TEXT PRIMARY KEY,
+                                            PlayerName TEXT,
+                                            TimesConnected INTEGER,
+                                            LastConnected INTEGER,
+                                            GlobalPoints INTEGER,
+                                            HideTimerHud INTEGER,
+                                            HideKeys INTEGER,
+                                            HideJS INTEGER,
+                                            SoundsEnabled INTEGER,
+                                            PlayerFov INTEGER,
+                                            IsVip INTEGER,
+                                            BigGifID TEXT)";
+                    command = new SQLiteCommand(query, (SQLiteConnection)connection);
                     break;
                 default:
                     command = null;
@@ -491,6 +632,10 @@ namespace SharpTimer
                         case DatabaseType.PostgreSQL:
                             selectQuery = @"SELECT ""TimesFinished"", ""LastFinished"", ""FormattedTime"", ""TimerTicks"", ""UnixStamp"" FROM ""PlayerRecords"" WHERE ""MapName"" = @MapName AND ""SteamID"" = @SteamID AND ""Style"" = @Style";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                            break;
+                        case DatabaseType.SQLite:
+                            selectQuery = @"SELECT TimesFinished, LastFinished, FormattedTime, TimerTicks, UnixStamp FROM PlayerRecords WHERE MapName = @MapName AND SteamID = @SteamID AND Style = @Style";
+                            selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
                             break;
                         default:
                             selectQuery = null;
@@ -580,6 +725,25 @@ namespace SharpTimer
                                                     ";
                                 upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
                                 break;
+                            case DatabaseType.SQLite:
+                                upsertQuery = @"
+                                                    INSERT INTO PlayerRecords 
+                                                    (MapName, SteamID, PlayerName, TimerTicks, LastFinished, TimesFinished, FormattedTime, UnixStamp, Style)
+                                                    VALUES 
+                                                    (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)
+                                                    ON CONFLICT (MapName, SteamID, Style)
+                                                    DO UPDATE SET
+                                                    MapName = excluded.MapName,
+                                                    PlayerName = excluded.PlayerName,
+                                                    TimerTicks = excluded.TimerTicks,
+                                                    LastFinished = excluded.LastFinished,
+                                                    TimesFinished = excluded.TimesFinished,
+                                                    FormattedTime = excluded.FormattedTime,
+                                                    UnixStamp = excluded.UnixStamp,
+                                                    Style = excluded.Style;
+                                                    ";
+                                upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
+                                break;
                             default:
                                 upsertQuery = null;
                                 upsertCommand = null;
@@ -622,6 +786,10 @@ namespace SharpTimer
                             case DatabaseType.PostgreSQL:
                                 upsertQuery = @"INSERT INTO ""PlayerRecords"" (""MapName"", ""SteamID"", ""PlayerName"", ""TimerTicks"", ""LastFinished"", ""TimesFinished"", ""FormattedTime"", ""UnixStamp"", ""Style"") VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)";
                                 upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
+                                break;
+                            case DatabaseType.SQLite:
+                                upsertQuery = @"REPLACE INTO PlayerRecords (MapName, SteamID, PlayerName, TimerTicks, LastFinished, TimesFinished, FormattedTime, UnixStamp, Style) VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @LastFinished, @TimesFinished, @FormattedTime, @UnixStamp, @Style)";
+                                upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
                                 break;
                             default:
                                 upsertQuery = null;
@@ -669,14 +837,14 @@ namespace SharpTimer
                 // get player columns
                 int timesConnected = 0;
                 int lastConnected = 0;
-                bool hideTimerHud;
-                bool hideKeys;
-                bool hideJS;
-                bool soundsEnabled;
+                bool hideTimerHud = false;
+                bool hideKeys = false;
+                bool hideJS = false;
+                bool soundsEnabled = true;
                 int playerFov = 0;
-                bool isVip;
-                string bigGif;
-                int playerPoints;
+                bool isVip = false;
+                string bigGif = "x";
+                int playerPoints = 0;
 
                 using (var connection = await OpenConnectionAsync())
                 {
@@ -694,6 +862,10 @@ namespace SharpTimer
                             selectQuery = @"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
                             break;
+                        case DatabaseType.SQLite:
+                            selectQuery = @"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
+                            break;
                         default:
                             selectQuery = null;
                             selectCommand = null;
@@ -709,15 +881,32 @@ namespace SharpTimer
                         if (row.Read())
                         {
                             // get player columns
-                            timesConnected = row.GetInt32("TimesConnected");
-                            hideTimerHud = row.GetBoolean("HideTimerHud");
-                            hideKeys = row.GetBoolean("HideKeys");
-                            hideJS = row.GetBoolean("HideJS");
-                            soundsEnabled = row.GetBoolean("SoundsEnabled");
-                            playerFov = row.GetInt32("PlayerFov");
-                            isVip = row.GetBoolean("IsVip");
-                            bigGif = row.GetString("BigGifID");
-                            playerPoints = row.GetInt32("GlobalPoints");
+                            switch (dbType)
+                            {
+                                case DatabaseType.MySQL:
+                                case DatabaseType.PostgreSQL:
+                                    timesConnected = row.GetInt32("TimesConnected");
+                                    hideTimerHud = row.GetBoolean("HideTimerHud");
+                                    hideKeys = row.GetBoolean("HideKeys");
+                                    hideJS = row.GetBoolean("HideJS");
+                                    soundsEnabled = row.GetBoolean("SoundsEnabled");
+                                    playerFov = row.GetInt32("PlayerFov");
+                                    isVip = row.GetBoolean("IsVip");
+                                    bigGif = row.GetString("BigGifID");
+                                    playerPoints = row.GetInt32("GlobalPoints");
+                                    break;
+                                case DatabaseType.SQLite:
+                                    timesConnected = row.GetInt32("TimesConnected");
+                                    hideTimerHud = row.GetSQLiteBool("HideTimerHud");
+                                    hideKeys = row.GetSQLiteBool("HideKeys");
+                                    hideJS = row.GetSQLiteBool("HideJS");
+                                    soundsEnabled = row.GetSQLiteBool("SoundsEnabled");
+                                    playerFov = row.GetInt32("PlayerFov");
+                                    isVip = row.GetSQLiteBool("IsVip");
+                                    bigGif = row.GetString("BigGifID");
+                                    playerPoints = row.GetInt32("GlobalPoints");
+                                    break;
+                            }
 
                             // Modify the stats
                             timesConnected++;
@@ -776,6 +965,11 @@ namespace SharpTimer
                                                     ";
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
                                     break;
+                                case DatabaseType.SQLite:
+                                    upsertQuery = @"REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) 
+                                                        VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
+                                    break;
                                 default:
                                     upsertQuery = null;
                                     upsertCommand = null;
@@ -819,6 +1013,10 @@ namespace SharpTimer
                                 case DatabaseType.PostgreSQL:
                                     upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
+                                    break;
+                                case DatabaseType.SQLite:
+                                    upsertQuery = @"REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
                                     break;
                                 default:
                                     upsertQuery = null;
@@ -865,14 +1063,14 @@ namespace SharpTimer
                 // get player columns
                 int timesConnected = 0;
                 int lastConnected = 0;
-                bool hideTimerHud;
-                bool hideKeys;
-                bool hideJS;
-                bool soundsEnabled;
+                bool hideTimerHud = false;
+                bool hideKeys = false;
+                bool hideJS = false;
+                bool soundsEnabled = true;
                 int playerFov = 0;
-                bool isVip;
-                string bigGif;
-                int playerPoints;
+                bool isVip = false;
+                string bigGif = "x";
+                int playerPoints = 0;
 
                 using (var connection = await OpenConnectionAsync())
                 {
@@ -889,6 +1087,10 @@ namespace SharpTimer
                             selectQuery = @"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
                             break;
+                        case DatabaseType.SQLite:
+                            selectQuery = "SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
+                            break;
                         default:
                             selectQuery = null;
                             selectCommand = null;
@@ -904,16 +1106,32 @@ namespace SharpTimer
                         if (row.Read())
                         {
                             // get player columns
-                            timesConnected = row.GetInt32("TimesConnected");
-                            lastConnected = row.GetInt32("LastConnected");
-                            hideTimerHud = row.GetBoolean("HideTimerHud");
-                            hideKeys = row.GetBoolean("HideKeys");
-                            hideJS = row.GetBoolean("HideJS");
-                            soundsEnabled = row.GetBoolean("SoundsEnabled");
-                            playerFov = row.GetInt32("PlayerFov");
-                            isVip = row.GetBoolean("IsVip");
-                            bigGif = row.GetString("BigGifID");
-                            playerPoints = row.GetInt32("GlobalPoints");
+                            switch (dbType)
+                            {
+                                case DatabaseType.MySQL:
+                                case DatabaseType.PostgreSQL:
+                                    timesConnected = row.GetInt32("TimesConnected");
+                                    hideTimerHud = row.GetBoolean("HideTimerHud");
+                                    hideKeys = row.GetBoolean("HideKeys");
+                                    hideJS = row.GetBoolean("HideJS");
+                                    soundsEnabled = row.GetBoolean("SoundsEnabled");
+                                    playerFov = row.GetInt32("PlayerFov");
+                                    isVip = row.GetBoolean("IsVip");
+                                    bigGif = row.GetString("BigGifID");
+                                    playerPoints = row.GetInt32("GlobalPoints");
+                                    break;
+                                case DatabaseType.SQLite:
+                                    timesConnected = row.GetInt32("TimesConnected");
+                                    hideTimerHud = row.GetSQLiteBool("HideTimerHud");
+                                    hideKeys = row.GetSQLiteBool("HideKeys");
+                                    hideJS = row.GetSQLiteBool("HideJS");
+                                    soundsEnabled = row.GetSQLiteBool("SoundsEnabled");
+                                    playerFov = row.GetInt32("PlayerFov");
+                                    isVip = row.GetSQLiteBool("IsVip");
+                                    bigGif = row.GetString("BigGifID");
+                                    playerPoints = row.GetInt32("GlobalPoints");
+                                    break;
+                            }
 
                             await row.CloseAsync();
                             // Update or insert the record
@@ -947,6 +1165,10 @@ namespace SharpTimer
                                                     ""GlobalPoints"" = EXCLUDED.""GlobalPoints"";
                                                     ";
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
+                                    break;
+                                case DatabaseType.SQLite:
+                                    upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
                                     break;
                                 default:
                                     upsertQuery = null;
@@ -999,6 +1221,10 @@ namespace SharpTimer
                                 case DatabaseType.PostgreSQL:
                                     upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
+                                    break;
+                                case DatabaseType.SQLite:
+                                    upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
                                     break;
                                 default:
                                     upsertQuery = null;
@@ -1058,13 +1284,13 @@ namespace SharpTimer
                 // get player columns
                 int timesConnected = 0;
                 int lastConnected = 0;
-                bool hideTimerHud;
-                bool hideKeys;
-                bool hideJS;
-                bool soundsEnabled;
+                bool hideTimerHud = false;
+                bool hideKeys = false;
+                bool hideJS = false;
+                bool soundsEnabled = true;
                 int playerFov = 0;
-                bool isVip;
-                string bigGif;
+                bool isVip = false;
+                string bigGif = "x";
                 int playerPoints = 0;
                 float mapTier = 0.1f;
 
@@ -1084,6 +1310,10 @@ namespace SharpTimer
                             selectQuery = $@"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""{PlayerStatsTable}"" WHERE ""SteamID"" = @SteamID";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
                             break;
+                        case DatabaseType.SQLite:
+                            selectQuery = $@"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
+                            selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
+                            break;
                         default:
                             selectQuery = null;
                             selectCommand = null;
@@ -1099,16 +1329,32 @@ namespace SharpTimer
                         if (row.Read())
                         {
                             // get player columns
-                            timesConnected = row.GetInt32("TimesConnected");
-                            lastConnected = row.GetInt32("LastConnected");
-                            hideTimerHud = row.GetBoolean("HideTimerHud");
-                            hideKeys = row.GetBoolean("HideKeys");
-                            hideJS = row.GetBoolean("HideJS");
-                            soundsEnabled = row.GetBoolean("SoundsEnabled");
-                            playerFov = row.GetInt32("PlayerFov");
-                            isVip = row.GetBoolean("IsVip");
-                            bigGif = row.GetString("BigGifID");
-                            playerPoints = row.GetInt32("GlobalPoints");
+                            switch (dbType)
+                            {
+                                case DatabaseType.MySQL:
+                                case DatabaseType.PostgreSQL:
+                                    timesConnected = row.GetInt32("TimesConnected");
+                                    hideTimerHud = row.GetBoolean("HideTimerHud");
+                                    hideKeys = row.GetBoolean("HideKeys");
+                                    hideJS = row.GetBoolean("HideJS");
+                                    soundsEnabled = row.GetBoolean("SoundsEnabled");
+                                    playerFov = row.GetInt32("PlayerFov");
+                                    isVip = row.GetBoolean("IsVip");
+                                    bigGif = row.GetString("BigGifID");
+                                    playerPoints = row.GetInt32("GlobalPoints");
+                                    break;
+                                case DatabaseType.SQLite:
+                                    timesConnected = row.GetInt32("TimesConnected");
+                                    hideTimerHud = row.GetSQLiteBool("HideTimerHud");
+                                    hideKeys = row.GetSQLiteBool("HideKeys");
+                                    hideJS = row.GetSQLiteBool("HideJS");
+                                    soundsEnabled = row.GetSQLiteBool("SoundsEnabled");
+                                    playerFov = row.GetInt32("PlayerFov");
+                                    isVip = row.GetSQLiteBool("IsVip");
+                                    bigGif = row.GetString("BigGifID");
+                                    playerPoints = row.GetInt32("GlobalPoints");
+                                    break;
+                            }
 
                             int newPoints;
 
@@ -1150,6 +1396,10 @@ namespace SharpTimer
                                                     ""GlobalPoints"" = EXCLUDED.""GlobalPoints"";
                                                     ";
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
+                                    break;
+                                case DatabaseType.SQLite:
+                                    upsertQuery = $@"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
                                     break;
                                 default:
                                     upsertQuery = null;
@@ -1214,6 +1464,10 @@ namespace SharpTimer
                                 case DatabaseType.PostgreSQL:
                                     upsertQuery = $@"INSERT INTO ""{PlayerStatsTable}"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
+                                    break;
+                                case DatabaseType.SQLite:
+                                    upsertQuery = $@"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
                                     break;
                                 default:
                                     upsertQuery = null;
@@ -1280,6 +1534,10 @@ namespace SharpTimer
                             case DatabaseType.PostgreSQL:
                                 query = $@"SELECT ""PlayerName"", ""GlobalPoints"" FROM ""{PlayerStatsTable}"" ORDER BY ""GlobalPoints"" DESC LIMIT 10";
                                 command = new NpgsqlCommand(query, (NpgsqlConnection)connection);
+                                break;
+                            case DatabaseType.SQLite:
+                                query = $@"SELECT PlayerName, GlobalPoints FROM {PlayerStatsTable} ORDER BY GlobalPoints DESC LIMIT 10";
+                                command = new SQLiteCommand(query, (SQLiteConnection)connection);
                                 break;
                             default:
                                 query = null;
@@ -1353,6 +1611,10 @@ namespace SharpTimer
                             selectQuery = $@"SELECT ""IsVip"", ""BigGifID"" FROM ""{PlayerStatsTable}"" WHERE ""SteamID"" = @SteamID";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
                             break;
+                        case DatabaseType.SQLite:
+                            selectQuery = $"SELECT IsVip, BigGifID FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
+                            selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
+                            break;
                         default:
                             selectQuery = null;
                             selectCommand = null;
@@ -1368,7 +1630,17 @@ namespace SharpTimer
                         if (row.Read() && playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? value))
                         {
                             // get player columns
-                            bool isVip = row.GetBoolean("IsVip");
+                            bool isVip = false;
+                            switch (dbType)
+                            {
+                                case DatabaseType.MySQL:
+                                case DatabaseType.PostgreSQL:
+                                    isVip = row.GetBoolean("IsVip");
+                                    break;
+                                case DatabaseType.SQLite:
+                                    isVip = row.GetSQLiteBool("IsVip");
+                                    break;
+                            }
                             if (isVip)
                             {
                                 Server.NextFrame(() => SharpTimerDebug($"Replay is VIP setting gif..."));
@@ -1431,6 +1703,16 @@ namespace SharpTimer
                                                 $"LIMIT 1 OFFSET {top10 - 1};";
                                 selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
                                 break;
+                            case DatabaseType.SQLite:
+                                // Get the top N records based on TimerTicks
+                                selectQuery = "SELECT SteamID, PlayerName, TimerTicks " +
+                                                "FROM PlayerRecords " +
+                                                "WHERE MapName = @MapName " +
+                                                "AND Style = @Style " +
+                                                "ORDER BY TimerTicks ASC " +
+                                                $"LIMIT 1 OFFSET {top10 - 1};";
+                                selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
+                                break;
                             default:
                                 selectQuery = null;
                                 selectCommand = null;
@@ -1449,6 +1731,10 @@ namespace SharpTimer
                             case DatabaseType.PostgreSQL:
                                 selectQuery = $@"SELECT ""SteamID"", ""PlayerName"", ""TimerTicks"" FROM ""PlayerRecords"" WHERE ""MapName"" = @MapName AND ""Style"" = @Style ORDER BY ""TimerTicks"" ASC LIMIT 1";
                                 selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                                break;
+                            case DatabaseType.SQLite:
+                                selectQuery = $"SELECT SteamID, PlayerName, TimerTicks FROM PlayerRecords WHERE MapName = @MapName AND Style = @Style ORDER BY TimerTicks ASC LIMIT 1";
+                                selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
                                 break;
                             default:
                                 selectQuery = null;
@@ -1520,6 +1806,10 @@ namespace SharpTimer
                             selectQuery = @"SELECT ""TimerTicks"" FROM ""PlayerRecords"" WHERE ""MapName"" = @MapName AND ""SteamID"" = @SteamID AND ""Style"" = @Style";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
                             break;
+                        case DatabaseType.SQLite:
+                            selectQuery = "SELECT TimerTicks FROM PlayerRecords WHERE MapName = @MapName AND SteamID = @SteamID AND Style = @Style";
+                            selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
+                            break;
                         default:
                             selectQuery = null;
                             selectCommand = null;
@@ -1578,6 +1868,10 @@ namespace SharpTimer
                         case DatabaseType.PostgreSQL:
                             selectQuery = @"SELECT ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                            break;
+                        case DatabaseType.SQLite:
+                            selectQuery = "SELECT GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
                             break;
                         default:
                             selectQuery = null;
@@ -1639,6 +1933,10 @@ namespace SharpTimer
                                 selectQuery = $@"SELECT ""SteamID"", ""PlayerName"", ""TimerTicks"" FROM ""PlayerRecords"" WHERE ""MapName"" = @MapName AND ""Style"" = @Style ORDER BY ""TimerTicks"" ASC LIMIT {limit}";
                                 selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
                                 break;
+                            case DatabaseType.SQLite:
+                                selectQuery = $@"SELECT SteamID, PlayerName, TimerTicks FROM PlayerRecords WHERE MapName = @MapName AND Style = @Style ORDER BY TimerTicks ASC LIMIT {limit}";
+                                selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
+                                break;
                             default:
                                 selectQuery = null;
                                 selectCommand = null;
@@ -1656,6 +1954,10 @@ namespace SharpTimer
                             case DatabaseType.PostgreSQL:
                                 selectQuery = @"SELECT ""SteamID"", ""PlayerName"", ""TimerTicks"" FROM ""PlayerRecords"" WHERE ""MapName"" = @MapName AND ""Style"" = @Style";
                                 selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                                break;
+                            case DatabaseType.SQLite:
+                                selectQuery = @"SELECT SteamID, PlayerName, TimerTicks FROM PlayerRecords WHERE MapName = @MapName AND Style = @Style";
+                                selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
                                 break;
                             default:
                                 selectQuery = null;
@@ -1719,6 +2021,10 @@ namespace SharpTimer
                         case DatabaseType.PostgreSQL:
                             selectQuery = $@"SELECT ""SteamID"", ""PlayerName"", ""GlobalPoints"" FROM ""{PlayerStatsTable}""";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                            break;
+                        case DatabaseType.SQLite:
+                            selectQuery = $@"SELECT SteamID, PlayerName, GlobalPoints FROM {PlayerStatsTable}";
+                            selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
                             break;
                         default:
                             selectQuery = null;
@@ -1960,6 +2266,30 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerError($"Error exporting player records to JSON: {ex.Message}");
+            }
+        }
+
+        [ConsoleCommand("css_migrate", " ")]
+        [RequiresPermissions("@css/root")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+        public void DatabaseMigrationCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            DatabaseMigration();
+        }
+
+        public void DatabaseMigration()
+        {
+            try
+            {
+                using (var connection = OpenConnection())
+                {
+                    ExecuteMigrations(connection);
+                    SharpTimerConPrint("Database migration complete.");
+                }
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error migrating database: {ex.Message}");
             }
         }
     }

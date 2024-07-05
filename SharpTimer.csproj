@@ -13,6 +13,7 @@
     </PackageReference>
     <PackageReference Include="Nexd.MySQL" Version="1.0.2" />
     <PackageReference Include="Npgsql" Version="8.0.3" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
   </ItemGroup>
 
   <Target Name="Date" BeforeTargets="BeforeBuild">

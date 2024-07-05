@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.0g";
+        public override string ModuleVersion => $"0.3.0h";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -225,7 +225,7 @@ namespace SharpTimer
         public string? gameDir;
         public string? mySQLpath;
         public string? postgresPath;
-        public string? PlayerStatsTable;
+        public string? PlayerStatsTable = "PlayerStats";
         public string? playerRecordsPath;
         public string? currentMapName;
         public string? defaultServerHostname = ConVar.Find("hostname")?.StringValue;

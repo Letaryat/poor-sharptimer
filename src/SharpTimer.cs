@@ -48,29 +48,6 @@ namespace SharpTimer
             string recordsFileName = $"SharpTimer/PlayerRecords/";
             playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
 
-            //takes a few seconds for config.cfg to execute
-            AddTimer(3.0f, () =>
-            {
-                if (useMySQL)
-                {
-                    string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
-                    mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
-                    SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
-                    dbType = DatabaseType.MySQL;
-                    dbPath = mySQLpath;
-                    enableDb = true;
-                }
-
-                if (usePostgres)
-                {
-                    string postgresConfigFileName = "SharpTimer/postgresConfig.json";
-                    postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
-                    SharpTimerDebug($"Set postgresPath to {postgresPath}");
-                    dbType = DatabaseType.PostgreSQL;
-                    dbPath = postgresPath;
-                    enableDb = true;
-                }
-            });
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) isLinux = true;
             else isLinux = false;
@@ -136,6 +113,39 @@ namespace SharpTimer
 
             RegisterEventHandler<EventRoundStart>((@event, info) =>
             {
+                if (!sqlCheck)
+                {
+                    if (useMySQL)
+                    {
+                        string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
+                        mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
+                        SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
+                        dbType = DatabaseType.MySQL;
+                        dbPath = mySQLpath;
+                        enableDb = true;
+                    }
+                    else if (usePostgres)
+                    {
+                        string postgresConfigFileName = "SharpTimer/postgresConfig.json";
+                        postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
+                        SharpTimerDebug($"Set postgresPath to {postgresPath}");
+                        dbType = DatabaseType.PostgreSQL;
+                        dbPath = postgresPath;
+                        enableDb = true;
+                    }
+                    /*else
+                    {
+                        SharpTimerDebug($"No db set, defaulting to SQLite");
+                        dbPath = Path.Join(gameDir + "/csgo/cfg", "SharpTimer/database.db");
+                        dbType = DatabaseType.SQLite;
+                        enableDb = true;
+                    }*/
+                    using (var connection = OpenConnection())
+                    {
+                        ExecuteMigrations(connection);
+                    }
+                    sqlCheck = true;
+                }
                 var mapName = Server.MapName;
                 LoadMapData(mapName);
                 SharpTimerDebug($"Loading MapData on RoundStart...");

@@ -864,12 +864,6 @@ namespace SharpTimer
 
                     //bonusRespawnPoses.Clear();
                     bonusRespawnAngs.Clear();
-                    
-                    if(!sqlCheck)
-                    {
-                        if(enableDb) _ = Task.Run(async () => await CheckTablesAsync());
-                        sqlCheck = true;
-                    }
 
                     cpTriggers.Clear();         // make sure old data is flushed in case new map uses fake zones
                     cpTriggerCount = 0;
