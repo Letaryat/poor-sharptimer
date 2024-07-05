@@ -2125,13 +2125,33 @@ namespace SharpTimer
                 }
 
                 string connectionString = await GetConnectionStringFromConfigFile();
-
-                using (var connection = new MySqlConnection(connectionString))
+                IDbConnection connection = null;
+                switch (dbType)
                 {
-                    await connection.OpenAsync();
+                    case DatabaseType.MySQL:
+                        connection = new MySqlConnection(connectionString);
+                        break;
+                    case DatabaseType.PostgreSQL:
+                        connection = new NpgsqlConnection(connectionString);
+                        break;
+                    case DatabaseType.SQLite:
+                        connection = new SQLiteConnection(connectionString);
+                        break;
+                    default:
+                        SharpTimerError($"Error: Invalid database type.");
+                        return;
+                }
+                using (connection)
+                {
+                    connection.Open();
 
                     // Check if the table exists, and create it if necessary
-                    string createTableQuery = @"CREATE TABLE IF NOT EXISTS PlayerRecords (
+                    string createTableQuery = null;
+                    DbCommand createTableCommand = null;
+                    switch (dbType)
+                    {
+                        case DatabaseType.MySQL:
+                            createTableQuery = @"CREATE TABLE IF NOT EXISTS PlayerRecords (
                                             MapName VARCHAR(255),
                                             SteamID VARCHAR(255),
                                             PlayerName VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
@@ -2140,10 +2160,46 @@ namespace SharpTimer
                                             UnixStamp INT,
                                             TimesFinished INT,
                                             LastFinished INT,
+                                            Style INT,
                                             PRIMARY KEY (MapName, SteamID)
                                         )";
-
-                    using (var createTableCommand = new MySqlCommand(createTableQuery, connection))
+                            createTableCommand = new MySqlCommand(createTableQuery, (MySqlConnection)connection);
+                            break;
+                        case DatabaseType.PostgreSQL:
+                            createTableQuery = @"CREATE TABLE IF NOT EXISTS ""PlayerRecords"" (
+                                            ""MapName"" VARCHAR(255),
+                                            ""SteamID"" VARCHAR(255),
+                                            ""PlayerName"" VARCHAR(255),
+                                            ""TimerTicks"" INT,
+                                            ""FormattedTime"" VARCHAR(255),
+                                            ""UnixStamp"" INT,
+                                            ""TimesFinished"" INT,
+                                            ""LastFinished"" INT,
+                                            ""Style"" INT,
+                                            PRIMARY KEY (""MapName"", ""SteamID"", ""Style"")
+                                        )";
+                            createTableCommand = new NpgsqlCommand(createTableQuery, (NpgsqlConnection)connection);
+                            break;
+                        case DatabaseType.SQLite:
+                            createTableQuery = @"CREATE TABLE IF NOT EXISTS PlayerRecords (
+                                            MapName TEXT,
+                                            SteamID TEXT,
+                                            PlayerName TEXT,
+                                            TimerTicks INTEGER,
+                                            FormattedTime TEXT,
+                                            UnixStamp INTEGER,
+                                            TimesFinished INTEGER,
+                                            LastFinished INTEGER,
+                                            Style INTEGER,
+                                            PRIMARY KEY (MapName, SteamID, Style)
+                                        )";
+                            createTableCommand = new SQLiteCommand(createTableQuery, (SQLiteConnection)connection);
+                            break;
+                        default:
+                            createTableQuery = null;
+                            break;
+                    }
+                    using (createTableCommand)
                     {
                         await createTableCommand.ExecuteNonQueryAsync();
                     }
@@ -2168,23 +2224,50 @@ namespace SharpTimer
                             string mapName = Path.GetFileNameWithoutExtension(filePath);
 
                             // Check if the player is already in the database
-                            string insertOrUpdateQuery = @"
-                                INSERT INTO PlayerRecords (SteamID, PlayerName, TimerTicks, FormattedTime, MapName, UnixStamp, TimesFinished, LastFinished)
-                                VALUES (@SteamID, @PlayerName, @TimerTicks, @FormattedTime, @MapName, @UnixStamp, @TimesFinished, @LastFinished)
-                                ON DUPLICATE KEY UPDATE
-                                TimerTicks = IF(@TimerTicks < TimerTicks, @TimerTicks, TimerTicks),
-                                FormattedTime = IF(@TimerTicks < TimerTicks, @FormattedTime, FormattedTime)";
-
-                            using (var insertOrUpdateCommand = new MySqlCommand(insertOrUpdateQuery, connection))
+                            string insertOrUpdateQuery = null;
+                            DbCommand insertOrUpdateCommand = null;
+                            switch (dbType)
                             {
-                                insertOrUpdateCommand.Parameters.AddWithValue("@SteamID", steamId);
-                                insertOrUpdateCommand.Parameters.AddWithValue("@PlayerName", playerRecord.PlayerName);
-                                insertOrUpdateCommand.Parameters.AddWithValue("@TimerTicks", playerRecord.TimerTicks);
-                                insertOrUpdateCommand.Parameters.AddWithValue("@FormattedTime", FormatTime(playerRecord.TimerTicks));
-                                insertOrUpdateCommand.Parameters.AddWithValue("@MapName", mapName);
-                                insertOrUpdateCommand.Parameters.AddWithValue("@UnixStamp", 0);
-                                insertOrUpdateCommand.Parameters.AddWithValue("@TimesFinished", 0);
-                                insertOrUpdateCommand.Parameters.AddWithValue("@LastFinished", 0);
+                                case DatabaseType.MySQL:
+                                    insertOrUpdateQuery = @"INSERT INTO PlayerRecords (SteamID, PlayerName, TimerTicks, FormattedTime, MapName, UnixStamp, TimesFinished, LastFinished, Style)
+                                        VALUES (@SteamID, @PlayerName, @TimerTicks, @FormattedTime, @MapName, @UnixStamp, @TimesFinished, @LastFinished, @Style)
+                                        ON DUPLICATE KEY UPDATE
+                                        TimerTicks = IF(@TimerTicks < TimerTicks, @TimerTicks, TimerTicks),
+                                        FormattedTime = IF(@TimerTicks < TimerTicks, @FormattedTime, FormattedTime)";
+                                    insertOrUpdateCommand = new MySqlCommand(insertOrUpdateQuery, (MySqlConnection)connection);
+                                    break;
+                                case DatabaseType.PostgreSQL:
+                                    insertOrUpdateQuery = @"INSERT INTO ""PlayerRecords"" (""SteamID"", ""PlayerName"", ""TimerTicks"", ""FormattedTime"", ""MapName"", ""UnixStamp"", ""TimesFinished"", ""LastFinished"", ""Style"")
+                                        VALUES (@SteamID, @PlayerName, @TimerTicks, @FormattedTime, @MapName, @UnixStamp, @TimesFinished, @LastFinished, @Style)
+                                        ON CONFLICT (""MapName"", ""SteamID"", ""Style"") DO UPDATE
+                                        SET ""TimerTicks"" = CASE WHEN @TimerTicks < ""TimerTicks"" THEN @TimerTicks ELSE ""TimerTicks"" END,
+                                        ""FormattedTime"" = CASE WHEN @TimerTicks < ""TimerTicks"" THEN @FormattedTime ELSE ""FormattedTime"" END";
+                                    insertOrUpdateCommand = new NpgsqlCommand(insertOrUpdateQuery, (NpgsqlConnection)connection);
+                                    break;
+                                case DatabaseType.SQLite:
+                                    insertOrUpdateQuery = @"INSERT INTO PlayerRecords (SteamID, PlayerName, TimerTicks, FormattedTime, MapName, UnixStamp, TimesFinished, LastFinished, Style)
+                                        VALUES (@SteamID, @PlayerName, @TimerTicks, @FormattedTime, @MapName, @UnixStamp, @TimesFinished, @LastFinished, @Style)
+                                        ON CONFLICT (MapName, SteamID, Style) DO UPDATE
+                                        SET TimerTicks = CASE WHEN @TimerTicks < TimerTicks THEN @TimerTicks ELSE TimerTicks END,
+                                        FormattedTime = CASE WHEN @TimerTicks < TimerTicks THEN @FormattedTime ELSE FormattedTime END";
+                                    insertOrUpdateCommand = new SQLiteCommand(insertOrUpdateQuery, (SQLiteConnection)connection);
+                                    break;
+                                default:
+                                    insertOrUpdateQuery = null;
+                                    break;
+                            }
+
+                            using (insertOrUpdateCommand)
+                            {
+                                insertOrUpdateCommand.AddParameterWithValue("@SteamID", steamId);
+                                insertOrUpdateCommand.AddParameterWithValue("@PlayerName", playerRecord.PlayerName);
+                                insertOrUpdateCommand.AddParameterWithValue("@TimerTicks", playerRecord.TimerTicks);
+                                insertOrUpdateCommand.AddParameterWithValue("@FormattedTime", FormatTime(playerRecord.TimerTicks));
+                                insertOrUpdateCommand.AddParameterWithValue("@MapName", mapName);
+                                insertOrUpdateCommand.AddParameterWithValue("@UnixStamp", 0);
+                                insertOrUpdateCommand.AddParameterWithValue("@TimesFinished", 0);
+                                insertOrUpdateCommand.AddParameterWithValue("@LastFinished", 0);
+                                insertOrUpdateCommand.AddParameterWithValue("@Style", 0);
 
                                 await insertOrUpdateCommand.ExecuteNonQueryAsync();
                             }
@@ -2266,30 +2349,6 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerError($"Error exporting player records to JSON: {ex.Message}");
-            }
-        }
-
-        [ConsoleCommand("css_migrate", " ")]
-        [RequiresPermissions("@css/root")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-        public void DatabaseMigrationCommand(CCSPlayerController? player, CommandInfo command)
-        {
-            DatabaseMigration();
-        }
-
-        public void DatabaseMigration()
-        {
-            try
-            {
-                using (var connection = OpenConnection())
-                {
-                    ExecuteMigrations(connection);
-                    SharpTimerConPrint("Database migration complete.");
-                }
-            }
-            catch (Exception ex)
-            {
-                SharpTimerError($"Error migrating database: {ex.Message}");
             }
         }
     }
