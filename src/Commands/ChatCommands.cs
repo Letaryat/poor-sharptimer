@@ -380,7 +380,8 @@ namespace SharpTimer
             SharpTimerDebug($"{playerName} calling css_keys...");
 
             if (CommandCooldown(player))
-
+                return;
+                
                 playerTimers[playerSlot].TicksSinceLastCmd = 0;
 
             playerTimers[playerSlot].HideKeys = playerTimers[playerSlot].HideKeys ? false : true;
