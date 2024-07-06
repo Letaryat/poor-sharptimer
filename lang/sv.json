@@ -36,6 +36,7 @@
   "current_rank": "Du är rank {0}{1}{lime}",
   "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
   "current_pb": "Ditt nuvarande PB på {lime}{0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
+  "current_bonus_pb": "Ditt nuvarande PB på {lime}Bonus {0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
   "current_sr": "Nuvarande Server Rekord på {lime}{0}{white}:",
   "current_sr_player": "{lime}{0} {white}- {lime}{1}",
   "reached_max_free": "Du har nått dina maximala gratispoäng av {lime}{0}{default}!",

@@ -36,6 +36,7 @@
   "current_rank": "Vous êtes actuellement {0}{1}{lime}",
   "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
   "current_pb": "Votre PB actuel sur {lime}{0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
+  "current_bonus_pb": "Votre PB actuel sur {lime}Bonus {0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
   "current_sr": "Record actuel sur le serveur pour {lime}{0}{white}:",
   "current_sr_player": "{lime}{0} {white}- {lime}{1}",
   "reached_max_free": "Vous avez atteint le nombre maximum de points gratuits de {lime}{0}{default}!",

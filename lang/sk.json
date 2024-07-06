@@ -23,7 +23,7 @@
     "map_finish_rank": "Hodnosť: [{lime}{0}{default}] Dokončené: [{lime}{1}{default}]",
     "top10_records": "Top 10 {0} rekordy pre {1}:",
     "top10_records_bonus": "Top 10 {0} rekordy pre bonus {1} na {2}:",
-    
+
     //stages
     "invalid_bonus_stage": "Zadajte platný bonusový stupeň, napr.: {lime}!topbonus 1",
     "invalid_bonus_rb": "Zadajte platnú bonusovú fázu, napr.: {lime}!rb <index>",
@@ -36,6 +36,7 @@
     "current_rank": "Momentálne ste {0}{1}{lime}",
     "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
     "current_pb": "Vaša aktuálna PB na {lime}{0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
+    "current_bonus_pb": "Vaša aktuálna PB na {lime}Bonus {0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
     "current_sr": "Aktuálny záznam servera na {lime}{0}{white}:",
     "current_sr_player": "{lime}{0} {white}- {lime}{1}",
     "reached_max_free": "Dosiahli ste maximálny počet bezplatných odmien vo výške {lime}{0}{default}!",

@@ -23,7 +23,7 @@
     "map_finish_rank": "Rang: [{lime}{0}{default}] Ganger Fullført: [{lime}{1}{default}]",
     "top10_records": "Top 10 {0} Recorder for {1}:",
     "top10_records_bonus": "Top 10 {0} Recorder for Bonus {1} on {2}:",
-    
+
     //stages
     "invalid_bonus_stage": "Tast inn et gyldig bonusstadium, for eksempel: {lime}!topbonus 1",
     "invalid_bonus_rb": "Tast inn et gyldig bonusstadium, for eksempel: {lime}!rb <index>",
@@ -36,13 +36,14 @@
     "current_rank": "Du er for tiden {0}{1}{lime}",
     "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
     "current_pb": "Din nåværende PB på {lime}{0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
+    "current_bonus_pb": "Din nåværende PB på {lime}Bonus {0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
     "current_sr": "Nåværende Server Rekord på {lime}{0}{white}:",
     "current_sr_player": "{lime}{0} {white}- {lime}{1}",
     "reached_max_free": "Du har nådd dine maksimale gratispoeng belønninger på {lime}{0}{default}!",
     "gained_points": "{lime}{0} {default}oppnådde {green}+{1} {default}Poeng {grey}({2})",
     "top_10_points": "Top 10 Spillere med mest poeng:",
     "top_10_points_list": "#{0}: {lime}{1} {default}: {lime}{2} {default}poeng",
-    
+
     //replay
     "no_replay": "Ingen repetisjon spilles for øyeblikket",
     "end_your_replay": "Avslutt den nåværende reprisen først {lime}!stopreplay",

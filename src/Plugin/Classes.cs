@@ -119,6 +119,7 @@ namespace SharpTimer
         public int BonusTimerTicks { get; set; }
         public int BonusStage { get; set; }
         public bool inStartzone { get; set; }
+        public CurrentZoneInfo CurrentZoneInfo { get; set; } = new();
         public int currentStyle { get; set; }
         public bool changedStyle { get; set; }
 
@@ -136,6 +137,7 @@ namespace SharpTimer
         public string? PreSpeed { get; set; }
         public string? CachedPB { get; set; }
         public string? CachedMapPlacement { get; set; }
+        public Dictionary<int, PlayerBonusPlacementInfo> CachedBonusInfo { get; set; } = new();
 
         //logic
         public int? TicksInAir { get; set; }
@@ -191,6 +193,13 @@ namespace SharpTimer
         public string? SetRespawnAng { get; set; }
     }
 
+    public class CurrentZoneInfo
+    {
+        public bool InMainMapStartZone { get; set; }
+        public bool InBonusStartZone { get; set; }
+        public int CurrentBonusNumber { get; set; }
+    }
+
     public class PlayerJumpStats
     {
         public int FramesOnGround { get; set; }
@@ -227,6 +236,13 @@ namespace SharpTimer
         {
             public string? InterpString { get; set; }
         }
+    }
+
+    public class PlayerBonusPlacementInfo
+    {
+        public string? Placement { get; set; }
+
+        public int PbTicks { get; set; }
     }
 
     //Replay stuff
