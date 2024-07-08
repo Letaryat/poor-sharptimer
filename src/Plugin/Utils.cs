@@ -135,12 +135,52 @@ namespace SharpTimer
 
             var timer = AddTimer(adMessagesTimer, () =>
             {
-                string[] adMessages = File.ReadAllLines(Path.Join(gameDir + "/csgo/cfg/SharpTimer/admessages.txt"));
-                var nonEmptyAds = adMessages.Where(ad => !string.IsNullOrEmpty(ad) && !ad.TrimStart().StartsWith("//")).ToArray();
-                Server.NextFrame(() => Server.PrintToChatAll($"{ReplaceAdMessagePlaceholders(nonEmptyAds[new Random().Next(nonEmptyAds.Length)])}"));
+                List<string> allAdMessages = [.. GetAdMessages()];
+
+                var customAdMessageFilePath = Path.Join(gameDir + "/csgo/cfg/SharpTimer/admessages.txt");
+                if (File.Exists(customAdMessageFilePath))
+                {
+                    string[] customAdMessages = File.ReadAllLines(customAdMessageFilePath);
+                    var nonEmptyCustomAds = customAdMessages.Where(ad => !string.IsNullOrEmpty(ad) && !ad.TrimStart().StartsWith("//")).ToList();
+
+                    allAdMessages.AddRange(nonEmptyCustomAds);
+                }
+
+                SharpTimerDebug($"Ad message count: {allAdMessages.Count}");
+
+                Server.NextFrame(() => Server.PrintToChatAll($"{ReplaceAdMessagePlaceholders(allAdMessages[new Random().Next(allAdMessages.Count)])}"));
             }, TimerFlags.REPEAT);
 
             isADMessagesTimerRunning = true;
+        }
+
+        private List<string> GetAdMessages()
+        {
+            var adMessages = new List<string>() 
+            {
+                $"{Localizer["prefix"]} {Localizer["ad_see_all_commands"]}"
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_pb"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_sr"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_top"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_bonus"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_bonus_pb"]}" : "")}",
+                $"{(globalRanksEnabled ? $"{Localizer["prefix"]} {Localizer["ad_points"]}" : "")}",
+                $"{(respawnEnabled ? $"{Localizer["prefix"]} {Localizer["ad_respawn"]}" : "")}",
+                $"{(respawnEnabled ? $"{Localizer["prefix"]} {Localizer["ad_start_pos"]}" : "")}",
+                $"{(topEnabled ? $"{Localizer["prefix"]} {Localizer["ad_top"]}" : "")}",
+                $"{(rankEnabled ? $"{Localizer["prefix"]} {Localizer["ad_rank"]}" : "")}",
+                $"{(cpEnabled ? $"{Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? $"{Localizer["ad_save_loc"]}" : $"{Localizer["ad_cp"]}")}" : "")}",
+                $"{(cpEnabled ? $"{Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? $"{Localizer["ad_load_loc"]}" : $"{Localizer["ad_tp"]}")}" : "")}",
+                $"{(goToEnabled ? $"{Localizer["prefix"]} {Localizer["ad_goto"]}" : "")}",
+                $"{(fovChangerEnabled ? $"{Localizer["prefix"]} {Localizer["ad_fov"]}" : "")}",
+                $"{Localizer["prefix"]} {Localizer["ad_sounds"]}",
+                $"{Localizer["prefix"]} {Localizer["ad_hud"]}",
+                $"{Localizer["prefix"]} {Localizer["ad_keys"]}",
+                $"{(enableStyles ? $"{Localizer["prefix"]} {Localizer["ad_styles"]}" : "")}",
+                $"{(jumpStatsEnabled ? $"{Localizer["prefix"]} {Localizer["ad_jumpstats"]}" : "")}"
+            };
+
+            return adMessages;
         }
 
         private string ReplaceAdMessagePlaceholders(string message)
@@ -153,9 +193,10 @@ namespace SharpTimer
                 { "{players}",      $"{Utilities.GetPlayers().Count()}" },
                 { "{current_time}", $"{DateTime.Now.ToString("HH:mm:ss")}" },
                 { "{current_date}", $"{DateTime.Now.ToString("dd.MMM.yyyy")}" },
+                { "{primary}",      $"{primaryChatColor}" },
+                { "{default}",      $"{ChatColors.Default}" },
                 { "{red}",          $"{ChatColors.Red}" },
                 { "{white}",        $"{ChatColors.White}" },
-                { "{default}",      $"{ChatColors.Default}" },
                 { "{darkred}",      $"{ChatColors.DarkRed}" },
                 { "{green}",        $"{ChatColors.Green}" },
                 { "{lightyellow}",  $"{ChatColors.LightYellow}" },

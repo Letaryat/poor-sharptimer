@@ -1,22 +1,3 @@
 // {prefix} {current_map} {max_players} {players} {current_time} {current_date}
-// {red} {white} {default} {darkred} {green}{lightyellow} {lightblue}  {olive} {lime} {lightpurple} {purple} {grey} {yellow} {gold} {silver} {blue} {darkblue} {bluegrey} {magenta} {lightred} {orange}
-{prefix} {lime}!sthelp{default} to see all commands!
-{prefix} {lime}!replaypb{default} to watch a replay of your personal best run
-{prefix} {lime}!replay or {lime}!replaysr{default} to watch a replay of the SR on {lime}{current_map}{default}
-{prefix} {lime}!replaytop <1-10>{default} to watch a replay of a top run on {lime}{current_map}{default}
-{prefix} {lime}!replaybonus <1-10> <bonus #> (or !replayb){default} to watch a replay of a top run on a bonus stage{default}
-{prefix} {lime}!replaybonuspb <bonus #> (or !replaybpb){default} to watch a replay of your personal best run on a bonus stage{default}
-{prefix} {lime}!points{default} to see the top 10 players with the most points
-{prefix} {lime}!r{default} to respawn back to start
-{prefix} {lime}!setresp (or !startpos){default} to to save a custom respawn point within the start trigger
-{prefix} {lime}!top{default} to see the top 10 players on {lime}{current_map}{default}
-{prefix} {lime}!rank{default} to see your current PB and Rank
-{prefix} {lime}!cp{default} to set a new checkpoint
-{prefix} {lime}!tp{default} to teleport to your last checkpoint
-{prefix} {lime}!goto <name>{default} to teleport to a player
-{prefix} {lime}!fov <0-140>{default} to change your field of view
-{prefix} {lime}!sounds{default} to toggle timer sounds
-{prefix} {lime}!hud{default} to toggle timer hud
-{prefix} {lime}!keys{default} to toggle hud keys
-{prefix} {lime}!styles{default} to list all available styles
-{prefix} {lime}!jumpstats{default} to toggle JumpStats
+// {primary} {default} {red} {white} {darkred} {green}{lightyellow} {lightblue}  {olive} {lime} {lightpurple} {purple} {grey} {yellow} {gold} {silver} {blue} {darkblue} {bluegrey} {magenta} {lightred} {orange}
+{prefix} {lime}TEST{default} to see if custom ad messages work too{lime}{current_map}{default}
