@@ -848,7 +848,7 @@ namespace SharpTimer
 
                 using (var connection = await OpenConnectionAsync())
                 {
-                    await CreatePlayerRecordsTableAsync(connection);
+                    await CreatePlayerStatsTableAsync(connection);
 
                     string selectQuery;
                     DbCommand selectCommand;
@@ -1074,7 +1074,7 @@ namespace SharpTimer
 
                 using (var connection = await OpenConnectionAsync())
                 {
-                    await CreatePlayerRecordsTableAsync(connection);
+                    await CreatePlayerStatsTableAsync(connection);
                     string selectQuery;
                     DbCommand selectCommand;
                     switch (dbType)
@@ -1296,7 +1296,7 @@ namespace SharpTimer
 
                 using (var connection = await OpenConnectionAsync())
                 {
-                    await CreatePlayerRecordsTableAsync(connection);
+                    await CreatePlayerStatsTableAsync(connection);
 
                     string selectQuery;
                     DbCommand selectCommand;
@@ -1598,7 +1598,7 @@ namespace SharpTimer
 
                 using (var connection = await OpenConnectionAsync())
                 {
-                    await CreatePlayerRecordsTableAsync(connection);
+                    await CreatePlayerStatsTableAsync(connection);
                     string selectQuery;
                     DbCommand selectCommand;
                     switch (dbType)
