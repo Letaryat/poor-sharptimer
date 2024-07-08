@@ -158,7 +158,7 @@ namespace SharpTimer
         {
             var adMessages = new List<string>() 
             {
-                $"{Localizer["prefix"]} {Localizer["ad_see_all_commands"]}"
+                $"{Localizer["prefix"]} {Localizer["ad_see_all_commands"]}",
                 $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_pb"]}" : "")}",
                 $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_sr"]}" : "")}",
                 $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_top"]}" : "")}",
