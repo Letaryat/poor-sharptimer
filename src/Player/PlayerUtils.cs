@@ -552,8 +552,8 @@ namespace SharpTimer
                 if (enableDb || bonusX != 0)
                     PrintToChatAll($"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] " + (timesFinished != 0 && enableDb ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : ""));
 
-                PrintToChat(player, Localizer["timer_time", newTime, timeDifference]);
-                if (enableStyles) PrintToChat(player, Localizer["timer_style", GetNamedStyle(style)]);
+                PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
+                if (enableStyles) PrintToChatAll(Localizer["timer_style", GetNamedStyle(style)]);
 
                 if (enableReplays == true && enableSRreplayBot == true && newSR && (oldticks > newticks || oldticks == 0))
                 {
