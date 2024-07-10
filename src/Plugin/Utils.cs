@@ -146,8 +146,6 @@ namespace SharpTimer
                     allAdMessages.AddRange(nonEmptyCustomAds);
                 }
 
-                SharpTimerDebug($"Ad message count: {allAdMessages.Count}");
-
                 Server.NextFrame(() => Server.PrintToChatAll($"{ReplaceAdMessagePlaceholders(allAdMessages[new Random().Next(allAdMessages.Count)])}"));
             }, TimerFlags.REPEAT);
 
