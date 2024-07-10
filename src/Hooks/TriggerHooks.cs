@@ -130,8 +130,9 @@ namespace SharpTimer
                 }
 
                 var (validStartBonus, startBonusX) = IsValidStartBonusTriggerName(callerName);
+                var (validStartFakeBonus, fakeBonusX) = IsValidFakeStartBonusTriggerName(callerName);
 
-                if (validStartBonus || totalBonuses.Contains(startBonusX))
+                if (validStartBonus || validStartFakeBonus)
                 {
                     if (!playerTimers[playerSlot].IsTimerBlocked)
                     {
@@ -151,10 +152,10 @@ namespace SharpTimer
                     {
                         InMainMapStartZone = false,
                         InBonusStartZone = true,
-                        CurrentBonusNumber = startBonusX
+                        CurrentBonusNumber = (startBonusX != 0 ? startBonusX : fakeBonusX)
                     };
 
-                    SharpTimerDebug($"Player {playerName} entered Bonus {startBonusX} StartZone");
+                    SharpTimerDebug($"Player {playerName} entered Bonus {(startBonusX != 0 ? startBonusX : fakeBonusX)} StartZone");
                     return HookResult.Continue;
                 }
 

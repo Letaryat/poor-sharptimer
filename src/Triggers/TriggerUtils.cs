@@ -86,6 +86,50 @@ namespace SharpTimer
                 return (false, 0);
             }
         }
+        private (bool valid, int X) IsValidFakeStartBonusTriggerName(string triggerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return (false, 0);
+
+                string[] patterns = [
+                    @"^b([1-9][0-9]?)_start$",
+                    @"^bonus([1-9][0-9]?)_start$",
+                    @"^timer_bonus([1-9][0-9]?)_startzone$"
+                ];
+
+                foreach (var pattern in patterns)
+                {
+                    var match = Regex.Match(triggerName, pattern);
+                    if (match.Success)
+                    {
+                        int X = int.Parse(match.Groups[1].Value);
+                        try
+                        {
+                            if (totalBonuses[X] != 0)
+                            {
+                                return (true, X);
+                            }
+                            else
+                            {
+                                return (false, X);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            return (true, X);
+                        }
+                    }
+                }
+
+                return (false, 0);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidFakeStartBonusTriggerName: {ex.Message}");
+                return (false, 0);
+            }
+        }
 
         private (bool valid, int X) IsValidStageTriggerName(string triggerName)
         {
