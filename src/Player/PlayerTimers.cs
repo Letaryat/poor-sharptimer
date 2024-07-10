@@ -240,7 +240,7 @@ namespace SharpTimer
                                                                                 : Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value.AbsVelocity.X + player.PlayerPawn.Value.AbsVelocity.Y * player.PlayerPawn.Value.AbsVelocity.Y + player.PlayerPawn.Value.AbsVelocity.Z * player.PlayerPawn.Value.AbsVelocity.Z))
                                                                                 .ToString("0000");
 
-                    await SavePlayerStageTimeToDatabase(player, playerStageTicks, prevStage, currentSpeed, playerSteamID, playerName, playerSlot);
+                    if (playerTimers[player.Slot].currentStyle == 0) await SavePlayerStageTimeToDatabase(player, playerStageTicks, prevStage, currentSpeed, playerSteamID, playerName, playerSlot);
 
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     if (playerTimers[playerSlot].CurrentMapStage == stageTrigger || playerTimers[playerSlot] == null) return;

@@ -1132,7 +1132,7 @@ namespace SharpTimer
 
         [ConsoleCommand("css_adminnoclip", "Admin Noclip")]
         [ConsoleCommand("css_adminnc", "Admin Noclip")]
-        [RequiresPermissions("@css/root")]
+        [RequiresPermissions("@css/cheats")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void AdminNoclipCommand(CCSPlayerController? player, CommandInfo command)
         {
