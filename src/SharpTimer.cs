@@ -181,7 +181,7 @@ namespace SharpTimer
                         {
                             if (!player.IsValid || player == null || !IsAllowedPlayer(player)) return;
 
-                            if ((useMySQL || usePostgres) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
+                            if (enableDb && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
                             {
                                 SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
                                 SetFov(player, playerTimers[player.Slot].PlayerFov, true);
@@ -191,7 +191,7 @@ namespace SharpTimer
                         if (spawnOnRespawnPos == true && currentRespawnPos != null)
                             player.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
 
-                        if (enableStyles) setStyle(player, playerTimers[player.Slot].currentStyle);
+                        if (enableStyles && playerTimers[player.Slot] != null) setStyle(player, playerTimers[player.Slot].currentStyle);
 
                         Server.NextFrame(() => InvalidateTimer(player));
                     }
