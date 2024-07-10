@@ -322,6 +322,34 @@ namespace SharpTimer
                 return "Unranked";
             }
         }
+        public async Task<string> GetPlayerStagePlacementWithTotal(CCSPlayerController? player, string steamId, string playerName, int stage, bool getRankImg = false, bool getPlacementOnly = false, int bonusX = 0)
+        {
+            try
+            {
+                if (!IsAllowedClient(player))
+                    return "";
+
+                string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
+
+                int savedPlayerTime = await GetPreviousPlayerStageRecordFromDatabase(player, steamId, currentMapName!, stage, playerName, bonusX);
+
+                if (savedPlayerTime == 0)
+                    return getRankImg ? unrankedIcon : "Unranked";
+
+                Dictionary<string, PlayerRecord> sortedRecords = await GetSortedStageRecordsFromDatabase(stage, 0, bonusX, currentMapNamee);
+
+                int placement = sortedRecords.Count(kv => kv.Value.TimerTicks < savedPlayerTime) + 1;
+                int totalPlayers = sortedRecords.Count;
+                double percentage = (double)placement / totalPlayers * 100;
+
+                return CalculateRankStuff(totalPlayers, placement, percentage, getRankImg, getPlacementOnly);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in GetPlayerStagePlacementWithTotal: {ex}");
+                return "Unranked";
+            }
+        }
 
         public async Task<string> GetPlayerServerPlacement(CCSPlayerController? player, string steamId, string playerName, bool getRankImg = false, bool getPlacementOnly = false, bool getPointsOnly = false)
         {
@@ -559,6 +587,41 @@ namespace SharpTimer
                 {
                     _ = Task.Run(async () => await SpawnReplayBot());
                 }
+            });
+        }
+        public async Task PrintStageTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int stage, int bonusX = 0)
+        {
+            if (!IsAllowedPlayer(player))
+            {
+                SharpTimerError($"Error in PrintStageTimeToChat: Player {playerName} not allowed or not on server anymore");
+                return;
+            }
+
+            string ranking = await GetPlayerStagePlacementWithTotal(player, steamID, playerName, stage, false, true, bonusX);
+
+            bool newSR = GetNumberBeforeSlash(ranking) == 1 && (oldticks > newticks || oldticks == 0);
+            bool beatPB = oldticks > newticks;
+            string newTime = FormatTime(newticks);
+            string timeDifferenceNoCol = "";
+            string timeDifference = "";
+            if (oldticks != 0)
+            {
+                if (discordWebhookEnabled) timeDifferenceNoCol = FormatTimeDifference(newticks, oldticks, true);
+                timeDifference = $"[{FormatTimeDifference(newticks, oldticks)}{ChatColors.White}] ";
+            }
+
+            Server.NextFrame(() =>
+            {
+                if (newSR)
+                {
+                    PrintToChatAll(Localizer["new_stage_server_record", playerName]);
+                    if (srSoundAll) SendCommandToEveryone($"play {srSound}");
+                    else PlaySound(player, srSound);
+                    //TODO: Discord webhook stage sr
+                    //if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
+                }
+
+                PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
             });
         }
 

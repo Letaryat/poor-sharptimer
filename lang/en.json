@@ -15,6 +15,7 @@
   "no_records_available_bonus": "No records available for Bonus {0} on {1}",
   "records_map": "#{0}: {lime}{1} {default}- {2} {lime}{3}",
   "new_server_record": "{lime}{0} {white}set a new SR!",
+  "new_stage_server_record": "{lime}{0} {white}set a new stage record!",
   "new_server_record_bonus": "{lime}{0} {white}set a new Bonus {1} SR!",
   "new_pb_record": "{lime}{0} {white}set a new Map PB!",
   "new_pb_record_bonus": "{lime}{0} {white}set a new Bonus {1} PB!",

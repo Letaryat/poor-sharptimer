@@ -124,6 +124,7 @@ namespace SharpTimer
                         if (isTimerRunning)
                         {
                             playerTimer.TimerTicks++;
+                            if (useStageTriggers) playerTimer.StageTicks++;
                         }
                         else if (isBonusTimerRunning)
                         {

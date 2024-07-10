@@ -175,7 +175,6 @@ namespace SharpTimer
                     }
                     else if (player.IsValid)
                     {
-
                         //specTargets[player.Pawn.Value.EntityHandle.Index] = new CCSPlayerController(player.Handle);
 
                         AddTimer(5.0f, () =>

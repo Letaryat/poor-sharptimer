@@ -1060,6 +1060,7 @@ namespace SharpTimer
                 playerTimers[player.Slot].IsTimerBlocked = false;
                 playerTimers[player.Slot].IsTimerRunning = false;
                 playerTimers[player.Slot].TimerTicks = 0;
+                playerTimers[player.Slot].StageTicks = 0;
                 playerTimers[player.Slot].IsBonusTimerRunning = false;
                 playerTimers[player.Slot].BonusTimerTicks = 0;
                 playerReplays[player.Slot].CurrentPlaybackFrame = 0;
@@ -1355,6 +1356,7 @@ namespace SharpTimer
                 {
                     playerTimers[player.Slot].IsTimerRunning = false;
                     playerTimers[player.Slot].TimerTicks = 0;
+                    playerTimers[player.Slot].StageTicks = 0;
                     playerTimers[player.Slot].IsBonusTimerRunning = false;
                     playerTimers[player.Slot].BonusTimerTicks = 0;
                     playerTimers[player.Slot].IsTimerBlocked = false;
