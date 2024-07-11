@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.0m";
+        public override string ModuleVersion => $"0.3.0n";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -113,6 +113,7 @@ namespace SharpTimer
         public DatabaseType dbType;
         public string dbPath = "";
         public bool enableDb = false;
+        public bool enableStageTimes = true;
         public bool ignoreJSON = false;
         public bool enableReplays = false;
         public bool enableSRreplayBot = false;

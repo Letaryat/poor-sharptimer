@@ -735,11 +735,11 @@ namespace SharpTimer
             }
         }
 
-        public static void SendCommandToEveryone(string command)
+        public void SendCommandToEveryone(string command)
         {
             Utilities.GetPlayers().ForEach(player =>
             {
-                if (player is { IsValid: true })
+                if (player is { IsValid: true } && playerTimers[player.Slot].SoundsEnabled)
                 {
                     player.ExecuteClientCommand(command);
                 }

@@ -1254,7 +1254,7 @@ namespace SharpTimer
                             //dont save stagetimes unless they complete map
                             //if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                             Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} stage {stage} time" : $"stage {stage} time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
-                            if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintStageTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, stage, bonusX)));
+                            if (IsAllowedPlayer(player) && enableStageTimes) Server.NextFrame(() => _ = Task.Run(async () => await PrintStageTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, stage, bonusX)));
                         }
 
                     }
@@ -2664,6 +2664,54 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerError($"Error ImportPlayerPoints to the database: {ex.Message}");
+            }
+        }
+
+        [ConsoleCommand("css_resetpoints", " ")]
+        [RequiresPermissions("@css/root")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+        public void ResetPlayerPointsCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            _ = Task.Run(ResetPlayerPoints);
+        }
+
+        public async Task ResetPlayerPoints()
+        {
+            using (var connection = await OpenConnectionAsync())
+            {
+                try
+                {
+                    await CreatePlayerStatsTableAsync(connection);
+                    string updateQuery;
+                    DbCommand updateCommand;
+                    switch (dbType)
+                    {
+                        case DatabaseType.MySQL:
+                            updateQuery = $@"UPDATE {PlayerStatsTable} SET GlobalPoints = 0";
+                            updateCommand = new MySqlCommand(updateQuery, (MySqlConnection)connection);
+                            break;
+                        case DatabaseType.PostgreSQL:
+                            updateQuery = $@"UPDATE ""{PlayerStatsTable}"" SET ""GlobalPoints"" = 0";
+                            updateCommand = new NpgsqlCommand(updateQuery, (NpgsqlConnection)connection);
+                            break;
+                        case DatabaseType.SQLite:
+                            updateQuery = $@"UPDATE {PlayerStatsTable} SET GlobalPoints = 0";
+                            updateCommand = new SQLiteCommand(updateQuery, (SQLiteConnection)connection);
+                            break;
+                        default:
+                            updateQuery = null;
+                            updateCommand = null;
+                            break;
+                    }
+                    using (updateCommand)
+                    {
+                        await updateCommand.ExecuteNonQueryAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SharpTimerError($"Error in ResetPlayerPoints: {ex.Message}");
+                }
             }
         }
 
