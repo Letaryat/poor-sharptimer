@@ -617,11 +617,10 @@ namespace SharpTimer
                     PrintToChatAll(Localizer["new_stage_server_record", playerName]);
                     if (srSoundAll) SendCommandToEveryone($"play {srSound}");
                     else PlaySound(player, srSound);
+                    PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
                     //TODO: Discord webhook stage sr
                     //if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
                 }
-
-                PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
             });
         }
 

@@ -1148,7 +1148,7 @@ namespace SharpTimer
                                                     PlayerName = VALUES(PlayerName),
                                                     Stage = VALUES(Stage),
                                                     TimerTicks = VALUES(TimerTicks),
-                                                    FormattedTime = VALUES(FormattedTime);
+                                                    FormattedTime = VALUES(FormattedTime),
                                                     Velocity = VALUES(Velocity);
                                                     ";
                                 upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
@@ -1165,7 +1165,7 @@ namespace SharpTimer
                                                     ""PlayerName"" = EXCLUDED.""PlayerName"",
                                                     ""Stage"" = EXCLUDED.""Stage"",
                                                     ""TimerTicks"" = EXCLUDED.""TimerTicks"",
-                                                    ""FormattedTime"" = EXCLUDED.""FormattedTime"";
+                                                    ""FormattedTime"" = EXCLUDED.""FormattedTime"",
                                                     ""Velocity"" = EXCLUDED.""Velocity"";
                                                     ";
                                 upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
@@ -1182,7 +1182,7 @@ namespace SharpTimer
                                                     PlayerName = excluded.PlayerName,
                                                     Stage = excluded.Stage,
                                                     TimerTicks = excluded.TimerTicks,
-                                                    FormattedTime = excluded.FormattedTime;
+                                                    FormattedTime = excluded.FormattedTime,
                                                     Velocity = excluded.Velocity;
                                                     ";
                                 upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
