@@ -62,30 +62,6 @@ namespace SharpTimer
             SharpTimerConPrint("End of Player Timers");
         }
 
-        [ConsoleCommand("css_replay", "Replay command")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void ReplayCommand(CCSPlayerController? player, CommandInfo command)
-        {
-            if (!IsAllowedPlayer(player) || enableReplays == false) return;
-
-            var playerSlot = player!.Slot;
-            var steamID = player.SteamID.ToString();
-            var playerName = player.PlayerName;
-
-            QuietStopTimer(player);
-
-            if (IsTimerBlocked(player))
-                return;
-
-            if (ReplayCheck(player))
-                return;
-
-            PrintToChat(player, Localizer["available_replay_cmds"]);
-            PrintToChat(player, Localizer["replaying_server_record"]);
-
-            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "1"));
-        }
-
         [ConsoleCommand("css_replaypb", "Replay your last pb")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void ReplaySelfCommand(CCSPlayerController? player, CommandInfo command)
@@ -107,6 +83,7 @@ namespace SharpTimer
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "self", steamID, playerName, 0, playerTimers[playerSlot].currentStyle));
         }
 
+        [ConsoleCommand("css_replay", "Replay server map record")]
         [ConsoleCommand("css_replaysr", "Replay server map record")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void ReplaySRCommand(CCSPlayerController? player, CommandInfo command)
@@ -122,6 +99,8 @@ namespace SharpTimer
 
             if (ReplayCheck(player))
                 return;
+
+            PrintToChat(player, Localizer["available_replay_cmds"]);
 
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "1", "69", "unknown", 0, playerTimers[playerSlot].currentStyle));
         }
