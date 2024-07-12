@@ -48,7 +48,6 @@
     "no_replay": "Ingen repetisjon spilles for øyeblikket",
     "end_your_replay": "Avslutt den nåværende reprisen først {lime}!stopreplay",
     "available_replay_cmds": "Tilgjengelig repetisjon kommandoer: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
-    "replaying_server_record": "Spiller av Server Kart Rekord, skriv {lime}!stop eller {lime}!stopreplay {default}for å slutte reprisen",
     "no_sr_replay": "Ingen Server Rekord og spille av",
     "replaying_server_top": "Spiller av Server Top {0}, skriv {lime}!stop eller {lime}!stopreplay {default}for å slutte reprisen",
     "replaying_pb": "Spiller av din PB, skriv {lime}!stop eller {lime}!stopreplay {default}for å slutte reprisen",

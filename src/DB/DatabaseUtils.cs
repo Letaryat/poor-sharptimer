@@ -856,15 +856,15 @@ namespace SharpTimer
                     switch (dbType)
                     {
                         case DatabaseType.MySQL:
-                            selectQuery = @"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectQuery = $@"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                             selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
                             break;
                         case DatabaseType.PostgreSQL:
-                            selectQuery = @"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
+                            selectQuery = $@"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""{PlayerStatsTable}"" WHERE ""SteamID"" = @SteamID";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
                             break;
                         case DatabaseType.SQLite:
-                            selectQuery = @"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectQuery = $@"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                             selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
                             break;
                         default:
@@ -940,13 +940,13 @@ namespace SharpTimer
                             switch (dbType)
                             {
                                 case DatabaseType.MySQL:
-                                    upsertQuery = @"REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) 
+                                    upsertQuery = $@"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) 
                                                         VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
                                     break;
                                 case DatabaseType.PostgreSQL:
-                                    upsertQuery = @"
-                                                    INSERT INTO ""PlayerStats"" 
+                                    upsertQuery = $@"
+                                                    INSERT INTO ""{PlayerStatsTable}"" 
                                                     (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"")
                                                     VALUES 
                                                     (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)
@@ -967,7 +967,7 @@ namespace SharpTimer
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
                                     break;
                                 case DatabaseType.SQLite:
-                                    upsertQuery = @"REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) 
+                                    upsertQuery = $@"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) 
                                                         VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
                                     break;
@@ -1008,15 +1008,15 @@ namespace SharpTimer
                             switch (dbType)
                             {
                                 case DatabaseType.MySQL:
-                                    upsertQuery = @"REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertQuery = $@"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
                                     break;
                                 case DatabaseType.PostgreSQL:
-                                    upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertQuery = $@"INSERT INTO ""{PlayerStatsTable}"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
                                     break;
                                 case DatabaseType.SQLite:
-                                    upsertQuery = @"REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertQuery = $@"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
                                     break;
                                 default:
@@ -1293,15 +1293,15 @@ namespace SharpTimer
                     switch (dbType)
                     {
                         case DatabaseType.MySQL:
-                            selectQuery = "SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectQuery = $"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                             selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
                             break;
                         case DatabaseType.PostgreSQL:
-                            selectQuery = @"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
+                            selectQuery = $@"SELECT ""PlayerName"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"" FROM ""{PlayerStatsTable}"" WHERE ""SteamID"" = @SteamID";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
                             break;
                         case DatabaseType.SQLite:
-                            selectQuery = "SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectQuery = $"SELECT PlayerName, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                             selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
                             break;
                         default:
@@ -1354,12 +1354,12 @@ namespace SharpTimer
                             switch (dbType)
                             {
                                 case DatabaseType.MySQL:
-                                    upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertQuery = $"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
                                     break;
                                 case DatabaseType.PostgreSQL:
-                                    upsertQuery = @"
-                                                    INSERT INTO ""PlayerStats"" 
+                                    upsertQuery = $@"
+                                                    INSERT INTO ""{PlayerStatsTable}"" 
                                                     (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"")
                                                     VALUES 
                                                     (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)
@@ -1380,7 +1380,7 @@ namespace SharpTimer
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
                                     break;
                                 case DatabaseType.SQLite:
-                                    upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertQuery = $"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
                                     break;
                                 default:
@@ -1428,15 +1428,15 @@ namespace SharpTimer
                             switch (dbType)
                             {
                                 case DatabaseType.MySQL:
-                                    upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertQuery = $"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new MySqlCommand(upsertQuery, (MySqlConnection)connection);
                                     break;
                                 case DatabaseType.PostgreSQL:
-                                    upsertQuery = @"INSERT INTO ""PlayerStats"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertQuery = $@"INSERT INTO ""{PlayerStatsTable}"" (""PlayerName"", ""SteamID"", ""TimesConnected"", ""LastConnected"", ""HideTimerHud"", ""HideKeys"", ""HideJS"", ""SoundsEnabled"", ""PlayerFov"", ""IsVip"", ""BigGifID"", ""GlobalPoints"") VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new NpgsqlCommand(upsertQuery, (NpgsqlConnection)connection);
                                     break;
                                 case DatabaseType.SQLite:
-                                    upsertQuery = "REPLACE INTO PlayerStats (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
+                                    upsertQuery = $"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, HideJS, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @HideJS, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints)";
                                     upsertCommand = new SQLiteCommand(upsertQuery, (SQLiteConnection)connection);
                                     break;
                                 default:
@@ -2328,15 +2328,15 @@ namespace SharpTimer
                     switch (dbType)
                     {
                         case DatabaseType.MySQL:
-                            selectQuery = "SELECT GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectQuery = $"SELECT GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                             selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
                             break;
                         case DatabaseType.PostgreSQL:
-                            selectQuery = @"SELECT ""GlobalPoints"" FROM ""PlayerStats"" WHERE ""SteamID"" = @SteamID";
+                            selectQuery = $@"SELECT ""GlobalPoints"" FROM ""{PlayerStatsTable}"" WHERE ""SteamID"" = @SteamID";
                             selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
                             break;
                         case DatabaseType.SQLite:
-                            selectQuery = "SELECT GlobalPoints FROM PlayerStats WHERE SteamID = @SteamID";
+                            selectQuery = $"SELECT GlobalPoints FROM {PlayerStatsTable} WHERE SteamID = @SteamID";
                             selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
                             break;
                         default:
