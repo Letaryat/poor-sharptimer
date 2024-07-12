@@ -244,6 +244,14 @@ namespace SharpTimer
         public string? discordWebhookRareGif;
         public bool discordWebhookPrintSR = false;
         public bool discordWebhookPrintPB = false;
+        public int discordWebhookColor = 13369599;
+        public bool discordWebhookSteamAvatar = true;
+        public bool discordWebhookTier = true;
+        public bool discordWebhookTimeChange = true;
+        public bool discordWebhookTimesFinished = true;
+        public bool discordWebhookPlacement = true;
+        public bool discordWebhookSteamLink = true;
+        public bool discordWebhookDisableStyleRecords = false;
 
         public string? remoteBhopDataSource = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/bhop_.json";
         public string? remoteKZDataSource = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/kz_.json";
