@@ -113,39 +113,6 @@ namespace SharpTimer
 
             RegisterEventHandler<EventRoundStart>((@event, info) =>
             {
-                if (!sqlCheck)
-                {
-                    if (useMySQL)
-                    {
-                        string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
-                        mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
-                        SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
-                        dbType = DatabaseType.MySQL;
-                        dbPath = mySQLpath;
-                        enableDb = true;
-                    }
-                    else if (usePostgres)
-                    {
-                        string postgresConfigFileName = "SharpTimer/postgresConfig.json";
-                        postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
-                        SharpTimerDebug($"Set postgresPath to {postgresPath}");
-                        dbType = DatabaseType.PostgreSQL;
-                        dbPath = postgresPath;
-                        enableDb = true;
-                    }
-                    else
-                    {
-                        SharpTimerDebug($"No db set, defaulting to SQLite");
-                        dbPath = Path.Join(gameDir + "/csgo/cfg", "SharpTimer/database.db");
-                        dbType = DatabaseType.SQLite;
-                        enableDb = true;
-                    }
-                    using (var connection = OpenConnection())
-                    {
-                        ExecuteMigrations(connection);
-                    }
-                    sqlCheck = true;
-                }
                 var mapName = Server.MapName;
                 LoadMapData(mapName);
                 SharpTimerDebug($"Loading MapData on RoundStart...");
@@ -191,13 +158,7 @@ namespace SharpTimer
                         if (spawnOnRespawnPos == true && currentRespawnPos != null)
                             player.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
 
-                        if (playerTimers.Any(x => x.Key == player.Slot))
-                        {
-                            if (enableStyles && playerTimers[player.Slot] != null)
-                            {
-                                setStyle(player, playerTimers[player.Slot].currentStyle);
-                            }
-                        }
+                        if (enableStyles && playerTimers[player.Slot] != null) setStyle(player, playerTimers[player.Slot].currentStyle);
 
                         Server.NextFrame(() => InvalidateTimer(player));
                     }

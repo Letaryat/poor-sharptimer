@@ -912,6 +912,40 @@ namespace SharpTimer
                     stageTriggerPoses.Clear();
 
                     KillServerCommandEnts();
+
+                    if (!sqlCheck)
+                    {
+                        if (useMySQL)
+                        {
+                            string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
+                            mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
+                            SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
+                            dbType = DatabaseType.MySQL;
+                            dbPath = mySQLpath;
+                            enableDb = true;
+                        }
+                        else if (usePostgres)
+                        {
+                            string postgresConfigFileName = "SharpTimer/postgresConfig.json";
+                            postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
+                            SharpTimerDebug($"Set postgresPath to {postgresPath}");
+                            dbType = DatabaseType.PostgreSQL;
+                            dbPath = postgresPath;
+                            enableDb = true;
+                        }
+                        else
+                        {
+                            SharpTimerDebug($"No db set, defaulting to SQLite");
+                            dbPath = Path.Join(gameDir + "/csgo/cfg", "SharpTimer/database.db");
+                            dbType = DatabaseType.SQLite;
+                            enableDb = true;
+                        }
+                        using (var connection = OpenConnection())
+                        {
+                            ExecuteMigrations(connection);
+                        }
+                        sqlCheck = true;
+                    }
                 });
             }
             catch (Exception ex)
