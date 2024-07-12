@@ -48,7 +48,6 @@
   "no_replay": "Brak powtorki!",
   "end_your_replay": "Pierw zakoncz obecna potworke komenda: {lime}!stopreplay",
   "available_replay_cmds": "Komendy zwiazane z powtorkami: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
-  "replaying_server_record": "Odtwarzanie potworki rekordu serwera. Wpisz: {lime}!stop lub {lime}!stopreplay {default}aby wylaczyc powtorke",
   "no_sr_replay": "Brak powtorki z rekordu serwera!",
   "replaying_server_top": "Odtwarzanie powtorki z top serwera {0} wpisz {lime}!stop lub {lime}!stopreplay {default}aby wylaczyc powtorke",
   "replaying_pb": "Odtwarzanie powtorki PB. Wpisz {lime}!stop lub {lime}!stopreplay {default}aby wylaczyc powtorke",

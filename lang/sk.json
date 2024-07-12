@@ -45,7 +45,6 @@
     "no_replay": "Momentálne sa neprehráva žiadne prehrávanie",
     "end_your_replay": "Najprv ukončite svoje aktuálne prehrávanie {lime}!stopreplay",
     "available_replay_cmds": "Dostupné replay príkazy: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{predvolené}",
-    "replaying_server_record": "Pri opakovanom prehrávaní záznamu mapy servera napíšte {lime}!stop alebo {lime}!stopreplay {default} pre ukončenie prehrávania",
     "no_sr_replay": "Žiadny záznam servera na prehratie!",
     "replaying_server_top": "Prehrávanie Top Server Top {0} napíšte {lime}!stop alebo {lime}!stopreplay {default}, aby ste ukončili prehrávanie",
     "replaying_pb": "Prehrávanie PB typu {lime}!stop alebo {lime}!stopreplay {default}, aby ste ukončili prehrávanie",

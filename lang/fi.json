@@ -45,7 +45,6 @@
     "no_replay": "Ei Replay toistoa käynnissä",
     "end_your_replay": "Lopeta tämänhetkinen Replay toistosi ensin {lime}!stopreplay komennolla",
     "available_replay_cmds": "Saatavilla olevat replay komennot: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
-    "replaying_server_record": "Toistetaan Palvelimen Kenttä Ennätyksen Replayta, kirjoita {lime}!stop tai {lime}!stopreplay {default}poistuaksesi toistosta",
     "no_sr_replay": "Ei Palvelin Ennätystä jota toistaa!",
     "replaying_server_top": "Toistetaan Palvelimen Top {0} ajan Replayta, kirjoita {lime}!stop tai {lime}!stopreplay {default}poistuaksesi toistosta",
     "replaying_pb": "Toistetaan Ennätyksesi Replayta, kirjoita {lime}!stop tai {lime}!stopreplay {default}poistuaksesi toistosta",

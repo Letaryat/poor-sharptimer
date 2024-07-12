@@ -48,7 +48,6 @@
   "no_replay": "Ingen Replay spelas just nu",
   "end_your_replay": "Avsluta din nuvarande replay först {lime}!stopreplay",
   "available_replay_cmds": "Tillgängliga replay cmds: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
-  "replaying_server_record": "Uppspelar Server Kartans Rekord, skriv {lime}!stop eller {lime}!stopreplay {default}för att avsluta replay",
   "no_sr_replay": "Inga Server Rekord att spela upp!",
   "replaying_server_top": "Uppspelar Server Top {0} skriv {lime}!stop eller {lime}!stopreplay {default}för att avsluta replay",
   "replaying_pb": "Uppspelar ditt PB skriv {lime}!stop eller {lime}!stopreplay {default}för att avsluta replay",

@@ -48,7 +48,6 @@
   "no_replay": "Pas de replay en cours",
   "end_your_replay": "Terminez d'abord votre replay en cours {lime}!stopreplay",
   "available_replay_cmds": "Commandes de replay disponibles: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
-  "replaying_server_record": "Vous visionnez le record du serveur, Utilisez {lime}!stop ou {lime}!stopreplay {default}pour quitter le replay",
   "no_sr_replay": "Désolé il n'y a pas de replay pour le record du serveur !",
   "replaying_server_top": "Vous visionnez le record Top {0} Utilisez {lime}!stop ou {lime}!stopreplay {default}pour quitter le replay",
   "replaying_pb": "Vous visionnez votre record personnel. Utilisez {lime}!stop ou {lime}!stopreplay {default}pour quitter le replay",
