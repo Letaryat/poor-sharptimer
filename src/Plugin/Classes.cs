@@ -149,6 +149,9 @@ namespace SharpTimer
         public int CurrentMapStage { get; set; }
         public int CurrentMapCheckpoint { get; set; }
         public CCSPlayer_MovementServices? MovementService { get; set; }
+        public double Sync { get; set; }
+        public double SyncAccumulator { get; set; }
+        public int SyncCount { get; set; }
 
         //player settings/stats
         public bool Azerty { get; set; }
@@ -218,9 +221,10 @@ namespace SharpTimer
         public bool LandedFromSound { get; set; }
         public bool LastLandedFromSound { get; set; }
         public int WTicks { get; set; }
-        public List<JumpFrames> jumpFrames { get; set; } = [];
 
-        public class JumpFrames
+        public List<IFrame> jumpFrames { get; set; } = new List<IFrame>();
+        public List<IFrame> timerSyncFrames { get; set; } = new List<IFrame>();
+        public class IFrame
         {
             public string? PositionString { get; set; }
             public string? RotationString { get; set; }

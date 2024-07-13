@@ -137,6 +137,8 @@ namespace SharpTimer
 
         public bool keysOverlayEnabled = true;
         public bool hudOverlayEnabled = true;
+        public bool VelocityHudEnabled = true;
+        public bool StrafeHudEnabled = true;
 
         public bool topEnabled = true;
         public bool rankEnabled = true;
