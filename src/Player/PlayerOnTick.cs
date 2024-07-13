@@ -305,7 +305,7 @@ namespace SharpTimer
                      ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
                      $"🏆 {playerTimer.CachedPB} " +
                      $"({playerTimer.CachedMapPlacement})" +
-                     $"{(RankIconsEnabled ? $" |</font>{playerTimer.RankHUDIcon}<font class='fontSize-s stratum-bold-italic' color='gray'>" : "")}" +
+                     $"{(RankIconsEnabled ? $" |</font> <img src='{playerTimer.RankHUDIcon}'><font class='fontSize-s stratum-bold-italic' color='gray'>" : "")}" +
                      $"{(enableStyles ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")}" +
                      $"{(currentMapTier != null ? $" | Tier: {currentMapTier}" : "")}" +
                      $"{(currentMapType != null ? $" | {currentMapType}" : "")}" +

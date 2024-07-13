@@ -8,7 +8,7 @@
     "title": "[Bronze]",
     "percent": 100,
     "color": "{lightyellow}",
-    "icon": "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/bronze.png"
+    "icon": "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/dev/remote_data/rank_icons/bronze.png"
   },
   "Rank2": {
     "title": "[Silver]",
