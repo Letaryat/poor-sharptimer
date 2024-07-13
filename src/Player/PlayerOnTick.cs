@@ -303,10 +303,10 @@ namespace SharpTimer
         {
            return !playerTimer.IsReplaying
                      ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
-                     $"🏆 {playerTimer.CachedPB} " + 
-                     $"({playerTimer.CachedMapPlacement}) | </font>" + 
-                     $"{playerTimer.RankHUDIcon} <font class='fontSize-s stratum-bold-italic' color='gray'>" +
-                     $" | {GetNamedStyle(playerTimer.currentStyle)}" +
+                     $"🏆 {playerTimer.CachedPB} " +
+                     $"({playerTimer.CachedMapPlacement})" +
+                     $"{(RankIconsEnabled ? $" |</font>{playerTimer.RankHUDIcon}<font class='fontSize-s stratum-bold-italic' color='gray'>" : "")}" +
+                     $"{(enableStyles ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")}" +
                      $"{(currentMapTier != null ? $" | Tier: {currentMapTier}" : "")}" +
                      $"{(currentMapType != null ? $" | {currentMapType}" : "")}" +
                      $"{((currentMapType == null && currentMapTier == null) ? $" | {currentMapName} " : "")} </font>"
@@ -326,7 +326,7 @@ namespace SharpTimer
                           $"🏆 {(cachedBonusInfo.Value != null ? $"{FormatTime(cachedBonusInfo.Value.PbTicks)}" : "Unranked")}" +
                           $"{(cachedBonusInfo.Value != null ? $" ({cachedBonusInfo.Value.Placement})" : "")}</font>" +
                           $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
-                          $" | {GetNamedStyle(playerTimer.currentStyle)}" +
+                          $"{(enableStyles ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")}" +
                           $" | Bonus #{currentBonusNumber} </font>"
                         : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
             }

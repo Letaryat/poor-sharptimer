@@ -146,7 +146,7 @@ namespace SharpTimer
                     allAdMessages.AddRange(nonEmptyCustomAds);
                 }
 
-                Server.NextFrame(() => Server.PrintToChatAll($"{ReplaceAdMessagePlaceholders(allAdMessages[new Random().Next(allAdMessages.Count)])}"));
+                Server.NextFrame(() => Server.PrintToChatAll($"{ReplaceVars(allAdMessages[new Random().Next(allAdMessages.Count)])}"));
             }, TimerFlags.REPEAT);
 
             isADMessagesTimerRunning = true;
@@ -181,7 +181,7 @@ namespace SharpTimer
             return adMessages;
         }
 
-        private string ReplaceAdMessagePlaceholders(string message)
+        private string ReplaceVars(string message)
         {
             var replacements = new Dictionary<string, string>
             {
@@ -317,36 +317,6 @@ namespace SharpTimer
 
             double points = basePoints / (timerTicks * timeFactor);
             return points * tierMult * styleMult;
-        }
-
-        static string ReplaceVars(string loc_string, params string[] args)
-        {
-            return string.Format(loc_string, args);
-        }
-
-        static string ParsePrefixColors(string input)
-        {
-            Dictionary<string, string> colorNameSymbolMap = new(StringComparer.OrdinalIgnoreCase)
-             {
-                 { "{white}", "" },
-                 { "{darkred}", "" },
-                 { "{purple}", "" },
-                 { "{olive}", "" },
-                 { "{lime}", "" },
-                 { "{green}", "" },
-                 { "{red}", "" },
-                 { "{grey}", "" },
-                 { "{orange}", "" },
-                 { "{lightpurple}", "" },
-                 { "{lightred}", "" }
-             };
-
-            foreach (var entry in colorNameSymbolMap)
-            {
-                input = input.Replace(entry.Key, entry.Value.ToString());
-            }
-
-            return input;
         }
 
         string ParseColorToSymbol(string input)
@@ -974,6 +944,9 @@ namespace SharpTimer
                 string discordConfigFileName = "SharpTimer/discordConfig.json";
                 string discordCFGpath = Path.Join(gameDir + "/csgo/cfg", discordConfigFileName);
 
+                string ranksFileName = $"SharpTimer/ranks.json";
+                string ranksPath = Path.Join(gameDir + "/csgo/cfg", ranksFileName);
+
                 string mapdataFileName = $"SharpTimer/MapData/{currentMapName}.json";
                 string mapdataPath = Path.Join(gameDir + "/csgo/cfg", mapdataFileName);
 
@@ -1089,6 +1062,86 @@ namespace SharpTimer
                 _ = Task.Run(async () => await GetDiscordWebhookURLFromConfigFile(discordCFGpath));
 
                 primaryChatColor = ParseColorToSymbol(primaryHUDcolor);
+
+                using JsonDocument? ranksJsonDocument = LoadJsonOnMainThread(ranksPath);
+                if (ranksJsonDocument != null)
+                {
+                    SharpTimerDebug($"Ranks json found!");
+                    JsonElement root = ranksJsonDocument.RootElement;
+
+                    if (root.TryGetProperty("Unranked", out JsonElement UnrankedElement))
+                    {
+                        UnrankedTitle = UnrankedElement.GetProperty("title").GetString();
+                        UnrankedColor = UnrankedElement.GetProperty("color").GetString();
+                        UnrankedIcon = UnrankedElement.GetProperty("icon").GetString();
+                    }
+
+                    string[] rankTitles = new string[9];
+                    double[] rankPercents = new double[9];
+                    string[] rankColors = new string[9];
+                    string[] rankIcons = new string[9];
+
+                    for (int i = 1; i <= 9; i++)
+                    {
+                        string rankName = $"Rank{i}";
+                        if (root.TryGetProperty(rankName, out JsonElement rankElement))
+                        {
+                            rankTitles[i - 1] = rankElement.GetProperty("title").GetString();
+                            rankPercents[i - 1] = rankElement.GetProperty("percent").GetDouble();
+                            rankColors[i - 1] = rankElement.GetProperty("color").GetString();
+                            rankIcons[i - 1] = rankElement.GetProperty("icon").GetString();
+                        }
+                    }
+
+                    Rank1Title = rankTitles[0];
+                    Rank1Percent = rankPercents[0];
+                    Rank1Color = rankColors[0];
+                    Rank1Icon = rankIcons[0];
+
+                    Rank2Title = rankTitles[1];
+                    Rank2Percent = rankPercents[1];
+                    Rank2Color = rankColors[1];
+                    Rank2Icon = rankIcons[1];
+
+                    Rank3Title = rankTitles[2];
+                    Rank3Percent = rankPercents[2];
+                    Rank3Color = rankColors[2];
+                    Rank3Icon = rankIcons[2];
+
+                    Rank4Title = rankTitles[3];
+                    Rank4Percent = rankPercents[3];
+                    Rank4Color = rankColors[3];
+                    Rank4Icon = rankIcons[3];
+
+                    Rank5Title = rankTitles[4];
+                    Rank5Percent = rankPercents[4];
+                    Rank5Color = rankColors[4];
+                    Rank5Icon = rankIcons[4];
+
+                    Rank6Title = rankTitles[5];
+                    Rank6Percent = rankPercents[5];
+                    Rank6Color = rankColors[5];
+                    Rank6Icon = rankIcons[5];
+
+                    Rank7Title = rankTitles[6];
+                    Rank7Percent = rankPercents[6];
+                    Rank7Color = rankColors[6];
+                    Rank7Icon = rankIcons[6];
+
+                    Rank8Title = rankTitles[7];
+                    Rank8Percent = rankPercents[7];
+                    Rank8Color = rankColors[7];
+                    Rank8Icon = rankIcons[7];
+
+                    Rank9Title = rankTitles[8];
+                    Rank9Percent = rankPercents[8];
+                    Rank9Color = rankColors[8];
+                    Rank9Icon = rankIcons[8];
+                }
+                else
+                {
+                    SharpTimerError($"Ranks json was null");
+                }
 
                 SharpTimerConPrint($"Trying to find Map data json for map: {currentMapName}!");
                 //Bonus fake zone check
@@ -1461,17 +1514,19 @@ namespace SharpTimer
         public string RemovePlayerTags(string input)
         {
             string originalTag = input;
-            string[] playerTagsToRemove = [   $"[{customVIPTag}]",
-                                                "[Unranked]",
-                                                "[Silver I]", "[Silver II]", "[Silver III]",
-                                                "[Gold I]", "[Gold II]", "[Gold III]",
-                                                "[Platinum I]", "[Platinum II]", "[Platinum III]",
-                                                "[Diamond I]", "[Diamond II]", "[Diamond III]",
-                                                "[Master I]", "[Master II]", "[Master III]",
-                                                "[Legend I]", "[Legend II]", "[Legend III]",
-                                                "[Royalty I]", "[Royalty II]", "[Royalty III]",
-                                                "[God I]", "[God II]", "[God III]"
-                                            ];
+            string[] playerTagsToRemove = [
+                $"{customVIPTag}",
+                $"{UnrankedTitle}",
+                $"{Rank1Title}",
+                $"{Rank2Title}",
+                $"{Rank3Title}",
+                $"{Rank4Title}",
+                $"{Rank5Title}",
+                $"{Rank6Title}",
+                $"{Rank7Title}",
+                $"{Rank8Title}",
+                $"{Rank9Title}"
+            ];
 
             if (!string.IsNullOrEmpty(input))
             {
