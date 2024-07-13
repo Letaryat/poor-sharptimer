@@ -178,16 +178,16 @@ namespace SharpTimer
                 return HookResult.Continue;
             else
             {
-                char rankColor = GetRankColorForChat(player);
+                string rankColor = GetRankColorForChat(player);
 
                 if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? value))
                 {
                     string deadText = player.PawnIsAlive ? "" : $"{ChatColors.Grey}*DEAD* ";
-                    string vipText = (value.IsVip ? $"{ChatColors.Magenta}[{customVIPTag}] " : "");
+                    string vipText = (value.IsVip ? $"{ChatColors.Magenta}{customVIPTag} " : "");
                     if (player.Team == CsTeam.Terrorist)
-                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}[{value.CachedRank}] {ChatColors.ForTeam(CsTeam.Terrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.Terrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
                     if (player.Team == CsTeam.CounterTerrorist)
-                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}[{value.CachedRank}] {ChatColors.ForTeam(CsTeam.CounterTerrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.CounterTerrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
                     if (player.Team == CsTeam.Spectator)
                         Server.PrintToChatAll($" {ChatColors.Grey}*SPEC* {ChatColors.ForTeam(CsTeam.Spectator)}{player.PlayerName} {ChatColors.Default}: {msg}");
                     if (player.Team == CsTeam.None)
