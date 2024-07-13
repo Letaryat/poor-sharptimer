@@ -288,16 +288,16 @@ namespace SharpTimer
         public double Rank1Percent = 100;
 
         public bool RankIconsEnabled;
-        public static string Rank9Icon = "<img src='https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons_new/god.gif' class=''>";
-        public static string Rank8Icon = "<img src='https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons_new/royalty.png' class=''>";
-        public static string Rank7Icon = "<img src='https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons_new/legend.png' class=''>";
-        public static string Rank6Icon = "<img src='https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons_new/master.png' class=''>";
-        public static string Rank5Icon = "<img src='https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons_new/diamond.png' class=''>";
-        public static string Rank4Icon = "<img src='https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons_new/platinum.png' class=''>";
-        public static string Rank3Icon = "<img src='https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons_new/gold.png' class=''>";
-        public static string Rank2Icon = "<img src='https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons_new/silver.png' class=''>";
-        public static string Rank1Icon = "<img src='https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons_new/bronze.png' class=''>";
-        public static string UnrankedIcon = "<img src='https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons_new/unranked.png' class=''>";
+        public static string Rank9Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/god.gif";
+        public static string Rank8Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/royal3.png>";
+        public static string Rank7Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/legend3.png>";
+        public static string Rank6Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/master3.png>";
+        public static string Rank5Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/dia3.png>";
+        public static string Rank4Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/plat3.png>";
+        public static string Rank3Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/gold3.png";
+        public static string Rank2Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/silver3.png";
+        public static string Rank1Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/dev/remote_data/rank_icons/bronze.png";
+        public static string UnrankedIcon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/unranked.png";
 
         public struct WeaponSpeedStats
         {
