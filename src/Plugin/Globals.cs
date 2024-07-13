@@ -53,7 +53,6 @@ namespace SharpTimer
         public string secondaryHUDcolor = "orange";
         public string tertiaryHUDcolor = "white";
         public string primaryChatColor = "";
-        public char NewLine = '\u2029';
         public string startBeamColor = "";
         public string endBeamColor = "";
         public bool beamColorOverride = false;
@@ -142,7 +141,6 @@ namespace SharpTimer
         public bool topEnabled = true;
         public bool rankEnabled = true;
         public bool helpEnabled = true;
-        public bool alternativeSpeedometer = false;
         public bool startzoneJumping = true;
         public bool spawnOnRespawnPos = false;
         public bool enableNoclip = false;
@@ -187,7 +185,6 @@ namespace SharpTimer
         public int cmdCooldown = 64;
         public float fakeTriggerHeight = 50;
         public bool Box3DZones = false;
-        public int altVeloMaxSpeed = 3000;
         public bool forcePlayerSpeedEnabled = false;
         public float forcedPlayerSpeed = 250;
         public int bhopBlockTime = 16;

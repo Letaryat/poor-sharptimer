@@ -684,32 +684,6 @@ namespace SharpTimer
             cpOnlyWhenTimerStopped = bool.TryParse(args, out bool cpOnlyWhenTimerStoppedValue) ? cpOnlyWhenTimerStoppedValue : args != "0" && cpOnlyWhenTimerStopped;
         }
 
-        [ConsoleCommand("sharptimer_velo_bar_enabled", "Whether the alternative speedometer is enabled by default or not. Default value: false")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerAltVeloConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            alternativeSpeedometer = bool.TryParse(args, out bool alternativeSpeedometerValue) ? alternativeSpeedometerValue : args != "0" && alternativeSpeedometer;
-        }
-
-        [ConsoleCommand("sharptimer_velo_bar_max_speed", "The alternative speedometer max speed. Default value: 3000")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerAltVeloMaxSpeedConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            if (int.TryParse(args, out int interval) && interval > 0)
-            {
-                altVeloMaxSpeed = interval;
-                SharpTimerConPrint($"SharpTimer Alternative Velo Max Speed set to {interval} units/s.");
-            }
-            else
-            {
-                SharpTimerConPrint("Invalid Alternative Velo Max Speed. Please provide a positive integer.");
-            }
-        }
-
         /* ad messages */
         [ConsoleCommand("sharptimer_ad_sr_enabled", "Whether to print sr message or not. Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]

@@ -319,31 +319,6 @@ namespace SharpTimer
             return points * tierMult * styleMult;
         }
 
-        static string ParsePrefixColors(string input)
-        {
-            Dictionary<string, string> colorNameSymbolMap = new(StringComparer.OrdinalIgnoreCase)
-             {
-                 { "{white}", "" },
-                 { "{darkred}", "" },
-                 { "{purple}", "" },
-                 { "{olive}", "" },
-                 { "{lime}", "" },
-                 { "{green}", "" },
-                 { "{red}", "" },
-                 { "{grey}", "" },
-                 { "{orange}", "" },
-                 { "{lightpurple}", "" },
-                 { "{lightred}", "" }
-             };
-
-            foreach (var entry in colorNameSymbolMap)
-            {
-                input = input.Replace(entry.Key, entry.Value.ToString());
-            }
-
-            return input;
-        }
-
         string ParseColorToSymbol(string input)
         {
             Dictionary<string, string> colorNameSymbolMap = new(StringComparer.OrdinalIgnoreCase)
