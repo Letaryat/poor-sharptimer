@@ -137,6 +137,11 @@ namespace SharpTimer
 
         public bool keysOverlayEnabled = true;
         public bool hudOverlayEnabled = true;
+        public bool VelocityHudEnabled = true;
+        public bool StrafeHudEnabled = true;
+        public bool MapTierHudEnabled = true;
+        public bool MapTypeHudEnabled = true;
+        public bool MapNameHudEnabled = true;
 
         public bool topEnabled = true;
         public bool rankEnabled = true;

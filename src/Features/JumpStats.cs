@@ -156,7 +156,7 @@ namespace SharpTimer
         {
             try
             {
-                var LastJumpFrame = playerJumpStat.jumpFrames.Count != 0 ? playerJumpStat.jumpFrames.Last() : new PlayerJumpStats.JumpFrames
+                var LastJumpFrame = playerJumpStat.jumpFrames.Count != 0 ? playerJumpStat.jumpFrames.Last() : new PlayerJumpStats.IFrame
                 {
                     PositionString = $" ",
                     SpeedString = $" ",
@@ -192,7 +192,7 @@ namespace SharpTimer
                 else
                     maxSpeed = LastJumpFrame?.MaxSpeed ?? 0;
 
-                var JumpFrame = new PlayerJumpStats.JumpFrames
+                var JumpFrame = new PlayerJumpStats.IFrame
                 {
                     PositionString = $"{playerpos.X} {playerpos.Y} {playerpos.Z}",
                     SpeedString = $"{velocity.X} {velocity.Y} {velocity.Z}",
@@ -209,6 +209,76 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerDebug($"Exception in OnJumpStatTickInAir: {ex}");
+            }
+        }
+
+        public void OnSyncTick(CCSPlayerController player, PlayerJumpStats playerJumpStat, PlayerButtons? buttons, Vector playerpos, Vector velocity, QAngle eyeangle)
+        {
+            try
+            {
+                var LastJumpFrame = playerJumpStat.timerSyncFrames.Count != 0 ? playerJumpStat.timerSyncFrames.Last() : new PlayerJumpStats.IFrame
+                {
+                    PositionString = $" ",
+                    SpeedString = $" ",
+                    LastLeft = false,
+                    LastRight = false,
+                    LastLeftRight = false,
+                    MaxHeight = 0,
+                    MaxSpeed = 0
+                };
+
+                bool left = false;
+                bool right = false;
+                bool leftRight = false;
+                if ((buttons & PlayerButtons.Moveleft) != 0 && (buttons & PlayerButtons.Moveright) != 0)
+                    leftRight = true;
+                else if ((buttons & PlayerButtons.Moveleft) != 0)
+                    left = true;
+                else if ((buttons & PlayerButtons.Moveright) != 0)
+                    right = true;
+                else return;
+
+                double maxSpeed;
+                if (velocity.Length2D() > LastJumpFrame!.MaxSpeed)
+                    maxSpeed = velocity.Length2D();
+                else
+                    maxSpeed = LastJumpFrame?.MaxSpeed ?? 0;
+
+                var JumpFrame = new PlayerJumpStats.IFrame
+                {
+                    PositionString = $"{playerpos.X} {playerpos.Y} {playerpos.Z}",
+                    SpeedString = $"{velocity.X} {velocity.Y} {velocity.Z}",
+                    RotationString = $"{eyeangle.X} {eyeangle.Y} {eyeangle.Z}",
+                    LastLeft = left,
+                    LastRight = right,
+                    LastLeftRight = leftRight,
+                    MaxSpeed = maxSpeed
+                };
+
+                playerJumpStat.timerSyncFrames.Add(JumpFrame);
+
+                var (lStrafes, lSync, lFrames) = CountLeftGroupsAndSync(playerJumpStats[player.Slot], true);
+                var (rStrafes, rSync, rFrames) = CountRightGroupsAndSync(playerJumpStats[player.Slot], true);
+                int strafes = rStrafes + lStrafes;
+                int strafeFrames = rFrames + lFrames;
+                int syncedFrames = rSync + lSync;
+                double sync = (strafeFrames != 0) ? Math.Round(syncedFrames * 100f / strafeFrames) : 0;
+
+                // Update the sync accumulator and count
+                playerTimers[player.Slot].SyncAccumulator += sync;
+                playerTimers[player.Slot].SyncCount++;
+
+                // Calculate the new average sync
+                playerTimers[player.Slot].Sync = Math.Round(playerTimers[player.Slot].SyncAccumulator / playerTimers[player.Slot].SyncCount, 0);
+                // Clear the timerSyncFrames if they are too many
+                if (playerJumpStats[player.Slot].timerSyncFrames.Count > 100)
+                {
+                    playerJumpStats[player.Slot].timerSyncFrames.Clear();
+                }
+            }
+            catch (Exception ex)
+            {
+                SharpTimerDebug($"Exception in OnSyncTick: {ex}");
             }
         }
 
@@ -267,7 +337,7 @@ namespace SharpTimer
             }
         }
 
-        public static (int lastLeftGroups, int leftSync, int leftFrames) CountLeftGroupsAndSync(PlayerJumpStats playerJumpStat)
+        public static (int lastLeftGroups, int leftSync, int leftFrames) CountLeftGroupsAndSync(PlayerJumpStats playerJumpStat, bool timersync)
         {
             int lastLeftGroups = 0;
             int leftSync = 0;
@@ -275,7 +345,8 @@ namespace SharpTimer
             bool inGroup = false;
             QAngle previousRotation = null!;
 
-            foreach (var frame in playerJumpStat.jumpFrames)
+            var frames = timersync ? playerJumpStat.timerSyncFrames : playerJumpStat.jumpFrames;
+            foreach (var frame in frames)
             {
                 if (frame.LastLeftRight || frame.LastRight)
                 {
@@ -299,7 +370,7 @@ namespace SharpTimer
             return (lastLeftGroups, leftSync, leftFrames);
         }
 
-        public static (int lastRightGroups, int rightSync, int rightFrames) CountRightGroupsAndSync(PlayerJumpStats playerJumpStat)
+        public static (int lastRightGroups, int rightSync, int rightFrames) CountRightGroupsAndSync(PlayerJumpStats playerJumpStat, bool timersync)
         {
             int lastRightGroups = 0;
             int rightSync = 0;
@@ -307,7 +378,8 @@ namespace SharpTimer
             bool inGroup = false;
             QAngle previousRotation = null!;
 
-            foreach (var frame in playerJumpStat.jumpFrames)
+            var frames = timersync ? playerJumpStat.timerSyncFrames : playerJumpStat.jumpFrames;
+            foreach (var frame in frames)
             {
                 if (frame.LastLeftRight || frame.LastLeft)
                 {
@@ -384,8 +456,8 @@ namespace SharpTimer
 
             char color = GetJSColor(distance);
 
-            var (lStrafes, lSync, lFrames) = CountLeftGroupsAndSync(playerJumpStat);
-            var (rStrafes, rSync, rFrames) = CountRightGroupsAndSync(playerJumpStat);
+            var (lStrafes, lSync, lFrames) = CountLeftGroupsAndSync(playerJumpStat, false);
+            var (rStrafes, rSync, rFrames) = CountRightGroupsAndSync(playerJumpStat, false);
 
             int strafes = rStrafes + lStrafes;
             int strafeFrames = rFrames + lFrames;

@@ -291,6 +291,51 @@ namespace SharpTimer
             RankIconsEnabled = bool.TryParse(args, out bool rankIconsEnabledValue) ? rankIconsEnabledValue : args != "0" && RankIconsEnabled;
         }
 
+        [ConsoleCommand("sharptimer_enable_velocity_hud", "If Speed Velocity Hud should be globally enabled or not. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerVelocityHUDConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            VelocityHudEnabled = bool.TryParse(args, out bool VelocityHudValue) ? VelocityHudValue : args != "0" && VelocityHudEnabled;
+        }
+
+        [ConsoleCommand("sharptimer_enable_strafesync_hud", "If Stafe Sync % Hud should be globally enabled or not. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerStrafeHUDConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            StrafeHudEnabled = bool.TryParse(args, out bool StrafeHudValue) ? StrafeHudValue : args != "0" && StrafeHudEnabled;
+        }
+
+        [ConsoleCommand("sharptimer_enable_map_tier_hud", "If Map Tier Hud should be globally enabled or not. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerMapTierHUDConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            MapTierHudEnabled = bool.TryParse(args, out bool MapTierHudValue) ? MapTierHudValue : args != "0" && MapTierHudEnabled;
+        }
+
+        [ConsoleCommand("sharptimer_enable_map_type_hud", "If Map Type Hud should be globally enabled or not. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerMapTypeHUDConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            MapTypeHudEnabled = bool.TryParse(args, out bool MapTypeHudValue) ? MapTypeHudValue : args != "0" && MapTypeHudEnabled;
+        }
+
+        [ConsoleCommand("sharptimer_enable_map_name_hud", "If Map Name Hud should be globally enabled or not. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerMapNameHUDConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            MapNameHudEnabled = bool.TryParse(args, out bool MapNameHudValue) ? MapNameHudValue : args != "0" && MapNameHudEnabled;
+        }
+
         [ConsoleCommand("sharptimer_debug_enabled", "Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerConPrintConvar(CCSPlayerController? player, CommandInfo command)

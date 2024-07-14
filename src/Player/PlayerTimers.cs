@@ -29,34 +29,27 @@ namespace SharpTimer
             if (bonusX != 0)
             {
                 if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Starting Bonus Timer for {player!.PlayerName}");
-
-                // Remove checkpoints for the current player
-                playerCheckpoints.Remove(player!.Slot);
-
                 playerTimers[player.Slot].IsTimerRunning = false;
-                playerTimers[player.Slot].TimerTicks = 0;
-
                 playerTimers[player.Slot].IsBonusTimerRunning = true;
-                playerTimers[player.Slot].BonusTimerTicks = 0;
-                playerTimers[player.Slot].BonusStage = bonusX;
             }
             else
             {
                 if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Starting Timer for {player!.PlayerName}");
-
-                // Remove checkpoints for the current player
-                playerCheckpoints.Remove(player!.Slot);
-
                 playerTimers[player.Slot].IsTimerRunning = true;
-                playerTimers[player.Slot].TimerTicks = 0;
-
                 playerTimers[player.Slot].IsBonusTimerRunning = false;
-                playerTimers[player.Slot].BonusTimerTicks = 0;
-                playerTimers[player.Slot].BonusStage = bonusX;
             }
+
+            playerCheckpoints.Remove(player!.Slot);
+            playerTimers[player.Slot].TimerTicks = 0;
+            playerTimers[player.Slot].BonusStage = bonusX;
+            playerTimers[player.Slot].BonusTimerTicks = 0;
 
             playerTimers[player.Slot].IsRecordingReplay = true;
 
+            playerJumpStats[player.Slot].timerSyncFrames.Clear();
+            playerTimers[player.Slot].SyncAccumulator = 0;
+            playerTimers[player.Slot].SyncCount = 0;
+            playerTimers[player.Slot].Sync = 0;
         }
 
         public void OnTimerStop(CCSPlayerController? player)
