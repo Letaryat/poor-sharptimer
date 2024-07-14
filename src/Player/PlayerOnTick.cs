@@ -314,9 +314,9 @@ namespace SharpTimer
                           $"({playerTimer.CachedMapPlacement})" +
                           $"{(RankIconsEnabled ? $" |</font> <img src='{playerTimer.RankHUDIcon}'><font class='fontSize-s stratum-bold-italic' color='gray'>" : "")}" +
                           $"{(enableStyles ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")}" +
-                          $"{(currentMapTier != null ? $" | Tier: {currentMapTier}" : "")}" +
-                          $"{(currentMapType != null ? $" | {currentMapType}" : "")}" +
-                          $"{((currentMapType == null && currentMapTier == null) ? $" | {currentMapName}" : "")}" +
+                          $"{((MapTierHudEnabled && currentMapTier != null) ? $" | Tier: {currentMapTier}" : "")}" +
+                          $"{((MapTypeHudEnabled && currentMapType != null) ? $" | {currentMapType}" : "")}" +
+                          $"{((MapNameHudEnabled && currentMapType == null && currentMapTier == null) ? $" | {currentMapName}" : "")}" +
                           $"</font>"
 
                         : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
