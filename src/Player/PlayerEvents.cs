@@ -54,12 +54,12 @@ namespace SharpTimer
                 {
                     connectedPlayers[playerSlot] = new CCSPlayerController(player.Handle);
                     playerTimers[playerSlot] = new PlayerTimerInfo();
+                    playerJumpStats[playerSlot] = new PlayerJumpStats();
                     if (enableReplays) playerReplays[playerSlot] = new PlayerReplays();
                     playerTimers[playerSlot].MovementService = new CCSPlayer_MovementServices(player.PlayerPawn.Value.MovementServices!.Handle);
                     playerTimers[playerSlot].StageTimes = new Dictionary<int, int>();
                     playerTimers[playerSlot].StageVelos = new Dictionary<int, string>();
                     if (AdminManager.PlayerHasPermissions(player, "@css/root")) playerTimers[playerSlot].ZoneToolWire = new Dictionary<int, CBeam>();
-                    if (jumpStatsEnabled) playerJumpStats[playerSlot] = new PlayerJumpStats();
                     playerTimers[playerSlot].CurrentMapStage = 0;
                     playerTimers[playerSlot].CurrentMapCheckpoint = 0;
                     SetNormalStyle(player);
