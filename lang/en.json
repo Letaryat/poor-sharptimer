@@ -108,7 +108,7 @@
   "ad_replay_bonus_pb": "Type {primary}!replaybonuspb <bonus #> (or !replaybpb){default} to watch a replay of your personal best run on a bonus stage{default}!",
   "ad_points": "Type {primary}!points{default} to see the top 10 players with the most points!",
   "ad_respawn": "Type {primary}!r{default} to respawn back to start!",
-  "ad_start_pos": "Type {primary}!setresp (or !startpos){default} to to save a custom respawn point within the start trigger!",
+  "ad_start_pos": "Type {primary}!setresp (or !startpos){default} to save a custom respawn point within the start trigger!",
   "ad_top": "Type {primary}!top{default} to see the top 10 players on {primary}{current_map}{default}!",
   "ad_rank": "Type {primary}!rank{default} to see your current PB and Rank!",
   "ad_save_loc": "Type {primary}!saveloc{default} to save a new loc!",
