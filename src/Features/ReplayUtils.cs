@@ -16,8 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using System.Text.Json;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
+using CounterStrikeSharp.API.Modules.Entities;
 
 namespace SharpTimer
 {
@@ -270,6 +272,7 @@ namespace SharpTimer
                 Server.NextFrame(() =>
                 {
                     startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = false;
+
                     foreach (CCSPlayerController bot in connectedReplayBots.Values.ToList())
                     {
                         if (bot != null)
@@ -279,29 +282,29 @@ namespace SharpTimer
                         }
                     }
 
-                    Server.ExecuteCommand("sv_cheats 1");
                     Server.ExecuteCommand("bot_kick");
                     Server.ExecuteCommand("bot_quota_mode fill");
                     Server.ExecuteCommand("bot_quota 1");
+                    Server.ExecuteCommand("sv_hibernate_when_empty 0");
+                    Server.ExecuteCommand("bot_join_after_player 0");
                     Server.ExecuteCommand("bot_join_team CT");
                     Server.ExecuteCommand("bot_add_ct");
-                    Server.ExecuteCommand("bot_stop 1");
                     Server.ExecuteCommand("bot_controllable 0");
-                    Server.ExecuteCommand("sv_cheats 0");
 
                     AddTimer(3.0f, () =>
                     {
-                        bool foundBot = false;
+                        foundReplayBot = false;
                         SharpTimerDebug($"Trying to find replay bot!");
                         var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
 
                         foreach (var tempPlayer in playerEntities)
                         {
-                            if (tempPlayer == null || !tempPlayer.IsValid || !tempPlayer.IsBot || tempPlayer.IsHLTV) continue;
+                            if (tempPlayer == null || !tempPlayer.IsValid || !tempPlayer.IsBot || tempPlayer.IsHLTV)
+                                continue;
 
                             if (tempPlayer.UserId.HasValue)
                             {
-                                if (foundBot == true)
+                                if (foundReplayBot == true)
                                 {
                                     OnPlayerDisconnect(tempPlayer, true);
                                     Server.ExecuteCommand($"kickid {tempPlayer.Slot}");
@@ -312,9 +315,14 @@ namespace SharpTimer
                                     SharpTimerDebug($"Found replay bot!");
                                     OnReplayBotConnect(tempPlayer);
                                     tempPlayer.PlayerPawn.Value!.Bot!.IsSleeping = true;
-                                    tempPlayer.PlayerPawn.Value!.Bot!.AllowActive = false;
+                                    tempPlayer.PlayerPawn.Value!.Bot!.AllowActive = true;
                                     tempPlayer.RemoveWeapons();
-                                    foundBot = true;
+                                    tempPlayer!.Pawn.Value!.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
+                                    tempPlayer!.Pawn.Value!.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
+                                    Utilities.SetStateChanged(tempPlayer, "CCollisionProperty", "m_CollisionGroup");
+                                    Utilities.SetStateChanged(tempPlayer, "CCollisionProperty", "m_collisionAttribute");
+                                    SharpTimerDebug($"Removed Collison for replay bot!");
+                                    foundReplayBot = true;
                                     startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = true;
                                 }
                             }
@@ -339,7 +347,7 @@ namespace SharpTimer
                 {
                     OnPlayerConnect(bot, true);
                     connectedReplayBots[botSlot] = new CCSPlayerController(bot.Handle);
-                    ChangePlayerName(bot, "SERVER RECORD REPLAY");
+                    ChangePlayerName(bot, replayBotName);
                     playerTimers[botSlot].IsTimerBlocked = true;
                     _ = Task.Run(async () => await ReplayHandler(bot, botSlot));
                     SharpTimerDebug($"Starting replay for {botName}");
