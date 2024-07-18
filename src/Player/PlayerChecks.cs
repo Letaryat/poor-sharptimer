@@ -60,7 +60,7 @@ namespace SharpTimer
 
         public bool IsAllowedClient(CCSPlayerController? player)
         {
-            if (player == null || !player.IsValid || player.Pawn == null || !player.PlayerPawn.IsValid || player.IsBot)
+            if (player == null || !player.IsValid || player.Pawn == null || !player.PlayerPawn.IsValid)
                 return false;
 
             return true;

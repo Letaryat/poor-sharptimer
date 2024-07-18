@@ -843,31 +843,7 @@ namespace SharpTimer
                         }
 
                         if (hideAllPlayers == true) Server.ExecuteCommand($"mp_teammates_are_enemies 1");
-                        if (enableSRreplayBot)
-                        {
-                            Server.NextFrame(() =>
-                            {
-                                Server.ExecuteCommand($"sv_hibernate_when_empty 0");
-                                Server.ExecuteCommand($"bot_join_after_player 0");
-                            });
-                        }
                     });
-
-                    if (enableReplays == true && enableSRreplayBot == true)
-                    {
-                        AddTimer(5.0f, () =>
-                        {
-                            if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0)
-                                _ = SpawnReplayBot();
-                            else
-                            {
-                                PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
-                                PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
-                                PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
-                                SharpTimerError("Couldnt Spawn Replay bot! Please make sure mp_force_pick_time is set to 1 in your custom_exec.cfg");
-                            }
-                        });
-                    }
 
                     if (removeCrouchFatigueEnabled == true) Server.ExecuteCommand("sv_timebetweenducks 0");
 
@@ -1037,15 +1013,23 @@ namespace SharpTimer
                     }
 
                     if (hideAllPlayers == true) Server.ExecuteCommand($"mp_teammates_are_enemies 1");
-                    if (enableSRreplayBot)
-                    {
-                        Server.NextFrame(() =>
-                        {
-                            Server.ExecuteCommand($"sv_hibernate_when_empty 0");
-                            Server.ExecuteCommand($"bot_join_after_player 0");
-                        });
-                    }
                 });
+
+                if (enableReplays && enableSRreplayBot)
+                {
+                    AddTimer(5.0f, () =>
+                    {
+                        if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0)
+                            _ = Task.Run(async () => await SpawnReplayBot());
+                        else
+                        {
+                            PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
+                            PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
+                            PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
+                            SharpTimerError("Couldnt Spawn Replay bot! Please make sure mp_force_pick_time is set to 1 in your custom_exec.cfg");
+                        }
+                    });
+                }
 
                 if (adServerRecordEnabled == true) ADtimerServerRecord();
                 if (adMessagesEnabled == true) ADtimerMessages();

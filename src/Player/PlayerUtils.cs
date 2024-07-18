@@ -720,7 +720,7 @@ namespace SharpTimer
         {
             Utilities.GetPlayers().ForEach(player =>
             {
-                if (player is { IsValid: true } && playerTimers[player.Slot].SoundsEnabled)
+                if (player is { IsValid: true, IsBot: false } && playerTimers[player.Slot].SoundsEnabled)
                 {
                     player.ExecuteClientCommand(command);
                 }

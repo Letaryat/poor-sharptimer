@@ -13,16 +13,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Security.Cryptography.X509Certificates;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Cvars;
-using System.Runtime.CompilerServices;
-using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Logging;
 
 namespace SharpTimer
 {
@@ -130,39 +126,33 @@ namespace SharpTimer
 
             RegisterEventHandler<EventPlayerSpawn>((@event, info) =>
             {
-                if (@event.Userid!.IsValid)
+                var player = @event.Userid!;
+
+                if (player.IsBot || !player.IsValid || player == null)
+                    return HookResult.Continue;
+
+                //specTargets[player.Pawn.Value.EntityHandle.Index] = new CCSPlayerController(player.Handle);
+
+                AddTimer(5.0f, () =>
                 {
-                    if (@event.Userid == null) return HookResult.Continue;
+                    if (!player.IsValid || player == null || !IsAllowedPlayer(player))
+                        return;
 
-                    var player = @event.Userid;
-
-                    if (player.IsBot || !player.IsValid || player == null)
+                    if (enableDb && playerTimers.ContainsKey(player.Slot) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
                     {
-                        return HookResult.Continue;
+                        SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
+                        SetFov(player, playerTimers[player.Slot].PlayerFov, true);
                     }
-                    else if (player.IsValid)
-                    {
-                        //specTargets[player.Pawn.Value.EntityHandle.Index] = new CCSPlayerController(player.Handle);
+                });
 
-                        AddTimer(5.0f, () =>
-                        {
-                            if (!player.IsValid || player == null || !IsAllowedPlayer(player)) return;
+                if (spawnOnRespawnPos == true && currentRespawnPos != null)
+                    player.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
 
-                            if (enableDb && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
-                            {
-                                SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
-                                SetFov(player, playerTimers[player.Slot].PlayerFov, true);
-                            }
-                        });
+                if (enableStyles && playerTimers.ContainsKey(player.Slot))
+                    setStyle(player, playerTimers[player.Slot].currentStyle);
 
-                        if (spawnOnRespawnPos == true && currentRespawnPos != null)
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
+                Server.NextFrame(() => InvalidateTimer(player));
 
-                        if (enableStyles && playerTimers[player.Slot] != null) setStyle(player, playerTimers[player.Slot].currentStyle);
-
-                        Server.NextFrame(() => InvalidateTimer(player));
-                    }
-                }
                 return HookResult.Continue;
             }, HookMode.Pre);
 
