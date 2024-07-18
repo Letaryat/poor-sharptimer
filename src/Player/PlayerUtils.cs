@@ -487,7 +487,7 @@ namespace SharpTimer
             return HookResult.Continue;
         }
 
-        public async Task PrintMapTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int bonusX = 0, int timesFinished = 0, int style = 0)
+        public async Task PrintMapTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int bonusX = 0, int timesFinished = 0, int style = 0, int prevSR = 0)
         {
             if (!IsAllowedPlayer(player))
             {
@@ -515,6 +515,10 @@ namespace SharpTimer
 
                 if (newSR)
                 {
+                    if (prevSR != 0)
+                    {
+                        timeDifference = $"[{FormatTimeDifference(newticks, prevSR)}{ChatColors.White}] ";
+                    }
                     if (bonusX != 0) PrintToChatAll(Localizer["new_server_record_bonus", playerName, bonusX]);
                     else
                     {
@@ -551,7 +555,7 @@ namespace SharpTimer
                 }
             });
         }
-        public async Task PrintStageTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int stage, int bonusX = 0)
+        public async Task PrintStageTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int stage, int bonusX = 0, int prevSR = 0)
         {
             if (!IsAllowedPlayer(player))
             {
@@ -576,6 +580,10 @@ namespace SharpTimer
             {
                 if (newSR)
                 {
+                    if (prevSR != 0)
+                    {
+                        timeDifference = $"[{FormatTimeDifference(newticks, prevSR)}{ChatColors.White}] ";
+                    }
                     PrintToChatAll(Localizer["new_stage_server_record", playerName]);
                     if (srSoundAll) SendCommandToEveryone($"play {srSound}");
                     else PlaySound(player, srSound);
