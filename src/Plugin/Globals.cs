@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.0o";
+        public override string ModuleVersion => $"0.3.0p";
         public override string ModuleAuthor => "dea https://github.com/deafps/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -226,6 +226,7 @@ namespace SharpTimer
         public string pbSound = "sounds/buttons/bell1.vsnd";
         public string srSound = "sounds/ui/panorama/round_report_round_won_01.vsnd";
         public bool srSoundAll = true;
+        public bool stageSoundAll = true;
 
         public string? gameDir;
         public string? mySQLpath;

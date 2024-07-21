@@ -968,6 +968,14 @@ namespace SharpTimer
 
             srSoundAll = bool.TryParse(args, out bool soundSRAllValue) ? soundSRAllValue : args != "0" && srSoundAll;
         }
+        [ConsoleCommand("sharptimer_sound_stage_all_players", "Whether to play stage record sound for all players. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundStageRecordAllPlayers(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            stageSoundAll = bool.TryParse(args, out bool stageSoundAllValue) ? stageSoundAllValue : args != "0" && stageSoundAll;
+        }
         /* sounds convars */
 
         [ConsoleCommand("sharptimer_enable_noclip", "Enable or disable noclip for regular players. Default value: false")]

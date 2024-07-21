@@ -585,7 +585,7 @@ namespace SharpTimer
                         timeDifference = $"[{FormatTimeDifference(newticks, prevSR)}{ChatColors.White}] ";
                     }
                     PrintToChatAll(Localizer["new_stage_server_record", playerName]);
-                    if (srSoundAll) SendCommandToEveryone($"play {srSound}");
+                    if (stageSoundAll) SendCommandToEveryone($"play {srSound}");
                     else PlaySound(player, srSound);
                     PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
                     //TODO: Discord webhook stage sr
