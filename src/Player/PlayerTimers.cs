@@ -76,6 +76,7 @@ namespace SharpTimer
                 if (playerTimer.CurrentMapStage != stageTriggerCount && currentMapOverrideStageRequirement == true)
                 {
                     PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player current stage does not match final one ({stageTriggerCount})");
+                    SharpTimerDebug($"Player current stage: {playerTimers[playerSlot].CurrentMapStage}; Final checkpoint: {stageTriggerCount}");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -84,6 +85,7 @@ namespace SharpTimer
                 if (playerTimer.CurrentMapCheckpoint != cpTriggerCount)
                 {
                     PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player current checkpoint does not match final one ({cpTriggerCount})");
+                    SharpTimerDebug($"Player current checkpoint: {playerTimers[playerSlot].CurrentMapCheckpoint}; Final checkpoint: {cpTriggerCount}");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -95,6 +97,7 @@ namespace SharpTimer
                 if (playerTimer.CurrentMapStage != stageTriggerCount && currentMapOverrideStageRequirement == true)
                 {
                     PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player current stage does not match final one ({stageTriggerCount})");
+                    SharpTimerDebug($"Player current stage: {playerTimers[playerSlot].CurrentMapStage}; Final checkpoint: {stageTriggerCount}");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -106,6 +109,7 @@ namespace SharpTimer
                 if (playerTimer.CurrentMapCheckpoint != cpTriggerCount)
                 {
                     PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player current checkpoint does not match final one ({cpTriggerCount})");
+                    SharpTimerDebug($"Player current checkpoint: {playerTimers[playerSlot].CurrentMapCheckpoint}; Final checkpoint: {cpTriggerCount}");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -375,7 +379,7 @@ namespace SharpTimer
                                     }
                                 }
                             }
-                            playerTimer.CurrentMapCheckpoint = cpTrigger;
+                            playerTimer.CurrentMapCheckpoint += 1;
                         }
                     });
                 }
@@ -469,7 +473,7 @@ namespace SharpTimer
                                     }
                                 }
                             }
-                            playerTimer.CurrentMapCheckpoint = bonusCheckpointTrigger;
+                            playerTimer.CurrentMapCheckpoint += 1;
                         }
                     });
                 }

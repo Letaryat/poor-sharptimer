@@ -282,15 +282,15 @@ namespace SharpTimer
                         }
                     }
 
-                    Server.ExecuteCommand("bot_kick");
-                    Server.ExecuteCommand("bot_quota_mode fill");
-                    Server.ExecuteCommand("bot_quota 1");
-                    Server.ExecuteCommand("sv_hibernate_when_empty 0");
-                    Server.ExecuteCommand("bot_join_after_player 0");
-                    Server.ExecuteCommand("bot_join_team CT");
+                    Server.ExecuteCommand("sv_cheats 1");
                     Server.ExecuteCommand("bot_add_ct");
-                    Server.ExecuteCommand("bot_controllable 0");
-
+                    Server.ExecuteCommand("bot_quota 1");
+                    Server.ExecuteCommand("bot_quota_mode normal");
+                    Server.ExecuteCommand("bot_stop 1");
+                    Server.ExecuteCommand("bot_freeze 1");
+                    Server.ExecuteCommand("bot_zombie 1");
+                    Server.ExecuteCommand("sv_cheats 0");
+                    
                     AddTimer(3.0f, () =>
                     {
                         foundReplayBot = false;
@@ -317,8 +317,8 @@ namespace SharpTimer
                                     tempPlayer.PlayerPawn.Value!.Bot!.IsSleeping = true;
                                     tempPlayer.PlayerPawn.Value!.Bot!.AllowActive = true;
                                     tempPlayer.RemoveWeapons();
-                                    tempPlayer!.Pawn.Value!.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
-                                    tempPlayer!.Pawn.Value!.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
+                                    tempPlayer!.Pawn.Value!.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_NONE;
+                                    tempPlayer!.Pawn.Value!.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_NONE;
                                     Utilities.SetStateChanged(tempPlayer, "CCollisionProperty", "m_CollisionGroup");
                                     Utilities.SetStateChanged(tempPlayer, "CCollisionProperty", "m_collisionAttribute");
                                     SharpTimerDebug($"Removed Collison for replay bot!");

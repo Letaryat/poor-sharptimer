@@ -471,7 +471,7 @@ namespace SharpTimer
                     playerTimers[player.Slot].StageVelos!.Clear();
                     playerTimers[player.Slot].CurrentMapStage = stageTriggers.GetValueOrDefault(callerHandle, 0);
                 }
-                else if (cpTriggerCount != 0 && useStageTriggers == false)
+                if (cpTriggerCount != 0)
                 {
                     playerTimers[player.Slot].StageTimes!.Clear();
                     playerTimers[player.Slot].StageVelos!.Clear();
