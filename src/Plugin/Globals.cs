@@ -51,6 +51,7 @@ namespace SharpTimer
 
         public string primaryHUDcolor = "green";
         public string secondaryHUDcolor = "orange";
+        public bool useDynamicColor = false;
         public string tertiaryHUDcolor = "white";
         public string primaryChatColor = "";
         public string startBeamColor = "";
