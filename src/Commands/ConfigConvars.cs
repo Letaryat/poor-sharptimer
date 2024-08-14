@@ -813,6 +813,15 @@ namespace SharpTimer
             primaryHUDcolor = $"{args}";
         }
 
+        [ConsoleCommand("sharptimer_hud_secondary_color_dynamic", "Whether to use dynamic color for secondary HUD based on player speed. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerHUDSecondaryColorDynamicConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            useDynamicColor = bool.TryParse(args, out bool useDynamicColorValue) ? useDynamicColorValue : args != "0" && useDynamicColor;
+        }
+
         [ConsoleCommand("sharptimer_hud_secondary_color", "Secondary Color for Timer HUD. Default value: orange")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerSecondaryHUDcolor(CCSPlayerController? player, CommandInfo command)
