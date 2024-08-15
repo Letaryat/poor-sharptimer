@@ -143,13 +143,13 @@ namespace SharpTimer
                         SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
                         SetFov(player, playerTimers[player.Slot].PlayerFov, true);
                     }
-                });
 
-                if (spawnOnRespawnPos == true && currentRespawnPos != null)
+                    if (spawnOnRespawnPos == true && currentRespawnPos != null)
                     player.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
 
-                if (enableStyles && playerTimers.ContainsKey(player.Slot))
-                    setStyle(player, playerTimers[player.Slot].currentStyle);
+                    if (enableStyles && playerTimers.ContainsKey(player.Slot))
+                        setStyle(player, playerTimers[player.Slot].currentStyle);
+                });
 
                 Server.NextFrame(() => InvalidateTimer(player));
 

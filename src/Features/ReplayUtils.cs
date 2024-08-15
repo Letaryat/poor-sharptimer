@@ -285,7 +285,7 @@ namespace SharpTimer
                     Server.ExecuteCommand("sv_cheats 1");
                     Server.ExecuteCommand("bot_add_ct");
                     Server.ExecuteCommand("bot_quota 1");
-                    Server.ExecuteCommand("bot_quota_mode normal");
+                    Server.ExecuteCommand("bot_quota_mode 0");
                     Server.ExecuteCommand("bot_stop 1");
                     Server.ExecuteCommand("bot_freeze 1");
                     Server.ExecuteCommand("bot_zombie 1");
@@ -314,7 +314,7 @@ namespace SharpTimer
                                 {
                                     SharpTimerDebug($"Found replay bot!");
                                     OnReplayBotConnect(tempPlayer);
-                                    tempPlayer.PlayerPawn.Value!.Bot!.IsSleeping = true;
+                                    //tempPlayer.PlayerPawn.Value!.Bot!.IsSleeping = true;
                                     tempPlayer.PlayerPawn.Value!.Bot!.AllowActive = true;
                                     tempPlayer.RemoveWeapons();
                                     tempPlayer!.Pawn.Value!.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_NONE;
