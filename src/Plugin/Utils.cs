@@ -830,9 +830,6 @@ namespace SharpTimer
                         SharpTimerDebug("Re-Executing SharpTimer/custom_exec");
                         Server.ExecuteCommand("execifexists SharpTimer/custom_exec.cfg");
 
-                        //enforce sv_cheats 0 for dumb maps
-                        Server.ExecuteCommand("sv_cheats 0");
-
                         if (execCustomMapCFG == true)
                         {
                             string MapExecFile = GetClosestMapCFGMatch();

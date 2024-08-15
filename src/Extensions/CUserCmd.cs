@@ -55,7 +55,7 @@ public class CUserCmd
         if (Handle == IntPtr.Zero)
             return ["None"];
 
-        nint inputs = Unsafe.Read<IntPtr>((void*)(Handle + 0x50));
+        nint inputs = Unsafe.Read<IntPtr>((void*)(Handle + 0x60));
         
         // System.Console.WriteLine(moveMent); // Use this to see the value of the button you are pressing
 
@@ -82,7 +82,7 @@ public class CUserCmd
 
     public unsafe CBaseUserCmd GetBaseCmd()
     {
-        var baseCmd = Unsafe.Read<IntPtr>((void*)(Handle + 0x30));
+        var baseCmd = Unsafe.Read<IntPtr>((void*)(Handle + 0x40));
 
         return new CBaseUserCmd(baseCmd);
     }

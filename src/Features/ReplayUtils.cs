@@ -314,7 +314,7 @@ namespace SharpTimer
                                 {
                                     SharpTimerDebug($"Found replay bot!");
                                     OnReplayBotConnect(tempPlayer);
-                                    //tempPlayer.PlayerPawn.Value!.Bot!.IsSleeping = true;
+                                    tempPlayer.PlayerPawn.Value!.Bot!.IsSleeping = true;
                                     tempPlayer.PlayerPawn.Value!.Bot!.AllowActive = true;
                                     tempPlayer.RemoveWeapons();
                                     tempPlayer!.Pawn.Value!.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_NONE;
