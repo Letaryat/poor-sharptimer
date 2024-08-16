@@ -150,8 +150,9 @@ namespace SharpTimer
         public int CurrentMapCheckpoint { get; set; }
         public CCSPlayer_MovementServices? MovementService { get; set; }
         public double Sync { get; set; }
-        public double SyncAccumulator { get; set; }
-        public int SyncCount { get; set; }
+        public int GoodSync { get; set; }
+        public int TotalSync { get; set; }
+        public List<QAngle> Rotation { get; set; } = new List<QAngle>();
 
         //player settings/stats
         public bool Azerty { get; set; }

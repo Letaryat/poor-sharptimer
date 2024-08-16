@@ -197,7 +197,8 @@ namespace SharpTimer
                         }
 
                         if (jumpStatsEnabled == true) OnJumpStatTick(player, playerSpeed, player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!, player.PlayerPawn?.Value.EyeAngles!, playerButtons);
-                        if (StrafeHudEnabled == true) OnSyncTick(player, playerJumpStats[player.Slot], playerButtons, player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!, playerSpeed, player.PlayerPawn?.Value.EyeAngles!);
+                        if (StrafeHudEnabled == true) OnSyncTick(player, playerButtons, player.PlayerPawn?.Value.EyeAngles!);
+                        
 
                         if (forcePlayerSpeedEnabled == true)
                         {

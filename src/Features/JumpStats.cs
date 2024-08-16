@@ -211,22 +211,12 @@ namespace SharpTimer
                 SharpTimerDebug($"Exception in OnJumpStatTickInAir: {ex}");
             }
         }
-
-        public void OnSyncTick(CCSPlayerController player, PlayerJumpStats playerJumpStat, PlayerButtons? buttons, Vector playerpos, Vector velocity, QAngle eyeangle)
+ 
+        public void OnSyncTick(CCSPlayerController player, PlayerButtons? buttons, QAngle eyeangle)
         {
             try
             {
-                var LastJumpFrame = playerJumpStat.timerSyncFrames.Count != 0 ? playerJumpStat.timerSyncFrames.Last() : new PlayerJumpStats.IFrame
-                {
-                    PositionString = $" ",
-                    SpeedString = $" ",
-                    LastLeft = false,
-                    LastRight = false,
-                    LastLeftRight = false,
-                    MaxHeight = 0,
-                    MaxSpeed = 0
-                };
-
+                var playerTimer = playerTimers[player.Slot];
                 bool left = false;
                 bool right = false;
                 bool leftRight = false;
@@ -238,43 +228,19 @@ namespace SharpTimer
                     right = true;
                 else return;
 
-                double maxSpeed;
-                if (velocity.Length2D() > LastJumpFrame!.MaxSpeed)
-                    maxSpeed = velocity.Length2D();
-                else
-                    maxSpeed = LastJumpFrame?.MaxSpeed ?? 0;
+                QAngle newEyeAngle = new QAngle(eyeangle.X, eyeangle.Y, eyeangle.Z);
+                playerTimer.Rotation.Add(newEyeAngle);
+                playerTimer.TotalSync++;
 
-                var JumpFrame = new PlayerJumpStats.IFrame
-                {
-                    PositionString = $"{playerpos.X} {playerpos.Y} {playerpos.Z}",
-                    SpeedString = $"{velocity.X} {velocity.Y} {velocity.Z}",
-                    RotationString = $"{eyeangle.X} {eyeangle.Y} {eyeangle.Z}",
-                    LastLeft = left,
-                    LastRight = right,
-                    LastLeftRight = leftRight,
-                    MaxSpeed = maxSpeed
-                };
+                //Check left goodsync
+                if (playerTimer.Rotation != null && playerTimer.Rotation.Count > 1 && eyeangle.Y > playerTimer.Rotation[playerTimer.TotalSync - 2].Y && left)
+                    playerTimer.GoodSync++;
 
-                playerJumpStat.timerSyncFrames.Add(JumpFrame);
+                //Check right goodsync
+                if (playerTimer.Rotation != null && playerTimer.Rotation.Count > 1 && eyeangle.Y < playerTimer.Rotation[playerTimer.TotalSync - 2].Y && right)
+                    playerTimer.GoodSync++;
 
-                var (lStrafes, lSync, lFrames) = CountLeftGroupsAndSync(playerJumpStats[player.Slot], true);
-                var (rStrafes, rSync, rFrames) = CountRightGroupsAndSync(playerJumpStats[player.Slot], true);
-                int strafes = rStrafes + lStrafes;
-                int strafeFrames = rFrames + lFrames;
-                int syncedFrames = rSync + lSync;
-                double sync = (strafeFrames != 0) ? Math.Round(syncedFrames * 100f / strafeFrames) : 0;
-
-                // Update the sync accumulator and count
-                playerTimers[player.Slot].SyncAccumulator += sync;
-                playerTimers[player.Slot].SyncCount++;
-
-                // Calculate the new average sync
-                playerTimers[player.Slot].Sync = Math.Round(playerTimers[player.Slot].SyncAccumulator / playerTimers[player.Slot].SyncCount, 0);
-                // Clear the timerSyncFrames if they are too many
-                if (playerJumpStats[player.Slot].timerSyncFrames.Count > 100)
-                {
-                    playerJumpStats[player.Slot].timerSyncFrames.Clear();
-                }
+                playerTimer.Sync = Math.Round((float)playerTimers[player.Slot].GoodSync / playerTimers[player.Slot].TotalSync * 100, 0);
             }
             catch (Exception ex)
             {

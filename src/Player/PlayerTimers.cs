@@ -45,11 +45,6 @@ namespace SharpTimer
             playerTimers[player.Slot].BonusTimerTicks = 0;
 
             playerTimers[player.Slot].IsRecordingReplay = true;
-
-            playerJumpStats[player.Slot].timerSyncFrames.Clear();
-            playerTimers[player.Slot].SyncAccumulator = 0;
-            playerTimers[player.Slot].SyncCount = 0;
-            playerTimers[player.Slot].Sync = 0;
         }
 
         public void OnTimerStop(CCSPlayerController? player)
