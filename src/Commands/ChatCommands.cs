@@ -730,7 +730,7 @@ namespace SharpTimer
                         {
                             foreach (var bonusPb in playerTimers[playerSlot].CachedBonusInfo.OrderBy(x => x.Key))
                             {
-                                PrintToChat(player, $"{Localizer["current_bonus_pb", bonusPb.Key!, FormatTime(bonusPb.Value.PbTicks), bonusPb.Value.Placement]}");
+                                PrintToChat(player, $"{Localizer["current_bonus_pb", bonusPb.Key!, FormatTime(bonusPb.Value.PbTicks), bonusPb.Value.Placement!]}");
                             }
                         }
                     });
@@ -1357,7 +1357,7 @@ namespace SharpTimer
             if (CommandCooldown(player))
                 return;
 
-            SharpTimerDebug($"{player.PlayerName} calling css_rs...");
+            SharpTimerDebug($"{player!.PlayerName} calling css_rs...");
 
             if (stageTriggerCount == 0)
             {
@@ -1435,7 +1435,7 @@ namespace SharpTimer
 
         public void QuietStopTimer(CCSPlayerController? player)
         {
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            playerTimers[player!.Slot].TicksSinceLastCmd = 0;
 
             // Remove checkpoints for the current player
             playerCheckpoints.Remove(player.Slot);

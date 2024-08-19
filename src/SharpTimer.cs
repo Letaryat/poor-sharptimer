@@ -88,18 +88,7 @@ namespace SharpTimer
                     if (@event.Userid == null) return HookResult.Continue;
                     var player = @event.Userid;
 
-                    if (player.IsValid && player.IsBot)
-                    {
-                        if (startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile)
-                        {
-                            AddTimer(4.0f, () =>
-                            {
-                                Server.ExecuteCommand($"kickid {player.Slot}");
-                                SharpTimerDebug($"Kicking unused bot on spawn...");
-                            });
-                        }
-                    }
-                    else if (player.IsValid)
+                    if (player.IsValid && !player.IsBot)
                     {
                         Server.NextFrame(() => InvalidateTimer(player));
                     }
@@ -236,12 +225,6 @@ namespace SharpTimer
                 return HookResult.Continue;
             });
 
-            HookEntityOutput("trigger_push", "OnStartTouch", (CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay) =>
-            {
-                TriggerPushOnStartTouch(activator, caller);
-                return HookResult.Continue;
-            });
-
             AddTimer(1.0f, () =>
             {
                 DamageHook();
@@ -319,7 +302,7 @@ namespace SharpTimer
                     }
                     return HookResult.Changed;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //i dont fucking know why it spams errors when the player disconnects but is also passing all the null checks
                     //so here lies my humble try catch

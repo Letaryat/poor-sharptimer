@@ -153,30 +153,6 @@ namespace SharpTimer
             }
         }
 
-        [ConsoleCommand("sharptimer_replay_bot_enabled", "Whether a looping Server Record bot should be spawned in or not (requires navmesh fix). Default value: false")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerReplayBotConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            enableSRreplayBot = bool.TryParse(args, out bool enableSRreplayBotValue) ? enableSRreplayBotValue : args != "0" && enableSRreplayBot;
-        }
-
-        [ConsoleCommand("sharptimer_replay_bot_name", "What the name of the Replay Record bot should be. Default value: SERVER RECORD REPLAY")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerReplayBotNameConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString.Trim();
-
-            if (string.IsNullOrEmpty(args))
-            {
-                replayBotName = $"SERVER RECORD REPLAY";
-                return;
-            }
-
-            replayBotName = $"{args}";
-        }
-
         /*[ConsoleCommand("sharptimer_vip_gif_host", "URL where VIP gifs are being hosted on. Default: 'https://files.catbox.moe'")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerVipGifHost(CCSPlayerController? player, CommandInfo command)
@@ -259,15 +235,6 @@ namespace SharpTimer
             {
                 SharpTimerConPrint("Invalid JumpStats Movement Unlocker cap value. Please provide a positive float.");
             }
-        }
-
-        [ConsoleCommand("sharptimer_hide_all_players", "Whether all players should be hidden or not. Default value: false")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerHideConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            hideAllPlayers = bool.TryParse(args, out bool hideAllPlayersValue) ? hideAllPlayersValue : args != "0" && hideAllPlayers;
         }
 
         [ConsoleCommand("sharptimer_kill_pointservercommand_entities", "If True the plugin will kill all point_servercommand ents (necessary to make xplay maps usable due to them being bad ports). Default value: true")]
@@ -575,15 +542,6 @@ namespace SharpTimer
             string args = command.ArgString;
 
             removeCollisionEnabled = bool.TryParse(args, out bool removeCollisionEnabledValue) ? removeCollisionEnabledValue : args != "0" && removeCollisionEnabled;
-        }
-
-        [ConsoleCommand("sharptimer_trigger_push_fix", "When enabled all trigger_push ents will only push once OnStartTouch. Default value: false")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerTriggerPushFixConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            triggerPushFixEnabled = bool.TryParse(args, out bool triggerPushFixEnabledValue) ? triggerPushFixEnabledValue : args != "0" && triggerPushFixEnabled;
         }
 
         [ConsoleCommand("sharptimer_checkpoints_enabled", "Whether !cp, !tp and !prevcp are enabled by default or not. Default value: false")]

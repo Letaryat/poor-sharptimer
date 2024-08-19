@@ -219,7 +219,11 @@ namespace SharpTimer
                 var playerTimer = playerTimers[player.Slot];
                 bool left = false;
                 bool right = false;
+
+                #pragma warning disable CS0219 // annoyence
                 bool leftRight = false;
+                #pragma warning restore CS0219
+
                 if ((buttons & PlayerButtons.Moveleft) != 0 && (buttons & PlayerButtons.Moveright) != 0)
                     leftRight = true;
                 else if ((buttons & PlayerButtons.Moveleft) != 0)
@@ -437,10 +441,6 @@ namespace SharpTimer
             player.PrintToConsole($"-----------------------------------------------------------------------------------------------------------------------");
             player.PrintToConsole($" {Localizer["js_msg1", playerJumpStat.LastJumpType!, color, Math.Round(distance, 2), Math.Round(ParseVector(playerJumpStat.LastSpeed!).Length2D(), 2), Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2), strafes]}");
             player.PrintToConsole($" {Localizer["js_msg2", Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2), GetMaxWidth(playerpos, playerJumpStat), playerJumpStat.WTicks, sync]}");
-
-            /* this is shit
-            string alertMsg = msg1 + "\n" + msg2;
-            VirtualFunctions.ClientPrint(player.Handle, HudDestination.Alert, alertMsg, 0, 0, 0, 0); */
         }
     }
 }

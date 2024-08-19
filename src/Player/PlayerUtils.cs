@@ -548,11 +548,6 @@ namespace SharpTimer
 
                 PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
                 if (enableStyles) PrintToChatAll(Localizer["timer_style", GetNamedStyle(style)]);
-
-                if (enableReplays == true && enableSRreplayBot == true && newSR && (oldticks > newticks || oldticks == 0))
-                {
-                    _ = Task.Run(async () => await SpawnReplayBot());
-                }
             });
         }
         public async Task PrintStageTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int stage, int bonusX = 0, int prevSR = 0)

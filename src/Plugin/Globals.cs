@@ -36,9 +36,7 @@ namespace SharpTimer
         private Dictionary<int, PlayerReplays> playerReplays = [];
         private Dictionary<int, List<PlayerCheckpoint>> playerCheckpoints = [];
         public Dictionary<int, CCSPlayerController> connectedPlayers = [];
-        private Dictionary<int, CCSPlayerController> connectedReplayBots = [];
         private Dictionary<uint, CCSPlayerController> specTargets = [];
-        private Dictionary<nint, TriggerPushData> triggerPushData = [];
         private EntityCache? entityCache;
         public Dictionary<string, PlayerRecord>? SortedCachedRecords = [];
         private static readonly HttpClient httpClient = new();
@@ -95,7 +93,6 @@ namespace SharpTimer
         public string[]? currentMapOverrideDisableTelehop = [];
         public string[]? currentMapOverrideMaxSpeedLimit = [];
         public bool currentMapOverrideStageRequirement = false;
-        public bool currentMapOverrideTriggerPushFix = false;
 
         private Dictionary<nint, int> stageTriggers = [];
         private Dictionary<int, Vector?> stageTriggerPoses = [];
@@ -116,10 +113,6 @@ namespace SharpTimer
         public bool enableStageTimes = true;
         public bool ignoreJSON = false;
         public bool enableReplays = false;
-        public bool enableSRreplayBot = false;
-        public bool startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = false;
-        public bool foundReplayBot = false;
-        public string replayBotName = "";
         public int maxReplayFrames = 19200;
 
         public bool globalRanksEnabled = false;
@@ -157,7 +150,6 @@ namespace SharpTimer
         public bool enableStylePoints = true;
 
         public bool removeLegsEnabled = false;
-        public bool hideAllPlayers = false;
         public bool removeCollisionEnabled = true;
         public bool disableDamage = true;
         public bool use2DSpeed = false;
@@ -189,7 +181,6 @@ namespace SharpTimer
         public bool removeCrouchFatigueEnabled = true;
         public bool goToEnabled = false;
         public bool fovChangerEnabled = true;
-        public bool triggerPushFixEnabled = false;
         public int cmdCooldown = 64;
         public float fakeTriggerHeight = 50;
         public bool Box3DZones = false;

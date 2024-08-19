@@ -191,11 +191,6 @@ namespace SharpTimer
                             CheckPlayerCoords(player, playerSpeed);
                         }
 
-                        if (triggerPushFixEnabled == true)
-                        {
-                            CheckPlayerTriggerPushCoords(player, playerSpeed);
-                        }
-
                         if (jumpStatsEnabled == true) OnJumpStatTick(player, playerSpeed, player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!, player.PlayerPawn?.Value.EyeAngles!, playerButtons);
                         if (StrafeHudEnabled == true) OnSyncTick(player, playerButtons, player.PlayerPawn?.Value.EyeAngles!);
                         
@@ -234,19 +229,6 @@ namespace SharpTimer
                             playerTimer.changedStyle = false;
                         }
 
-                        if (hideAllPlayers == true)
-                        {
-                            foreach (var gun in player.PlayerPawn!.Value.WeaponServices!.MyWeapons)
-                            {
-                                if (gun.Value!.Render != Color.FromArgb(0, 255, 255, 255) ||
-                                    gun.Value!.ShadowStrength != 0.0f)
-                                {
-                                    gun.Value!.Render = Color.FromArgb(0, 255, 255, 255);
-                                    gun.Value!.ShadowStrength = 0.0f;
-                                }
-                            }
-                        }
-
                         if (displayScoreboardTags == true)
                         {
                             if (playerTimer.TicksSinceLastRankUpdate > 511 &&
@@ -280,15 +262,6 @@ namespace SharpTimer
                             if (playerTimer.MovementService != null && playerTimer.MovementService.DuckSpeed != 7.0f)
                             {
                                 playerTimer.MovementService.DuckSpeed = 7.0f;
-                            }
-                        }
-
-                        if (hideAllPlayers == true)
-                        {
-                            if (player.PlayerPawn!.Value.Render != Color.FromArgb(0, 0, 0, 0))
-                            {
-                                player.PlayerPawn.Value.Render = Color.FromArgb(0, 0, 0, 0);
-                                Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
                             }
                         }
 
