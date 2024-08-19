@@ -23,7 +23,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
-using CounterStrikeSharp.API.Modules.Entities;
 
 namespace SharpTimer
 {
@@ -1143,23 +1142,6 @@ namespace SharpTimer
                         currentMapOverrideStageRequirement = false;
                     }
 
-                    if (!string.IsNullOrEmpty(mapInfo.OverrideTriggerPushFix))
-                    {
-                        try
-                        {
-                            currentMapOverrideTriggerPushFix = bool.Parse(mapInfo.OverrideTriggerPushFix);
-                            SharpTimerConPrint($"Overriding TriggerPushFix...");
-                        }
-                        catch (FormatException)
-                        {
-                            SharpTimerError("Invalid boolean string format for OverrideTriggerPushFix");
-                        }
-                    }
-                    else
-                    {
-                        currentMapOverrideTriggerPushFix = false;
-                    }
-
                     if (!string.IsNullOrEmpty(mapInfo.GlobalPointsMultiplier))
                     {
                         try
@@ -1220,9 +1202,6 @@ namespace SharpTimer
                         DrawWireframe3D(endRight, endLeft, endBeamColor);
                     }
 
-                    if (triggerPushFixEnabled == true && currentMapOverrideTriggerPushFix == false)
-                        FindTriggerPushData();
-
                     if (useTriggers == true || useTriggersAndFakeZones == true)
                     {
                         FindStageTriggers();
@@ -1236,9 +1215,6 @@ namespace SharpTimer
                 {
                     SharpTimerConPrint($"Map data json not found for map: {currentMapName}!");
                     SharpTimerConPrint($"Trying to hook Triggers supported by default!");
-
-                    if (triggerPushFixEnabled == true && currentMapOverrideTriggerPushFix == false)
-                        FindTriggerPushData();
 
                     KillServerCommandEnts();
 
@@ -1319,7 +1295,6 @@ namespace SharpTimer
             currentMapOverrideDisableTelehop = []; //making sure previous map overrides are reset
             currentMapOverrideMaxSpeedLimit = [];
             currentMapOverrideStageRequirement = false;
-            currentMapOverrideTriggerPushFix = false;
 
             globalPointsMultiplier = 1.0f;
 

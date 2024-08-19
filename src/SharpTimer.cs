@@ -156,12 +156,6 @@ namespace SharpTimer
                         AddTimer(5.0f, () =>
                         {
                             if (!player.IsValid || player == null || !IsAllowedPlayer(player)) return;
-
-                            if ((useMySQL || usePostgres) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
-                            {
-                                SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
-                                SetFov(player, playerTimers[player.Slot].PlayerFov, true);
-                            }
                         });
 
                         if (spawnOnRespawnPos == true && currentRespawnPos != null)
@@ -253,12 +247,6 @@ namespace SharpTimer
                 return HookResult.Continue;
             });
 
-            HookEntityOutput("trigger_push", "OnStartTouch", (CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay) =>
-            {
-                TriggerPushOnStartTouch(activator, caller);
-                return HookResult.Continue;
-            });
-
             AddTimer(1.0f, () =>
             {
                 DamageHook();
@@ -320,7 +308,7 @@ namespace SharpTimer
                     }
                     return HookResult.Changed;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //i dont fucking know why it spams errors when the player disconnects but is also passing all the null checks
                     //so here lies my humble try catch

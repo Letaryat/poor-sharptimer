@@ -153,7 +153,7 @@ namespace SharpTimer
                                 new
                                 {
                                     name = "🛹 Style:",
-                                    value = $"{GetNamedStyle(playerTimers[player.Slot].currentStyle)}",
+                                    value = $"{GetNamedStyle(playerTimers[player!.Slot].currentStyle)}",
                                     inline = true
                                 }
                             },

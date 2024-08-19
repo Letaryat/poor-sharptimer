@@ -355,22 +355,6 @@ namespace SharpTimer
             PrintAllEnabledCommands(player!);
         }
 
-        /* [ConsoleCommand("css_spec", "Moves you to Spectator")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void SpecCommand(CCSPlayerController? player, CommandInfo command)
-        {
-            if ((CsTeam)player.TeamNum == CsTeam.Spectator)
-            {
-                player.ChangeTeam(CsTeam.CounterTerrorist);
-                player.PrintToChat(msgPrefix + $"Moving you to CT");
-            }
-            else
-            {
-                player.ChangeTeam(CsTeam.Spectator);
-                player.PrintToChat(msgPrefix + $"Moving you to Spectator");
-            }
-        } */
-
         [ConsoleCommand("css_hud", "Draws/Hides The timer HUD")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void HUDSwitchCommand(CCSPlayerController? player, CommandInfo command)
@@ -440,7 +424,6 @@ namespace SharpTimer
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
-
         }
 
         [ConsoleCommand("css_sounds", "Toggles Sounds")]
@@ -510,58 +493,6 @@ namespace SharpTimer
             SharpTimerDebug($"Hide Jump Stats set to: {playerTimers[playerSlot].HideJumpStats} for {playerName}");
 
             if (useMySQL || usePostgres)
-            {
-                _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
-            }
-
-        }
-
-        [ConsoleCommand("css_hideweapon", "Hides the players weapon")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void HideWeaponCommand(CCSPlayerController? player, CommandInfo command)
-        {
-            if (!IsAllowedPlayer(player)) return;
-
-            HideWeapon(player);
-        }
-        public void HideWeapon(CCSPlayerController? player)
-        {
-            if (!player!.PlayerPawn.Value!.WeaponServices!.ActiveWeapon.IsValid)
-            {
-                player.GiveNamedItem("weapon_usp_silencer");
-                player.GiveNamedItem("weapon_knife");
-            }
-            else
-            {
-                player.RemoveWeapons();
-            }
-        }
-        [ConsoleCommand("css_fov", "Sets the player's FOV")]
-        [CommandHelper(minArgs: 1, usage: "[fov]")]
-        public void FovCommand(CCSPlayerController? player, CommandInfo command)
-        {
-            if (!IsAllowedPlayer(player) || fovChangerEnabled == false) return;
-
-            if (!Int32.TryParse(command.GetArg(1), out var desiredFov)) return;
-
-            SetFov(player, desiredFov);
-        }
-
-        public void SetFov(CCSPlayerController? player, int desiredFov, bool noMySql = false)
-        {
-            player!.DesiredFOV = (uint)desiredFov;
-            Utilities.SetStateChanged(player, "CBasePlayerController", "m_iDesiredFOV");
-
-            var playerName = player.PlayerName;
-            var playerSlot = player.Slot;
-            var steamID = player.SteamID.ToString();
-
-            if (noMySql == false) playerTimers[player.Slot].PlayerFov = desiredFov;
-            if (useMySQL == true && noMySql == false)
-            {
-                _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
-            }
-            if (usePostgres == true && noMySql == false)
             {
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
             }
@@ -954,6 +885,7 @@ namespace SharpTimer
         }
 
         [ConsoleCommand("css_startpos", "Saves a custom respawn point within the start trigger")]
+        [ConsoleCommand("css_ssp", "Saves a custom respawn point within the start trigger")]
         [ConsoleCommand("css_setresp", "Saves a custom respawn point within the start trigger")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void SetRespawnCommand(CCSPlayerController? player, CommandInfo command)
@@ -1440,7 +1372,7 @@ namespace SharpTimer
             if (CommandCooldown(player))
                 return;
 
-            SharpTimerDebug($"{player.PlayerName} calling css_rs...");
+            SharpTimerDebug($"{player!.PlayerName} calling css_rs...");
 
             if (stageTriggerCount == 0)
             {
@@ -1518,7 +1450,7 @@ namespace SharpTimer
 
         public void QuietStopTimer(CCSPlayerController? player)
         {
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            playerTimers[player!.Slot].TicksSinceLastCmd = 0;
 
             // Remove checkpoints for the current player
             playerCheckpoints.Remove(player.Slot);

@@ -340,47 +340,5 @@ namespace SharpTimer
                 return HookResult.Continue;
             }
         }
-
-        public HookResult TriggerPushOnStartTouch(CEntityInstance activator, CEntityInstance caller)
-        {
-            try
-            {
-                if (activator == null || caller == null)
-                {
-                    SharpTimerDebug("Null reference detected in trigger_push hook.");
-                    return HookResult.Continue;
-                }
-
-                if (activator.DesignerName != "player" || triggerPushFixEnabled == false)
-                {
-                    return HookResult.Continue;
-                }
-
-                var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle!).Controller.Value!.Handle);
-
-                if (player == null)
-                {
-                    SharpTimerDebug("Player is null in trigger_push hook.");
-                    return HookResult.Continue;
-                }
-
-                if (!IsAllowedPlayer(player)) return HookResult.Continue;
-
-                if (triggerPushData.TryGetValue(caller.Handle, out TriggerPushData? TriggerPushData) && triggerPushFixEnabled == true && player.PlayerPawn.Value!.AbsVelocity.Length() > TriggerPushData.PushSpeed)
-                {
-                    player.PlayerPawn.Value!.AbsVelocity.X += TriggerPushData.PushDirEntitySpace.X * TriggerPushData.PushSpeed;
-                    player.PlayerPawn.Value!.AbsVelocity.Y += TriggerPushData.PushDirEntitySpace.Y * TriggerPushData.PushSpeed;
-                    player.PlayerPawn.Value!.AbsVelocity.Z += TriggerPushData.PushDirEntitySpace.Z * TriggerPushData.PushSpeed;
-                    SharpTimerDebug($"trigger_push OnStartTouch Player velocity adjusted for {player.PlayerName} by {TriggerPushData.PushSpeed}");
-                }
-
-                return HookResult.Continue;
-            }
-            catch (Exception ex)
-            {
-                SharpTimerError($"Exception in trigger_push hook: {ex.Message}");
-                return HookResult.Continue;
-            }
-        }
     }
 }

@@ -32,19 +32,19 @@ namespace SharpTimer.Database
 
         public async Task<IDbConnection> OpenConnectionAsync(string dbPath)
         {
-            IDbConnection connection = null;
+            IDbConnection? connection = null;
             switch (dbType)
             {
                 case DatabaseType.MySQL:
                     connection = new MySqlConnection(await GetConnectionStringFromConfigFile());
-                    await (connection as MySqlConnection).OpenAsync();
+                    await (connection as MySqlConnection)!.OpenAsync();
                     break;
                 case DatabaseType.PostgreSQL:
                     connection = new NpgsqlConnection(await GetConnectionStringFromConfigFile());
-                    await (connection as NpgsqlConnection).OpenAsync();
+                    await (connection as NpgsqlConnection)!.OpenAsync();
                     break;
             }
-            if (connection.State != ConnectionState.Open)
+            if (connection!.State != ConnectionState.Open)
             {
                 useMySQL = false;
                 usePostgres = false;
@@ -97,8 +97,8 @@ namespace SharpTimer.Database
 
         private async Task CheckTablesAsync()
         {
-            string[] playerRecords;
-            string[] playerStats;
+            string[]? playerRecords;
+            string[]? playerStats;
 
             switch (dbType)
             {
@@ -122,7 +122,6 @@ namespace SharpTimer.Database
                                                     "HideKeys BOOL DEFAULT false",
                                                     "HideJS BOOL DEFAULT false",
                                                     "SoundsEnabled BOOL DEFAULT false",
-                                                    "PlayerFov INT DEFAULT 0",
                                                     "IsVip BOOL DEFAULT false",
                                                     "BigGifID VARCHAR(16) DEFAULT 'x'"
                                                 ];
@@ -147,7 +146,6 @@ namespace SharpTimer.Database
                                                     @"""HideKeys"" BOOL DEFAULT false",
                                                     @"""HideJS"" BOOL DEFAULT false",
                                                     @"""SoundsEnabled"" BOOL DEFAULT false",
-                                                    @"""PlayerFov"" INT DEFAULT 0",
                                                     @"""IsVip"" BOOL DEFAULT false",
                                                     @"""BigGifID"" VARCHAR(16) DEFAULT 'x'"
                                                 ];
@@ -165,13 +163,13 @@ namespace SharpTimer.Database
                     // Check PlayerRecords
                     SharpTimerDebug($"Checking PlayerRecords Table...");
                     await CreatePlayerRecordsTableAsync(connection);
-                    await UpdateTableColumnsAsync(connection, "PlayerRecords", playerRecords);
+                    await UpdateTableColumnsAsync(connection, "PlayerRecords", playerRecords!);
                     await AddConstraintsToRecordsTableAsync(connection, "PlayerRecords");
 
                     // Check PlayerStats
                     SharpTimerDebug($"Checking PlayerStats Table...");
                     await CreatePlayerStatsTableAsync(connection);
-                    await UpdateTableColumnsAsync(connection, "PlayerStats", playerStats);
+                    await UpdateTableColumnsAsync(connection, "PlayerStats", playerStats!);
                 }
                 catch (Exception ex)
                 {
@@ -182,7 +180,7 @@ namespace SharpTimer.Database
 
         private async Task CreatePlayerRecordsTableAsync(IDbConnection connection)
         {
-            DbCommand createTableCommand;
+            DbCommand? createTableCommand;
             string createTableQuery;
             switch (dbType)
             {
@@ -224,7 +222,7 @@ namespace SharpTimer.Database
             {
                 try
                 {
-                    await createTableCommand.ExecuteNonQueryAsync();
+                    _ = await createTableCommand!.ExecuteNonQueryAsync();
                 }
                 catch (Exception ex)
                 {
@@ -251,7 +249,7 @@ namespace SharpTimer.Database
 
         private async Task<bool> TableExistsAsync(IDbConnection connection, string tableName)
         {
-            DbCommand command;
+            DbCommand? command;
             string query;
             switch (dbType)
             {
@@ -271,7 +269,7 @@ namespace SharpTimer.Database
             {
                 try
                 {
-                    int count = Convert.ToInt32(await command.ExecuteScalarAsync());
+                    int count = Convert.ToInt32(await command!.ExecuteScalarAsync());
                     return count > 0;
                 }
                 catch (Exception ex)
@@ -284,7 +282,7 @@ namespace SharpTimer.Database
 
         private async Task<bool> ColumnExistsAsync(IDbConnection connection, string tableName, string columnName)
         {
-            DbCommand command;
+            DbCommand? command;
             string query;
             switch (dbType)
             {
@@ -304,7 +302,7 @@ namespace SharpTimer.Database
             {
                 try
                 {
-                    int count = Convert.ToInt32(await command.ExecuteScalarAsync());
+                    int count = Convert.ToInt32(await command!.ExecuteScalarAsync());
                     return count > 0;
                 }
                 catch (Exception ex)
@@ -317,7 +315,7 @@ namespace SharpTimer.Database
 
         private async Task AddColumnToTableAsync(IDbConnection connection, string tableName, string columnDefinition)
         {
-            DbCommand command;
+            DbCommand? command;
             string query;
             switch (dbType)
             {
@@ -337,7 +335,7 @@ namespace SharpTimer.Database
             {
                 try
                 {
-                    await command.ExecuteNonQueryAsync();
+                    _ = await command!.ExecuteNonQueryAsync();
                 }
                 catch (Exception ex)
                 {
@@ -348,8 +346,8 @@ namespace SharpTimer.Database
 
         private async Task AddConstraintsToRecordsTableAsync(IDbConnection connection, string tableName)
         {
-            DbCommand dropCommand;
-            DbCommand command;
+            DbCommand? dropCommand;
+            DbCommand? command;
             string dropQuery;
             string query;
             switch (dbType)
@@ -375,7 +373,7 @@ namespace SharpTimer.Database
             {
                 try
                 {
-                    await command.ExecuteNonQueryAsync();
+                    await command!.ExecuteNonQueryAsync();
                 }
                 catch (Exception ex)
                 {
@@ -386,7 +384,7 @@ namespace SharpTimer.Database
             {
                 try
                 {
-                    await command.ExecuteNonQueryAsync();
+                    await command!.ExecuteNonQueryAsync();
                 }
                 catch (Exception ex)
                 {
@@ -397,7 +395,7 @@ namespace SharpTimer.Database
 
         private async Task CreatePlayerStatsTableAsync(IDbConnection connection)
         {
-            DbCommand command;
+            DbCommand? command;
             string query;
             switch (dbType)
             {
@@ -412,7 +410,6 @@ namespace SharpTimer.Database
                                             HideKeys BOOL,
                                             HideJS BOOL,
                                             SoundsEnabled BOOL,
-                                            PlayerFov INT,
                                             IsVip BOOL,
                                             BigGifID VARCHAR(16),
                                             PRIMARY KEY (SteamID)
@@ -430,7 +427,6 @@ namespace SharpTimer.Database
                                             ""HideKeys"" BOOL,
                                             ""HideJS"" BOOL,
                                             ""SoundsEnabled"" BOOL,
-                                            ""PlayerFov"" INT,
                                             ""IsVip"" BOOL,
                                             ""BigGifID"" VARCHAR(16),
                                             PRIMARY KEY (""SteamID"")
@@ -445,7 +441,7 @@ namespace SharpTimer.Database
             {
                 try
                 {
-                    await command.ExecuteNonQueryAsync();
+                    await command!.ExecuteNonQueryAsync();
                 }
                 catch (Exception ex)
                 {
@@ -483,8 +479,8 @@ namespace SharpTimer.Database
                         await CreatePlayerRecordsTableAsync(connection);
 
                         string formattedTime = FormatTime(timerTicks);
-                        string selectQuery;
-                        DbCommand selectCommand;
+                        string? selectQuery;
+                        DbCommand? selectCommand;
                         switch (dbType)
                         {
                             case DatabaseType.MySQL:
@@ -501,11 +497,11 @@ namespace SharpTimer.Database
                                 break;
                         }
                         // Check if the record already exists or has a higher timer value
-                        selectCommand.AddParameterWithValue("@MapName", currentMapNamee);
-                        selectCommand.AddParameterWithValue("@SteamID", steamId);
-                        selectCommand.AddParameterWithValue("@SteamID", style);
+                        selectCommand!.AddParameterWithValue("@MapName", currentMapNamee);
+                        selectCommand!.AddParameterWithValue("@SteamID", steamId);
+                        selectCommand!.AddParameterWithValue("@SteamID", style);
 
-                        var row = await selectCommand.ExecuteReaderAsync();
+                        var row = await selectCommand!.ExecuteReaderAsync();
 
                         if (row.Read())
                         {
@@ -542,8 +538,8 @@ namespace SharpTimer.Database
 
                             await row.CloseAsync();
                             // Update or insert the record
-                            string upsertQuery;
-                            DbCommand upsertCommand;
+                            string? upsertQuery;
+                            DbCommand? upsertCommand;
                             switch (dbType)
                             {
                                 case DatabaseType.MySQL:
@@ -590,18 +586,18 @@ namespace SharpTimer.Database
                             }
                             using (upsertCommand)
                             {
-                                upsertCommand.AddParameterWithValue("@MapName", currentMapNamee);
-                                upsertCommand.AddParameterWithValue("@PlayerName", playerName);
-                                upsertCommand.AddParameterWithValue("@TimesFinished", dBtimesFinished);
-                                upsertCommand.AddParameterWithValue("@LastFinished", dBlastFinished);
-                                upsertCommand.AddParameterWithValue("@TimerTicks", new_dBtimerTicks);
-                                upsertCommand.AddParameterWithValue("@FormattedTime", dBFormattedTime);
-                                upsertCommand.AddParameterWithValue("@UnixStamp", dBunixStamp);
-                                upsertCommand.AddParameterWithValue("@SteamID", steamId);
-                                upsertCommand.AddParameterWithValue("@Style", style);
+                                upsertCommand!.AddParameterWithValue("@MapName", currentMapNamee);
+                                upsertCommand!.AddParameterWithValue("@PlayerName", playerName);
+                                upsertCommand!.AddParameterWithValue("@TimesFinished", dBtimesFinished);
+                                upsertCommand!.AddParameterWithValue("@LastFinished", dBlastFinished);
+                                upsertCommand!.AddParameterWithValue("@TimerTicks", new_dBtimerTicks);
+                                upsertCommand!.AddParameterWithValue("@FormattedTime", dBFormattedTime);
+                                upsertCommand!.AddParameterWithValue("@UnixStamp", dBunixStamp);
+                                upsertCommand!.AddParameterWithValue("@SteamID", steamId);
+                                upsertCommand!.AddParameterWithValue("@Style", style);
                                 if (usePostgres == true && globalRanksEnabled == true && ((dBtimesFinished <= maxGlobalFreePoints && globalRanksFreePointsEnabled == true) || beatPB)) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX, style);
                                 if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && useMySQL == true && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
-                                await upsertCommand.ExecuteNonQueryAsync();
+                                await upsertCommand!.ExecuteNonQueryAsync();
                                 Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to Postgres for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
                                 if (usePostgres == true && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
                                 if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, dBtimesFinished, style)));
@@ -614,8 +610,8 @@ namespace SharpTimer.Database
                             if (enableReplays == true && usePostgres == true) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
                             await row.CloseAsync();
 
-                            string upsertQuery;
-                            DbCommand upsertCommand;
+                            string? upsertQuery;
+                            DbCommand? upsertCommand;
                             switch (dbType)
                             {
                                 case DatabaseType.MySQL:
@@ -634,16 +630,16 @@ namespace SharpTimer.Database
 
                             using (upsertCommand)
                             {
-                                upsertCommand.AddParameterWithValue("@MapName", currentMapNamee);
-                                upsertCommand.AddParameterWithValue("@PlayerName", playerName);
-                                upsertCommand.AddParameterWithValue("@TimesFinished", 1);
-                                upsertCommand.AddParameterWithValue("@LastFinished", timeNowUnix);
-                                upsertCommand.AddParameterWithValue("@TimerTicks", timerTicks);
-                                upsertCommand.AddParameterWithValue("@FormattedTime", formattedTime);
-                                upsertCommand.AddParameterWithValue("@UnixStamp", timeNowUnix);
-                                upsertCommand.AddParameterWithValue("@SteamID", steamId);
-                                upsertCommand.AddParameterWithValue("@Style", style);
-                                await upsertCommand.ExecuteNonQueryAsync();
+                                upsertCommand!.AddParameterWithValue("@MapName", currentMapNamee);
+                                upsertCommand!.AddParameterWithValue("@PlayerName", playerName);
+                                upsertCommand!.AddParameterWithValue("@TimesFinished", 1);
+                                upsertCommand!.AddParameterWithValue("@LastFinished", timeNowUnix);
+                                upsertCommand!.AddParameterWithValue("@TimerTicks", timerTicks);
+                                upsertCommand!.AddParameterWithValue("@FormattedTime", formattedTime);
+                                upsertCommand!.AddParameterWithValue("@UnixStamp", timeNowUnix);
+                                upsertCommand!.AddParameterWithValue("@SteamID", steamId);
+                                upsertCommand!.AddParameterWithValue("@Style", style);
+                                await upsertCommand!.ExecuteNonQueryAsync();
                                 if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX, style);
                                 if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                                 Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to Postgres for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
