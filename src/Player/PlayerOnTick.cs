@@ -149,11 +149,6 @@ namespace SharpTimer
                             CheckPlayerCoords(player, playerSpeed);
                         }
 
-                        if (triggerPushFixEnabled == true)
-                        {
-                            CheckPlayerTriggerPushCoords(player, playerSpeed);
-                        }
-
                         if (jumpStatsEnabled == true) OnJumpStatTick(player, playerSpeed, player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!, player.PlayerPawn?.Value.EyeAngles!, playerButtons);
 
                         if (forcePlayerSpeedEnabled == true)
@@ -188,19 +183,6 @@ namespace SharpTimer
                             var steamID = player.SteamID.ToString();
                             _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true, playerTimer.currentStyle));                           
                             playerTimer.changedStyle = false;
-                        }
-
-                        if (hideAllPlayers == true)
-                        {
-                            foreach (var gun in player.PlayerPawn!.Value.WeaponServices!.MyWeapons)
-                            {
-                                if (gun.Value!.Render != Color.FromArgb(0, 255, 255, 255) ||
-                                    gun.Value!.ShadowStrength != 0.0f)
-                                {
-                                    gun.Value!.Render = Color.FromArgb(0, 255, 255, 255);
-                                    gun.Value!.ShadowStrength = 0.0f;
-                                }
-                            }
                         }
 
                         if (displayScoreboardTags == true)

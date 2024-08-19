@@ -299,38 +299,5 @@ namespace SharpTimer
                 SharpTimerError($"Error in CheckPlayerCoords: {ex.Message}");
             }
         }
-
-        private void CheckPlayerTriggerPushCoords(CCSPlayerController player, Vector playerSpeed)
-        {
-            try
-            {
-                if (player == null || !IsAllowedPlayer(player) || triggerPushData.Count == 0) return;
-
-                Vector? playerPos = player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin;
-
-                if (playerPos == null) return;
-
-                var data = GetTriggerPushDataForVector(playerPos);
-                if (data != null)
-                {
-                    var (pushDirEntitySpace, pushSpeed) = data.Value;
-                    float currentSpeed = playerSpeed.Length();
-                    float speedDifference = pushSpeed - currentSpeed;
-
-                    if (speedDifference > 0)
-                    {
-                        float velocityChange = speedDifference;
-                        player.PlayerPawn.Value!.AbsVelocity.X += pushDirEntitySpace.X * velocityChange;
-                        player.PlayerPawn.Value!.AbsVelocity.Y += pushDirEntitySpace.Y * velocityChange;
-                        player.PlayerPawn.Value!.AbsVelocity.Z += pushDirEntitySpace.Z * velocityChange;
-                        SharpTimerDebug($"trigger_push fix: Player velocity adjusted for {player.PlayerName} by {speedDifference}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                SharpTimerError($"Error in CheckPlayerTriggerPushCoords: {ex.Message}");
-            }
-        }
     }
 }

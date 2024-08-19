@@ -37,7 +37,6 @@ namespace SharpTimer
         private Dictionary<int, CCSPlayerController> connectedPlayers = [];
         private Dictionary<int, CCSPlayerController> connectedReplayBots = [];
         private Dictionary<uint, CCSPlayerController> specTargets = [];
-        private Dictionary<nint, TriggerPushData> triggerPushData = [];
         private EntityCache? entityCache;
         public Dictionary<string, PlayerRecord>? SortedCachedRecords = [];
         private static readonly HttpClient httpClient = new();
@@ -79,7 +78,6 @@ namespace SharpTimer
         public string[]? currentMapOverrideDisableTelehop = [];
         public string[]? currentMapOverrideMaxSpeedLimit = [];
         public bool currentMapOverrideStageRequirement = false;
-        public bool currentMapOverrideTriggerPushFix = false;
         private Dictionary<int, Vector?> bonusRespawnPoses = [];
         private Dictionary<int, QAngle?> bonusRespawnAngs = [];
         private Dictionary<nint, int> stageTriggers = [];
@@ -155,8 +153,6 @@ namespace SharpTimer
         public bool isRankHUDTimerRunning = false;
         public bool removeCrouchFatigueEnabled = true;
         public bool goToEnabled = false;
-        public bool fovChangerEnabled = true;
-        public bool triggerPushFixEnabled = false;
         public int cmdCooldown = 64;
         public float fakeTriggerHeight = 50;
         public int altVeloMaxSpeed = 3000;

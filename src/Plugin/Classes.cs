@@ -25,14 +25,12 @@ namespace SharpTimer
     {
         public List<CBaseTrigger> Triggers { get; private set; }
         public List<CInfoTeleportDestination> InfoTeleportDestinations { get; private set; }
-        public List<CTriggerPush> TriggerPushEntities { get; private set; }
         public List<CPointEntity> InfoTargetEntities { get; private set; }
 
         public EntityCache()
         {
             Triggers = [];
             InfoTeleportDestinations = [];
-            TriggerPushEntities = [];
             InfoTargetEntities = [];
             UpdateCache();
         }
@@ -41,7 +39,6 @@ namespace SharpTimer
         {
             Triggers = Utilities.FindAllEntitiesByDesignerName<CBaseTrigger>("trigger_multiple").ToList();
             InfoTeleportDestinations = Utilities.FindAllEntitiesByDesignerName<CInfoTeleportDestination>("info_teleport_destination").ToList();
-            TriggerPushEntities = Utilities.FindAllEntitiesByDesignerName<CTriggerPush>("trigger_push").ToList();
         }
     }
 
@@ -92,9 +89,6 @@ namespace SharpTimer
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? OverrideStageRequirement { get; set; }
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string? OverrideTriggerPushFix { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? GlobalPointsMultiplier { get; set; }
@@ -281,15 +275,5 @@ namespace SharpTimer
     {
         public Dictionary<int, int>? StageTimes { get; set; }
         public Dictionary<int, string>? StageVelos { get; set; }
-    }
-
-    // Trigger push
-    public class TriggerPushData(float pushSpeed, QAngle pushEntitySpace, Vector pushDirEntitySpace, Vector pushMins, Vector pushMaxs)
-    {
-        public float PushSpeed { get; set; } = pushSpeed;
-        public QAngle PushEntitySpace { get; set; } = pushEntitySpace;
-        public Vector PushDirEntitySpace { get; set; } = pushDirEntitySpace;
-        public Vector PushMins { get; set; } = pushMins;
-        public Vector PushMaxs { get; set; } = pushMaxs;
     }
 }

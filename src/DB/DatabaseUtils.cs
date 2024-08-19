@@ -1640,7 +1640,7 @@ namespace SharpTimer
 
                         using (var selectCommand = new NpgsqlCommand(selectQuery, connection))
                         {
-                            selectCommand.Parameters.AddWithValue("@MapName", bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}");
+                            selectCommand.Parameters.AddWithValue("@MapName", bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}");
                             selectCommand.Parameters.AddWithValue("@Style", style);
 
                             var row = await selectCommand.ExecuteReaderAsync();

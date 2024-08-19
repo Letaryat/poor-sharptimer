@@ -171,7 +171,7 @@ namespace SharpTimer
                 {
                     await command.ExecuteNonQueryAsync();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     SharpTimerDebug($"Table already has primary key constraint");
                 }
