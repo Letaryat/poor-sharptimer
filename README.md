@@ -169,4 +169,4 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 ## Authors:
 [DEA_BB](https://twitter.com/dea_bb)
 [Letaryat](https://github.com/Letaryat)
-[Letaryat](https://github.com/rcnoob)
+[rcnoob](https://github.com/rcnoob)
