@@ -156,11 +156,6 @@ namespace SharpTimer
                         AddTimer(5.0f, () =>
                         {
                             if (!player.IsValid || player == null || !IsAllowedPlayer(player)) return;
-
-                            if ((useMySQL || usePostgres) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
-                            {
-                                SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
-                            }
                         });
 
                         if (spawnOnRespawnPos == true && currentRespawnPos != null)

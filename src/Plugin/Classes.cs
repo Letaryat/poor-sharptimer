@@ -148,7 +148,6 @@ namespace SharpTimer
         public bool SoundsEnabled { get; set; }
         public bool BindsDisabled { get; set; }
         public bool HideJumpStats { get; set; }
-        public int PlayerFov { get; set; }
         public int TimesConnected { get; set; }
         public int TicksSinceLastCmd { get; set; }
         public int TicksSinceLastRankUpdate { get; set; }
