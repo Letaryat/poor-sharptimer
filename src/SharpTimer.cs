@@ -88,7 +88,18 @@ namespace SharpTimer
                     if (@event.Userid == null) return HookResult.Continue;
                     var player = @event.Userid;
 
-                    if (player.IsValid && !player.IsBot)
+                    if (player.IsValid && player.IsBot)
+                    {
+                        if (startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile)
+                        {
+                            AddTimer(4.0f, () =>
+                            {
+                                Server.ExecuteCommand($"kickid {player.Slot}");
+                                SharpTimerDebug($"Kicking unused bot on spawn...");
+                            });
+                        }
+                    }
+                    else if (player.IsValid && !player.IsBot)
                     {
                         Server.NextFrame(() => InvalidateTimer(player));
                     }

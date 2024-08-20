@@ -28,7 +28,7 @@ namespace SharpTimer
 
         public override string ModuleName => "SharpTimer";
         public override string ModuleVersion => $"0.3.0q";
-        public override string ModuleAuthor => "dea https://github.com/deafps/";
+        public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
         public Dictionary<int, PlayerTimerInfo> playerTimers = [];
@@ -36,6 +36,7 @@ namespace SharpTimer
         private Dictionary<int, PlayerReplays> playerReplays = [];
         private Dictionary<int, List<PlayerCheckpoint>> playerCheckpoints = [];
         public Dictionary<int, CCSPlayerController> connectedPlayers = [];
+        private Dictionary<int, CCSPlayerController> connectedReplayBots = [];
         private Dictionary<uint, CCSPlayerController> specTargets = [];
         private EntityCache? entityCache;
         public Dictionary<string, PlayerRecord>? SortedCachedRecords = [];
@@ -113,6 +114,10 @@ namespace SharpTimer
         public bool enableStageTimes = true;
         public bool ignoreJSON = false;
         public bool enableReplays = false;
+        public bool enableSRreplayBot = false;
+        public bool startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = false;
+        public bool foundReplayBot = false;
+        public string replayBotName = "";
         public int maxReplayFrames = 19200;
 
         public bool globalRanksEnabled = false;

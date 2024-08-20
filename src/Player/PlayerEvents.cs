@@ -24,7 +24,7 @@ namespace SharpTimer
 {
     public partial class SharpTimer
     {
-        private void OnPlayerConnect(CCSPlayerController? player)
+        private void OnPlayerConnect(CCSPlayerController? player, bool isForBot = false)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace SharpTimer
                     playerTimers[playerSlot].SetRespawnAng = null;
                     playerTimers[playerSlot].SoundsEnabled = soundsEnabledByDefault;
 
-                    _ = Task.Run(async () => await IsPlayerATester(steamID, playerSlot));
+                    if (isForBot == false) _ = Task.Run(async () => await IsPlayerATester(steamID, playerSlot));
 
                     //PlayerSettings
                     if (enableDb) _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, playerSlot, true));
@@ -106,12 +106,17 @@ namespace SharpTimer
             }
         }
 
-        private void OnPlayerDisconnect(CCSPlayerController? player)
+        private void OnPlayerDisconnect(CCSPlayerController? player, bool isForBot = false)
         {
             if (player == null) return;
 
             try
             {
+                if (isForBot == true && connectedReplayBots.TryGetValue(player.Slot, out var connectedReplayBot))
+                {
+                    connectedReplayBots.Remove(player.Slot);
+                    SharpTimerDebug($"Removed bot {connectedReplayBot.PlayerName} with UserID {connectedReplayBot.UserId} from connectedReplayBots.");
+                }
                 if (connectedPlayers.TryGetValue(player.Slot, out var connectedPlayer))
                 {
                     connectedPlayers.Remove(player.Slot);
@@ -144,7 +149,7 @@ namespace SharpTimer
                     SharpTimerDebug($"Total playerTimers: {playerTimers.Count}");
                     SharpTimerDebug($"Total specTargets: {specTargets.Count}");
 
-                    if (connectMsgEnabled == true)
+                    if (connectMsgEnabled == true && isForBot == false)
                     {
                         PrintToChatAll(Localizer["disconnect_message", connectedPlayer.PlayerName]);
                     }
