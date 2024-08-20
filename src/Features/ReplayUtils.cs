@@ -272,7 +272,6 @@ namespace SharpTimer
                 Server.NextFrame(() =>
                 {
                     startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = false;
-
                     foreach (CCSPlayerController bot in connectedReplayBots.Values.ToList())
                     {
                         if (bot != null)
@@ -281,7 +280,6 @@ namespace SharpTimer
                             if (connectedReplayBots.TryGetValue(bot.Slot, out var someValue)) connectedReplayBots.Remove(bot.Slot);
                         }
                     }
-
                     Server.ExecuteCommand("sv_cheats 1");
                     Server.ExecuteCommand("bot_add_ct");
                     Server.ExecuteCommand("bot_quota 1");
@@ -296,12 +294,10 @@ namespace SharpTimer
                         foundReplayBot = false;
                         SharpTimerDebug($"Trying to find replay bot!");
                         var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
-
                         foreach (var tempPlayer in playerEntities)
                         {
                             if (tempPlayer == null || !tempPlayer.IsValid || !tempPlayer.IsBot || tempPlayer.IsHLTV)
                                 continue;
-
                             if (tempPlayer.UserId.HasValue)
                             {
                                 if (foundReplayBot == true)

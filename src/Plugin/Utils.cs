@@ -838,9 +838,23 @@ namespace SharpTimer
                             else
                                 SharpTimerError("MapExec Error: file name returned null");
                         }
-
-                        if (hideAllPlayers == true) Server.ExecuteCommand($"mp_teammates_are_enemies 1");
                     });
+
+                    if (enableReplays && enableSRreplayBot)
+                    {
+                        AddTimer(5.0f, () =>
+                        {
+                            if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0)
+                                _ = Task.Run(async () => await SpawnReplayBot());
+                            else
+                            {
+                                PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
+                                PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
+                                PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
+                                SharpTimerError("Couldnt Spawn Replay bot! Please make sure mp_force_pick_time is set to 1 in your custom_exec.cfg");
+                            }
+                        });
+                    }
 
                     if (removeCrouchFatigueEnabled == true) Server.ExecuteCommand("sv_timebetweenducks 0");
 
@@ -1008,25 +1022,7 @@ namespace SharpTimer
                         else
                             SharpTimerError("MapExec Error: file name returned null");
                     }
-
-                    if (hideAllPlayers == true) Server.ExecuteCommand($"mp_teammates_are_enemies 1");
                 });
-
-                if (enableReplays && enableSRreplayBot)
-                {
-                    AddTimer(5.0f, () =>
-                    {
-                        if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0)
-                            _ = Task.Run(async () => await SpawnReplayBot());
-                        else
-                        {
-                            PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
-                            PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
-                            PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
-                            SharpTimerError("Couldnt Spawn Replay bot! Please make sure mp_force_pick_time is set to 1 in your custom_exec.cfg");
-                        }
-                    });
-                }
 
                 if (adServerRecordEnabled == true) ADtimerServerRecord();
                 if (adMessagesEnabled == true) ADtimerMessages();
@@ -1052,9 +1048,9 @@ namespace SharpTimer
 
                     if (root.TryGetProperty("Unranked", out JsonElement UnrankedElement))
                     {
-                        UnrankedTitle = UnrankedElement.GetProperty("title").GetString();
-                        UnrankedColor = UnrankedElement.GetProperty("color").GetString();
-                        UnrankedIcon = UnrankedElement.GetProperty("icon").GetString();
+                        UnrankedTitle = UnrankedElement.GetProperty("title").GetString()!;
+                        UnrankedColor = UnrankedElement.GetProperty("color").GetString()!;
+                        UnrankedIcon = UnrankedElement.GetProperty("icon").GetString()!;
                     }
 
                     string[] rankTitles = new string[9];
@@ -1067,10 +1063,10 @@ namespace SharpTimer
                         string rankName = $"Rank{i}";
                         if (root.TryGetProperty(rankName, out JsonElement rankElement))
                         {
-                            rankTitles[i - 1] = rankElement.GetProperty("title").GetString();
+                            rankTitles[i - 1] = rankElement.GetProperty("title").GetString()!;
                             rankPercents[i - 1] = rankElement.GetProperty("percent").GetDouble();
-                            rankColors[i - 1] = rankElement.GetProperty("color").GetString();
-                            rankIcons[i - 1] = rankElement.GetProperty("icon").GetString();
+                            rankColors[i - 1] = rankElement.GetProperty("color").GetString()!;
+                            rankIcons[i - 1] = rankElement.GetProperty("icon").GetString()!;
                         }
                     }
 
@@ -1271,23 +1267,6 @@ namespace SharpTimer
                         currentMapOverrideStageRequirement = false;
                     }
 
-                    if (!string.IsNullOrEmpty(mapInfo.OverrideTriggerPushFix))
-                    {
-                        try
-                        {
-                            currentMapOverrideTriggerPushFix = bool.Parse(mapInfo.OverrideTriggerPushFix);
-                            SharpTimerConPrint($"Overriding TriggerPushFix...");
-                        }
-                        catch (FormatException)
-                        {
-                            SharpTimerError("Invalid boolean string format for OverrideTriggerPushFix");
-                        }
-                    }
-                    else
-                    {
-                        currentMapOverrideTriggerPushFix = false;
-                    }
-
                     if (!string.IsNullOrEmpty(mapInfo.GlobalPointsMultiplier))
                     {
                         try
@@ -1348,9 +1327,6 @@ namespace SharpTimer
                         DrawWireframe3D(endRight, endLeft, endBeamColor);
                     }
 
-                    if (triggerPushFixEnabled == true && currentMapOverrideTriggerPushFix == false)
-                        FindTriggerPushData();
-
                     if (useTriggers == true || useTriggersAndFakeZones == true)
                     {
                         FindStageTriggers();
@@ -1364,9 +1340,6 @@ namespace SharpTimer
                 {
                     SharpTimerConPrint($"Map data json not found for map: {currentMapName}!");
                     SharpTimerConPrint($"Trying to hook Triggers supported by default!");
-
-                    if (triggerPushFixEnabled == true && currentMapOverrideTriggerPushFix == false)
-                        FindTriggerPushData();
 
                     KillServerCommandEnts();
 
@@ -1447,10 +1420,8 @@ namespace SharpTimer
             currentMapOverrideDisableTelehop = []; //making sure previous map overrides are reset
             currentMapOverrideMaxSpeedLimit = [];
             currentMapOverrideStageRequirement = false;
-            currentMapOverrideTriggerPushFix = false;
 
             globalPointsMultiplier = 1.0f;
-
             startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = false;
         }
 

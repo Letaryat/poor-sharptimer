@@ -85,7 +85,7 @@ namespace SharpTimer
 
                 string mapImg = await GetMapImage(bonusX);
                 bool isFirstTime = string.IsNullOrEmpty(timeDifference);
-                string style = GetNamedStyle(playerTimers[player.Slot].currentStyle);
+                string style = GetNamedStyle(playerTimers[player!.Slot].currentStyle);
 
                 using var client = new HttpClient();
 
