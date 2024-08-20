@@ -261,15 +261,6 @@ namespace SharpTimer
             }
         }
 
-        [ConsoleCommand("sharptimer_hide_all_players", "Whether all players should be hidden or not. Default value: false")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerHideConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            hideAllPlayers = bool.TryParse(args, out bool hideAllPlayersValue) ? hideAllPlayersValue : args != "0" && hideAllPlayers;
-        }
-
         [ConsoleCommand("sharptimer_kill_pointservercommand_entities", "If True the plugin will kill all point_servercommand ents (necessary to make xplay maps usable due to them being bad ports). Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerPointServerCommandConvar(CCSPlayerController? player, CommandInfo command)
@@ -575,15 +566,6 @@ namespace SharpTimer
             string args = command.ArgString;
 
             removeCollisionEnabled = bool.TryParse(args, out bool removeCollisionEnabledValue) ? removeCollisionEnabledValue : args != "0" && removeCollisionEnabled;
-        }
-
-        [ConsoleCommand("sharptimer_trigger_push_fix", "When enabled all trigger_push ents will only push once OnStartTouch. Default value: false")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerTriggerPushFixConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            triggerPushFixEnabled = bool.TryParse(args, out bool triggerPushFixEnabledValue) ? triggerPushFixEnabledValue : args != "0" && triggerPushFixEnabled;
         }
 
         [ConsoleCommand("sharptimer_checkpoints_enabled", "Whether !cp, !tp and !prevcp are enabled by default or not. Default value: false")]

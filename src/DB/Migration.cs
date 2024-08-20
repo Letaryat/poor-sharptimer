@@ -31,7 +31,7 @@ public partial class SharpTimer
 
         using (connection)
         {
-            DbCommand cmd = null;
+            DbCommand? cmd = null;
             switch (dbType)
             {
                 case DatabaseType.MySQL:
@@ -62,7 +62,7 @@ public partial class SharpTimer
 
             using (cmd)
             {
-                cmd.ExecuteNonQuery();
+                cmd?.ExecuteNonQuery();
             }
 
             // Get the last applied migration version
@@ -75,7 +75,7 @@ public partial class SharpTimer
                 // Check if the migration has already been applied
                 if (string.Compare(version, lastAppliedVersion, StringComparison.OrdinalIgnoreCase) <= 0) continue;
                 var sqlScript = File.ReadAllText(file);
-                DbCommand cmdMigration = null;
+                DbCommand? cmdMigration = null;
                 switch (dbType)
                 {
                     case DatabaseType.MySQL:
@@ -91,7 +91,7 @@ public partial class SharpTimer
                 }
                 using (cmdMigration)
                 {
-                    cmdMigration.ExecuteNonQuery();
+                    cmdMigration?.ExecuteNonQuery();
                 }
 
                 // Update the last applied migration version
@@ -104,7 +104,7 @@ public partial class SharpTimer
 
     private string GetLastAppliedVersion(IDbConnection connection)
     {
-        DbCommand cmd = null;
+        DbCommand? cmd = null;
         switch (dbType)
         {
             case DatabaseType.MySQL:
@@ -119,14 +119,14 @@ public partial class SharpTimer
         }
         using (cmd)
         {
-            var result = cmd.ExecuteScalar();
+            var result = cmd?.ExecuteScalar();
             return result?.ToString() ?? string.Empty;
         }
     }
 
     private void UpdateLastAppliedVersion(IDbConnection connection, string version)
     {
-        DbCommand cmd = null;
+        DbCommand? cmd = null;
         switch (dbType)
         {
             case DatabaseType.MySQL:
@@ -142,8 +142,8 @@ public partial class SharpTimer
         }
         using (cmd)
         {
-            cmd.AddParameterWithValue("@Version", version);
-            cmd.ExecuteNonQuery();
+            cmd?.AddParameterWithValue("@Version", version);
+            cmd?.ExecuteNonQuery();
         }
     }
 }

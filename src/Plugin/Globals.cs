@@ -28,7 +28,7 @@ namespace SharpTimer
 
         public override string ModuleName => "SharpTimer";
         public override string ModuleVersion => $"0.3.0q";
-        public override string ModuleAuthor => "dea https://github.com/deafps/";
+        public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
         public Dictionary<int, PlayerTimerInfo> playerTimers = [];
@@ -38,7 +38,6 @@ namespace SharpTimer
         public Dictionary<int, CCSPlayerController> connectedPlayers = [];
         private Dictionary<int, CCSPlayerController> connectedReplayBots = [];
         private Dictionary<uint, CCSPlayerController> specTargets = [];
-        private Dictionary<nint, TriggerPushData> triggerPushData = [];
         private EntityCache? entityCache;
         public Dictionary<string, PlayerRecord>? SortedCachedRecords = [];
         private static readonly HttpClient httpClient = new();
@@ -95,7 +94,6 @@ namespace SharpTimer
         public string[]? currentMapOverrideDisableTelehop = [];
         public string[]? currentMapOverrideMaxSpeedLimit = [];
         public bool currentMapOverrideStageRequirement = false;
-        public bool currentMapOverrideTriggerPushFix = false;
 
         private Dictionary<nint, int> stageTriggers = [];
         private Dictionary<int, Vector?> stageTriggerPoses = [];
@@ -157,7 +155,6 @@ namespace SharpTimer
         public bool enableStylePoints = true;
 
         public bool removeLegsEnabled = false;
-        public bool hideAllPlayers = false;
         public bool removeCollisionEnabled = true;
         public bool disableDamage = true;
         public bool use2DSpeed = false;
@@ -189,7 +186,6 @@ namespace SharpTimer
         public bool removeCrouchFatigueEnabled = true;
         public bool goToEnabled = false;
         public bool fovChangerEnabled = true;
-        public bool triggerPushFixEnabled = false;
         public int cmdCooldown = 64;
         public float fakeTriggerHeight = 50;
         public bool Box3DZones = false;

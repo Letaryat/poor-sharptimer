@@ -71,22 +71,17 @@ namespace SharpTimer
                     if (isForBot == false) _ = Task.Run(async () => await IsPlayerATester(steamID, playerSlot));
 
                     //PlayerSettings
-                    if (enableDb && isForBot == false) _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, playerSlot, true));
+                    if (enableDb) _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, playerSlot, true));
 
                     if (connectMsgEnabled == true && !enableDb) PrintToChatAll(Localizer["connect_message", player.PlayerName]);
-                    if (cmdJoinMsgEnabled == true && isForBot == false) PrintAllEnabledCommands(player);
+                    if (cmdJoinMsgEnabled == true) PrintAllEnabledCommands(player);
 
                     SharpTimerDebug($"Added player {player.PlayerName} with UserID {player.UserId} to connectedPlayers");
                     SharpTimerDebug($"Total players connected: {connectedPlayers.Count}");
                     SharpTimerDebug($"Total playerTimers: {playerTimers.Count}");
                     SharpTimerDebug($"Total playerReplays: {playerReplays.Count}");
 
-                    if (isForBot == true || hideAllPlayers == true)
-                    {
-                        player.PlayerPawn.Value.Render = Color.FromArgb(0, 0, 0, 0);
-                        Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
-                    }
-                    else if (removeLegsEnabled == true)
+                    if (removeLegsEnabled == true)
                     {
                         player.PlayerPawn.Value.Render = Color.FromArgb(254, 254, 254, 254);
                         Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
@@ -122,7 +117,6 @@ namespace SharpTimer
                     connectedReplayBots.Remove(player.Slot);
                     SharpTimerDebug($"Removed bot {connectedReplayBot.PlayerName} with UserID {connectedReplayBot.UserId} from connectedReplayBots.");
                 }
-
                 if (connectedPlayers.TryGetValue(player.Slot, out var connectedPlayer))
                 {
                     connectedPlayers.Remove(player.Slot);
