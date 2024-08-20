@@ -385,66 +385,15 @@ namespace SharpTimer
         {
             try
             {
-                if (totalPlayers < 100)
+                foreach (var rank in rankDataList)
                 {
-                    if (placement <= 3)
-                        return getRankImg ? Rank9Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank9Title);
+                    if (rank.Placement > 0 && placement == rank.Placement)
+                        return getRankImg ? rank.Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : rank.Title);
 
-                    else if (placement <= 10)
-                        return getRankImg ? Rank8Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank8Title);
-
-                    else if (placement <= 25)
-                        return getRankImg ? Rank7Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank7Title);
-
-                    else if (placement <= 40)
-                        return getRankImg ? Rank6Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank6Title);
-
-                    else if (placement <= 55)
-                        return getRankImg ? Rank5Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank5Title);
-
-                    else if (placement <= 70)
-                        return getRankImg ? Rank4Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank4Title);
-
-                    else if (placement <= 85)
-                        return getRankImg ? Rank3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank3Title);
-
-                    else if (placement <= 95)
-                        return getRankImg ? Rank2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank2Title);
-
-                    else
-                        return getRankImg ? Rank1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank1Title);
+                    if (rank.Percent > 0 && percentage <= rank.Percent)
+                        return getRankImg ? rank.Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : rank.Title);
                 }
-                else
-                {
-                    if (percentage <= Rank9Percent)
-                        return getRankImg ? Rank9Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank9Title);
-
-                    else if (percentage <= Rank8Percent)
-                        return getRankImg ? Rank8Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank8Title);
-
-                    else if (percentage <= Rank7Percent)
-                        return getRankImg ? Rank7Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank7Title);
-
-                    else if (percentage <= Rank6Percent)
-                        return getRankImg ? Rank6Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank6Title);
-
-                    else if (percentage <= Rank5Percent)
-                        return getRankImg ? Rank5Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank5Title);
-
-                    else if (percentage <= Rank4Percent)
-                        return getRankImg ? Rank4Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank4Title);
-
-                    else if (percentage <= Rank3Percent)
-                        return getRankImg ? Rank3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank3Title);
-
-                    else if (percentage <= Rank2Percent)
-                        return getRankImg ? Rank2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank2Title);
-
-                    else if (percentage <= Rank1Percent)
-                        return getRankImg ? Rank1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : Rank1Title);
-
-                    else return UnrankedTitle;
-                }
+                return getRankImg ? UnrankedIcon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : UnrankedTitle);
             }
             catch (Exception ex)
             {
@@ -668,39 +617,25 @@ namespace SharpTimer
             {
                 if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
                 {
-                    if (string.IsNullOrEmpty(playerTimer.CachedRank)) return $"{ChatColors.Default}";
+                    if (string.IsNullOrEmpty(playerTimer.CachedRank))
+                        return $"{ChatColors.Default}";
 
                     string color = $"{ChatColors.Default}";
 
                     if (playerTimer.CachedRank.Contains(UnrankedTitle))
                         color = ReplaceVars(UnrankedColor);
 
-                    else if (playerTimer.CachedRank.Contains(Rank1Title))
-                        color = ReplaceVars(Rank1Color);
-
-                    else if (playerTimer.CachedRank.Contains(Rank2Title))
-                        color = ReplaceVars(Rank2Color);
-
-                    else if (playerTimer.CachedRank.Contains(Rank3Title))
-                        color = ReplaceVars(Rank3Color);
-
-                    else if (playerTimer.CachedRank.Contains(Rank4Title))
-                        color = ReplaceVars(Rank4Color);
-
-                    else if (playerTimer.CachedRank.Contains(Rank5Title))
-                        color = ReplaceVars(Rank5Color);
-
-                    else if (playerTimer.CachedRank.Contains(Rank6Title))
-                        color = ReplaceVars(Rank6Color);
-
-                    else if (playerTimer.CachedRank.Contains(Rank7Title))
-                        color = ReplaceVars(Rank7Color);
-
-                    else if (playerTimer.CachedRank.Contains(Rank8Title))
-                        color = ReplaceVars(Rank8Color);
-
-                    else if (playerTimer.CachedRank.Contains(Rank9Title))
-                        color = ReplaceVars(Rank9Color);
+                    else
+                    {
+                        foreach (var rank in rankDataList)
+                        {
+                            if (playerTimer.CachedRank.Contains(rank.Title!))
+                            {
+                                color = ReplaceVars(rank.Color!);
+                                break;
+                            }
+                        }
+                    }
 
                     return color;
                 }

@@ -264,49 +264,22 @@ namespace SharpTimer
         public string? remoteSurfDataSource = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/surf_.json";
         public string? testerPersonalGifsSource = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/tester_bling.json";
 
-        public string Rank9Title = "God";
-        public string Rank8Title = "Royalty";
-        public string Rank7Title = "Legend";
-        public string Rank6Title = "Master";
-        public string Rank5Title = "Diamond";
-        public string Rank4Title = "Platinum";
-        public string Rank3Title = "Gold";
-        public string Rank2Title = "Silver";
-        public string Rank1Title = "Bronze";
-        public string UnrankedTitle = "Unranked";
-
-        public string Rank9Color = "{darkred}";
-        public string Rank8Color = "{lightred}";
-        public string Rank7Color = "{orange}";
-        public string Rank6Color = "{lime}";
-        public string Rank5Color = "{purple}";
-        public string Rank4Color = "{lightblue}";
-        public string Rank3Color = "{yellow}";
-        public string Rank2Color = "{silver}";
-        public string Rank1Color = "{lightyellow}";
-        public string UnrankedColor = "{default}";
-
-        public double Rank9Percent = 1;
-        public double Rank8Percent = 3;
-        public double Rank7Percent = 10;
-        public double Rank6Percent = 25;
-        public double Rank5Percent = 40;
-        public double Rank4Percent = 55;
-        public double Rank3Percent = 70;
-        public double Rank2Percent = 85;
-        public double Rank1Percent = 100;
 
         public bool RankIconsEnabled;
-        public static string Rank9Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/god.gif";
-        public static string Rank8Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/royal3.png>";
-        public static string Rank7Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/legend3.png>";
-        public static string Rank6Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/master3.png>";
-        public static string Rank5Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/dia3.png>";
-        public static string Rank4Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/plat3.png>";
-        public static string Rank3Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/gold3.png";
-        public static string Rank2Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/silver3.png";
-        public static string Rank1Icon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/dev/remote_data/rank_icons/bronze.png";
+
+        public string UnrankedTitle = "[Unranked]";
+        public string UnrankedColor = "{default}";
         public static string UnrankedIcon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/unranked.png";
+
+        public List<RankData> rankDataList = new List<RankData>();
+        public class RankData
+        {
+            public string Title { get; set; } = "[Unknown Rank]";
+            public double Percent { get; set; } = 0;
+            public int Placement { get; set; } = 0;
+            public string Color { get; set; } = "{default}";
+            public string Icon { get; set; } = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/unranked.png";
+        }
 
         public struct WeaponSpeedStats
         {

@@ -57,5 +57,11 @@
     "percent": 1,
     "color": "{darkred}",
     "icon": "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/god.gif"
+  },
+  "Rank10": {
+    "title": "[#1]",
+    "placement": 1,
+    "color": "{darkred}",
+    "icon": "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/god.gif"
   }
 }
