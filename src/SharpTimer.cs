@@ -133,22 +133,16 @@ namespace SharpTimer
 
                 //specTargets[player.Pawn.Value.EntityHandle.Index] = new CCSPlayerController(player.Handle);
 
-                AddTimer(5.0f, () =>
-                {
-                    if (!player.IsValid || player == null || !IsAllowedPlayer(player))
-                        return;
+                if (enableStyles && playerTimers.ContainsKey(player.Slot))
+                    setStyle(player, playerTimers[player.Slot].currentStyle);
 
+                AddTimer(3.0f, () =>
+                {
                     if (enableDb && playerTimers.ContainsKey(player.Slot) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
                     {
                         SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
                         SetFov(player, playerTimers[player.Slot].PlayerFov, true);
                     }
-
-                    if (spawnOnRespawnPos == true && currentRespawnPos != null)
-                    player.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
-
-                    if (enableStyles && playerTimers.ContainsKey(player.Slot))
-                        setStyle(player, playerTimers[player.Slot].currentStyle);
                 });
 
                 Server.NextFrame(() => InvalidateTimer(player));

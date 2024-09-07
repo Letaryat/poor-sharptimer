@@ -43,6 +43,9 @@ namespace SharpTimer
             playerTimers[player!.Slot].TimerTicks = 0;
             playerTimers[player!.Slot].BonusStage = bonusX;
             playerTimers[player!.Slot].BonusTimerTicks = 0;
+            playerTimers[player.Slot].TotalSync = 0;
+            playerTimers[player.Slot].GoodSync = 0;
+            playerTimers[player.Slot].Sync = 0;
 
             playerTimers[player!.Slot].IsRecordingReplay = true;
         }
@@ -77,7 +80,7 @@ namespace SharpTimer
                     return;
                 }
 
-                if (playerTimer.CurrentMapCheckpoint != cpTriggerCount)
+                if (playerTimer.CurrentMapCheckpoint != cpTriggerCount && useCheckpointVerification)
                 {
                     PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player current checkpoint does not match final one ({cpTriggerCount})");
                     SharpTimerDebug($"Player current checkpoint: {playerTimers[playerSlot].CurrentMapCheckpoint}; Final checkpoint: {cpTriggerCount}");
@@ -101,7 +104,7 @@ namespace SharpTimer
 
             if (useStageTriggers == false && useCheckpointTriggers == true)
             {
-                if (playerTimer.CurrentMapCheckpoint != cpTriggerCount)
+                if (playerTimer.CurrentMapCheckpoint != cpTriggerCount && useCheckpointVerification)
                 {
                     PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player current checkpoint does not match final one ({cpTriggerCount})");
                     SharpTimerDebug($"Player current checkpoint: {playerTimers[playerSlot].CurrentMapCheckpoint}; Final checkpoint: {cpTriggerCount}");

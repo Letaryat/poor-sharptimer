@@ -351,6 +351,15 @@ namespace SharpTimer
             enableDebug = bool.TryParse(args, out bool enableDebugValue) ? enableDebugValue : args != "0" && enableDebug;
         }
 
+        [ConsoleCommand("sharptimer_enable_checkpoint_verification", "Enable or disable checkpoint verification system. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerCheckpointVerificationConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            useCheckpointVerification = bool.TryParse(args, out bool CheckpointVerificationValue) ? CheckpointVerificationValue : args != "0" && useCheckpointVerification;
+        }
+
         [ConsoleCommand("sharptimer_use2Dspeed_enabled", "Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimer2dSpeedConvar(CCSPlayerController? player, CommandInfo command)

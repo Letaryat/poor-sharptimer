@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.0q";
+        public override string ModuleVersion => $"0.3.0r";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -74,6 +74,7 @@ namespace SharpTimer
         private Dictionary<nint, int> cpTriggers = [];
         public int cpTriggerCount;
         private bool useCheckpointTriggers = false;
+        public bool useCheckpointVerification = true;
 
         private Dictionary<int, Vector?> bonusRespawnPoses = [];
         private Dictionary<int, QAngle?> bonusRespawnAngs = [];

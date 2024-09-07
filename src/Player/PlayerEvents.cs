@@ -86,6 +86,11 @@ namespace SharpTimer
                         player.PlayerPawn.Value.Render = Color.FromArgb(254, 254, 254, 254);
                         Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
                     }
+                    AddTimer(3.0f, () =>
+                    {
+                        if (spawnOnRespawnPos == true && currentRespawnPos != null)
+                            player.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
+                    });
                 }
                 finally
                 {
