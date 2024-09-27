@@ -1046,74 +1046,40 @@ namespace SharpTimer
                     SharpTimerDebug($"Ranks json found!");
                     JsonElement root = ranksJsonDocument.RootElement;
 
-                    if (root.TryGetProperty("Unranked", out JsonElement UnrankedElement))
-                    {
-                        UnrankedTitle = UnrankedElement.GetProperty("title").GetString()!;
-                        UnrankedColor = UnrankedElement.GetProperty("color").GetString()!;
-                        UnrankedIcon = UnrankedElement.GetProperty("icon").GetString()!;
-                    }
+                    rankDataList.Clear();
 
-                    string[] rankTitles = new string[9];
-                    double[] rankPercents = new double[9];
-                    string[] rankColors = new string[9];
-                    string[] rankIcons = new string[9];
-
-                    for (int i = 1; i <= 9; i++)
+                    foreach (var property in root.EnumerateObject())
                     {
-                        string rankName = $"Rank{i}";
-                        if (root.TryGetProperty(rankName, out JsonElement rankElement))
+                        JsonElement rankElement = property.Value;
+                        RankData rankData = new RankData
                         {
-                            rankTitles[i - 1] = rankElement.GetProperty("title").GetString()!;
-                            rankPercents[i - 1] = rankElement.GetProperty("percent").GetDouble();
-                            rankColors[i - 1] = rankElement.GetProperty("color").GetString()!;
-                            rankIcons[i - 1] = rankElement.GetProperty("icon").GetString()!;
+                            Title = rankElement.TryGetProperty("title", out JsonElement titleElement) ? titleElement.GetString()! : string.Empty,
+                            Percent = rankElement.TryGetProperty("percent", out var percentElement) ? percentElement.GetDouble() : 0,
+                            Placement = rankElement.TryGetProperty("placement", out var placementElement) ? placementElement.GetInt32() : 0,
+                            Color = rankElement.TryGetProperty("color", out JsonElement colorElement) ? colorElement.GetString()! : string.Empty,
+                            Icon = rankElement.TryGetProperty("icon", out JsonElement iconElement) ? iconElement.GetString()! : string.Empty,
+                        };
+
+                        rankDataList.Add(rankData);
+
+                        if (property.Name.ToLower() == "unranked")
+                        {
+                            UnrankedTitle = rankElement.GetProperty("title").GetString()!;
+                            UnrankedColor = rankElement.GetProperty("color").GetString()!;
+                            UnrankedIcon = rankElement.GetProperty("icon").GetString()!;
                         }
                     }
 
-                    Rank1Title = rankTitles[0];
-                    Rank1Percent = rankPercents[0];
-                    Rank1Color = rankColors[0];
-                    Rank1Icon = rankIcons[0];
+                    rankDataList = rankDataList
+                        .OrderBy(r => r.Placement > 0 ? 0 : 1)  // Placement > 0 should come first
+                        .ThenBy(r => r.Placement)               // sort Placement (low to high)
+                        .ThenBy(r => r.Percent)                 // sort Percent (low to high)
+                        .ToList();
 
-                    Rank2Title = rankTitles[1];
-                    Rank2Percent = rankPercents[1];
-                    Rank2Color = rankColors[1];
-                    Rank2Icon = rankIcons[1];
-
-                    Rank3Title = rankTitles[2];
-                    Rank3Percent = rankPercents[2];
-                    Rank3Color = rankColors[2];
-                    Rank3Icon = rankIcons[2];
-
-                    Rank4Title = rankTitles[3];
-                    Rank4Percent = rankPercents[3];
-                    Rank4Color = rankColors[3];
-                    Rank4Icon = rankIcons[3];
-
-                    Rank5Title = rankTitles[4];
-                    Rank5Percent = rankPercents[4];
-                    Rank5Color = rankColors[4];
-                    Rank5Icon = rankIcons[4];
-
-                    Rank6Title = rankTitles[5];
-                    Rank6Percent = rankPercents[5];
-                    Rank6Color = rankColors[5];
-                    Rank6Icon = rankIcons[5];
-
-                    Rank7Title = rankTitles[6];
-                    Rank7Percent = rankPercents[6];
-                    Rank7Color = rankColors[6];
-                    Rank7Icon = rankIcons[6];
-
-                    Rank8Title = rankTitles[7];
-                    Rank8Percent = rankPercents[7];
-                    Rank8Color = rankColors[7];
-                    Rank8Icon = rankIcons[7];
-
-                    Rank9Title = rankTitles[8];
-                    Rank9Percent = rankPercents[8];
-                    Rank9Color = rankColors[8];
-                    Rank9Icon = rankIcons[8];
+                    foreach (var xd in rankDataList)
+                    {
+                        SharpTimerDebug(xd.Title + xd.Percent + xd.Placement);
+                    }
                 }
                 else
                 {
@@ -1466,19 +1432,11 @@ namespace SharpTimer
         public string RemovePlayerTags(string input)
         {
             string originalTag = input;
-            string[] playerTagsToRemove = [
-                $"{customVIPTag}",
-                $"{UnrankedTitle}",
-                $"{Rank1Title}",
-                $"{Rank2Title}",
-                $"{Rank3Title}",
-                $"{Rank4Title}",
-                $"{Rank5Title}",
-                $"{Rank6Title}",
-                $"{Rank7Title}",
-                $"{Rank8Title}",
-                $"{Rank9Title}"
-            ];
+
+            List<string> playerTagsToRemove = [$"{customVIPTag}", $"{UnrankedTitle}"];
+
+            foreach (var rank in rankDataList)
+                playerTagsToRemove.Add(rank.Title);
 
             if (!string.IsNullOrEmpty(input))
             {
