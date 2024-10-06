@@ -8,6 +8,10 @@
 <div align="center">
   <img src="https://files.catbox.moe/qvawnf.png" alt="" style="margin: 0;">
 </div>
+<p align="center">
+	<br>
+	<a href="https://ko-fi.com/rcnoob"><img width="185" src="https://files.catbox.moe/rig9aq.svg" alt="Badge"></a>
+</p>
 
 
 # SharpTimer
