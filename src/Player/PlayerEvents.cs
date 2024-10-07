@@ -108,7 +108,8 @@ namespace SharpTimer
 
         private void OnPlayerSpawn(CCSPlayerController? player)
         {
-            AddTimer(1.0f, () =>
+            //just.. dont ask.
+            AddTimer(0f, () =>
             {
                 if (spawnOnRespawnPos == true && currentRespawnPos != null)
                     player!.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
