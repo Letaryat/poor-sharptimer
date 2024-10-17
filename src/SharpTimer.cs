@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 
 namespace SharpTimer
 {
-    [MinimumApiVersion(228)]
+    [MinimumApiVersion(281)]
     public partial class SharpTimer : BasePlugin
     {
         //public required MemoryFunctionVoid<CCSPlayer_MovementServices, IntPtr> RunCommandLinux;
