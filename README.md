@@ -1,5 +1,5 @@
 > [!NOTE]
-> The original creator of SharpTimer is deafps, who discontinued support for the project after version 0.2.6. This fork is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
+> The original creator of SharpTimer is dea_bb, who discontinued support for the project after version 0.2.6. This fork is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
 
 
 
@@ -8,6 +8,10 @@
 <div align="center">
   <img src="https://files.catbox.moe/qvawnf.png" alt="" style="margin: 0;">
 </div>
+<p align="center">
+	<br>
+	<a href="https://ko-fi.com/rcnoob"><img width="185" src="https://files.catbox.moe/rig9aq.svg" alt="Badge"></a>
+</p>
 
 
 # SharpTimer
@@ -80,19 +84,23 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 [**MetaMod**](https://cs2.poggu.me/metamod/installation/)
 
-[**CounterStrikeSharp** *(v215 and up)*](https://github.com/roflmuffin/CounterStrikeSharp/releases)
+[**CounterStrikeSharp** *(v281 and up)*](https://github.com/roflmuffin/CounterStrikeSharp/releases)
 
 [**SharpTimerModelSetter** *(optional but recommended for custom player models)*](https://github.com/johandrevwyk/STCustomModels)
 
-[**MovementUnlocker** *(optional but recommended)*](https://github.com/Source2ZE/MovementUnlocker)
+[**MovementUnlocker** *(optional but recommended for surf and bhop servers)*](https://github.com/Source2ZE/MovementUnlocker)
 
 [**RampBugFix** *(optional but recommended for surf servers)*](https://github.com/Interesting-exe/CS2Fixes-RampbugFix/)
 
 [**Web panel** *(optional but recommended)*](https://github.com/Letaryat/sharptimer-web-panel)
 
-[**SharpTimer-WallLists** *(optional but recommended)*](https://github.com/M-archand/SharpTimer-WallLists/tree/PointsList)
+[**SharpTimer-WallLists** *(optional but recommended)*](https://github.com/M-archand/SharpTimer-WallLists)
 
 [**CS2-TeleportAnglesFix** *(optional but recommended)*](https://github.com/M-archand/CS2-TeleportAnglesFix)
+
+[**STFixes** *(optional but recommended)*](https://github.com/rcnoob/STFixes)
+
+[**Flashing HUD Fix** *(optional but recommended)*](https://github.com/deabb/CS2FlashingHtmlHudFix)
 
 
 ## Install
@@ -146,7 +154,7 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
   - [x] Max
   - [x] Height
   - [x] Width
-  - [x] Sync
+  - [ ] Sync
   - [ ] Jump Types
     - [x] Long Jump
     - [x] BunnyHop
@@ -162,4 +170,7 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
   - [ ] Strafe Sync Bar on HUD
 
 
-## Author: [@DEA_BB](https://twitter.com/dea_bb)
+## Authors:
+[DEA_BB](https://twitter.com/dea_bb)
+[Letaryat](https://github.com/Letaryat)
+[rcnoob](https://github.com/rcnoob)
