@@ -1078,7 +1078,7 @@ namespace SharpTimer
             }
         }
 
-        [ConsoleCommand("sharptimer_style_multiplier_onlyw", "Point modifier for onlys. Default value: 1.33")]
+        [ConsoleCommand("sharptimer_style_multiplier_onlys", "Point modifier for onlys. Default value: 1.33")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerOnlySMultiplierConvar(CCSPlayerController? player, CommandInfo command)
         {
@@ -1095,7 +1095,7 @@ namespace SharpTimer
             }
         }
 
-        [ConsoleCommand("sharptimer_style_multiplier_onlyw", "Point modifier for onlyd. Default value: 1.33")]
+        [ConsoleCommand("sharptimer_style_multiplier_onlyd", "Point modifier for onlyd. Default value: 1.33")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerOnlyDMultiplierConvar(CCSPlayerController? player, CommandInfo command)
         {
