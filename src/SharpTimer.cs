@@ -13,24 +13,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Security.Cryptography.X509Certificates;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Cvars;
-using System.Runtime.CompilerServices;
-using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Logging;
 
 namespace SharpTimer
 {
-    [MinimumApiVersion(228)]
+    [MinimumApiVersion(281)]
     public partial class SharpTimer : BasePlugin
     {
-        public required MemoryFunctionVoid<CCSPlayer_MovementServices, IntPtr> RunCommandLinux;
+        //public required MemoryFunctionVoid<CCSPlayer_MovementServices, IntPtr> RunCommandLinux;
         //public required MemoryFunctionVoid<IntPtr, IntPtr, IntPtr, CCSPlayer_MovementServices> RunCommandWindows;
+        public required IRunCommand RunCommand;
         private int movementServices;
         private int movementPtr;
         public override void Load(bool hotReload)
@@ -47,12 +44,6 @@ namespace SharpTimer
             string recordsFileName = $"SharpTimer/PlayerRecords/";
             playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
 
-            string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
-            mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
-            SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
-
-            string postgresConfigFileName = "SharpTimer/postgresConfig.json";
-            postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) isLinux = true;
             else isLinux = false;
@@ -61,16 +52,16 @@ namespace SharpTimer
             {
                 movementServices = 0;
                 movementPtr = 1;
-                RunCommandLinux = new(GameData.GetSignature("RunCommand"));
-                RunCommandLinux.Hook(OnRunCommand, HookMode.Pre);
+                RunCommand = new RunCommandLinux();;
             }
-            /*else if (!isLinux)
+            else if (!isLinux)
             {
                 movementServices = 3;
                 movementPtr = 2;
-                RunCommandWindows = new(GameData.GetSignature("RunCommand"));
-                RunCommandWindows.Hook(OnRunCommand, HookMode.Pre);
-            }*/
+                RunCommand = new RunCommandWindows();
+            }
+
+            if(isLinux) RunCommand.Hook(OnRunCommand, HookMode.Pre);
 
             currentMapName = Server.MapName;
 
@@ -108,7 +99,7 @@ namespace SharpTimer
                             });
                         }
                     }
-                    else if (player.IsValid)
+                    else if (player.IsValid && !player.IsBot)
                     {
                         Server.NextFrame(() => InvalidateTimer(player));
                     }
@@ -135,41 +126,30 @@ namespace SharpTimer
 
             RegisterEventHandler<EventPlayerSpawn>((@event, info) =>
             {
-                if (@event.Userid!.IsValid)
+                var player = @event.Userid!;
+
+                if (player.IsBot || !player.IsValid || player == null)
+                    return HookResult.Continue;
+
+                if (player.IsValid && !player.IsBot)
                 {
-                    if (@event.Userid == null) return HookResult.Continue;
-
-                    var player = @event.Userid;
-
-                    if (player.IsBot || !player.IsValid || player == null)
-                    {
-                        return HookResult.Continue;
-                    }
-                    else if (player.IsValid)
-                    {
-                        /* if (removeCollisionEnabled == true && player.PlayerPawn != null)
-                        {
-                            RemovePlayerCollision(player);
-                        }
-
-                        specTargets[player.Pawn.Value.EntityHandle.Index] = new CCSPlayerController(player.Handle); */
-                        AddTimer(5.0f, () =>
-                        {
-                            if (!player.IsValid || player == null || !IsAllowedPlayer(player)) return;
-
-                            if ((useMySQL || usePostgres) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
-                            {
-                                SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
-                                SetFov(player, playerTimers[player.Slot].PlayerFov, true);
-                            }
-                        });
-
-                        if (spawnOnRespawnPos == true && currentRespawnPos != null)
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
-
-                        Server.NextFrame(() => InvalidateTimer(player));
-                    }
+                    OnPlayerSpawn(player);
                 }
+
+                if (enableStyles && playerTimers.ContainsKey(player.Slot))
+                    setStyle(player, playerTimers[player.Slot].currentStyle);
+
+                AddTimer(3.0f, () =>
+                {
+                    if (enableDb && playerTimers.ContainsKey(player.Slot) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
+                    {
+                        SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
+                        SetFov(player, playerTimers[player.Slot].PlayerFov, true);
+                    }
+                });
+
+                Server.NextFrame(() => InvalidateTimer(player));
+
                 return HookResult.Continue;
             }, HookMode.Pre);
 
@@ -253,19 +233,13 @@ namespace SharpTimer
                 return HookResult.Continue;
             });
 
-            HookEntityOutput("trigger_push", "OnStartTouch", (CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay) =>
-            {
-                TriggerPushOnStartTouch(activator, caller);
-                return HookResult.Continue;
-            });
-
             AddTimer(1.0f, () =>
             {
                 DamageHook();
             });
 
-            AddCommandListener("say", OnPlayerChatAll);
-            AddCommandListener("say_team", OnPlayerChatTeam);
+            AddCommandListener("say", OnPlayerChat);
+            AddCommandListener("say_team", OnPlayerChat);
             AddCommandListener("jointeam", OnCommandJoinTeam);
 
             SharpTimerConPrint("Plugin Loaded");
@@ -284,34 +258,50 @@ namespace SharpTimer
             {
                 try
                 {
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(2) && (getMovementButton.Contains("Left") || getMovementButton.Contains("Right"))) //sideways
+                    var moveForward = getMovementButton.Contains("Forward");
+                    var moveBackward = getMovementButton.Contains("Backward");
+                    var moveLeft = getMovementButton.Contains("Left");
+                    var moveRight = getMovementButton.Contains("Right");
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(2) && (moveLeft || moveRight)) //sideways
                     {
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1536); //disable left (512) + right (1024) = 1536
                         baseCmd.DisableSideMove(); //disable side movement
                         return HookResult.Changed;
                     }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(3) && (getMovementButton.Contains("Left") || getMovementButton.Contains("Right") || getMovementButton.Contains("Backward"))) //only w
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(9) && (moveLeft || moveRight) && !(moveForward || moveBackward)) //halfsideways
+                    {
+                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1536); //disable left (512) + right (1024) = 1536
+                        baseCmd.DisableSideMove(); //disable side movement
+                        return HookResult.Changed;
+                    }
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(9) && !(moveLeft || moveRight) && (moveForward || moveBackward)) //halfsideways pt2
+                    {
+                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 24); //disable backward (16) + forward (8) = 24
+                        baseCmd.DisableForwardMove(); //disable forward movement
+                        return HookResult.Changed;
+                    }
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(3) && (moveLeft || moveRight || moveBackward)) //only w
                     {
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1552); //disable backward (16) + left (512) + right (1024) = 1552
                         baseCmd.DisableSideMove(); //disable side movement
                         baseCmd.DisableForwardMove(); //set forward move to 0 ONLY if player is moving backwards; ie: disable s
                         return HookResult.Changed;
                     }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(6) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Right") || getMovementButton.Contains("Backward"))) //only a
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(6) && (moveForward || moveRight || moveBackward)) //only a
                     {
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1048); //disable backward (16) + forward (8) + right (1024) = 1048
                         baseCmd.DisableSideMove(); //disable only right movement
                         baseCmd.DisableForwardMove(); //disable forward movement
                         return HookResult.Changed;
                     }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(7) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Left") || getMovementButton.Contains("Backward"))) //only d
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(7) && (moveForward || moveLeft || moveBackward)) //only d
                     {
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 536); //disable backward (16) + forward (8) + left (512) = 536
                         baseCmd.DisableSideMove(); //disable only left movement
                         baseCmd.DisableForwardMove(); //disable forward movement
                         return HookResult.Changed;
                     }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(8) && (getMovementButton.Contains("Forward") || getMovementButton.Contains("Left") || getMovementButton.Contains("Right"))) //only s
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(8) && (moveForward || moveLeft || moveRight)) //only s
                     {
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1544); //disable right (1024) + forward (8) + left (512) = 1544
                         baseCmd.DisableSideMove(); //disable side movement
@@ -320,7 +310,7 @@ namespace SharpTimer
                     }
                     return HookResult.Changed;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //i dont fucking know why it spams errors when the player disconnects but is also passing all the null checks
                     //so here lies my humble try catch
@@ -333,12 +323,11 @@ namespace SharpTimer
         public override void Unload(bool hotReload)
         {
             DamageUnHook();
-            RemoveCommandListener("say", OnPlayerChatAll, HookMode.Pre);
-            RemoveCommandListener("say_team", OnPlayerChatTeam, HookMode.Pre);
+            RemoveCommandListener("say", OnPlayerChat, HookMode.Pre);
+            RemoveCommandListener("say_team", OnPlayerChat, HookMode.Pre);
             RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
 
-            if(isLinux) RunCommandLinux.Unhook(OnRunCommand, HookMode.Pre);
-            //else RunCommandWindows.Unhook(OnRunCommand, HookMode.Pre);
+            if(isLinux) RunCommand.Unhook(OnRunCommand, HookMode.Pre);
 
             SharpTimerConPrint("Plugin Unloaded");
         }

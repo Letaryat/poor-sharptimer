@@ -6,13 +6,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.242">
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.281">
         <PrivateAssets>none</PrivateAssets>
         <ExcludeAssets>runtime</ExcludeAssets>
         <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Nexd.MySQL" Version="1.0.2" />
     <PackageReference Include="Npgsql" Version="8.0.3" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
   </ItemGroup>
 
   <Target Name="Date" BeforeTargets="BeforeBuild">

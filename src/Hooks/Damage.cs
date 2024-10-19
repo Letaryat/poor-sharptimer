@@ -29,12 +29,12 @@ namespace SharpTimer
             try
             {
                 SharpTimerDebug("Init Damage hook...");
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && disableDamage == true && altDmgHook == false)
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     SharpTimerDebug("Trying to register Linux Damage hook...");
                     VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(this.OnTakeDamage, HookMode.Pre);
                 }
-                else if (disableDamage == true)
+                else
                 {
                     SharpTimerDebug("Trying to register Windows Damage hook...");
                     RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt, HookMode.Pre);
@@ -76,7 +76,7 @@ namespace SharpTimer
             if (!ent.IsValid || !info.Attacker.IsValid)
                 return HookResult.Continue;
 
-            if (ent.DesignerName == "player" && info.Attacker.Value!.DesignerName == "player" && disableDamage)
+            if (ent.DesignerName == "player" && info.Attacker.Value!.DesignerName == "player")
                 return HookResult.Handled;
             else
                 return HookResult.Continue;

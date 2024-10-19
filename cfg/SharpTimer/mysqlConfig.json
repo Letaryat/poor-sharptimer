@@ -1,8 +1,9 @@
 {
-    "MySqlHost": "your_mysql_host",
-    "MySqlDatabase": "your_mysql_database",
-    "MySqlUsername": "your_mysql_username",
-    "MySqlPassword": "your_mysql_password",
-    "MySqlPort": 3306,
-    "MySqlTimeout": 30
+    "Host": "your_mysql_host",
+    "Database": "your_mysql_database",
+    "Username": "your_mysql_username",
+    "Password": "your_mysql_password",
+    "TablePrefix": "",
+    "Port": 3306,
+    "Timeout": 30
 }

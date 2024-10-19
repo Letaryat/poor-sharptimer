@@ -156,7 +156,7 @@ namespace SharpTimer
         {
             try
             {
-                var LastJumpFrame = playerJumpStat.jumpFrames.Count != 0 ? playerJumpStat.jumpFrames.Last() : new PlayerJumpStats.JumpFrames
+                var LastJumpFrame = playerJumpStat.jumpFrames.Count != 0 ? playerJumpStat.jumpFrames.Last() : new PlayerJumpStats.IFrame
                 {
                     PositionString = $" ",
                     SpeedString = $" ",
@@ -192,7 +192,7 @@ namespace SharpTimer
                 else
                     maxSpeed = LastJumpFrame?.MaxSpeed ?? 0;
 
-                var JumpFrame = new PlayerJumpStats.JumpFrames
+                var JumpFrame = new PlayerJumpStats.IFrame
                 {
                     PositionString = $"{playerpos.X} {playerpos.Y} {playerpos.Z}",
                     SpeedString = $"{velocity.X} {velocity.Y} {velocity.Z}",
@@ -209,6 +209,46 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerDebug($"Exception in OnJumpStatTickInAir: {ex}");
+            }
+        }
+ 
+        public void OnSyncTick(CCSPlayerController player, PlayerButtons? buttons, QAngle eyeangle)
+        {
+            try
+            {
+                var playerTimer = playerTimers[player.Slot];
+                bool left = false;
+                bool right = false;
+
+                #pragma warning disable CS0219 // annoyence
+                bool leftRight = false;
+                #pragma warning restore CS0219
+
+                if ((buttons & PlayerButtons.Moveleft) != 0 && (buttons & PlayerButtons.Moveright) != 0)
+                    leftRight = true;
+                else if ((buttons & PlayerButtons.Moveleft) != 0)
+                    left = true;
+                else if ((buttons & PlayerButtons.Moveright) != 0)
+                    right = true;
+                else return;
+
+                QAngle newEyeAngle = new QAngle(eyeangle.X, eyeangle.Y, eyeangle.Z);
+                playerTimer.Rotation.Add(newEyeAngle);
+                playerTimer.TotalSync++;
+
+                //Check left goodsync
+                if (playerTimer.Rotation != null && playerTimer.Rotation.Count > 1 && eyeangle.Y > playerTimer.Rotation[playerTimer.TotalSync - 2].Y && left)
+                    playerTimer.GoodSync++;
+
+                //Check right goodsync
+                if (playerTimer.Rotation != null && playerTimer.Rotation.Count > 1 && eyeangle.Y < playerTimer.Rotation[playerTimer.TotalSync - 2].Y && right)
+                    playerTimer.GoodSync++;
+
+                playerTimer.Sync = Math.Round((float)playerTimers[player.Slot].GoodSync / playerTimers[player.Slot].TotalSync * 100, 0);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerDebug($"Exception in OnSyncTick: {ex}");
             }
         }
 
@@ -267,7 +307,7 @@ namespace SharpTimer
             }
         }
 
-        public static (int lastLeftGroups, int leftSync, int leftFrames) CountLeftGroupsAndSync(PlayerJumpStats playerJumpStat)
+        public static (int lastLeftGroups, int leftSync, int leftFrames) CountLeftGroupsAndSync(PlayerJumpStats playerJumpStat, bool timersync)
         {
             int lastLeftGroups = 0;
             int leftSync = 0;
@@ -275,7 +315,8 @@ namespace SharpTimer
             bool inGroup = false;
             QAngle previousRotation = null!;
 
-            foreach (var frame in playerJumpStat.jumpFrames)
+            var frames = timersync ? playerJumpStat.timerSyncFrames : playerJumpStat.jumpFrames;
+            foreach (var frame in frames)
             {
                 if (frame.LastLeftRight || frame.LastRight)
                 {
@@ -299,7 +340,7 @@ namespace SharpTimer
             return (lastLeftGroups, leftSync, leftFrames);
         }
 
-        public static (int lastRightGroups, int rightSync, int rightFrames) CountRightGroupsAndSync(PlayerJumpStats playerJumpStat)
+        public static (int lastRightGroups, int rightSync, int rightFrames) CountRightGroupsAndSync(PlayerJumpStats playerJumpStat, bool timersync)
         {
             int lastRightGroups = 0;
             int rightSync = 0;
@@ -307,7 +348,8 @@ namespace SharpTimer
             bool inGroup = false;
             QAngle previousRotation = null!;
 
-            foreach (var frame in playerJumpStat.jumpFrames)
+            var frames = timersync ? playerJumpStat.timerSyncFrames : playerJumpStat.jumpFrames;
+            foreach (var frame in frames)
             {
                 if (frame.LastLeftRight || frame.LastLeft)
                 {
@@ -384,8 +426,8 @@ namespace SharpTimer
 
             char color = GetJSColor(distance);
 
-            var (lStrafes, lSync, lFrames) = CountLeftGroupsAndSync(playerJumpStat);
-            var (rStrafes, rSync, rFrames) = CountRightGroupsAndSync(playerJumpStat);
+            var (lStrafes, lSync, lFrames) = CountLeftGroupsAndSync(playerJumpStat, false);
+            var (rStrafes, rSync, rFrames) = CountRightGroupsAndSync(playerJumpStat, false);
 
             int strafes = rStrafes + lStrafes;
             int strafeFrames = rFrames + lFrames;
@@ -393,16 +435,12 @@ namespace SharpTimer
 
             double sync = (strafeFrames != 0) ? Math.Round(syncedFrames * 100f / strafeFrames, 2) : 0;
 
-            player.PrintToChat($" {Localizer["js_msg1", playerJumpStat.LastJumpType!, color, Math.Round(distance, 2), Math.Round(ParseVector(playerJumpStat.LastSpeed!).Length2D(), 2), Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2), strafes]}");
-            player.PrintToChat($" {Localizer["js_msg2", Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2), GetMaxWidth(playerpos, playerJumpStat), playerJumpStat.WTicks, sync]}");
+            PrintToChat(player, Localizer["js_msg1", playerJumpStat.LastJumpType!, color, Math.Round(distance, 2), Math.Round(ParseVector(playerJumpStat.LastSpeed!).Length2D(), 2), Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2), strafes]);
+            PrintToChat(player, Localizer["js_msg2", Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2), GetMaxWidth(playerpos, playerJumpStat), playerJumpStat.WTicks, sync]);
 
             player.PrintToConsole($"-----------------------------------------------------------------------------------------------------------------------");
             player.PrintToConsole($" {Localizer["js_msg1", playerJumpStat.LastJumpType!, color, Math.Round(distance, 2), Math.Round(ParseVector(playerJumpStat.LastSpeed!).Length2D(), 2), Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2), strafes]}");
             player.PrintToConsole($" {Localizer["js_msg2", Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2), GetMaxWidth(playerpos, playerJumpStat), playerJumpStat.WTicks, sync]}");
-
-            /* this is shit
-            string alertMsg = msg1 + "\n" + msg2;
-            VirtualFunctions.ClientPrint(player.Handle, HudDestination.Alert, alertMsg, 0, 0, 0, 0); */
         }
     }
 }

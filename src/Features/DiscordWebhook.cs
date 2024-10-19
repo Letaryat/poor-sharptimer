@@ -13,6 +13,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using System.Diagnostics.Eventing.Reader;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -42,6 +43,14 @@ namespace SharpTimer
                     discordWebhookFooter = root.TryGetProperty("DiscordFooterString", out var FooterProperty) ? FooterProperty.GetString()! : "";
                     discordWebhookRareGif = root.TryGetProperty("DiscordRareGifUrl", out var RareGifProperty) ? RareGifProperty.GetString()! : "";
                     discordWebhookRareGifOdds = root.TryGetProperty("DiscordRareGifOdds", out var RareGifOddsProperty) ? RareGifOddsProperty.GetInt16()! : 10000;
+                    discordWebhookColor = root.TryGetProperty("DiscordWebhookColor", out var ColorProperty) ? ColorProperty.GetInt16()! : 13369599;
+                    discordWebhookSteamAvatar = root.TryGetProperty("DiscordWebhookSteamAvatar", out var SteamAvatarProperty) ? SteamAvatarProperty.GetBoolean()! : true;
+                    discordWebhookTier = root.TryGetProperty("DiscordWebhookTier", out var TierProperty) ? TierProperty.GetBoolean()! : true;
+                    discordWebhookTimeChange = root.TryGetProperty("DiscordWebhookTimeChange", out var TimeChangeProperty) ? TimeChangeProperty.GetBoolean()! : true;
+                    discordWebhookTimesFinished = root.TryGetProperty("DiscordWebhookTimesFinished", out var TimesFinishedProperty) ? TimesFinishedProperty.GetBoolean()! : true;
+                    discordWebhookPlacement = root.TryGetProperty("DiscordWebhookPlacement", out var PlacementProperty) ? PlacementProperty.GetBoolean()! : true;
+                    discordWebhookSteamLink = root.TryGetProperty("DiscordWebhookSteamLink", out var SteamProperty) ? SteamProperty.GetBoolean()! : true;
+                    discordWebhookDisableStyleRecords = root.TryGetProperty("DiscordWebhookDisableStyleRecords", out var DisableStyleProperty) ? DisableStyleProperty.GetBoolean()! : true;
                 }
                 else
                 {
@@ -75,108 +84,136 @@ namespace SharpTimer
                 }
 
                 string mapImg = await GetMapImage(bonusX);
-
                 bool isFirstTime = string.IsNullOrEmpty(timeDifference);
+                string style = GetNamedStyle(playerTimers[player!.Slot].currentStyle);
 
                 using var client = new HttpClient();
+
+                var fields = new List<object>();
+
+                if (!string.IsNullOrEmpty(currentMapName))
+                {
+                    fields.Add(new
+                    {
+                        name = "🗺️ Map:",
+                        value = $"{(bonusX == 0 ? currentMapName : $"{currentMapName} bonus #{bonusX}")}",
+                        inline = true
+                    });
+                }
+
+                if (discordWebhookTier && currentMapTier != null)
+                {
+                    fields.Add(new
+                    {
+                        name = "🔰 Tier:",
+                        value = currentMapTier,
+                        inline = true
+                    });
+                }
+
+                if (!string.IsNullOrEmpty(runTime))
+                {
+                    fields.Add(new
+                    {
+                        name = "⌛ Time:",
+                        value = runTime,
+                        inline = true
+                    });
+                }
+
+                if (discordWebhookTimeChange && !isFirstTime)
+                {
+                    fields.Add(new
+                    {
+                        name = "⏳ Time change:",
+                        value = timeDifference,
+                        inline = true
+                    });
+                }
+
+                if (discordWebhookPlacement && !string.IsNullOrEmpty(placement))
+                {
+                    fields.Add(new
+                    {
+                        name = "🎖️ Placement:",
+                        value = $"#{placement}",
+                        inline = true
+                    });
+                }
+
+                if (discordWebhookTimesFinished)
+                {
+                    fields.Add(new
+                    {
+                        name = "🔢 Times Finished:",
+                        value = $"{(!isFirstTime ? timesFinished : "First time!")}",
+                        inline = true
+                    });
+                }
+
+                if (discordWebhookSteamLink && !string.IsNullOrEmpty(steamID))
+                {
+                    fields.Add(new
+                    {
+                        name = "🛈 SteamID:",
+                        value = $"[Profile](https://steamcommunity.com/profiles/{steamID})",
+                        inline = true
+                    });
+                }
+
+                if (!discordWebhookDisableStyleRecords && !string.IsNullOrEmpty(style))
+                {
+                    fields.Add(new
+                    {
+                        name = "🛹 Style:",
+                        value = style,
+                        inline = true
+                    });
+                }
+
+                var spacedFields = new List<object>();
+                for (int i = 0; i < fields.Count; i++)
+                {
+                    spacedFields.Add(fields[i]);
+                    if ((i + 1) % 2 == 0 && i != fields.Count - 1)
+                    {
+                        spacedFields.Add(new
+                        {
+                            name = "\u200B",
+                            value = "\u200B",
+                            inline = true
+                        });
+                    }
+                }
+                if (fields.Count % 2 == 0)
+                {
+                    spacedFields.Add(new
+                    {
+                        name = "\u200B",
+                        value = "\u200B",
+                        inline = true
+                    });
+                }
+
+                var embed = new Dictionary<string, object>
+                {
+                    { "title", !isSR ? $"set a new Personal Best!" : $"set a new Server Record!" },
+                    { "fields", spacedFields.ToArray() },
+                    { "author", new { name = $"{playerName}", url = $"https://steamcommunity.com/profiles/{steamID}" } },
+                    { "footer", new { text = discordWebhookFooter, icon_url = discordWebhookPFPUrl } },
+                    { "image", new { url = mapImg } }
+                };
+
+                if (discordWebhookColor != 0)
+                    embed.Add("color", discordWebhookColor);
+
+                if (discordWebhookSteamAvatar)
+                    embed.Add("thumbnail", new { url = await GetAvatarLink($"https://steamcommunity.com/profiles/{steamID}/?xml=1") });
+
                 var payload = new
                 {
                     content = (string?)null,
-                    embeds = new[]
-                    {
-                        new
-                        {
-                            title = !isSR ? $"set a new Personal Best!" : $"set a new Server Record!",
-                            color = 13369599,
-                            fields = new object[]
-                            {
-                                new
-                                {
-                                    name = "🗺️ Map:",
-                                    value = $"{(bonusX == 0 ? currentMapName : $"{currentMapName} bonus #{bonusX}")}",
-                                    inline = true
-                                },
-                                new
-                                {
-                                    name = "🔰 Tier:",
-                                    value = currentMapTier == null ? 1 : currentMapTier,
-                                    inline = true
-                                },
-                                new
-                                {
-                                    name = "‎",
-                                    value = "‎",
-                                    inline = true
-                                },
-                                new
-                                {
-                                    name = "⌛ Time:",
-                                    value = runTime,
-                                    inline = true
-                                },
-                                new
-                                {
-                                    name = "⏳ Time change:",
-                                    value = $"{(!isFirstTime ? $"{timeDifference}" : "None")}",
-                                    inline = true
-                                },
-                                new
-                                {
-                                    name = "‎",
-                                    value = "‎",
-                                    inline = true
-                                },
-                                new
-                                {
-                                    name = "🎖️ Placement:",
-                                    value = $"#{placement}",
-                                    inline = true
-                                },
-                                new
-                                {
-                                    name = "🔢 Times Finished:",
-                                    value = $"{(!isFirstTime ? timesFinished : "First time!")}",
-                                    inline = true
-                                },
-                                new
-                                {
-                                    name = "‎",
-                                    value = "‎",
-                                    inline = true
-                                },
-                                new
-                                {
-                                    name = "🛈 SteamID64:",
-                                    value = $"[{steamID}](https://steamcommunity.com/profiles/{steamID})",
-                                    inline = true
-                                },
-                                new
-                                {
-                                    name = "🛹 Style:",
-                                    value = $"{GetNamedStyle(playerTimers[player.Slot].currentStyle)}",
-                                    inline = true
-                                }
-                            },
-                            author = new
-                            {
-                                name = $"{playerName}",
-                                url = $"https://steamcommunity.com/profiles/{steamID}"
-                            },
-                            footer = new
-                            {
-                                text = discordWebhookFooter,
-                                icon_url = discordWebhookPFPUrl
-                            },
-                            image = new
-                            {
-                                url = mapImg
-                            },
-                            thumbnail = new
-                            {
-                                url = await GetAvatarLink($"https://steamcommunity.com/profiles/{steamID}/?xml=1")
-                            }
-                        }
-                    },
+                    embeds = new[] { embed },
                     username = discordWebhookBotName,
                     avatar_url = discordWebhookPFPUrl,
                     attachments = Array.Empty<object>()
@@ -184,6 +221,9 @@ namespace SharpTimer
 
                 var json = JsonSerializer.Serialize(payload);
                 var data = new StringContent(json, Encoding.UTF8, "application/json");
+
+                if (discordWebhookDisableStyleRecords && style != "Normal")
+                    return;
 
                 HttpResponseMessage response = await client.PostAsync(webhookURL, data);
 

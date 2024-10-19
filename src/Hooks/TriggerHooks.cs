@@ -107,6 +107,13 @@ namespace SharpTimer
                         adjustVelocity(player, maxStartingSpeed, false);
                     }
 
+                    playerTimers[playerSlot].CurrentZoneInfo = new()
+                    {
+                        InMainMapStartZone = true,
+                        InBonusStartZone = false,
+                        CurrentBonusNumber = 0
+                    };
+
                     SharpTimerDebug($"Player {playerName} entered StartZone");
 
                     return HookResult.Continue;
@@ -123,8 +130,9 @@ namespace SharpTimer
                 }
 
                 var (validStartBonus, startBonusX) = IsValidStartBonusTriggerName(callerName);
+                var (validStartFakeBonus, fakeBonusX) = IsValidFakeStartBonusTriggerName(callerName);
 
-                if (validStartBonus)
+                if (validStartBonus || validStartFakeBonus)
                 {
                     if (!playerTimers[playerSlot].IsTimerBlocked)
                     {
@@ -133,27 +141,35 @@ namespace SharpTimer
 
                     InvalidateTimer(player, callerHandle);
 
-                    if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxStartingSpeed))
+                    if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxBonusStartingSpeed) ||
+                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxBonusStartingSpeed))
                     {
                         Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, maxStartingSpeed, false);
+                        adjustVelocity(player, maxBonusStartingSpeed, false);
                     }
-                    SharpTimerDebug($"Player {playerName} entered Bonus{startBonusX} StartZone");
+
+                    playerTimers[playerSlot].CurrentZoneInfo = new()
+                    {
+                        InMainMapStartZone = false,
+                        InBonusStartZone = true,
+                        CurrentBonusNumber = (startBonusX != 0 ? startBonusX : fakeBonusX)
+                    };
+
+                    SharpTimerDebug($"Player {playerName} entered Bonus {(startBonusX != 0 ? startBonusX : fakeBonusX)} StartZone");
                     return HookResult.Continue;
                 }
 
                 if (IsValidStopTriggerName(callerName))
                 {
                     InvalidateTimer(player, callerHandle);
-                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_cancelled"]}");
+                    PrintToChat(player, Localizer["timer_cancelled"]);
                 }
 
                 if (IsValidResetTriggerName(callerName))
                 {
                     InvalidateTimer(player, callerHandle);
                     RespawnPlayer(player);
-                    player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_reset"]}");
+                    PrintToChat(player, Localizer["timer_reset"]);
                 }
 
                 return HookResult.Continue;
@@ -229,12 +245,12 @@ namespace SharpTimer
                     OnTimerStart(player, StartBonusX);
                     if (enableReplays) OnRecordingStart(player, StartBonusX);
 
-                    if (((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxStartingSpeed)) &&
+                    if (((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxBonusStartingSpeed) ||
+                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxBonusStartingSpeed)) &&
                         !currentMapOverrideMaxSpeedLimit!.Contains(callerName) && currentMapOverrideMaxSpeedLimit != null)
                     {
                         Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, maxStartingSpeed, false);
+                        adjustVelocity(player, maxBonusStartingSpeed, false);
                     }
 
                     SharpTimerDebug($"Player {playerName} left BonusStartZone {StartBonusX}");
@@ -337,48 +353,6 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerError($"Exception in trigger_teleport hook: {ex.Message}");
-                return HookResult.Continue;
-            }
-        }
-
-        public HookResult TriggerPushOnStartTouch(CEntityInstance activator, CEntityInstance caller)
-        {
-            try
-            {
-                if (activator == null || caller == null)
-                {
-                    SharpTimerDebug("Null reference detected in trigger_push hook.");
-                    return HookResult.Continue;
-                }
-
-                if (activator.DesignerName != "player" || triggerPushFixEnabled == false)
-                {
-                    return HookResult.Continue;
-                }
-
-                var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle!).Controller.Value!.Handle);
-
-                if (player == null)
-                {
-                    SharpTimerDebug("Player is null in trigger_push hook.");
-                    return HookResult.Continue;
-                }
-
-                if (!IsAllowedPlayer(player)) return HookResult.Continue;
-
-                if (triggerPushData.TryGetValue(caller.Handle, out TriggerPushData? TriggerPushData) && triggerPushFixEnabled == true && player.PlayerPawn.Value!.AbsVelocity.Length() > TriggerPushData.PushSpeed)
-                {
-                    player.PlayerPawn.Value!.AbsVelocity.X += TriggerPushData.PushDirEntitySpace.X * TriggerPushData.PushSpeed;
-                    player.PlayerPawn.Value!.AbsVelocity.Y += TriggerPushData.PushDirEntitySpace.Y * TriggerPushData.PushSpeed;
-                    player.PlayerPawn.Value!.AbsVelocity.Z += TriggerPushData.PushDirEntitySpace.Z * TriggerPushData.PushSpeed;
-                    SharpTimerDebug($"trigger_push OnStartTouch Player velocity adjusted for {player.PlayerName} by {TriggerPushData.PushSpeed}");
-                }
-
-                return HookResult.Continue;
-            }
-            catch (Exception ex)
-            {
-                SharpTimerError($"Exception in trigger_push hook: {ex.Message}");
                 return HookResult.Continue;
             }
         }

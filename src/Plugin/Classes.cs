@@ -25,14 +25,12 @@ namespace SharpTimer
     {
         public List<CBaseTrigger> Triggers { get; private set; }
         public List<CInfoTeleportDestination> InfoTeleportDestinations { get; private set; }
-        public List<CTriggerPush> TriggerPushEntities { get; private set; }
         public List<CPointEntity> InfoTargetEntities { get; private set; }
 
         public EntityCache()
         {
             Triggers = [];
             InfoTeleportDestinations = [];
-            TriggerPushEntities = [];
             InfoTargetEntities = [];
             UpdateCache();
         }
@@ -41,7 +39,6 @@ namespace SharpTimer
         {
             Triggers = Utilities.FindAllEntitiesByDesignerName<CBaseTrigger>("trigger_multiple").ToList();
             InfoTeleportDestinations = Utilities.FindAllEntitiesByDesignerName<CInfoTeleportDestination>("info_teleport_destination").ToList();
-            TriggerPushEntities = Utilities.FindAllEntitiesByDesignerName<CTriggerPush>("trigger_push").ToList();
         }
     }
 
@@ -94,9 +91,6 @@ namespace SharpTimer
         public string? OverrideStageRequirement { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string? OverrideTriggerPushFix { get; set; }
-
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? GlobalPointsMultiplier { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -115,10 +109,12 @@ namespace SharpTimer
         public bool IsNoclip { get; set; }
         public bool IsTimerBlocked { get; set; }
         public int TimerTicks { get; set; }
+        public int StageTicks { get; set; }
         public bool IsBonusTimerRunning { get; set; }
         public int BonusTimerTicks { get; set; }
         public int BonusStage { get; set; }
         public bool inStartzone { get; set; }
+        public CurrentZoneInfo CurrentZoneInfo { get; set; } = new();
         public int currentStyle { get; set; }
         public bool changedStyle { get; set; }
 
@@ -136,6 +132,7 @@ namespace SharpTimer
         public string? PreSpeed { get; set; }
         public string? CachedPB { get; set; }
         public string? CachedMapPlacement { get; set; }
+        public Dictionary<int, PlayerBonusPlacementInfo> CachedBonusInfo { get; set; } = new();
 
         //logic
         public int? TicksInAir { get; set; }
@@ -146,6 +143,10 @@ namespace SharpTimer
         public int CurrentMapStage { get; set; }
         public int CurrentMapCheckpoint { get; set; }
         public CCSPlayer_MovementServices? MovementService { get; set; }
+        public double Sync { get; set; }
+        public int GoodSync { get; set; }
+        public int TotalSync { get; set; }
+        public List<QAngle> Rotation { get; set; } = new List<QAngle>();
 
         //player settings/stats
         public bool Azerty { get; set; }
@@ -191,6 +192,13 @@ namespace SharpTimer
         public string? SetRespawnAng { get; set; }
     }
 
+    public class CurrentZoneInfo
+    {
+        public bool InMainMapStartZone { get; set; }
+        public bool InBonusStartZone { get; set; }
+        public int CurrentBonusNumber { get; set; }
+    }
+
     public class PlayerJumpStats
     {
         public int FramesOnGround { get; set; }
@@ -208,9 +216,10 @@ namespace SharpTimer
         public bool LandedFromSound { get; set; }
         public bool LastLandedFromSound { get; set; }
         public int WTicks { get; set; }
-        public List<JumpFrames> jumpFrames { get; set; } = [];
 
-        public class JumpFrames
+        public List<IFrame> jumpFrames { get; set; } = new List<IFrame>();
+        public List<IFrame> timerSyncFrames { get; set; } = new List<IFrame>();
+        public class IFrame
         {
             public string? PositionString { get; set; }
             public string? RotationString { get; set; }
@@ -227,6 +236,13 @@ namespace SharpTimer
         {
             public string? InterpString { get; set; }
         }
+    }
+
+    public class PlayerBonusPlacementInfo
+    {
+        public string? Placement { get; set; }
+
+        public int PbTicks { get; set; }
     }
 
     //Replay stuff
@@ -281,15 +297,5 @@ namespace SharpTimer
     {
         public Dictionary<int, int>? StageTimes { get; set; }
         public Dictionary<int, string>? StageVelos { get; set; }
-    }
-
-    // Trigger push
-    public class TriggerPushData(float pushSpeed, QAngle pushEntitySpace, Vector pushDirEntitySpace, Vector pushMins, Vector pushMaxs)
-    {
-        public float PushSpeed { get; set; } = pushSpeed;
-        public QAngle PushEntitySpace { get; set; } = pushEntitySpace;
-        public Vector PushDirEntitySpace { get; set; } = pushDirEntitySpace;
-        public Vector PushMins { get; set; } = pushMins;
-        public Vector PushMaxs { get; set; } = pushMaxs;
     }
 }

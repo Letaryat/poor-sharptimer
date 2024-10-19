@@ -17,6 +17,16 @@ public class CBaseUserCmd
         var ForwardMove = Unsafe.Read<float>((void*)(Handle + 0x50));
         return ForwardMove;
     }
+    public unsafe float GetMouseX()
+    {
+        var MouseX = Unsafe.Read<float>((void*)(Handle + 0x68));
+        return MouseX;
+    }
+    public unsafe float GetMouseY()
+    {
+        var MouseY = Unsafe.Read<float>((void*)(Handle + 0x6C));
+        return MouseY;
+    }
     public unsafe float GetSideMove()
     {
         var SideMove = Unsafe.Read<float>((void*)(Handle + 0x54));

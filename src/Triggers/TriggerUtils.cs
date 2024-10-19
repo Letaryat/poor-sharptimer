@@ -71,7 +71,7 @@ namespace SharpTimer
                                 return (true, X);
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             return (true, X);
                         }
@@ -83,6 +83,50 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerError($"Exception in IsValidStartBonusTriggerName: {ex.Message}");
+                return (false, 0);
+            }
+        }
+        private (bool valid, int X) IsValidFakeStartBonusTriggerName(string triggerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return (false, 0);
+
+                string[] patterns = [
+                    @"^b([1-9][0-9]?)_start$",
+                    @"^bonus([1-9][0-9]?)_start$",
+                    @"^timer_bonus([1-9][0-9]?)_startzone$"
+                ];
+
+                foreach (var pattern in patterns)
+                {
+                    var match = Regex.Match(triggerName, pattern);
+                    if (match.Success)
+                    {
+                        int X = int.Parse(match.Groups[1].Value);
+                        try
+                        {
+                            if (totalBonuses[X] != 0)
+                            {
+                                return (true, X);
+                            }
+                            else
+                            {
+                                return (false, X);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            return (true, X);
+                        }
+                    }
+                }
+
+                return (false, 0);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidFakeStartBonusTriggerName: {ex.Message}");
                 return (false, 0);
             }
         }
@@ -230,7 +274,7 @@ namespace SharpTimer
                                 return (true, X);
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
                             return (true, X);
@@ -461,7 +505,7 @@ namespace SharpTimer
                                         bonusPosAndAngSet = true;
                                     }
                                 }
-                                catch (Exception ex)
+                                catch (Exception)
                                 {
                                     bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
                                     bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
@@ -486,57 +530,12 @@ namespace SharpTimer
                                 SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
                             SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
                         }
                     }
-                }
-            }
-        }
-
-        private void FindTriggerPushData()
-        {
-            if (triggerPushFixEnabled)
-            {
-                triggerPushData.Clear();
-                var trigger_pushers = entityCache!.TriggerPushEntities;
-
-                foreach (var trigger_push in trigger_pushers)
-                {
-                    if (trigger_push == null)
-                    {
-                        SharpTimerDebug("Trigger_push was null");
-                        continue;
-                    }
-
-                    nint handle = trigger_push.Handle;
-                    var pushSpeed = trigger_push.Speed;
-                    var pushEntitySpace = trigger_push.PushEntitySpace;
-                    var pushDirEntitySpace = trigger_push.PushDirEntitySpace;
-                    var collisionMins = trigger_push.Collision.Mins + trigger_push.CBodyComponent!.SceneNode!.AbsOrigin;
-                    var collisionMaxs = trigger_push.Collision.Maxs + trigger_push.CBodyComponent.SceneNode.AbsOrigin;
-
-                    triggerPushData[handle] = new TriggerPushData(
-                        pushSpeed,
-                        pushEntitySpace,
-                        pushDirEntitySpace,
-                        collisionMins,
-                        collisionMaxs
-                    );
-
-                    SharpTimerDebug($"TriggerPushData for handle {handle}:");
-                    SharpTimerDebug($"PushSpeed: {pushSpeed}");
-                    SharpTimerDebug($"PushEntitySpace: {pushEntitySpace}");
-                    SharpTimerDebug($"PushDirEntitySpace: {pushDirEntitySpace}");
-                    SharpTimerDebug($"CollisionMins: ({collisionMins.X}, {collisionMins.Y}, {collisionMins.Z})");
-                    SharpTimerDebug($"CollisionMaxs: ({collisionMaxs.X}, {collisionMaxs.Y}, {collisionMaxs.Z})");
-
-                    //trigger_push.Remove();
-                    trigger_push.Speed = 0.0f;
-
-                    SharpTimerDebug($"trigger_push.Speed {handle} = 0");
                 }
             }
         }
@@ -572,30 +571,6 @@ namespace SharpTimer
             }
 
             return (startMins, startMaxs, endMins, endMaxs);
-        }
-
-        public (Vector, float)? GetTriggerPushDataForVector(Vector vector)
-        {
-            try
-            {
-                foreach (var data in triggerPushData)
-                {
-                    var trigger = data.Value;
-
-                    if (vector.X >= trigger.PushMins.X && vector.X <= trigger.PushMaxs.X &&
-                        vector.Y >= trigger.PushMins.Y && vector.Y <= trigger.PushMaxs.Y &&
-                        vector.Z >= trigger.PushMins.Z && vector.Z <= trigger.PushMaxs.Z)
-                    {
-                        return (trigger.PushDirEntitySpace, trigger.PushSpeed);
-                    }
-                }
-                return null;
-            }
-            catch (Exception ex)
-            {
-                SharpTimerError($"Error in GetTriggerPushDataForVector: {ex.Message}");
-                return null;
-            }
         }
     }
 }

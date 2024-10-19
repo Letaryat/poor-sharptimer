@@ -87,16 +87,16 @@ namespace SharpTimer
             }
         }
 
-        private void ServerRecordADtimer()
+        private void ADtimerServerRecord()
         {
-            if (isADTimerRunning) return;
+            if (isADServerRecordTimerRunning) return;
 
-            var timer = AddTimer(adTimer, () =>
+            var timer = AddTimer(adServerRecordTimer, () =>
             {
                 Task.Run(async () =>
                 {
                     Dictionary<string, PlayerRecord> sortedRecords;
-                    if (!useMySQL && !usePostgres)
+                    if (!enableDb)
                     {
                         SharpTimerDebug($"Getting Server Record AD using json");
                         sortedRecords = await GetSortedRecords();
@@ -107,53 +107,118 @@ namespace SharpTimer
                         sortedRecords = await GetSortedRecordsFromDatabase(100);
                     }
 
-                    if (srEnabled == true)
+                    SharpTimerDebug($"Running Server Record AD...");
+
+                    if (sortedRecords.Count == 0)
                     {
-                        SharpTimerDebug($"Running Server Record AD...");
-
-                        if (sortedRecords.Count == 0)
-                        {
-                            SharpTimerDebug($"No Server Records for this map yet!");
-                            return;
-                        }
-
-                        Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr", currentMapName!]}"));
-
-                        var serverRecord = sortedRecords.FirstOrDefault();
-                        string playerName = serverRecord.Value.PlayerName!; // Get the player name from the dictionary value
-                        int timerTicks = serverRecord.Value.TimerTicks; // Get the timer ticks from the dictionary value
-                        Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr_player", playerName, FormatTime(timerTicks)]}"));
+                        SharpTimerDebug($"No Server Records for this map yet!");
+                        return;
                     }
 
-                    string[] adMessages = [ $"{msgPrefix} Type {primaryChatColor}!sthelp{ChatColors.Default} to see all commands!",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaypb{ChatColors.Default} to watch a replay of your personal best run!" : "")}",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replay or {primaryChatColor}!replaysr{ChatColors.Default} to watch a replay of the SR on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaytop <1-10>{ChatColors.Default} to watch a replay of a top run on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaybonus <1-10> <bonus #> (or !replayb){ChatColors.Default} to watch a replay of a top run on a bonus stage{ChatColors.Default}!" : "")}",
-                                    $"{(enableReplays ? $"{msgPrefix} Type {primaryChatColor}!replaybonuspb <bonus #> (or !replaybpb){ChatColors.Default} to watch a replay of your personal best run on a bonus stage{ChatColors.Default}!" : "")}",
-                                    $"{(globalRanksEnabled ? $"{msgPrefix} Type {primaryChatColor}!points{ChatColors.Default} to see the top 10 players with the most points!" : "")}",
-                                    $"{(respawnEnabled ? $"{msgPrefix} Type {primaryChatColor}!r{ChatColors.Default} to respawn back to start!" : "")}",
-                                    $"{(respawnEnabled ? $"{msgPrefix} Type {primaryChatColor}!setresp (or !startpos){ChatColors.Default} to to save a custom respawn point within the start trigger!" : "")}",
-                                    $"{(topEnabled ? $"{msgPrefix} Type {primaryChatColor}!top{ChatColors.Default} to see the top 10 players on {primaryChatColor}{currentMapName}{ChatColors.Default}!" : "")}",
-                                    $"{(rankEnabled ? $"{msgPrefix} Type {primaryChatColor}!rank{ChatColors.Default} to see your current PB and Rank!" : "")}",
-                                    $"{(cpEnabled ? $"{msgPrefix} Type {primaryChatColor}{(currentMapName!.Contains("surf_") ? "!saveloc" : "!cp")}{ChatColors.Default} to {(currentMapName.Contains("surf_") ? "save a new loc" : "set a new checkpoint")}!" : "")}",
-                                    $"{(cpEnabled ? $"{msgPrefix} Type {primaryChatColor}{(currentMapName!.Contains("surf_") ? "!loadloc" : "!tp")}{ChatColors.Default} to {(currentMapName.Contains("surf_") ? "load the last loc" : "teleport to your last checkpoint")}!" : "")}",
-                                    $"{(goToEnabled ? $"{msgPrefix} Type {primaryChatColor}!goto <name>{ChatColors.Default} to teleport to a player!" : "")}",
-                                    $"{msgPrefix} Type {primaryChatColor}!fov <0-140>{ChatColors.Default} to change your field of view!",
-                                    $"{msgPrefix} Type {primaryChatColor}!sounds{ChatColors.Default} to toggle timer sounds!",
-                                    $"{msgPrefix} Type {primaryChatColor}!hud{ChatColors.Default} to toggle timer hud!",
-                                    $"{msgPrefix} Type {primaryChatColor}!keys{ChatColors.Default} to toggle hud keys!",
-                                    $"{msgPrefix} Type {primaryChatColor}!styles{ChatColors.Default} to list all available styles!",
-                                    $"{(jumpStatsEnabled ? $"{msgPrefix} Type {primaryChatColor}!jumpstats{ChatColors.Default} to toggle JumpStats!" : "")}"];
+                    Server.NextFrame(() => PrintToChatAll(Localizer["current_sr", currentMapName!]));
 
-                    var nonEmptyAds = adMessages.Where(ad => !string.IsNullOrEmpty(ad)).ToArray();
+                    var serverRecord = sortedRecords.FirstOrDefault();
+                    string playerName = serverRecord.Value.PlayerName!; // Get the player name from the dictionary value
+                    int timerTicks = serverRecord.Value.TimerTicks; // Get the timer ticks from the dictionary value
+                    Server.NextFrame(() => PrintToChatAll(Localizer["current_sr_player", playerName, FormatTime(timerTicks)]));
 
-                    Server.NextFrame(() => Server.PrintToChatAll(nonEmptyAds[new Random().Next(nonEmptyAds.Length)]));
                     SortedCachedRecords = sortedRecords;
                 });
             }, TimerFlags.REPEAT);
 
-            isADTimerRunning = true;
+            isADServerRecordTimerRunning = true;
+        }
+
+        private void ADtimerMessages()
+        {
+            if (isADMessagesTimerRunning) return;
+
+            var timer = AddTimer(adMessagesTimer, () =>
+            {
+                List<string> allAdMessages = [.. GetAdMessages()];
+
+                var customAdMessageFilePath = Path.Join(gameDir + "/csgo/cfg/SharpTimer/admessages.txt");
+                if (File.Exists(customAdMessageFilePath))
+                {
+                    string[] customAdMessages = File.ReadAllLines(customAdMessageFilePath);
+                    var nonEmptyCustomAds = customAdMessages.Where(ad => !string.IsNullOrEmpty(ad) && !ad.TrimStart().StartsWith("//")).ToList();
+
+                    allAdMessages.AddRange(nonEmptyCustomAds);
+                }
+
+                Server.NextFrame(() => Server.PrintToChatAll($"{ReplaceVars(allAdMessages[new Random().Next(allAdMessages.Count)])}"));
+            }, TimerFlags.REPEAT);
+
+            isADMessagesTimerRunning = true;
+        }
+
+        private List<string> GetAdMessages()
+        {
+            var adMessages = new List<string>() 
+            {
+                $"{Localizer["prefix"]} {Localizer["ad_see_all_commands"]}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_pb"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_sr"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_top"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_bonus"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_bonus_pb"]}" : "")}",
+                $"{(globalRanksEnabled ? $"{Localizer["prefix"]} {Localizer["ad_points"]}" : "")}",
+                $"{(respawnEnabled ? $"{Localizer["prefix"]} {Localizer["ad_respawn"]}" : "")}",
+                $"{(respawnEnabled ? $"{Localizer["prefix"]} {Localizer["ad_start_pos"]}" : "")}",
+                $"{(topEnabled ? $"{Localizer["prefix"]} {Localizer["ad_top"]}" : "")}",
+                $"{(rankEnabled ? $"{Localizer["prefix"]} {Localizer["ad_rank"]}" : "")}",
+                $"{(cpEnabled ? $"{Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? $"{Localizer["ad_save_loc"]}" : $"{Localizer["ad_cp"]}")}" : "")}",
+                $"{(cpEnabled ? $"{Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? $"{Localizer["ad_load_loc"]}" : $"{Localizer["ad_tp"]}")}" : "")}",
+                $"{(goToEnabled ? $"{Localizer["prefix"]} {Localizer["ad_goto"]}" : "")}",
+                $"{(fovChangerEnabled ? $"{Localizer["prefix"]} {Localizer["ad_fov"]}" : "")}",
+                $"{Localizer["prefix"]} {Localizer["ad_sounds"]}",
+                $"{Localizer["prefix"]} {Localizer["ad_hud"]}",
+                $"{Localizer["prefix"]} {Localizer["ad_keys"]}",
+                $"{(enableStyles ? $"{Localizer["prefix"]} {Localizer["ad_styles"]}" : "")}",
+                $"{(jumpStatsEnabled ? $"{Localizer["prefix"]} {Localizer["ad_jumpstats"]}" : "")}"
+            };
+
+            return adMessages;
+        }
+
+        private string ReplaceVars(string message)
+        {
+            var replacements = new Dictionary<string, string>
+            {
+                { "{prefix}",       $"{Localizer["prefix"]}" },
+                { "{current_map}",  $"{Server.MapName}" },
+                { "{max_players}",  $"{Server.MaxPlayers}" },
+                { "{players}",      $"{Utilities.GetPlayers().Count()}" },
+                { "{current_time}", $"{DateTime.Now.ToString("HH:mm:ss")}" },
+                { "{current_date}", $"{DateTime.Now.ToString("dd.MMM.yyyy")}" },
+                { "{primary}",      $"{primaryChatColor}" },
+                { "{default}",      $"{ChatColors.Default}" },
+                { "{red}",          $"{ChatColors.Red}" },
+                { "{white}",        $"{ChatColors.White}" },
+                { "{darkred}",      $"{ChatColors.DarkRed}" },
+                { "{green}",        $"{ChatColors.Green}" },
+                { "{lightyellow}",  $"{ChatColors.LightYellow}" },
+                { "{lightblue}",    $"{ChatColors.LightBlue}" },
+                { "{olive}",        $"{ChatColors.Olive}" },
+                { "{lime}",         $"{ChatColors.Lime}" },
+                { "{lightpurple}",  $"{ChatColors.LightPurple}" },
+                { "{purple}",       $"{ChatColors.Purple}" },
+                { "{grey}",         $"{ChatColors.Grey}" },
+                { "{yellow}",       $"{ChatColors.Yellow}" },
+                { "{gold}",         $"{ChatColors.Gold}" },
+                { "{silver}",       $"{ChatColors.Silver}" },
+                { "{blue}",         $"{ChatColors.Blue}" },
+                { "{darkblue}",     $"{ChatColors.DarkBlue}" },
+                { "{bluegrey}",     $"{ChatColors.BlueGrey}" },
+                { "{magenta}",      $"{ChatColors.Magenta}" },
+                { "{lightred}",     $"{ChatColors.LightRed}" },
+                { "{orange}",       $"{ChatColors.Orange}" }
+            };
+
+            foreach (var replacement in replacements)
+                message = message.Replace(replacement.Key, replacement.Value);
+
+            return message;
         }
 
         public void SharpTimerDebug(string msg)
@@ -252,36 +317,6 @@ namespace SharpTimer
 
             double points = basePoints / (timerTicks * timeFactor);
             return points * tierMult * styleMult;
-        }
-
-        static string ReplaceVars(string loc_string, params string[] args)
-        {
-            return string.Format(loc_string, args);
-        }
-
-        static string ParsePrefixColors(string input)
-        {
-            Dictionary<string, string> colorNameSymbolMap = new(StringComparer.OrdinalIgnoreCase)
-             {
-                 { "{white}", "" },
-                 { "{darkred}", "" },
-                 { "{purple}", "" },
-                 { "{olive}", "" },
-                 { "{lime}", "" },
-                 { "{green}", "" },
-                 { "{red}", "" },
-                 { "{grey}", "" },
-                 { "{orange}", "" },
-                 { "{lightpurple}", "" },
-                 { "{lightred}", "" }
-             };
-
-            foreach (var entry in colorNameSymbolMap)
-            {
-                input = input.Replace(entry.Key, entry.Value.ToString());
-            }
-
-            return input;
         }
 
         string ParseColorToSymbol(string input)
@@ -450,9 +485,10 @@ namespace SharpTimer
             Vector corner3 = new(corner8.X, corner8.Y, corner1.Z);
             Vector corner4 = new(corner8.X, corner1.Y, corner1.Z);
 
-            Vector corner5 = new(corner8.X, corner1.Y, corner8.Z);
-            Vector corner6 = new(corner1.X, corner1.Y, corner8.Z);
-            Vector corner7 = new(corner1.X, corner8.Y, corner8.Z);
+            Vector corner5 = new(corner8.X, corner1.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
+            Vector corner6 = new(corner1.X, corner1.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
+            Vector corner7 = new(corner1.X, corner8.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
+            if (Box3DZones) corner8 = new(corner8.X, corner8.Y, corner8.Z + fakeTriggerHeight);
 
             //top square
             DrawLaserBetween(corner1, corner2, _color);
@@ -794,9 +830,6 @@ namespace SharpTimer
                         SharpTimerDebug("Re-Executing SharpTimer/custom_exec");
                         Server.ExecuteCommand("execifexists SharpTimer/custom_exec.cfg");
 
-                        //enforce sv_cheats 0 for dumb maps
-                        Server.ExecuteCommand("sv_cheats 0");
-
                         if (execCustomMapCFG == true)
                         {
                             string MapExecFile = GetClosestMapCFGMatch();
@@ -805,29 +838,19 @@ namespace SharpTimer
                             else
                                 SharpTimerError("MapExec Error: file name returned null");
                         }
-
-                        if (hideAllPlayers == true) Server.ExecuteCommand($"mp_teammates_are_enemies 1");
-                        if (enableSRreplayBot)
-                        {
-                            Server.NextFrame(() =>
-                            {
-                                Server.ExecuteCommand($"sv_hibernate_when_empty 0");
-                                Server.ExecuteCommand($"bot_join_after_player 0");
-                            });
-                        }
                     });
 
-                    if (enableReplays == true && enableSRreplayBot == true)
+                    if (enableReplays && enableSRreplayBot)
                     {
                         AddTimer(5.0f, () =>
                         {
                             if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0)
-                                _ = SpawnReplayBot();
+                                _ = Task.Run(async () => await SpawnReplayBot());
                             else
                             {
-                                Server.PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
-                                Server.PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
-                                Server.PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
+                                PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
+                                PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
+                                PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
                                 SharpTimerError("Couldnt Spawn Replay bot! Please make sure mp_force_pick_time is set to 1 in your custom_exec.cfg");
                             }
                         });
@@ -837,13 +860,6 @@ namespace SharpTimer
 
                     //bonusRespawnPoses.Clear();
                     bonusRespawnAngs.Clear();
-                    
-                    if(!sqlCheck)
-                    {
-                        if(usePostgres) _ = Task.Run(async () => await CheckPostgresTablesAsync());
-                        if(useMySQL) _ = Task.Run(async () => await CheckTablesAsync());
-                        sqlCheck = true;
-                    }
 
                     cpTriggers.Clear();         // make sure old data is flushed in case new map uses fake zones
                     cpTriggerCount = 0;
@@ -853,6 +869,40 @@ namespace SharpTimer
                     stageTriggerPoses.Clear();
 
                     KillServerCommandEnts();
+
+                    if (!sqlCheck)
+                    {
+                        if (useMySQL)
+                        {
+                            string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
+                            mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
+                            SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
+                            dbType = DatabaseType.MySQL;
+                            dbPath = mySQLpath;
+                            enableDb = true;
+                        }
+                        else if (usePostgres)
+                        {
+                            string postgresConfigFileName = "SharpTimer/postgresConfig.json";
+                            postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
+                            SharpTimerDebug($"Set postgresPath to {postgresPath}");
+                            dbType = DatabaseType.PostgreSQL;
+                            dbPath = postgresPath;
+                            enableDb = true;
+                        }
+                        else
+                        {
+                            SharpTimerDebug($"No db set, defaulting to SQLite");
+                            dbPath = Path.Join(gameDir + "/csgo/cfg", "SharpTimer/database.db");
+                            dbType = DatabaseType.SQLite;
+                            enableDb = true;
+                        }
+                        using (var connection = OpenConnection())
+                        {
+                            ExecuteMigrations(connection);
+                        }
+                        sqlCheck = true;
+                    }
                 });
             }
             catch (Exception ex)
@@ -880,6 +930,9 @@ namespace SharpTimer
 
                 string discordConfigFileName = "SharpTimer/discordConfig.json";
                 string discordCFGpath = Path.Join(gameDir + "/csgo/cfg", discordConfigFileName);
+
+                string ranksFileName = $"SharpTimer/ranks.json";
+                string ranksPath = Path.Join(gameDir + "/csgo/cfg", ranksFileName);
 
                 string mapdataFileName = $"SharpTimer/MapData/{currentMapName}.json";
                 string mapdataPath = Path.Join(gameDir + "/csgo/cfg", mapdataFileName);
@@ -969,19 +1022,10 @@ namespace SharpTimer
                         else
                             SharpTimerError("MapExec Error: file name returned null");
                     }
-
-                    if (hideAllPlayers == true) Server.ExecuteCommand($"mp_teammates_are_enemies 1");
-                    if (enableSRreplayBot)
-                    {
-                        Server.NextFrame(() =>
-                        {
-                            Server.ExecuteCommand($"sv_hibernate_when_empty 0");
-                            Server.ExecuteCommand($"bot_join_after_player 0");
-                        });
-                    }
                 });
 
-                if (srEnabled == true) ServerRecordADtimer();
+                if (adServerRecordEnabled == true) ADtimerServerRecord();
+                if (adMessagesEnabled == true) ADtimerMessages();
 
                 entityCache = new EntityCache();
                 UpdateEntityCache();
@@ -995,6 +1039,52 @@ namespace SharpTimer
                 _ = Task.Run(async () => await GetDiscordWebhookURLFromConfigFile(discordCFGpath));
 
                 primaryChatColor = ParseColorToSymbol(primaryHUDcolor);
+
+                using JsonDocument? ranksJsonDocument = LoadJsonOnMainThread(ranksPath);
+                if (ranksJsonDocument != null)
+                {
+                    SharpTimerDebug($"Ranks json found!");
+                    JsonElement root = ranksJsonDocument.RootElement;
+
+                    rankDataList.Clear();
+
+                    foreach (var property in root.EnumerateObject())
+                    {
+                        JsonElement rankElement = property.Value;
+                        RankData rankData = new RankData
+                        {
+                            Title = rankElement.TryGetProperty("title", out JsonElement titleElement) ? titleElement.GetString()! : string.Empty,
+                            Percent = rankElement.TryGetProperty("percent", out var percentElement) ? percentElement.GetDouble() : 0,
+                            Placement = rankElement.TryGetProperty("placement", out var placementElement) ? placementElement.GetInt32() : 0,
+                            Color = rankElement.TryGetProperty("color", out JsonElement colorElement) ? colorElement.GetString()! : string.Empty,
+                            Icon = rankElement.TryGetProperty("icon", out JsonElement iconElement) ? iconElement.GetString()! : string.Empty,
+                        };
+
+                        rankDataList.Add(rankData);
+
+                        if (property.Name.ToLower() == "unranked")
+                        {
+                            UnrankedTitle = rankElement.GetProperty("title").GetString()!;
+                            UnrankedColor = rankElement.GetProperty("color").GetString()!;
+                            UnrankedIcon = rankElement.GetProperty("icon").GetString()!;
+                        }
+                    }
+
+                    rankDataList = rankDataList
+                        .OrderBy(r => r.Placement > 0 ? 0 : 1)  // Placement > 0 should come first
+                        .ThenBy(r => r.Placement)               // sort Placement (low to high)
+                        .ThenBy(r => r.Percent)                 // sort Percent (low to high)
+                        .ToList();
+
+                    foreach (var xd in rankDataList)
+                    {
+                        SharpTimerDebug(xd.Title + xd.Percent + xd.Placement);
+                    }
+                }
+                else
+                {
+                    SharpTimerError($"Ranks json was null");
+                }
 
                 SharpTimerConPrint($"Trying to find Map data json for map: {currentMapName}!");
                 //Bonus fake zone check
@@ -1143,23 +1233,6 @@ namespace SharpTimer
                         currentMapOverrideStageRequirement = false;
                     }
 
-                    if (!string.IsNullOrEmpty(mapInfo.OverrideTriggerPushFix))
-                    {
-                        try
-                        {
-                            currentMapOverrideTriggerPushFix = bool.Parse(mapInfo.OverrideTriggerPushFix);
-                            SharpTimerConPrint($"Overriding TriggerPushFix...");
-                        }
-                        catch (FormatException)
-                        {
-                            SharpTimerError("Invalid boolean string format for OverrideTriggerPushFix");
-                        }
-                    }
-                    else
-                    {
-                        currentMapOverrideTriggerPushFix = false;
-                    }
-
                     if (!string.IsNullOrEmpty(mapInfo.GlobalPointsMultiplier))
                     {
                         try
@@ -1220,9 +1293,6 @@ namespace SharpTimer
                         DrawWireframe3D(endRight, endLeft, endBeamColor);
                     }
 
-                    if (triggerPushFixEnabled == true && currentMapOverrideTriggerPushFix == false)
-                        FindTriggerPushData();
-
                     if (useTriggers == true || useTriggersAndFakeZones == true)
                     {
                         FindStageTriggers();
@@ -1236,9 +1306,6 @@ namespace SharpTimer
                 {
                     SharpTimerConPrint($"Map data json not found for map: {currentMapName}!");
                     SharpTimerConPrint($"Trying to hook Triggers supported by default!");
-
-                    if (triggerPushFixEnabled == true && currentMapOverrideTriggerPushFix == false)
-                        FindTriggerPushData();
 
                     KillServerCommandEnts();
 
@@ -1319,10 +1386,8 @@ namespace SharpTimer
             currentMapOverrideDisableTelehop = []; //making sure previous map overrides are reset
             currentMapOverrideMaxSpeedLimit = [];
             currentMapOverrideStageRequirement = false;
-            currentMapOverrideTriggerPushFix = false;
 
             globalPointsMultiplier = 1.0f;
-
             startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = false;
         }
 
@@ -1367,17 +1432,11 @@ namespace SharpTimer
         public string RemovePlayerTags(string input)
         {
             string originalTag = input;
-            string[] playerTagsToRemove = [   $"[{customVIPTag}]",
-                                                "[Unranked]",
-                                                "[Silver I]", "[Silver II]", "[Silver III]",
-                                                "[Gold I]", "[Gold II]", "[Gold III]",
-                                                "[Platinum I]", "[Platinum II]", "[Platinum III]",
-                                                "[Diamond I]", "[Diamond II]", "[Diamond III]",
-                                                "[Master I]", "[Master II]", "[Master III]",
-                                                "[Legend I]", "[Legend II]", "[Legend III]",
-                                                "[Royalty I]", "[Royalty II]", "[Royalty III]",
-                                                "[God I]", "[God II]", "[God III]"
-                                            ];
+
+            List<string> playerTagsToRemove = [$"{customVIPTag}", $"{UnrankedTitle}"];
+
+            foreach (var rank in rankDataList)
+                playerTagsToRemove.Add(rank.Title);
 
             if (!string.IsNullOrEmpty(input))
             {
@@ -1395,7 +1454,7 @@ namespace SharpTimer
             return input;
         }
 
-        static string FormatOrdinal(int number)
+        public static string FormatOrdinal(int number)
         {
             if (number % 100 >= 11 && number % 100 <= 13)
             {

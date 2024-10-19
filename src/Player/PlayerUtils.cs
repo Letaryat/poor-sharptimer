@@ -17,6 +17,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using Microsoft.Extensions.Localization;
 using System.Text.Json;
 
 namespace SharpTimer
@@ -26,42 +27,42 @@ namespace SharpTimer
         public void PrintAllEnabledCommands(CCSPlayerController player)
         {
             SharpTimerDebug($"Printing Commands for {player.PlayerName}");
-            player.PrintToChat($"{msgPrefix}Available Commands:");
+            player.PrintToChat($" {Localizer["prefix"]} Available Commands:");
 
-            if (respawnEnabled) player.PrintToChat($"{msgPrefix}!r (css_r) - Respawns you");
-            if (respawnEnabled && bonusRespawnPoses.Count != 0) player.PrintToChat($"{msgPrefix}!rb <#> / !b <#> (css_rb / css_b) - Respawns you to a bonus");
-            if (respawnEnabled && bonusRespawnPoses.Count != 0) player.PrintToChat($"{msgPrefix}!setresp / !startpos (css_setresp / css_startpos) - Save a custom respawn point within the start trigger");
-            if (topEnabled) player.PrintToChat($"{msgPrefix}!top (css_top) - Lists top 10 records on this map");
-            if (topEnabled && bonusRespawnPoses.Count != 0) player.PrintToChat($"{msgPrefix}!topbonus <#> (css_topbonus) - Lists top 10 records of a bonus");
-            if (rankEnabled) player.PrintToChat($"{msgPrefix}!rank (css_rank) - Shows your current rank and pb");
-            if (globalRanksEnabled) player.PrintToChat($"{msgPrefix}!points (css_points) - Prints top 10 points");
-            if (goToEnabled) player.PrintToChat($"{msgPrefix}!goto <name> (css_goto) - Teleports you to a player");
-            if (stageTriggerPoses.Count != 0) player.PrintToChat($"{msgPrefix}!stage <#> (css_stage) - Teleports you to a stage");
-            player.PrintToChat($"{msgPrefix}!sounds (css_sounds) - Toggle timer sounds!");
-            player.PrintToChat($"{msgPrefix}!hud (css_hud) - Toggle timer hud!");
-            player.PrintToChat($"{msgPrefix}!keys (css_keys) - Toggle hud keys!");
-            player.PrintToChat($"{msgPrefix}!fov <0-140> (css_fov) - Change your field of view!");
+            if (respawnEnabled) player.PrintToChat($" {Localizer["prefix"]} !r (css_r) - Respawns you");
+            if (respawnEnabled && bonusRespawnPoses.Count != 0) player.PrintToChat($" {Localizer["prefix"]} !rb <#> / !b <#> (css_rb / css_b) - Respawns you to a bonus");
+            if (respawnEnabled && bonusRespawnPoses.Count != 0) player.PrintToChat($" {Localizer["prefix"]} !setresp / !startpos (css_setresp / css_startpos) - Save a custom respawn point within the start trigger");
+            if (topEnabled) player.PrintToChat($" {Localizer["prefix"]} !top (css_top) - Lists top 10 records on this map");
+            if (topEnabled && bonusRespawnPoses.Count != 0) player.PrintToChat($" {Localizer["prefix"]} !topbonus <#> (css_topbonus) - Lists top 10 records of a bonus");
+            if (rankEnabled) player.PrintToChat($" {Localizer["prefix"]} !rank (css_rank) - Shows your current rank and pb");
+            if (globalRanksEnabled) player.PrintToChat($" {Localizer["prefix"]} !points (css_points) - Prints top 10 points");
+            if (goToEnabled) player.PrintToChat($" {Localizer["prefix"]} !goto <name> (css_goto) - Teleports you to a player");
+            if (stageTriggerPoses.Count != 0) player.PrintToChat($" {Localizer["prefix"]} !stage <#> (css_stage) - Teleports you to a stage");
+            player.PrintToChat($" {Localizer["prefix"]} !sounds (css_sounds) - Toggle timer sounds!");
+            player.PrintToChat($" {Localizer["prefix"]} !hud (css_hud) - Toggle timer hud!");
+            player.PrintToChat($" {Localizer["prefix"]} !keys (css_keys) - Toggle hud keys!");
+            player.PrintToChat($" {Localizer["prefix"]} !fov <0-140> (css_fov) - Change your field of view!");
 
             if (cpEnabled)
             {
-                player.PrintToChat($"{msgPrefix}{(currentMapName!.Contains("surf_") ? "!saveloc (css_saveloc) - Saves a Loc" : "!cp (css_cp) - Sets a Checkpoint")}");
-                player.PrintToChat($"{msgPrefix}{(currentMapName!.Contains("surf_") ? "!loadloc (css_loadloc) - Teleports you to the last Loc" : "!tp (css_tp) - Teleports you to the last Checkpoint")}");
-                player.PrintToChat($"{msgPrefix}{(currentMapName!.Contains("surf_") ? "!prevloc (css_prevloc) - Teleports you one Loc back" : "!prevcp (css_prevcp) - Teleports you one Checkpoint back")}");
-                player.PrintToChat($"{msgPrefix}{(currentMapName!.Contains("surf_") ? "!nextloc (css_nextloc) - Teleports you one Loc forward" : "!nextcp (css_nextcp) - Teleports you one Checkpoint forward")}");
+                PrintToChat(player, currentMapName!.Contains("surf_") ? "!saveloc (css_saveloc) - Saves a Loc" : "!cp (css_cp) - Sets a Checkpoint");
+                PrintToChat(player, currentMapName!.Contains("surf_") ? "!loadloc (css_loadloc) - Teleports you to the last Loc" : "!tp (css_tp) - Teleports you to the last Checkpoint");
+                PrintToChat(player, currentMapName!.Contains("surf_") ? "!prevloc (css_prevloc) - Teleports you one Loc back" : "!prevcp (css_prevcp) - Teleports you one Checkpoint back");
+                PrintToChat(player, currentMapName!.Contains("surf_") ? "!nextloc (css_nextloc) - Teleports you one Loc forward" : "!nextcp (css_nextcp) - Teleports you one Checkpoint forward");
             }
 
             if (enableReplays)
             {
-                player.PrintToChat($"{msgPrefix}!replay / !replaysr (css_replay / css_replaysr) - Replay the current map server record");
-                player.PrintToChat($"{msgPrefix}!replaytop [1-10] (css_replaytop) - Replay a top 10 server map record ");
-                player.PrintToChat($"{msgPrefix}!replaypb (css_replaypb) - Replay your pb for the current map");
-                player.PrintToChat($"{msgPrefix}!replaybonus / !replayb [1-10] [bonus stage] (css_replaybonus) - Replay a top 10 server bonus record");
-                player.PrintToChat($"{msgPrefix}!replaybonuspb / !replaybpb (css_replaybonuspb) - Replay your pb for a bonus");
+                player.PrintToChat($" {Localizer["prefix"]} !replay / !replaysr (css_replay / css_replaysr) - Replay the current map server record");
+                player.PrintToChat($" {Localizer["prefix"]} !replaytop [1-10] (css_replaytop) - Replay a top 10 server map record ");
+                player.PrintToChat($" {Localizer["prefix"]} !replaypb (css_replaypb) - Replay your pb for the current map");
+                player.PrintToChat($" {Localizer["prefix"]} !replaybonus / !replayb [1-10] [bonus stage] (css_replaybonus) - Replay a top 10 server bonus record");
+                player.PrintToChat($" {Localizer["prefix"]} !replaybonuspb / !replaybpb (css_replaybonuspb) - Replay your pb for a bonus");
             }
 
-            if (jumpStatsEnabled) player.PrintToChat($"{msgPrefix}!jumpstats (css_jumpstats) - Toggles JumpStats");
-            player.PrintToChat($"{msgPrefix}!hideweapon (css_hideweapon) - Toggles weapon visibility");
-            if(enableStyles) player.PrintToChat($"{msgPrefix}!styles (css_styles) - List all styles");
+            if (jumpStatsEnabled) player.PrintToChat($" {Localizer["prefix"]} !jumpstats (css_jumpstats) - Toggles JumpStats");
+            player.PrintToChat($" {Localizer["prefix"]} !hideweapon (css_hideweapon) - Toggles weapon visibility");
+            if(enableStyles) player.PrintToChat($" {Localizer["prefix"]} !styles (css_styles) - List all styles");
         }
 
         public void ForcePlayerSpeed(CCSPlayerController player, string activeWeapon)
@@ -72,7 +73,10 @@ namespace SharpTimer
                 activeWeapon ??= "no_knife";
                 if (!weaponSpeedLookup.TryGetValue(activeWeapon, out WeaponSpeedStats weaponStats) || !player.IsValid) return;
 
-                player.PlayerPawn.Value!.VelocityModifier = (float)(forcedPlayerSpeed / weaponStats.GetSpeed(player.PlayerPawn.Value.IsWalking));
+                if(player.PlayerPawn.Value!.ActualMoveType.HasFlag(MoveType_t.MOVETYPE_LADDER))
+                    player.PlayerPawn.Value!.VelocityModifier = 1.0f;
+                else
+                    player.PlayerPawn.Value!.VelocityModifier = (float)(forcedPlayerSpeed / weaponStats.GetSpeed(player.PlayerPawn.Value.IsWalking));
             }
             catch (Exception ex)
             {
@@ -225,7 +229,7 @@ namespace SharpTimer
             return (0, string.Empty);
         }
 
-        public async Task<int> GetPreviousPlayerRecord(CCSPlayerController? player, string steamId, int bonusX = 0, int style = 0)
+        public async Task<int> GetPreviousPlayerRecord(CCSPlayerController? player, string steamId, int bonusX = 0)
         {
             if (!IsAllowedPlayer(player))
             {
@@ -297,17 +301,17 @@ namespace SharpTimer
         {
             try
             {
-                if (!IsAllowedPlayer(player) && !IsAllowedSpectator(player))
+                if (!IsAllowedClient(player))
                     return "";
 
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
 
-                int savedPlayerTime = (useMySQL || usePostgres) ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapNamee!, playerName, style) : await GetPreviousPlayerRecord(player, steamId, bonusX, style);
+                int savedPlayerTime = enableDb ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName, bonusX, style) : await GetPreviousPlayerRecord(player, steamId, bonusX);
 
                 if (savedPlayerTime == 0)
-                    return getRankImg ? unrankedIcon : "Unranked";
+                    return getRankImg ? UnrankedIcon : UnrankedTitle;
 
-                Dictionary<string, PlayerRecord> sortedRecords = (useMySQL || usePostgres) ? await GetSortedRecordsFromDatabase(0, bonusX, currentMapNamee, style) : await GetSortedRecords();
+                Dictionary<string, PlayerRecord> sortedRecords = enableDb ? await GetSortedRecordsFromDatabase(0, bonusX, currentMapNamee, style) : await GetSortedRecords();
 
                 int placement = sortedRecords.Count(kv => kv.Value.TimerTicks < savedPlayerTime) + 1;
                 int totalPlayers = sortedRecords.Count;
@@ -318,7 +322,35 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerError($"Error in GetPlayerMapPlacementWithTotal: {ex}");
-                return "Unranked";
+                return UnrankedTitle;
+            }
+        }
+        public async Task<string> GetPlayerStagePlacementWithTotal(CCSPlayerController? player, string steamId, string playerName, int stage, bool getRankImg = false, bool getPlacementOnly = false, int bonusX = 0)
+        {
+            try
+            {
+                if (!IsAllowedClient(player))
+                    return "";
+
+                string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
+
+                int savedPlayerTime = await GetPreviousPlayerStageRecordFromDatabase(player, steamId, currentMapName!, stage, playerName, bonusX);
+
+                if (savedPlayerTime == 0)
+                    return getRankImg ? UnrankedIcon : UnrankedTitle;
+
+                Dictionary<string, PlayerRecord> sortedRecords = await GetSortedStageRecordsFromDatabase(stage, 0, bonusX, currentMapNamee);
+
+                int placement = sortedRecords.Count(kv => kv.Value.TimerTicks < savedPlayerTime) + 1;
+                int totalPlayers = sortedRecords.Count;
+                double percentage = (double)placement / totalPlayers * 100;
+
+                return CalculateRankStuff(totalPlayers, placement, percentage, getRankImg, getPlacementOnly);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in GetPlayerStagePlacementWithTotal: {ex}");
+                return UnrankedTitle;
             }
         }
 
@@ -326,18 +358,18 @@ namespace SharpTimer
         {
             try
             {
-                if (!IsAllowedPlayer(player) && !IsAllowedSpectator(player))
+                if (!IsAllowedClient(player))
                     return "";
 
-                int savedPlayerPoints = (useMySQL || usePostgres) ? await GetPlayerPointsFromDatabase(player, steamId, playerName) : 0;
+                int savedPlayerPoints = enableDb ? await GetPlayerPointsFromDatabase(player, steamId, playerName) : 0;
 
                 if (getPointsOnly)
                     return savedPlayerPoints.ToString();
 
                 if (savedPlayerPoints == 0 || savedPlayerPoints <= minGlobalPointsForRank)
-                    return getRankImg ? unrankedIcon : "Unranked";
+                    return getRankImg ? UnrankedIcon : UnrankedTitle;
 
-                Dictionary<string, PlayerPoints> sortedPoints = (useMySQL || usePostgres) ? await GetSortedPointsFromDatabase() : [];
+                Dictionary<string, PlayerPoints> sortedPoints = enableDb ? await GetSortedPointsFromDatabase() : [];
 
                 int placement = sortedPoints.Count(kv => kv.Value.GlobalPoints > savedPlayerPoints) + 1;
                 int totalPlayers = sortedPoints.Count;
@@ -348,7 +380,7 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerError($"Error in GetPlayerServerPlacement: {ex}");
-                return "Unranked";
+                return UnrankedTitle;
             }
         }
 
@@ -356,109 +388,20 @@ namespace SharpTimer
         {
             try
             {
-                if (totalPlayers < 100)
+                foreach (var rank in rankDataList)
                 {
-                    if (placement <= 1)
-                        return getRankImg ? god3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"God III");
-                    else if (placement <= 2)
-                        return getRankImg ? god2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"God II");
-                    else if (placement <= 3)
-                        return getRankImg ? god1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"God I");
-                    else if (placement <= 10)
-                        return getRankImg ? royalty3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Royalty III");
-                    else if (placement <= 15)
-                        return getRankImg ? royalty2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Royalty II");
-                    else if (placement <= 20)
-                        return getRankImg ? royalty1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Royalty I");
-                    else if (placement <= 25)
-                        return getRankImg ? legend3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Legend III");
-                    else if (placement <= 30)
-                        return getRankImg ? legend2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Legend II");
-                    else if (placement <= 35)
-                        return getRankImg ? legend1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Legend I");
-                    else if (placement <= 40)
-                        return getRankImg ? master3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Master III");
-                    else if (placement <= 45)
-                        return getRankImg ? master2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Master II");
-                    else if (placement <= 50)
-                        return getRankImg ? master1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Master I");
-                    else if (placement <= 55)
-                        return getRankImg ? diamond3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Diamond III");
-                    else if (placement <= 60)
-                        return getRankImg ? diamond2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Diamond II");
-                    else if (placement <= 65)
-                        return getRankImg ? diamond1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Diamond I");
-                    else if (placement <= 70)
-                        return getRankImg ? platinum3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Platinum III");
-                    else if (placement <= 75)
-                        return getRankImg ? platinum2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Platinum II");
-                    else if (placement <= 80)
-                        return getRankImg ? platinum1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Platinum I");
-                    else if (placement <= 85)
-                        return getRankImg ? gold3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Gold III");
-                    else if (placement <= 90)
-                        return getRankImg ? gold2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Gold II");
-                    else if (placement <= 95)
-                        return getRankImg ? gold1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Gold I");
-                    else
-                        return getRankImg ? silver1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Silver I");
+                    if (rank.Placement > 0 && placement == rank.Placement)
+                        return getRankImg ? rank.Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : rank.Title);
+
+                    if (rank.Percent > 0 && percentage <= rank.Percent)
+                        return getRankImg ? rank.Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : rank.Title);
                 }
-                else
-                {
-                    if (placement <= 1)
-                        return getRankImg ? god3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"God III");
-                    else if (placement <= 2)
-                        return getRankImg ? god2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"God II");
-                    else if (placement <= 3)
-                        return getRankImg ? god1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"God I");
-                    else if (percentage <= 2.0)
-                        return getRankImg ? royalty3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Royalty III");
-                    else if (percentage <= 5.0)
-                        return getRankImg ? royalty2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Royalty II");
-                    else if (percentage <= 10.0)
-                        return getRankImg ? royalty1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Royalty I");
-                    else if (percentage <= 15.0)
-                        return getRankImg ? legend3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Legend III");
-                    else if (percentage <= 20.0)
-                        return getRankImg ? legend2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Legend II");
-                    else if (percentage <= 25.0)
-                        return getRankImg ? legend1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Legend I");
-                    else if (percentage <= 30.0)
-                        return getRankImg ? master3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Master III");
-                    else if (percentage <= 35.0)
-                        return getRankImg ? master2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Master II");
-                    else if (percentage <= 40.0)
-                        return getRankImg ? master1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Master I");
-                    else if (percentage <= 45.0)
-                        return getRankImg ? diamond3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Diamond III");
-                    else if (percentage <= 50.0)
-                        return getRankImg ? diamond2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Diamond II");
-                    else if (percentage <= 55.0)
-                        return getRankImg ? diamond1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Diamond I");
-                    else if (percentage <= 60.0)
-                        return getRankImg ? platinum3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Platinum III");
-                    else if (percentage <= 65.0)
-                        return getRankImg ? platinum2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Platinum II");
-                    else if (percentage <= 70.0)
-                        return getRankImg ? platinum1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Platinum I");
-                    else if (percentage <= 75.0)
-                        return getRankImg ? gold3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Gold III");
-                    else if (percentage <= 80.0)
-                        return getRankImg ? gold2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Gold II");
-                    else if (percentage <= 85.0)
-                        return getRankImg ? gold1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Gold I");
-                    else if (percentage <= 90.0)
-                        return getRankImg ? silver3Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Silver III");
-                    else if (percentage <= 95.0)
-                        return getRankImg ? silver2Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Silver II");
-                    else
-                        return getRankImg ? silver1Icon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : $"Silver I");
-                }
+                return getRankImg ? UnrankedIcon : (getPlacementOnly ? $"{placement}/{totalPlayers}" : UnrankedTitle);
             }
             catch (Exception ex)
             {
                 SharpTimerError($"Error in CalculateRankStuff: {ex}");
-                return "Unranked";
+                return UnrankedTitle;
             }
         }
 
@@ -480,7 +423,7 @@ namespace SharpTimer
                     playerTimers[player.Slot].StageVelos!.Clear();
                     playerTimers[player.Slot].CurrentMapStage = stageTriggers.GetValueOrDefault(callerHandle, 0);
                 }
-                else if (cpTriggerCount != 0 && useStageTriggers == false)
+                if (cpTriggerCount != 0)
                 {
                     playerTimers[player.Slot].StageTimes!.Clear();
                     playerTimers[player.Slot].StageVelos!.Clear();
@@ -496,7 +439,7 @@ namespace SharpTimer
             return HookResult.Continue;
         }
 
-        public async Task PrintMapTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int bonusX = 0, int timesFinished = 0, int style = 0)
+        public async Task PrintMapTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int bonusX = 0, int timesFinished = 0, int style = 0, int prevSR = 0)
         {
             if (!IsAllowedPlayer(player))
             {
@@ -505,7 +448,6 @@ namespace SharpTimer
             }
 
             string ranking = await GetPlayerMapPlacementWithTotal(player, steamID, playerName, false, true, bonusX, style);
-
 
             bool newSR = GetNumberBeforeSlash(ranking) == 1 && (oldticks > newticks || oldticks == 0);
             bool beatPB = oldticks > newticks;
@@ -521,44 +463,84 @@ namespace SharpTimer
             Server.NextFrame(() =>
             {
                 if (IsAllowedPlayer(player) && timesFinished > maxGlobalFreePoints && globalRanksFreePointsEnabled == true && oldticks < newticks)
-                    Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["reached_max_free", maxGlobalFreePoints]}");
+                    PrintToChat(player, Localizer["reached_max_free", maxGlobalFreePoints]);
 
                 if (newSR)
                 {
-                    if (bonusX != 0)
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_server_record_bonus", playerName, bonusX]}");
+                    if (prevSR != 0)
+                    {
+                        timeDifference = $"[{FormatTimeDifference(newticks, prevSR)}{ChatColors.White}] ";
+                    }
+                    if (bonusX != 0) PrintToChatAll(Localizer["new_server_record_bonus", playerName, bonusX]);
                     else
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_server_record", playerName]}");
-                    if (discordWebhookPrintSR && discordWebhookEnabled && (useMySQL || usePostgres)) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
+                    {
+                        PrintToChatAll(Localizer["new_server_record", playerName]);
+                        if (srSoundAll) SendCommandToEveryone($"play {srSound}");
+                        else PlaySound(player, srSound);
+                    }
+                    if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
                 }
                 else if (beatPB)
                 {
-                    if (bonusX != 0)
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_pb_record_bonus", playerName, bonusX]}");
-                    else
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["new_pb_record", playerName]}");
-                    if (discordWebhookPrintPB && discordWebhookEnabled && (useMySQL || usePostgres)) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
+                    if (bonusX != 0) PrintToChatAll(Localizer["new_pb_record_bonus", playerName, bonusX]);
+                    else PrintToChatAll(Localizer["new_pb_record", playerName]);
+                    if (discordWebhookPrintPB && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
+                    PlaySound(player, pbSound);
                 }
                 else
                 {
-                    if (bonusX != 0)
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["map_finish_bonus", playerName, bonusX]}");
-                    else
-                        Server.PrintToChatAll($"{Localizer["prefix"]} {Localizer["map_finish", playerName]}");
-                    if (discordWebhookPrintPB && discordWebhookEnabled && timesFinished == 1 && (useMySQL || usePostgres)) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
+                    if (bonusX != 0) PrintToChatAll(Localizer["map_finish_bonus", playerName, bonusX]);
+                    else PrintToChatAll(Localizer["map_finish", playerName]);
+                    if (discordWebhookPrintPB && discordWebhookEnabled && timesFinished == 1 && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
+                    PlaySound(player, timerSound);
                 }
 
-                if ((useMySQL || usePostgres) || bonusX != 0)
-                    Server.PrintToChatAll(msgPrefix + $"{(bonusX != 0 ? $"" : $"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] ")}{(timesFinished != 0 && (useMySQL || usePostgres) ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : "")}");
+                if (enableDb || bonusX != 0)
+                    PrintToChatAll($"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] " + (timesFinished != 0 && enableDb ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : ""));
 
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_time", newTime, timeDifference]}");
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["timer_style", GetNamedStyle(style)]}");
-
-                if (IsAllowedPlayer(player) && playerTimers[player.Slot].SoundsEnabled != false) player.ExecuteClientCommand($"play {beepSound}");
-
+                PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
+                if (enableStyles) PrintToChatAll(Localizer["timer_style", GetNamedStyle(style)]);
                 if (enableReplays == true && enableSRreplayBot == true && newSR && (oldticks > newticks || oldticks == 0))
                 {
                     _ = Task.Run(async () => await SpawnReplayBot());
+                }
+            });
+        }
+        public async Task PrintStageTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int stage, int bonusX = 0, int prevSR = 0)
+        {
+            if (!IsAllowedPlayer(player))
+            {
+                SharpTimerError($"Error in PrintStageTimeToChat: Player {playerName} not allowed or not on server anymore");
+                return;
+            }
+
+            string ranking = await GetPlayerStagePlacementWithTotal(player, steamID, playerName, stage, false, true, bonusX);
+
+            bool newSR = GetNumberBeforeSlash(ranking) == 1 && (oldticks > newticks || oldticks == 0);
+            bool beatPB = oldticks > newticks;
+            string newTime = FormatTime(newticks);
+            string timeDifferenceNoCol = "";
+            string timeDifference = "";
+            if (oldticks != 0)
+            {
+                if (discordWebhookEnabled) timeDifferenceNoCol = FormatTimeDifference(newticks, oldticks, true);
+                timeDifference = $"[{FormatTimeDifference(newticks, oldticks)}{ChatColors.White}] ";
+            }
+
+            Server.NextFrame(() =>
+            {
+                if (newSR)
+                {
+                    if (prevSR != 0)
+                    {
+                        timeDifference = $"[{FormatTimeDifference(newticks, prevSR)}{ChatColors.White}] ";
+                    }
+                    PrintToChatAll(Localizer["new_stage_server_record", playerName]);
+                    if (stageSoundAll) SendCommandToEveryone($"play {srSound}");
+                    else PlaySound(player, srSound);
+                    PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
+                    //TODO: Discord webhook stage sr
+                    //if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
                 }
             });
         }
@@ -578,7 +560,7 @@ namespace SharpTimer
 
                 string stripedClanTag = RemovePlayerTags(player.Clan ?? "");
 
-                player.Clan = $"{stripedClanTag}{(playerTimers[player.Slot].IsVip ? $"[{customVIPTag}]" : "")}[{tag}]";
+                player.Clan = $"{stripedClanTag}{(playerTimers[player.Slot].IsVip ? $"{customVIPTag}" : "")}{tag}";
 
                 player.PlayerName = originalPlayerName + " ";
 
@@ -631,54 +613,51 @@ namespace SharpTimer
             player.PlayerPawn.Value!.ActualMoveType = nMoveType;
         }
 
-        public char GetRankColorForChat(CCSPlayerController player)
+        public string GetRankColorForChat(CCSPlayerController player)
         {
             try
             {
                 if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
                 {
-                    if (string.IsNullOrEmpty(playerTimer.CachedRank)) return ChatColors.Default;
+                    if (string.IsNullOrEmpty(playerTimer.CachedRank))
+                        return $"{ChatColors.Default}";
 
-                    char color = ChatColors.Default;
+                    string color = $"{ChatColors.Default}";
 
-                    if (playerTimer.CachedRank.Contains("Unranked"))
-                        color = ChatColors.Default;
-                    else if (playerTimer.CachedRank.Contains("Silver"))
-                        color = ChatColors.Silver;
-                    else if (playerTimer.CachedRank.Contains("Gold"))
-                        color = ChatColors.LightYellow;
-                    else if (playerTimer.CachedRank.Contains("Platinum"))
-                        color = ChatColors.Green;
-                    else if (playerTimer.CachedRank.Contains("Diamond"))
-                        color = ChatColors.LightBlue;
-                    else if (playerTimer.CachedRank.Contains("Master"))
-                        color = ChatColors.Purple;
-                    else if (playerTimer.CachedRank.Contains("Legend"))
-                        color = ChatColors.Lime;
-                    else if (playerTimer.CachedRank.Contains("Royalty"))
-                        color = ChatColors.Orange;
-                    else if (playerTimer.CachedRank.Contains("God"))
-                        color = ChatColors.LightRed;
+                    if (playerTimer.CachedRank.Contains(UnrankedTitle))
+                        color = ReplaceVars(UnrankedColor);
+
+                    else
+                    {
+                        foreach (var rank in rankDataList)
+                        {
+                            if (playerTimer.CachedRank.Contains(rank.Title!))
+                            {
+                                color = ReplaceVars(rank.Color!);
+                                break;
+                            }
+                        }
+                    }
 
                     return color;
                 }
                 else
                 {
-                    return ChatColors.Default;
+                    return $"{ChatColors.Default}";
                 }
             }
             catch (Exception ex)
             {
                 SharpTimerError($"Error in GetRankColorForChat: {ex.Message}");
-                return ChatColors.Default;
+                return $"{ChatColors.Default}";
             }
         }
 
-        public static void SendCommandToEveryone(string command)
+        public void SendCommandToEveryone(string command)
         {
             Utilities.GetPlayers().ForEach(player =>
             {
-                if (player is { PawnIsAlive: true, IsValid: true })
+                if (player is { IsValid: true, IsBot: false } && playerTimers[player.Slot].SoundsEnabled)
                 {
                     player.ExecuteClientCommand(command);
                 }
@@ -702,6 +681,22 @@ namespace SharpTimer
             });
 
             return (ct_count, t_count);
+        }
+
+        public void PlaySound(CCSPlayerController? player, string Sound)
+        {
+            if (playerTimers[player!.Slot].SoundsEnabled != false && IsAllowedPlayer(player))
+                player.ExecuteClientCommand($"play {Sound}");
+        }
+
+        public void PrintToChat(CCSPlayerController? player, string message)
+        {
+            player?.PrintToChat($" {Localizer["prefix"]} {message}");
+        }
+
+        public void PrintToChatAll(string message)
+        {
+            Server.PrintToChatAll($" {Localizer["prefix"]} {message}");
         }
     }
 }

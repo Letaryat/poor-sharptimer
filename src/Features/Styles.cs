@@ -5,31 +5,71 @@ namespace SharpTimer
 {
     public partial class SharpTimer
     {
+        public void setStyle(CCSPlayerController player, int style)
+        {
+            AddTimer(0.1f, () =>
+            {
+                SetNormalStyle(player);
+                switch (style)
+                {
+                    case 0:
+                        SetNormalStyle(player);
+                        return;
+                    case 1:
+                        SetLowGravity(player);
+                        return;
+                    case 2:
+                        SetSideways(player);
+                        return;
+                    case 3:
+                        SetOnlyW(player);
+                        return;
+                    case 4:
+                        Set400Vel(player);
+                        return;
+                    case 5:
+                        SetHighGravity(player);
+                        return;
+                    case 6:
+                        SetOnlyA(player);
+                        return;
+                    case 7:
+                        SetOnlyD(player);
+                        return;
+                    case 8:
+                        SetOnlyS(player);
+                        return;
+                    case 9:
+                        SetHalfSideways(player);
+                        return;
+                    case 10:
+                        SetFastForward(player);
+                        return;
+                    default:
+                        return;
+                }
+            });
+        }
+
         public void SetNormalStyle(CCSPlayerController player)
         {
             playerTimers[player.Slot].currentStyle = 0; // reset currentStyle
-            SetNormalGravity(player);
             playerTimers[player.Slot].changedStyle = true;
+            player!.Pawn.Value!.GravityScale = 1f;
         }
+
         public void SetLowGravity(CCSPlayerController player)
         {
             playerTimers[player.Slot].currentStyle = 1; // 1 = low-gravity
             player!.Pawn.Value!.GravityScale = 0.5f;
             playerTimers[player.Slot].changedStyle = true;
         }
-
         public void SetHighGravity(CCSPlayerController player)
         {
             playerTimers[player.Slot].currentStyle = 5; // 5 = high-gravity
             player!.Pawn.Value!.GravityScale = 1.5f;
             playerTimers[player.Slot].changedStyle = true;
         }
-
-        public void SetNormalGravity(CCSPlayerController player)
-        {
-            player!.Pawn.Value!.GravityScale = 1f;
-        }
-
         public void SetSlowMo(CCSPlayerController player)
         {
             //playerTimers[player.Slot].currentStyle = ?; // ? = slowmo (its broken)
@@ -40,6 +80,16 @@ namespace SharpTimer
         public void SetSideways(CCSPlayerController player)
         {
             playerTimers[player.Slot].currentStyle = 2; // 2 = sideways
+            playerTimers[player.Slot].changedStyle = true;
+        }
+        public void SetHalfSideways(CCSPlayerController player)
+        {
+            playerTimers[player.Slot].currentStyle = 9; // 9 = halfsideways
+            playerTimers[player.Slot].changedStyle = true;
+        }
+        public void SetFastForward(CCSPlayerController player)
+        {
+            playerTimers[player.Slot].currentStyle = 10; // 10 = fastforward
             playerTimers[player.Slot].changedStyle = true;
         }
 
@@ -79,7 +129,13 @@ namespace SharpTimer
             //do not cap z velocity
         }
 
+        public void IncreaseVelocity(CCSPlayerController player)
+        {
+            var currentSpeedXY = Math.Round(player!.Pawn.Value!.AbsVelocity.Length2D());
+            var targetSpeed = currentSpeedXY + 5;
 
+            AdjustPlayerVelocity2D(player, (float)targetSpeed);
+        }
 
         public string GetNamedStyle(int style)
         {
@@ -103,6 +159,10 @@ namespace SharpTimer
                     return "OnlyD";
                 case 8:
                     return "OnlyS";
+                case 9:
+                    return "Half Sideways";
+                case 10:
+                    return "Fast Forward";
                 default:
                     return "null";
             }
@@ -130,6 +190,10 @@ namespace SharpTimer
                     return onlydPointModifier; // 1.33x for onlyd
                 case 8:
                     return onlysPointModifier; // 1.33x for onlys
+                case 9:
+                    return halfSidewaysPointModifier; // 1.3x for halfsideways
+                case 10:
+                    return fastForwardPointModifier; // 1.3x for halfsideways
                 default:
                     return 1;
             }

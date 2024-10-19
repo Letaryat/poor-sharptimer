@@ -13,11 +13,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
-using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 
 namespace SharpTimer
@@ -63,12 +61,28 @@ namespace SharpTimer
                         PlayerButtons? playerButtons = player.Buttons;
                         Vector playerSpeed = player.PlayerPawn!.Value!.AbsVelocity;
 
-                        bool keyEnabled = playerTimer.HideKeys != true && keysOverlayEnabled == true;
-                        bool hudEnabled = playerTimer.HideTimerHud != true && hudOverlayEnabled == true;
+                        bool keyEnabled = !playerTimer.HideKeys && keysOverlayEnabled;
+                        bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;
 
                         string formattedPlayerVel = Math.Round(use2DSpeed ? playerSpeed.Length2D()
                                                                             : playerSpeed.Length())
                                                                             .ToString("0000");
+                        int playerVel = int.Parse(formattedPlayerVel);
+                        
+                        string secondaryHUDcolorDynamic = "LimeGreen";
+                        int[] velocityThresholds = { 349, 699, 1049, 1399, 1749, 2099, 2449, 2799, 3149, 3499 };
+                        string[] hudColors = { "LimeGreen", "Lime", "GreenYellow", "Yellow", "Gold", "Orange", "DarkOrange", "Tomato", "OrangeRed", "Red", "Crimson" };
+
+                        for (int i = 0; i < velocityThresholds.Length; i++)
+                        {
+                            if (playerVel < velocityThresholds[i])
+                            {
+                                secondaryHUDcolorDynamic = hudColors[i];
+                                break;
+                            }
+                        }
+
+                        string playerVelColor = useDynamicColor ? secondaryHUDcolorDynamic : secondaryHUDcolor;
                         string formattedPlayerPre = Math.Round(ParseVector(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
                         string playerTime = FormatTime(timerTicks);
                         string playerBonusTime = FormatTime(playerTimer.BonusTimerTicks);
@@ -80,14 +94,19 @@ namespace SharpTimer
                                                     ? $" <font class='horizontal-center' color='red'>◉ REPLAY {FormatTime(playerReplays[playerSlot].CurrentPlaybackFrame)}</font> <br>"
                                                     : "";
 
-                        string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{secondaryHUDcolor}'>{formattedPlayerVel}</font><font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> u/s</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre} u/s)</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
-                        string infoLine = !playerTimer.IsReplaying
-                                            ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>🏆 {playerTimer.CachedPB} " + $"({playerTimer.CachedMapPlacement}) | </font>" + $"{playerTimer.RankHUDIcon} <font class='fontSize-s stratum-bold-italic' color='gray'>" +
-                                              $" | {GetNamedStyle(playerTimer.currentStyle)}" +
-                                              $"{(currentMapTier != null ? $" | Tier: {currentMapTier}" : "")}" +
-                                              $"{(currentMapType != null ? $" | {currentMapType}" : "")}" +
-                                              $"{((currentMapType == null && currentMapTier == null) ? $" | {currentMapName} " : "")} </font>"
-                                            : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
+                        string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{playerVelColor}'>{formattedPlayerVel}</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre})</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
+
+                        string syncLine = $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> <font class='fontSize-l horizontal-center color='{secondaryHUDcolor}'>{playerTimer.Sync}%</font> <br>";
+
+                        string infoLine = "";
+                        if (playerTimer.CurrentZoneInfo.InBonusStartZone)
+                        {
+                            infoLine = GetBonusInfoLine(playerTimer);
+                        }
+                        else
+                        {
+                            infoLine = GetMainMapInfoLine(playerTimer);
+                        }
 
                         string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-light-mono' color='{tertiaryHUDcolor}'>{((playerButtons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                                 $"{((playerButtons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
@@ -106,8 +125,11 @@ namespace SharpTimer
 
                         if (playerTimer.MovementService!.OldJumpPressed == true) playerTimer.MovementService.OldJumpPressed = false;
 
-                        string hudContent = (hudEnabled ? timerLine + veloLine + infoLine : "") +
-                                            (keyEnabled ? keysLineNoHtml : "") +
+                        string hudContent = (hudEnabled ? timerLine +
+                                            (VelocityHudEnabled ? veloLine : "") +
+                                            (StrafeHudEnabled && !playerTimer.IsReplaying ? syncLine : "") +
+                                            infoLine : "") +
+                                            (keyEnabled && !playerTimer.IsReplaying ? keysLineNoHtml : "") +
                                             ((playerTimer.IsTester && !playerTimer.IsReplaying) ? $"{(!keyEnabled ? "<br>" : "")}" + playerTimer.TesterBigGif : "") +
                                             ((playerTimer.IsVip && !playerTimer.IsTester && !playerTimer.IsReplaying) ? $"{(!keyEnabled ? "<br><br>" : "")}" + $"<br><img src='https://files.catbox.moe/{playerTimer.VipBigGif}.gif'><br>" : "") +
                                             ((playerTimer.IsReplaying && playerTimer.VipReplayGif != "x") ? playerTimer.VipReplayGif : "");
@@ -120,6 +142,7 @@ namespace SharpTimer
                         if (isTimerRunning)
                         {
                             playerTimer.TimerTicks++;
+                            if (useStageTriggers) playerTimer.StageTicks++;
                         }
                         else if (isBonusTimerRunning)
                         {
@@ -129,6 +152,11 @@ namespace SharpTimer
                         if(playerTimer.currentStyle.Equals(4)) //check if 400vel
                         {
                             SetVelocity(player, player!.Pawn.Value!.AbsVelocity, 400);
+                        }
+
+                        if(playerTimer.currentStyle.Equals(10) && !player.PlayerPawn.Value.GroundEntity.IsValid) //check if ff
+                        {
+                            AddTimer(2.0f, () => { IncreaseVelocity(player); });
                         }
 
                         if (isOnBhopBlock)
@@ -149,12 +177,9 @@ namespace SharpTimer
                             CheckPlayerCoords(player, playerSpeed);
                         }
 
-                        if (triggerPushFixEnabled == true)
-                        {
-                            CheckPlayerTriggerPushCoords(player, playerSpeed);
-                        }
-
                         if (jumpStatsEnabled == true) OnJumpStatTick(player, playerSpeed, player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!, player.PlayerPawn?.Value.EyeAngles!, playerButtons);
+                        if (StrafeHudEnabled == true) OnSyncTick(player, playerButtons, player.PlayerPawn?.Value.EyeAngles!);
+                        
 
                         if (forcePlayerSpeedEnabled == true)
                         {
@@ -188,19 +213,6 @@ namespace SharpTimer
                             var steamID = player.SteamID.ToString();
                             _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true, playerTimer.currentStyle));                           
                             playerTimer.changedStyle = false;
-                        }
-
-                        if (hideAllPlayers == true)
-                        {
-                            foreach (var gun in player.PlayerPawn!.Value.WeaponServices!.MyWeapons)
-                            {
-                                if (gun.Value!.Render != Color.FromArgb(0, 255, 255, 255) ||
-                                    gun.Value!.ShadowStrength != 0.0f)
-                                {
-                                    gun.Value!.Render = Color.FromArgb(0, 255, 255, 255);
-                                    gun.Value!.ShadowStrength = 0.0f;
-                                }
-                            }
                         }
 
                         if (displayScoreboardTags == true)
@@ -239,15 +251,6 @@ namespace SharpTimer
                             }
                         }
 
-                        if (hideAllPlayers == true)
-                        {
-                            if (player.PlayerPawn!.Value.Render != Color.FromArgb(0, 0, 0, 0))
-                            {
-                                player.PlayerPawn.Value.Render = Color.FromArgb(0, 0, 0, 0);
-                                Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
-                            }
-                        }
-
                         if (((PlayerFlags)player.Pawn.Value.Flags & PlayerFlags.FL_ONGROUND) != PlayerFlags.FL_ONGROUND)
                         {
                             playerTimer.TicksInAir++;
@@ -274,7 +277,7 @@ namespace SharpTimer
                             }
                             else
                             {
-                                if (!isTimerBlocked && (player.PlayerPawn!.Value.MoveType == MoveType_t.MOVETYPE_OBSERVER || player.PlayerPawn.Value.ActualMoveType == MoveType_t.MOVETYPE_OBSERVER)) SetMoveType(player, MoveType_t.MOVETYPE_WALK);
+                                if (!isTimerBlocked && (player.PlayerPawn!.Value.MoveType.HasFlag(MoveType_t.MOVETYPE_OBSERVER) || player.PlayerPawn.Value.ActualMoveType.HasFlag(MoveType_t.MOVETYPE_OBSERVER))) SetMoveType(player, MoveType_t.MOVETYPE_WALK);
                             }
                         }
 
@@ -286,6 +289,46 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 if (ex.Message != "Invalid game event") SharpTimerError($"Error in TimerOnTick: {ex.StackTrace}");
+            }
+        }
+
+        private string GetMainMapInfoLine(PlayerTimerInfo playerTimer)
+        {
+           return !playerTimer.IsReplaying
+                        ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
+
+                          $"{playerTimer.CachedPB} " +
+                          $"({playerTimer.CachedMapPlacement})" +
+                          $"{(RankIconsEnabled ? $" |</font> <img src='{playerTimer.RankHUDIcon}'><font class='fontSize-s stratum-bold-italic' color='gray'>" : "")}" +
+                          $"{(enableStyles ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")}" +
+                          $"{((MapTierHudEnabled && currentMapTier != null) ? $" | Tier: {currentMapTier}" : "")}" +
+                          $"{((MapTypeHudEnabled && currentMapType != null) ? $" | {currentMapType}" : "")}" +
+                          $"{((MapNameHudEnabled && currentMapType == null && currentMapTier == null) ? $" | {currentMapName}" : "")}" +
+                          $"</font>"
+
+                        : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
+        }
+
+        private string GetBonusInfoLine(PlayerTimerInfo playerTimer)
+        {
+            var currentBonusNumber = playerTimer.CurrentZoneInfo.CurrentBonusNumber;
+
+            if (currentBonusNumber != 0)
+            {
+                var cachedBonusInfo = playerTimer.CachedBonusInfo.FirstOrDefault(x => x.Key == currentBonusNumber);
+
+                return !playerTimer.IsReplaying
+                        ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                          $"{(cachedBonusInfo.Value != null ? $"{FormatTime(cachedBonusInfo.Value.PbTicks)}" : "Unranked")}" +
+                          $"{(cachedBonusInfo.Value != null ? $" ({cachedBonusInfo.Value.Placement})" : "")}</font>" +
+                          $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                          $"{(enableStyles ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")}" +
+                          $" | Bonus #{currentBonusNumber} </font>"
+                        : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
+            }
+            else
+            {
+                return GetMainMapInfoLine(playerTimer);
             }
         }
 
@@ -304,8 +347,8 @@ namespace SharpTimer
                     PlayerButtons? playerButtons = target.Buttons;
                     Vector playerSpeed = target.PlayerPawn!.Value!.AbsVelocity;
 
-                    bool keyEnabled = playerTimer.HideKeys != true && playerTimer.IsReplaying != true && keysOverlayEnabled == true;
-                    bool hudEnabled = playerTimer.HideTimerHud != true && hudOverlayEnabled == true;
+                    bool keyEnabled = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
+                    bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;
 
                     string formattedPlayerVel = Math.Round(use2DSpeed ? playerSpeed.Length2D()
                                                                         : playerSpeed.Length())
@@ -322,13 +365,18 @@ namespace SharpTimer
                                                 : "";
 
                     string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{secondaryHUDcolor}'>{formattedPlayerVel}</font><font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> u/s</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre} u/s)</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
-                    string infoLine = !playerTimer.IsReplaying
-                                        ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>🏆 {playerTimer.CachedPB} " + $"({playerTimer.CachedMapPlacement}) | </font>" + $"{playerTimer.RankHUDIcon} <font class='fontSize-s stratum-bold-italic' color='gray'>" +
-                                          $" | {GetNamedStyle(playerTimer.currentStyle)}" +
-                                          $"{(currentMapTier != null ? $" | Tier: {currentMapTier}" : "")}" +
-                                          $"{(currentMapType != null ? $" | {currentMapType}" : "")}" +
-                                          $"{((currentMapType == null && currentMapTier == null) ? $" | {currentMapName} " : "")} </font>"
-                                        : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimers[target.Slot].ReplayHUDString}</font>";
+
+                    string syncLine = $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> <font class='fontSize-l horizontal-center color='{secondaryHUDcolor}'>{playerTimer.Sync}%</font> <br>";
+
+                    string infoLine = "";
+                    if (playerTimer.CurrentZoneInfo.InBonusStartZone)
+                    {
+                        infoLine = GetBonusInfoLine(playerTimer);
+                    }
+                    else
+                    {
+                        infoLine = GetMainMapInfoLine(playerTimer);
+                    }
 
                     string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-bold-mono' color='{tertiaryHUDcolor}'>{((playerButtons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                             $"{((playerButtons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
@@ -339,8 +387,11 @@ namespace SharpTimer
 
                     if (playerTimer.MovementService!.OldJumpPressed == true) playerTimer.MovementService.OldJumpPressed = false;
 
-                    string hudContent = (hudEnabled ? timerLine + veloLine + infoLine : "") +
-                                        (keyEnabled ? keysLineNoHtml : "") +
+                    string hudContent = (hudEnabled ? timerLine +
+                                        (VelocityHudEnabled ? veloLine : "") +
+                                        (StrafeHudEnabled && !playerTimer.IsReplaying ? syncLine : "") +
+                                        infoLine : "") +
+                                        (keyEnabled && !playerTimer.IsReplaying ? keysLineNoHtml : "") +
                                         ((playerTimer.IsTester && !playerTimer.IsReplaying) ? playerTimer.TesterBigGif : "") +
                                         ((playerTimer.IsVip && !playerTimer.IsTester && !playerTimer.IsReplaying) ? $"<br><img src='https://files.catbox.moe/{playerTimer.VipBigGif}.gif'><br>" : "") +
                                         ((playerTimer.IsReplaying && playerTimer.VipReplayGif != "x") ? playerTimer.VipReplayGif : "");

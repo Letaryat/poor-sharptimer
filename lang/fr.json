@@ -17,9 +17,9 @@
   "new_server_record": "{lime}{0} {white}a établi un nouveau SR !",
   "new_server_record_bonus": "{lime}{0} {white}a établi un nouveau SR pour le Bonus {1}!",
   "new_pb_record": "{lime}{0} {white}a établi un nouveau record personnel sur la map !",
-  "new_pb_record_bonus": "{lime}{0} {white}a établi un nouveau record personnel pour le Bonus {0} !",
-  "map_finish": "{lime}{0} {white}a terminé la map !",
-  "map_finish_bonus": "{lime}{0} {white}a terminé le Bonus {0}!",
+  "new_pb_record_bonus": "{lime}{0} {white}a établi un nouveau record personnel pour le Bonus {1}!",
+  "map_finish": "{lime}{0} {white}a terminé la map!",
+  "map_finish_bonus": "{lime}{0} {white}a terminé le Bonus {1}!",
   "map_finish_rank": "Classement: [{lime}{0}{default}] Temps accompli: [{lime}{1}{default}]",
   "top10_records": "Top 10 {0} des records pour {1}:",
   "top10_records_bonus": "Top 10 {0} des records pour le Bonus {1} sur {2}:",
@@ -36,15 +36,18 @@
   "current_rank": "Vous êtes actuellement {0}{1}{lime}",
   "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
   "current_pb": "Votre PB actuel sur {lime}{0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
+  "current_bonus_pb": "Votre PB actuel sur {lime}Bonus {0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
   "current_sr": "Record actuel sur le serveur pour {lime}{0}{white}:",
   "current_sr_player": "{lime}{0} {white}- {lime}{1}",
   "reached_max_free": "Vous avez atteint le nombre maximum de points gratuits de {lime}{0}{default}!",
+  "gained_points": "{lime}{0} {default}gagné {green}+{1} {default}Points {grey}({2})",
+  "top_10_points": "Top 10 des joueurs avec le plus de points :",
+  "top_10_points_list": "#{0} : {lime}{1} {default} : {lime}{2} {default}points",
 
   //replay
   "no_replay": "Pas de replay en cours",
   "end_your_replay": "Terminez d'abord votre replay en cours {lime}!stopreplay",
   "available_replay_cmds": "Commandes de replay disponibles: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
-  "replaying_server_record": "Vous visionnez le record du serveur, Utilisez {lime}!stop ou {lime}!stopreplay {default}pour quitter le replay",
   "no_sr_replay": "Désolé il n'y a pas de replay pour le record du serveur !",
   "replaying_server_top": "Vous visionnez le record Top {0} Utilisez {lime}!stop ou {lime}!stopreplay {default}pour quitter le replay",
   "replaying_pb": "Vous visionnez votre record personnel. Utilisez {lime}!stop ou {lime}!stopreplay {default}pour quitter le replay",
@@ -80,7 +83,7 @@
   "styles_not_supported": "Les styles ne sont actuellement pas pris en charge par les enregistrements locaux :(",
 
   //checkpoints
-  "checkpoint_set": "{0}définit! {lime}#{1}",
+  "checkpoint_set": "{0} définit! {lime}#{1}",
   "no_checkpoint_set": "Aucune {0} définit!",
   "cant_use_checkpoint": "{lightred}Impossible d'utiliser {0} lorsque le timer est activée, utilisez {default}!timer",
   "cant_use_checkpoint_in_air": "{lightred}Impossible de définir {0} dans les airs",
@@ -100,5 +103,9 @@
   "error_occured": "{lightred}Une erreur s'est produite.",
   "info_version": "Ce serveur utilise SharpTimer v{0}",
   "info_os": "OS: {0}",
-  "info_runtime": "Runtime: {0}"
+  "info_runtime": "Runtime: {0}",
+  "connect_message": "Joueur {red}{0} {default}connecté!",
+  "connected_message": "Joueur {red}{0} {default}connecté pour la {1} fois!",
+  "connected_message_first": "Le joueur {red}{0} {default} s'est connecté pour la première fois!",
+  "disconnect_message": "Joueur {red}{0} {default}déconnecté!"
 }
