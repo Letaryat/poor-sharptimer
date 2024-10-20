@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.0";
+        public override string ModuleVersion => $"0.3.1a";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -125,7 +125,7 @@ namespace SharpTimer
         public bool globalRanksFreePointsEnabled = true;
         public int maxGlobalFreePoints = 20;
         public float? globalPointsMultiplier = 1.0f;
-        public int minGlobalPointsForRank = 1000;
+        public int minGlobalPointsForRank = 0;
         public bool displayChatTags = true;
         public bool displayScoreboardTags = true;
         public string customVIPTag = "[VIP]";

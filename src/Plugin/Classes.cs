@@ -274,6 +274,7 @@ namespace SharpTimer
     public class PlayerRecord
     {
         public string? PlayerName { get; set; }
+        public string? SteamID { get; set; }
         public int TimerTicks { get; set; }
     }
 

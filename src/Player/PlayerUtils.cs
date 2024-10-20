@@ -229,14 +229,8 @@ namespace SharpTimer
             return (0, string.Empty);
         }
 
-        public async Task<int> GetPreviousPlayerRecord(CCSPlayerController? player, string steamId, int bonusX = 0)
+        public async Task<int> GetPreviousPlayerRecord(string steamId, int bonusX = 0)
         {
-            if (!IsAllowedPlayer(player))
-            {
-                SharpTimerDebug("Player not allowed.");
-                return 0;
-            }
-
             string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
             string mapRecordsFileName = $"{currentMapNamee}.json";
             string mapRecordsPath = Path.Combine(playerRecordsPath!, mapRecordsFileName);
@@ -297,7 +291,7 @@ namespace SharpTimer
             }
         }
 
-        public async Task<string> GetPlayerMapPlacementWithTotal(CCSPlayerController? player, string steamId, string playerName, bool getRankImg = false, bool getPlacementOnly = false, int bonusX = 0, int style = 0)
+        public async Task<string> GetPlayerMapPlacementWithTotal(CCSPlayerController? player, string steamId, string playerName, bool getRankImg = false, bool getPlacementOnly = false, int bonusX = 0, int style = 0, bool getPercentileOnly = false)
         {
             try
             {
@@ -306,7 +300,7 @@ namespace SharpTimer
 
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
 
-                int savedPlayerTime = enableDb ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName, bonusX, style) : await GetPreviousPlayerRecord(player, steamId, bonusX);
+                int savedPlayerTime = enableDb ? await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, bonusX, style) : await GetPreviousPlayerRecord(steamId, bonusX);
 
                 if (savedPlayerTime == 0)
                     return getRankImg ? UnrankedIcon : UnrankedTitle;
@@ -323,6 +317,28 @@ namespace SharpTimer
             {
                 SharpTimerError($"Error in GetPlayerMapPlacementWithTotal: {ex}");
                 return UnrankedTitle;
+            }
+        }
+        public async Task<double> GetPlayerMapPercentile(string steamId, string playerName, int bonusX = 0, int style = 0)
+        {
+            try
+            {
+                string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
+
+                int savedPlayerTime = enableDb ? await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, bonusX, style) : await GetPreviousPlayerRecord(steamId, bonusX);
+
+                Dictionary<string, PlayerRecord> sortedRecords = enableDb ? await GetSortedRecordsFromDatabase(0, bonusX, currentMapNamee, style) : await GetSortedRecords();
+
+                int placement = sortedRecords.Count(kv => kv.Value.TimerTicks < savedPlayerTime) + 1;
+                int totalPlayers = sortedRecords.Count;
+                double percentage = (double)placement / totalPlayers * 100;
+
+                return percentage;
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in GetPlayerMapPercentile: {ex}");
+                return 0;
             }
         }
         public async Task<string> GetPlayerStagePlacementWithTotal(CCSPlayerController? player, string steamId, string playerName, int stage, bool getRankImg = false, bool getPlacementOnly = false, int bonusX = 0)

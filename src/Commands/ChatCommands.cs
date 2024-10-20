@@ -673,7 +673,7 @@ namespace SharpTimer
                 foreach (var bonusRespawnPose in bonusRespawnPoses)
                 {
                     var bonusNumber = bonusRespawnPose.Key;
-                    var bonusPbTicks = enableDb ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName, bonusNumber, style) : await GetPreviousPlayerRecord(player, steamId, bonusNumber);
+                    var bonusPbTicks = enableDb ? await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, bonusNumber, style) : await GetPreviousPlayerRecord(steamId, bonusNumber);
 
                     /// Skip this bonus since the player doesn't have a saved time
                     if (bonusPbTicks <= 0) continue;
@@ -697,7 +697,7 @@ namespace SharpTimer
                     serverPlacement = await GetPlayerServerPlacement(player, steamId, playerName, false, true, false);
                 }
 
-                int pbTicks = enableDb ? await GetPreviousPlayerRecordFromDatabase(player, steamId, currentMapName!, playerName, 0, style) : await GetPreviousPlayerRecord(player, steamId, 0);
+                int pbTicks = enableDb ? await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, 0, style) : await GetPreviousPlayerRecord(steamId, 0);
 
                 Server.NextFrame(() =>
                 {
@@ -889,6 +889,7 @@ namespace SharpTimer
 
         [ConsoleCommand("css_startpos", "Saves a custom respawn point within the start trigger")]
         [ConsoleCommand("css_setresp", "Saves a custom respawn point within the start trigger")]
+        [ConsoleCommand("css_ssp", "Saves a custom respawn point within the start trigger")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void SetRespawnCommand(CCSPlayerController? player, CommandInfo command)
         {
