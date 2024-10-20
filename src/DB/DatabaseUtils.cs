@@ -761,7 +761,7 @@ namespace SharpTimer
                             upsertCommand!.AddParameterWithValue("@UnixStamp", dBunixStamp);
                             upsertCommand!.AddParameterWithValue("@SteamID", steamId);
                             upsertCommand!.AddParameterWithValue("@Style", style);
-                            if (globalRanksEnabled == true && ((dBtimesFinished <= maxGlobalFreePoints && globalRanksFreePointsEnabled == true) || beatPB)) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX, style);
+                            if (globalRanksEnabled == true && ((dBtimesFinished <= maxGlobalFreePoints && globalRanksFreePointsEnabled == true) || beatPB)) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX, style, await PlayerCompletions(steamId, bonusX, style));
                             if (style == 0 && (stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && enableDb && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                             var prevSRID = await GetMapRecordSteamIDFromDatabase(bonusX, 0, style);
                             var prevSR = await GetPreviousPlayerRecordFromDatabase(prevSRID.Item1, currentMapNamee, prevSRID.Item2, bonusX, style);
@@ -814,7 +814,7 @@ namespace SharpTimer
                             var prevSRID = await GetMapRecordSteamIDFromDatabase(bonusX, 0, style);
                             var prevSR = await GetPreviousPlayerRecordFromDatabase(prevSRID.Item1, currentMapNamee, prevSRID.Item2, bonusX, style);
                             await upsertCommand!.ExecuteNonQueryAsync();
-                            if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX, style);
+                            if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX, style, await PlayerCompletions(steamId, bonusX, style));
                             if (style == 0 && (stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                             Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
                             if (IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
@@ -1492,7 +1492,7 @@ namespace SharpTimer
             PrintToChatAll(Localizer["gained_points", playerName, Convert.ToInt32(newPoints - playerPoints), newPoints]);
         }
 
-        public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0)
+        public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0, int completions = 0)
         {
             SharpTimerDebug($"Trying to set player points in database for {playerName}");
             try
@@ -1578,7 +1578,7 @@ namespace SharpTimer
                             newPoints = CalculateCompletion() + playerPoints;
 
                             // Then calculate max points based on times finished
-                            double maxPoints = CalculateTier(await PlayerCompletions(steamId, bonusX, style));
+                            double maxPoints = CalculateTier(completions);
 
                             // Then grab the top 10 and calculate distributed points
                             Dictionary<string, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, currentMapName!, style);
@@ -1696,7 +1696,7 @@ namespace SharpTimer
                             newPoints = CalculateCompletion() + playerPoints;
 
                             // Then calculate max points based on times finished
-                            double maxPoints = CalculateTier(await PlayerCompletions(steamId, bonusX, style));
+                            double maxPoints = CalculateTier(completions);
 
                             // Then grab the top 10 and calculate distributed points
                             Dictionary<string, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, currentMapName!, style);
@@ -2577,6 +2577,106 @@ namespace SharpTimer
             }
             return [];
         }
+        public async Task<List<PlayerRecord>> GetAllSortedRecordsFromDatabase(int limit = 0, int bonusX = 0, int style = 0)
+        {
+            SharpTimerDebug($"Trying GetSortedRecords {(bonusX != 0 ? $"bonus {bonusX}" : "")} from database");
+            using (var connection = await OpenConnectionAsync())
+            {
+                try
+                {
+                    await CreatePlayerRecordsTableAsync(connection);
+
+                    // Retrieve and sort records for the current map
+                    string? selectQuery;
+                    DbCommand? selectCommand;
+                    if (limit != 0)
+                    {
+                        switch (dbType)
+                        {
+                            case DatabaseType.MySQL:
+                                selectQuery = $@"SELECT SteamID, PlayerName, TimerTicks, MapName FROM PlayerRecords WHERE Style = @Style ORDER BY TimerTicks ASC LIMIT {limit}";
+                                selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
+                                break;
+                            case DatabaseType.PostgreSQL:
+                                selectQuery = $@"SELECT ""SteamID"", ""PlayerName"", ""TimerTicks"", ""MapName"" FROM ""PlayerRecords"" WHERE ""Style"" = @Style ORDER BY ""TimerTicks"" ASC LIMIT {limit}";
+                                selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                                break;
+                            case DatabaseType.SQLite:
+                                selectQuery = $@"SELECT SteamID, PlayerName, TimerTicks, MapName FROM PlayerRecords WHERE Style = @Style ORDER BY TimerTicks ASC LIMIT {limit}";
+                                selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
+                                break;
+                            default:
+                                selectQuery = null;
+                                selectCommand = null;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (dbType)
+                        {
+                            case DatabaseType.MySQL:
+                                selectQuery = @"SELECT SteamID, PlayerName, TimerTicks, MapName FROM PlayerRecords WHERE Style = @Style";
+                                selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
+                                break;
+                            case DatabaseType.PostgreSQL:
+                                selectQuery = @"SELECT ""SteamID"", ""PlayerName"", ""TimerTicks"", ""MapName"" FROM ""PlayerRecords"" WHERE ""Style"" = @Style";
+                                selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                                break;
+                            case DatabaseType.SQLite:
+                                selectQuery = @"SELECT SteamID, PlayerName, TimerTicks, MapName FROM PlayerRecords WHERE Style = @Style";
+                                selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
+                                break;
+                            default:
+                                selectQuery = null;
+                                selectCommand = null;
+                                break;
+                        }
+                    }
+                    using (selectCommand)
+                    {
+                        selectCommand!.AddParameterWithValue("@Style", style);
+                        using (var reader = await selectCommand!.ExecuteReaderAsync())
+                        {
+                            Dictionary<string, List<PlayerRecord>> sortedRecords = new Dictionary<string, List<PlayerRecord>>();
+                            while (await reader.ReadAsync())
+                            {
+                                string steamId = reader.GetString(0);
+                                string playerName = reader.IsDBNull(1) ? "Unknown" : reader.GetString(1);
+                                int timerTicks = reader.GetInt32(2);
+                                string mapname = reader.GetString(3);
+                                if (!sortedRecords.ContainsKey(steamId))
+                                {
+                                    // If steamId doesn't exist, create a new list for the steamId
+                                    sortedRecords[steamId] = new List<PlayerRecord>();
+                                }
+                                sortedRecords[steamId].Add(new PlayerRecord
+                                {
+                                    PlayerName = playerName,
+                                    SteamID = steamId,
+                                    TimerTicks = timerTicks,
+                                    MapName = mapname 
+                                });
+                            }
+
+                             var sortedList = sortedRecords
+                                                .SelectMany(recordEntry => recordEntry.Value)
+                                                .OrderBy(record => record.TimerTicks)
+                                                .ToList(); 
+
+                            SharpTimerDebug($"Got GetSortedRecords {(bonusX != 0 ? $"bonus {bonusX}" : "")} from database");
+
+                            return sortedList;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    SharpTimerError($"Error getting all sorted records from database: {ex.Message}");
+                }
+            }
+            return [];
+        }
         public async Task<Dictionary<string, PlayerRecord>> GetSortedStageRecordsFromDatabase(int stage, int limit = 0, int bonusX = 0, string mapName = "")
         {
             SharpTimerDebug($"Trying GetSortedStageRecords {(bonusX != 0 ? $"bonus {bonusX}" : "")} from database");
@@ -2756,17 +2856,17 @@ namespace SharpTimer
         {
             try
             {
-                var sortedRecords = await GetSortedRecordsFromDatabase();
+                var sortedRecords = await GetAllSortedRecordsFromDatabase();
 
-                foreach (var kvp in sortedRecords)
+                foreach (var record in sortedRecords)
                 {
-                    string playerSteamID = kvp.Key;
-                    string playerName = kvp.Value.PlayerName!;
-                    int timerTicks = kvp.Value.TimerTicks;
+                    string playerSteamID = record.SteamID!;
+                    string playerName = record.PlayerName!;
+                    int timerTicks = record.TimerTicks;
 
                     if (enableDb && globalRanksEnabled == true)
                     {
-                        _ = Task.Run(async () => await SavePlayerPoints(playerSteamID, playerName, -1, timerTicks, 0, false, 0, 0));
+                        _ = Task.Run(async () => await SavePlayerPoints(playerSteamID, playerName, -1, timerTicks, 0, false, 0, 0, await PlayerCompletions(playerSteamID, 0, 0)));
                         await Task.Delay(100);
                     }
                 }
@@ -3002,75 +3102,6 @@ namespace SharpTimer
             catch (Exception ex)
             {
                 SharpTimerError($"Error adding JSON times to the database: {ex.Message}");
-            }
-        }
-
-        [ConsoleCommand("css_databasetojson", " ")]
-        [RequiresPermissions("@css/root")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-        public void ExportDatabaseToJsonCommand(CCSPlayerController? player, CommandInfo command)
-        {
-            _ = Task.Run(ExportDatabaseToJsonAsync);
-        }
-
-        public async Task ExportDatabaseToJsonAsync()
-        {
-            string recordsDirectoryNamee = "SharpTimer/PlayerRecords";
-            string playerRecordsPathh = Path.Combine(gameDir!, "csgo", "cfg", recordsDirectoryNamee);
-
-            try
-            {
-                string connectionString = await GetConnectionStringFromConfigFile();
-
-                using (var connection = new MySqlConnection(connectionString))
-                {
-                    await connection.OpenAsync();
-
-                    string selectQuery = "SELECT SteamID, PlayerName, TimerTicks, MapName FROM PlayerRecords";
-                    using (var selectCommand = new MySqlCommand(selectQuery, connection))
-                    {
-                        using (var reader = await selectCommand.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
-                            {
-                                string steamId = reader.GetString(0);
-                                string playerName = reader.GetString(1);
-                                int timerTicks = reader.GetInt32(2);
-                                string mapName = reader.GetString(3);
-
-                                Directory.CreateDirectory(playerRecordsPathh);
-
-                                Dictionary<string, PlayerRecord> records;
-                                string filePath = Path.Combine(playerRecordsPathh, $"{mapName}.json");
-                                if (File.Exists(filePath))
-                                {
-                                    string existingJson = await File.ReadAllTextAsync(filePath);
-                                    records = JsonSerializer.Deserialize<Dictionary<string, PlayerRecord>>(existingJson) ?? [];
-                                }
-                                else
-                                {
-                                    records = [];
-                                }
-
-                                records[steamId] = new PlayerRecord
-                                {
-                                    PlayerName = playerName,
-                                    TimerTicks = timerTicks
-                                };
-
-                                string updatedJson = JsonSerializer.Serialize(records, jsonSerializerOptions);
-
-                                await File.WriteAllTextAsync(filePath, updatedJson);
-
-                                SharpTimerDebug($"Player records for map {mapName} successfully exported to JSON.");
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                SharpTimerError($"Error exporting player records to JSON: {ex.Message}");
             }
         }
     }
