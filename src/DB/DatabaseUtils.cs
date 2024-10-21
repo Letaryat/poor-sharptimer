@@ -1586,7 +1586,7 @@ namespace SharpTimer
                             bool isTop10 = false;
                             foreach (var kvp in sortedRecords.Take(10))
                             {
-                                if (steamId == kvp.Value.SteamID)
+                                if (steamId == kvp.Key)
                                 {
                                     newPoints += CalculateTop10(maxPoints, rank);
                                     isTop10 = true;
@@ -1709,7 +1709,7 @@ namespace SharpTimer
                             bool isTop10 = false;
                             foreach (var kvp in sortedRecords.Take(10))
                             {
-                                if (steamId == kvp.Value.SteamID)
+                                if (steamId == kvp.Key)
                                 {
                                     newPoints += CalculateTop10(maxPoints, rank);
                                     isTop10 = true;
