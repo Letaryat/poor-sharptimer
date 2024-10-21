@@ -84,33 +84,7 @@ namespace SharpTimer
             globalRanksEnabled = bool.TryParse(args, out bool globalRanksEnabledValue) ? globalRanksEnabledValue : args != "0" && globalRanksEnabled;
         }
 
-        [ConsoleCommand("sharptimer_global_rank_free_points_enabled", "Whether the plugin should reward players with free points for completing maps without beating their PB (31xMapTier). Default value: true")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerGlobalRanksEnableFreeRewardsConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            globalRanksFreePointsEnabled = bool.TryParse(args, out bool globalRanksFreePointsEnabledValue) ? globalRanksFreePointsEnabledValue : args != "0" && globalRanksFreePointsEnabled;
-        }
-
-        [ConsoleCommand("sharptimer_global_rank_max_free_rewards", "How many times the player should recieve free 'participation' points for finishing the map without a new PB. Default value: 20")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerGlobalRanksMaxFreeRewardsConvar(CCSPlayerController? player, CommandInfo command)
-        {
-            string args = command.ArgString;
-
-            if (int.TryParse(args, out int maxFreePoints) && maxFreePoints > 0)
-            {
-                maxGlobalFreePoints = maxFreePoints;
-                SharpTimerConPrint($"SharpTimer free 'participation' rewards set to {maxFreePoints} times.");
-            }
-            else
-            {
-                SharpTimerConPrint("Invalid free 'participation' rewards value. Please provide a positive float.");
-            }
-        }
-
-        [ConsoleCommand("sharptimer_global_rank_min_points_threshold", "Players with Points below this amount will be treated as Unranked. Default value: 1000")]
+        [ConsoleCommand("sharptimer_global_rank_min_points_threshold", "Players with Points below this amount will be treated as Unranked. Default value: 1")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerGlobalRanksMinPointsConvar(CCSPlayerController? player, CommandInfo command)
         {
@@ -124,6 +98,23 @@ namespace SharpTimer
             else
             {
                 SharpTimerConPrint("Invalid min points for rank value. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_global_rank_bonus_points_multiplier", "Multiplier for bonus course completion points. Default value: 0.5")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerGlobalRanksBonusPointsConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, out double bonusMultiplier) && bonusMultiplier > 0)
+            {
+                globalPointsBonusMultiplier = bonusMultiplier;
+                SharpTimerConPrint($"SharpTimer bonus points multiplier set to {bonusMultiplier}");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid bonus points multipler. Please provide a positive integer.");
             }
         }
 

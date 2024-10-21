@@ -761,7 +761,7 @@ namespace SharpTimer
                             upsertCommand!.AddParameterWithValue("@UnixStamp", dBunixStamp);
                             upsertCommand!.AddParameterWithValue("@SteamID", steamId);
                             upsertCommand!.AddParameterWithValue("@Style", style);
-                            if (globalRanksEnabled == true && ((dBtimesFinished <= maxGlobalFreePoints && globalRanksFreePointsEnabled == true) || beatPB)) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX, style, await PlayerCompletions(steamId, bonusX, style));
+                            if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished);
                             if (style == 0 && (stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && enableDb && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                             var prevSRID = await GetMapRecordSteamIDFromDatabase(bonusX, 0, style);
                             var prevSR = await GetPreviousPlayerRecordFromDatabase(prevSRID.Item1, currentMapNamee, prevSRID.Item2, bonusX, style);
@@ -814,7 +814,7 @@ namespace SharpTimer
                             var prevSRID = await GetMapRecordSteamIDFromDatabase(bonusX, 0, style);
                             var prevSR = await GetPreviousPlayerRecordFromDatabase(prevSRID.Item1, currentMapNamee, prevSRID.Item2, bonusX, style);
                             await upsertCommand!.ExecuteNonQueryAsync();
-                            if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX, style, await PlayerCompletions(steamId, bonusX, style));
+                            if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished);
                             if (style == 0 && (stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                             Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
                             if (IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
@@ -1575,13 +1575,13 @@ namespace SharpTimer
                             double newPoints;
 
                             // First calculate basic map completion points based on tier
-                            newPoints = CalculateCompletion() + playerPoints;
+                            newPoints = CalculateCompletion();
 
                             // Then calculate max points based on times finished
                             double maxPoints = CalculateTier(completions);
 
                             // Then grab the top 10 and calculate distributed points
-                            Dictionary<string, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, currentMapName!, style);
+                            Dictionary<string, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, "", style);
                             int rank = 1;
                             bool isTop10 = false;
                             foreach (var kvp in sortedRecords.Take(10))
@@ -1601,15 +1601,20 @@ namespace SharpTimer
                             // Apply style multiplier if enabled
                             if(enableStylePoints)
                                 newPoints *= GetStyleMultiplier(style);
-
-                            // Set points back to original if style points are disabled and player is using styles
-                            if(!enableStylePoints && style != 0)
-                                newPoints = playerPoints;
+                            
+                            // Apply bonus multiplier if bonus completion
+                            if(bonusX != 0)
+                                newPoints *= globalPointsBonusMultiplier;
 
                             // Hastily round the new points to prevent 123.4567890123456789 points
                             newPoints = Math.Round(newPoints);
 
-                                
+                            // Zero out new points if style points are disabled and player is using styles
+                            if(!enableStylePoints && style != 0)
+                                newPoints = 0;  
+
+                            // Add final calculation to players points
+                            newPoints += playerPoints;  
 
                             await row.CloseAsync();
                             // Update or insert the record
@@ -1693,13 +1698,13 @@ namespace SharpTimer
                             double newPoints;
 
                             // First calculate basic map completion points based on tier
-                            newPoints = CalculateCompletion() + playerPoints;
+                            newPoints = CalculateCompletion();
 
                             // Then calculate max points based on times finished
                             double maxPoints = CalculateTier(completions);
 
                             // Then grab the top 10 and calculate distributed points
-                            Dictionary<string, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, currentMapName!, style);
+                            Dictionary<string, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, "", style);
                             int rank = 1;
                             bool isTop10 = false;
                             foreach (var kvp in sortedRecords.Take(10))
@@ -1719,13 +1724,20 @@ namespace SharpTimer
                             // Apply style multiplier if enabled
                             if(enableStylePoints)
                                 newPoints *= GetStyleMultiplier(style);
-
-                            // Set points back to original if style points are disabled and player is using styles
-                            if(!enableStylePoints && style != 0)
-                                newPoints = playerPoints;
+                            
+                            // Apply bonus multiplier if bonus completion
+                            if(bonusX != 0)
+                                newPoints *= globalPointsBonusMultiplier;
 
                             // Hastily round the new points to prevent 123.4567890123456789 points
                             newPoints = Math.Round(newPoints);
+
+                            // Zero out new points if style points are disabled and player is using styles
+                            if(!enableStylePoints && style != 0)
+                                newPoints = 0;  
+
+                            // Add final calculation to players points
+                            newPoints += playerPoints;  
 
                             await row.CloseAsync();
 
