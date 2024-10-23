@@ -19,6 +19,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Modules.Cvars;
 
 namespace SharpTimer
 {
@@ -114,6 +115,22 @@ namespace SharpTimer
                 if (spawnOnRespawnPos == true && currentRespawnPos != null)
                     player!.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
             });
+
+            if (enableReplays && enableSRreplayBot && connectedReplayBots.Count == 0)
+                    {
+                        AddTimer(5.0f, () =>
+                        {
+                            if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0)
+                                _ = Task.Run(async () => await SpawnReplayBot());
+                            else
+                            {
+                                PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
+                                PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
+                                PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
+                                SharpTimerError("Couldnt Spawn Replay bot! Please make sure mp_force_pick_time is set to 1 in your custom_exec.cfg");
+                            }
+                        });
+                    }
         }
 
         private void OnPlayerDisconnect(CCSPlayerController? player, bool isForBot = false)
@@ -129,6 +146,7 @@ namespace SharpTimer
                 }
                 if (connectedPlayers.TryGetValue(player.Slot, out var connectedPlayer))
                 {
+                    
                     connectedPlayers.Remove(player.Slot);
 
                     //schizo removing data from memory
@@ -138,6 +156,13 @@ namespace SharpTimer
                     //schizo removing data from memory
                     playerCheckpoints[player.Slot] = new List<PlayerCheckpoint>();
                     playerCheckpoints.Remove(player.Slot);
+
+                    //schizo removing replay bots after last dc
+                    AddTimer(5.0f, () =>
+                    {
+                        if(Utilities.GetPlayers().Count == 0)
+                            connectedReplayBots = [];
+                    });
 
                     specTargets.Remove(player.Pawn.Value!.EntityHandle.Index);
 

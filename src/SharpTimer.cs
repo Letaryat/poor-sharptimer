@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using System.Runtime.InteropServices;
@@ -101,7 +102,11 @@ namespace SharpTimer
                     }
                     else if (player.IsValid && !player.IsBot)
                     {
-                        Server.NextFrame(() => InvalidateTimer(player));
+                        Server.NextFrame(() => 
+                        {
+                            InvalidateTimer(player);
+                            if(playerTimers[player.Slot].IsReplaying) StopReplay(player);
+                        });
                     }
                 }
                 return HookResult.Continue;

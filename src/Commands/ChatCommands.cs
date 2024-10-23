@@ -252,6 +252,11 @@ namespace SharpTimer
         {
             if (!IsAllowedPlayer(player) || enableReplays == false) return;
 
+            StopReplay(player);
+        }
+
+        public void StopReplay(CCSPlayerController? player)
+        {
             var playerSlot = player!.Slot;
 
             if (!playerTimers[playerSlot].IsTimerBlocked || !playerTimers[playerSlot].IsReplaying)
@@ -275,7 +280,7 @@ namespace SharpTimer
                 playerReplays[playerSlot].CurrentPlaybackFrame = 0;
                 if (stageTriggers.Count != 0) playerTimers[playerSlot].StageTimes!.Clear(); //remove previous stage times if the map has stages
                 if (stageTriggers.Count != 0) playerTimers[playerSlot].StageVelos!.Clear(); //remove previous stage times if the map has stages
-                RespawnPlayerCommand(player, command);
+                RespawnPlayer(player);
             }
         }
 
