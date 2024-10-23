@@ -478,9 +478,6 @@ namespace SharpTimer
 
             Server.NextFrame(() =>
             {
-                if (IsAllowedPlayer(player) && timesFinished > maxGlobalFreePoints && globalRanksFreePointsEnabled == true && oldticks < newticks)
-                    PrintToChat(player, Localizer["reached_max_free", maxGlobalFreePoints]);
-
                 if (newSR)
                 {
                     if (prevSR != 0)

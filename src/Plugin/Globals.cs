@@ -122,8 +122,6 @@ namespace SharpTimer
         public int maxReplayFrames = 19200;
 
         public bool globalRanksEnabled = false;
-        public bool globalRanksFreePointsEnabled = true;
-        public int maxGlobalFreePoints = 20;
         public float? globalPointsMultiplier = 1.0f;
         public int minGlobalPointsForRank = 1;
         public double globalPointsBonusMultiplier = 0.5;
