@@ -1613,8 +1613,8 @@ namespace SharpTimer
                             if(!enableStylePoints && style != 0)
                                 newPoints = 0;  
                             
-                            // Zero out new points if player has exceeded max completions
-                            if(globalPointsMaxCompletions > 0 && await PlayerCompletions(steamId, bonusX, style) > globalPointsMaxCompletions)
+                            // Zero out new points if player has exceeded max completions and has not set a pb
+                            if(globalPointsMaxCompletions > 0 && await PlayerCompletions(steamId, bonusX, style) > globalPointsMaxCompletions && !beatPB)
                                 newPoints = 0;
 
                             // Add final calculation to players points
