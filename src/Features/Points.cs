@@ -20,24 +20,23 @@ namespace SharpTimer
                 switch (currentMapTier)
                 {
                     case 1:
-                        return 25;
+                        return baselineT1;
                     case 2:
-                        return 50;
+                        return baselineT2;
                     case 3:
-                        return 100;
+                        return baselineT3;
                     case 4:
-                        return 200;
+                        return baselineT4;
                     case 5:
-                        return 400;
+                        return baselineT5;
                     case 6:
-                        return 600;
+                        return baselineT6;
                     case 7:
-                        return 800;
+                        return baselineT7;
                     case 8:
-                        return 1000;
-
+                        return baselineT8;
                     default:
-                        return 0;
+                        return 25;
                 }
             }else{
                 return 25;
@@ -54,12 +53,12 @@ namespace SharpTimer
             int tier;
             if (currentMapTier is not null)
             {
-                maxWR = 250 * (int)currentMapTier;
+                maxWR = maxRecordPointsBase * (int)currentMapTier;
                 tier = (int)currentMapTier;
             }
             else
             {
-                maxWR = 250;
+                maxWR = maxRecordPointsBase;
                 tier = 1;
             }
 
@@ -94,25 +93,25 @@ namespace SharpTimer
             switch(position)
             {
                 case 1:
-                    return points;
+                    return points * top10_1;
                 case 2:
-                    return points * 0.8;
+                    return points * top10_2;
                 case 3:
-                    return points * 0.75;
+                    return points * top10_3;
                 case 4:
-                    return points * 0.7;
+                    return points * top10_4;
                 case 5:
-                    return points * 0.65;
+                    return points * top10_5;
                 case 6:
-                    return points * 0.6;
+                    return points * top10_6;
                 case 7:
-                    return points * 0.55;
+                    return points * top10_7;
                 case 8:
-                    return points * 0.5;
+                    return points * top10_8;
                 case 9:
-                    return points * 0.45;
+                    return points * top10_9;
                 case 10:
-                    return points * 0.4;
+                    return points * top10_10;
 
                 default:
                     return 0;
@@ -126,15 +125,15 @@ namespace SharpTimer
         {
             switch(percentile)
             {
-                case double p when p <= 3.125:
+                case double p when p <= group1:
                     return points * 0.25; // Group 1
-                case double p when p <= 6.25:
+                case double p when p <= group2:
                     return (points * 0.25) / 1.5; // Group 2
-                case double p when p <= 12.5:
+                case double p when p <= group3:
                     return ((points * 0.25) / 1.5) / 1.5; // Group 3
-                case double p when p <= 25:
+                case double p when p <= group4:
                     return (((points * 0.25) / 1.5) / 1.5) / 1.5; // Group 4
-                case double p when p <= 50:
+                case double p when p <= group5:
                     return (((((points * 0.25) / 1.5) / 1.5) / 1.5) / 1.5); // Group 5
                 
                 default:

@@ -1612,6 +1612,10 @@ namespace SharpTimer
                             // Zero out new points if style points are disabled and player is using styles
                             if(!enableStylePoints && style != 0)
                                 newPoints = 0;  
+                            
+                            // Zero out new points if player has exceeded max completions
+                            if(globalPointsMaxCompletions > 0 && await PlayerCompletions(steamId, bonusX, style) > globalPointsMaxCompletions)
+                                newPoints = 0;
 
                             // Add final calculation to players points
                             newPoints += playerPoints;  

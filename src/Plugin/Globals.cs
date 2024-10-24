@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1d";
+        public override string ModuleVersion => $"0.3.1e";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -125,11 +125,41 @@ namespace SharpTimer
         public float? globalPointsMultiplier = 1.0f;
         public int minGlobalPointsForRank = 1;
         public double globalPointsBonusMultiplier = 0.5;
+
+        // Points settings
+        public int baselineT1 = 25;
+        public int baselineT2 =  50;
+        public int baselineT3 = 100;
+        public int baselineT4 = 200;
+        public int baselineT5 = 400;
+        public int baselineT6 = 600;
+        public int baselineT7 = 800;
+        public int baselineT8 = 1000;
+        public int maxRecordPointsBase = 250;
+
+        // Top 10
+        public double top10_1 = 1;
+        public double top10_2 = 0.8;
+        public double top10_3 = 0.75;
+        public double top10_4 = 0.7;
+        public double top10_5 = 0.65;
+        public double top10_6 = 0.6;
+        public double top10_7 = 0.55;
+        public double top10_8 = 0.5;
+        public double top10_9 = 0.45;
+        public double top10_10 = 0.4;
+
+        // Groups
+        public double group1 = 3.125;
+        public double group2 = 6.25;
+        public double group3 = 12.5;
+        public double group4 = 25;
+        public double group5 = 50;
+
+
         public bool displayChatTags = true;
         public bool displayScoreboardTags = true;
         public string customVIPTag = "[VIP]";
-        //public string vipGifHost = "https://files.catbox.moe";
-
         public bool useTriggers = true;
         public bool useTriggersAndFakeZones = false;
 
