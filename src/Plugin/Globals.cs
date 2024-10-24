@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1e";
+        public override string ModuleVersion => $"0.3.1f";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -136,6 +136,7 @@ namespace SharpTimer
         public int baselineT7 = 800;
         public int baselineT8 = 1000;
         public int maxRecordPointsBase = 250;
+        public int globalPointsMaxCompletions = 0;
 
         // Top 10
         public double top10_1 = 1;
