@@ -17,6 +17,8 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using Vector = SharpTimer.Structs.Vector;
+using QAngle = SharpTimer.Structs.QAngle;
 
 namespace SharpTimer
 {
@@ -59,13 +61,13 @@ namespace SharpTimer
                         bool isTimerBlocked = playerTimer.IsTimerBlocked;
                         int timerTicks = playerTimer.TimerTicks;
                         PlayerButtons? playerButtons = player.Buttons;
-                        Vector playerSpeed = player.PlayerPawn!.Value!.AbsVelocity;
+                        Vector playerSpeed = GetVector(player.PlayerPawn!.Value!.AbsVelocity);
 
                         bool keyEnabled = !playerTimer.HideKeys && keysOverlayEnabled;
                         bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;
 
-                        string formattedPlayerVel = Math.Round(use2DSpeed ? playerSpeed.Length2D()
-                                                                            : playerSpeed.Length())
+                        string formattedPlayerVel = Math.Round((decimal)(use2DSpeed ? playerSpeed.Length2D()
+                                                                            : playerSpeed.Length())!)
                                                                             .ToString("0000");
                         int playerVel = int.Parse(formattedPlayerVel);
                         
@@ -83,7 +85,7 @@ namespace SharpTimer
                         }
 
                         string playerVelColor = useDynamicColor ? secondaryHUDcolorDynamic : secondaryHUDcolor;
-                        string formattedPlayerPre = Math.Round(ParseVector(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
+                        string formattedPlayerPre = Math.Round((decimal)ParseVector(playerTimer.PreSpeed ?? "0 0 0").Length2D()!).ToString("000");
                         string playerTime = FormatTime(timerTicks);
                         string playerBonusTime = FormatTime(playerTimer.BonusTimerTicks);
                         string timerLine = isBonusTimerRunning
@@ -177,8 +179,8 @@ namespace SharpTimer
                             CheckPlayerCoords(player, playerSpeed);
                         }
 
-                        if (jumpStatsEnabled == true) OnJumpStatTick(player, playerSpeed, player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!, player.PlayerPawn?.Value.EyeAngles!, playerButtons);
-                        if (StrafeHudEnabled == true) OnSyncTick(player, playerButtons, player.PlayerPawn?.Value.EyeAngles!);
+                        if (jumpStatsEnabled == true) OnJumpStatTick(player, playerSpeed, GetVector(player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!), GetQAngle(player.PlayerPawn?.Value.EyeAngles!), playerButtons);
+                        if (StrafeHudEnabled == true) OnSyncTick(player, playerButtons, GetQAngle(player.PlayerPawn?.Value.EyeAngles!));
                         
 
                         if (forcePlayerSpeedEnabled == true)
@@ -345,15 +347,15 @@ namespace SharpTimer
                     bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
                     int timerTicks = playerTimer.TimerTicks;
                     PlayerButtons? playerButtons = target.Buttons;
-                    Vector playerSpeed = target.PlayerPawn!.Value!.AbsVelocity;
+                    Vector playerSpeed = GetVector(target.PlayerPawn!.Value!.AbsVelocity);
 
                     bool keyEnabled = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
                     bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;
 
-                    string formattedPlayerVel = Math.Round(use2DSpeed ? playerSpeed.Length2D()
-                                                                        : playerSpeed.Length())
+                    string formattedPlayerVel = Math.Round((decimal)(use2DSpeed ? playerSpeed.Length2D()!
+                                                                        : playerSpeed.Length()!))
                                                                         .ToString("0000");
-                    string formattedPlayerPre = Math.Round(ParseVector(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
+                    string formattedPlayerPre = Math.Round((decimal)ParseVector(playerTimer.PreSpeed ?? "0 0 0").Length2D()!).ToString("000");
                     string playerTime = FormatTime(timerTicks);
                     string playerBonusTime = FormatTime(playerTimer.BonusTimerTicks);
                     string timerLine = isBonusTimerRunning

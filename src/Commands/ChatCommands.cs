@@ -21,6 +21,8 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Admin;
+using Vector = SharpTimer.Structs.Vector;
+using QAngle = SharpTimer.Structs.QAngle;
 
 namespace SharpTimer
 {
@@ -821,11 +823,11 @@ namespace SharpTimer
                     {
                         if (bonusRespawnAngs.TryGetValue(1, out QAngle? bonusAng) && bonusAng != null)
                         {
-                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, bonusRespawnAngs[1]!, new Vector(0, 0, 0));
+                            player.PlayerPawn.Value!.Teleport(VectorToNative((Vector)bonusRespawnPoses[1]!), QAngleToNative((QAngle)bonusRespawnAngs[1]!), VectorToNative(new Vector(0, 0, 0)));
                         }
                         else
                         {
-                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, new QAngle(player.PlayerPawn.Value.EyeAngles.X, player.PlayerPawn.Value.EyeAngles.Y, player.PlayerPawn.Value.EyeAngles.Z) ?? new QAngle(0, 0, 0), new Vector(0, 0, 0));
+                            player.PlayerPawn.Value!.Teleport(VectorToNative((Vector)bonusRespawnPoses[1]!), QAngleToNative(new QAngle(player.PlayerPawn.Value.EyeAngles.X, player.PlayerPawn.Value.EyeAngles.Y, player.PlayerPawn.Value.EyeAngles.Z)) ?? QAngleToNative(new QAngle(0, 0, 0)), VectorToNative(new Vector(0, 0, 0)));
                         }
                         SharpTimerDebug($"{player.PlayerName} css_rb {1} to {bonusRespawnPoses[1]}");
                     }
@@ -862,11 +864,11 @@ namespace SharpTimer
                 {
                     if (bonusRespawnAngs.TryGetValue(bonusX, out QAngle? bonusAng) && bonusAng != null)
                     {
-                        player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, bonusRespawnAngs[bonusX]!, new Vector(0, 0, 0));
+                        player.PlayerPawn.Value!.Teleport(VectorToNative((Vector)bonusRespawnPoses[bonusX]!), QAngleToNative((QAngle)bonusRespawnAngs[bonusX]!), VectorToNative(new Vector(0, 0, 0)));
                     }
                     else
                     {
-                        player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, new QAngle(player.PlayerPawn.Value.EyeAngles.X, player.PlayerPawn.Value.EyeAngles.Y, player.PlayerPawn.Value.EyeAngles.Z) ?? new QAngle(0, 0, 0), new Vector(0, 0, 0));
+                        player.PlayerPawn.Value!.Teleport(VectorToNative((Vector)bonusRespawnPoses[bonusX]!), QAngleToNative(new QAngle(player.PlayerPawn.Value.EyeAngles.X, player.PlayerPawn.Value.EyeAngles.Y, player.PlayerPawn.Value.EyeAngles.Z)) ?? QAngleToNative(new QAngle(0, 0, 0)),VectorToNative( new Vector(0, 0, 0)));
                     }
                     SharpTimerDebug($"{player.PlayerName} css_rb {bonusX} to {bonusRespawnPoses[bonusX]}");
                 }
@@ -915,12 +917,12 @@ namespace SharpTimer
             }
 
             // Get the player's current position and rotation
-            Vector currentPosition = player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
-            QAngle currentRotation = player.PlayerPawn.Value!.EyeAngles ?? new QAngle(0, 0, 0);
+            Vector currentPosition = GetVector(player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin!);
+            QAngle currentRotation = GetQAngle(player.PlayerPawn.Value!.EyeAngles);
 
             if (useTriggers == true)
             {
-                if (IsVectorInsideBox(currentPosition + new Vector(0, 0, 10), currentMapStartTriggerMaxs!, currentMapStartTriggerMins!))
+                if (IsVectorInsideBox(new Vector(currentPosition.X, currentPosition.Y, currentPosition.Z + 10), currentMapStartTriggerMaxs!, currentMapStartTriggerMins!))
                 {
                     // Convert position and rotation to strings
                     string positionString = $"{currentPosition.X} {currentPosition.Y} {currentPosition.Z}";
@@ -937,7 +939,7 @@ namespace SharpTimer
             }
             else
             {
-                if (IsVectorInsideBox(currentPosition + new Vector(0, 0, 10), currentMapStartC1, currentMapStartC2))
+                if (IsVectorInsideBox(new Vector(currentPosition.X, currentPosition.Y, currentPosition.Z + 10), currentMapStartC1, currentMapStartC2))
                 {
                     // Convert position and rotation to strings
                     string positionString = $"{currentPosition.X} {currentPosition.Y} {currentPosition.Z}";
@@ -1000,7 +1002,7 @@ namespace SharpTimer
 
                 if (stageTriggerPoses.TryGetValue(stageX, out Vector? stagePos) && stagePos != null)
                 {
-                    player.PlayerPawn.Value!.Teleport(stagePos, stageTriggerAngs[stageX] ?? player.PlayerPawn.Value.EyeAngles, new Vector(0, 0, 0));
+                    player.PlayerPawn.Value!.Teleport(VectorToNative((Vector)stagePos), QAngleToNative((QAngle)stageTriggerAngs[stageX]!) ?? player.PlayerPawn.Value.EyeAngles, VectorToNative(new Vector(0,0,0)));
                     SharpTimerDebug($"{player.PlayerName} css_stage {stageX} to {stagePos}");
                 }
                 else
@@ -1305,11 +1307,11 @@ namespace SharpTimer
                     {
                         if (currentRespawnAng != null)
                         {
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, currentRespawnAng, new Vector(0, 0, 0));
+                            player.PlayerPawn.Value!.Teleport(VectorToNative((Vector)currentRespawnPos), QAngleToNative((QAngle)currentRespawnAng), VectorToNative(new Vector(0, 0, 0)));
                         }
                         else
                         {
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, player.PlayerPawn.Value.EyeAngles ?? new QAngle(0, 0, 0), new Vector(0, 0, 0));
+                            player.PlayerPawn.Value!.Teleport(VectorToNative((Vector)currentRespawnPos), player.PlayerPawn.Value.EyeAngles ?? QAngleToNative(new QAngle(0, 0, 0)), VectorToNative(new Vector(0, 0, 0)));
                         }
                         SharpTimerDebug($"{player.PlayerName} css_r to {currentRespawnPos}");
                     }
@@ -1317,7 +1319,7 @@ namespace SharpTimer
                     {
                         if (playerTimers[player.Slot].SetRespawnPos != null && playerTimers[player.Slot].SetRespawnAng != null)
                         {
-                            player.PlayerPawn.Value!.Teleport(ParseVector(playerTimers[player.Slot].SetRespawnPos!), ParseQAngle(playerTimers[player.Slot].SetRespawnAng!), new Vector(0, 0, 0));
+                            player.PlayerPawn.Value!.Teleport(VectorToNative(ParseVector(playerTimers[player.Slot].SetRespawnPos!)), QAngleToNative(ParseQAngle(playerTimers[player.Slot].SetRespawnAng!)), VectorToNative(new Vector(0, 0, 0)));
                         }
                         else
                         {
@@ -1329,7 +1331,7 @@ namespace SharpTimer
                 {
                     if (currentEndPos != null)
                     {
-                        player.PlayerPawn.Value!.Teleport(currentEndPos, player.PlayerPawn.Value.EyeAngles ?? new QAngle(0, 0, 0), new Vector(0, 0, 0));
+                        player.PlayerPawn.Value!.Teleport(VectorToNative((Vector)currentEndPos), player.PlayerPawn.Value.EyeAngles ?? QAngleToNative(new QAngle(0, 0, 0)), VectorToNative(new Vector(0, 0, 0)));
                     }
                     else
                     {
@@ -1387,7 +1389,7 @@ namespace SharpTimer
                 if (stageTriggerPoses.TryGetValue(currStage, out Vector? stagePos) && stagePos != null)
                 {
                     if (jumpStatsEnabled) InvalidateJS(player.Slot);
-                    player.PlayerPawn.Value!.Teleport(stagePos, stageTriggerAngs[currStage] ?? player.PlayerPawn.Value.EyeAngles, new Vector(0, 0, 0));
+                    player.PlayerPawn.Value!.Teleport(VectorToNative((Vector)stagePos), QAngleToNative((QAngle)stageTriggerAngs[currStage]!) ?? player.PlayerPawn.Value.EyeAngles, VectorToNative(new Vector(0, 0, 0)));
                     SharpTimerDebug($"{player.PlayerName} css_rs {player.PlayerName}");
                 }
                 else
@@ -1533,9 +1535,9 @@ namespace SharpTimer
                 if (player != null && IsAllowedPlayer(foundPlayer) && playerTimers[player.Slot].IsTimerBlocked)
                 {
                     if (jumpStatsEnabled) InvalidateJS(player.Slot);
-                    player.PlayerPawn.Value!.Teleport(foundPlayer.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0),
-                        foundPlayer.PlayerPawn.Value!.EyeAngles ?? new QAngle(0, 0, 0), new Vector(0, 0, 0));
-                    SharpTimerDebug($"{player.PlayerName} css_goto to {foundPlayer.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0)}");
+                    player.PlayerPawn.Value!.Teleport(foundPlayer.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? VectorToNative(new Vector(0, 0, 0)),
+                        foundPlayer.PlayerPawn.Value!.EyeAngles ?? QAngleToNative(new QAngle(0, 0, 0)), VectorToNative(new Vector(0, 0, 0)));
+                    SharpTimerDebug($"{player.PlayerName} css_goto to {foundPlayer.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin ?? VectorToNative(new Vector(0, 0, 0))}");
                 }
             }
             else
@@ -1576,9 +1578,9 @@ namespace SharpTimer
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
             // Get the player's current position and rotation
-            Vector currentPosition = player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
-            Vector currentSpeed = player.PlayerPawn.Value!.AbsVelocity ?? new Vector(0, 0, 0);
-            QAngle currentRotation = player.PlayerPawn.Value.EyeAngles ?? new QAngle(0, 0, 0);
+            var currentPosition = player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin ?? VectorToNative(new Vector(0, 0, 0));
+            var currentSpeed = player.PlayerPawn.Value!.AbsVelocity ?? VectorToNative(new Vector(0, 0, 0));
+            var currentRotation = player.PlayerPawn.Value.EyeAngles ?? QAngleToNative(new QAngle(0, 0, 0));
 
             // Convert position and rotation to strings
             string positionString = $"{currentPosition.X} {currentPosition.Y} {currentPosition.Z}";
@@ -1655,11 +1657,11 @@ namespace SharpTimer
             // Teleport the player to the most recent checkpoint, including the saved rotation
             if (removeCpRestrictEnabled == true)
             {
-                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
+                player.PlayerPawn.Value!.Teleport(VectorToNative(position), QAngleToNative(rotation), VectorToNative(speed));
             }
             else
             {
-                player.PlayerPawn.Value!.Teleport(position, rotation, new Vector(0, 0, 0));
+                player.PlayerPawn.Value!.Teleport(VectorToNative(position), QAngleToNative(rotation), VectorToNative(new Vector(0, 0, 0)));
             }
 
             // Play a sound or provide feedback to the player
@@ -1711,12 +1713,12 @@ namespace SharpTimer
                 playerTimers[player.Slot].CheckpointIndex = index;
 
                 // Convert position and rotation strings to Vector and QAngle
-                Vector position = ParseVector(previousCheckpoint.PositionString ?? "0 0 0");
-                QAngle rotation = ParseQAngle(previousCheckpoint.RotationString ?? "0 0 0");
-                Vector speed = ParseVector(previousCheckpoint.SpeedString ?? "0 0 0");
+                var position = ParseVector(previousCheckpoint.PositionString ?? "0 0 0");
+                var rotation = ParseQAngle(previousCheckpoint.RotationString ?? "0 0 0");
+                var speed = ParseVector(previousCheckpoint.SpeedString ?? "0 0 0");
 
                 // Teleport the player to the previous checkpoint, including the saved rotation
-                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
+                player.PlayerPawn.Value!.Teleport(VectorToNative(position), QAngleToNative(rotation), VectorToNative(speed));
                 // Play a sound or provide feedback to the player
                 PlaySound(player, tpSound);
                 PrintToChat(player, Localizer["used_previous_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]);
@@ -1772,7 +1774,7 @@ namespace SharpTimer
                 Vector speed = ParseVector(nextCheckpoint.SpeedString ?? "0 0 0");
 
                 // Teleport the player to the next checkpoint, including the saved rotation
-                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
+                player.PlayerPawn.Value!.Teleport(VectorToNative(position), QAngleToNative(rotation), VectorToNative(speed));
 
                 // Play a sound or provide feedback to the player
                 PlaySound(player, tpSound);

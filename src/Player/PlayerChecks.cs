@@ -16,6 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System.Text.Json;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
+using Vector = SharpTimer.Structs.Vector;
+using QAngle = SharpTimer.Structs.QAngle;
 
 namespace SharpTimer
 {
@@ -179,13 +181,13 @@ namespace SharpTimer
                     return;
                 }
 
-                Vector incorrectVector = new(0, 0, 0);
-                Vector? playerPos = player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin;
+                Vector? incorrectVector = new(0, 0, 0);
+                Vector? playerPos = GetVector(player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!);
                 bool isInsideStartBox = false;
                 bool isInsideEndBox = false;
 
-                if (playerPos == null || currentMapStartC1 == incorrectVector || currentMapStartC2 == incorrectVector ||
-                    currentMapEndC1 == incorrectVector || currentMapEndC2 == incorrectVector)
+                if (playerPos == null || currentMapStartC1!.Value.IsZero() || currentMapStartC2!.Value.IsZero() ||
+                    currentMapEndC1!.Value.IsZero() || currentMapEndC2!.Value.IsZero())
                 {
                     return;
                 }
@@ -237,8 +239,8 @@ namespace SharpTimer
                         OnTimerStart(player);
                         if (enableReplays) OnRecordingStart(player);
 
-                        if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxStartingSpeed) ||
-                            (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxStartingSpeed))
+                        if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round((decimal)playerSpeed.Length()!) > maxStartingSpeed) ||
+                            (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round((decimal)playerSpeed.Length2D()!) > maxStartingSpeed))
                         {
                             Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
                             adjustVelocity(player, maxStartingSpeed, true);
@@ -282,8 +284,8 @@ namespace SharpTimer
                                 OnTimerStart(player, bonus);
                                 if (enableReplays) OnRecordingStart(player, bonus);
 
-                                if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxBonusStartingSpeed) ||
-                                    (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxBonusStartingSpeed))
+                                if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round((decimal)playerSpeed.Length()!) > maxBonusStartingSpeed) ||
+                                    (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round((decimal)playerSpeed.Length2D()!) > maxBonusStartingSpeed))
                                 {
                                     Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
                                     adjustVelocity(player, maxBonusStartingSpeed, true);

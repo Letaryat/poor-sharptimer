@@ -93,7 +93,7 @@ namespace SharpTimer
                         value.MovementService!.DuckAmount = 0;
                     }
 
-                    player.PlayerPawn.Value!.Teleport(ParseVector(replayFrame.PositionString!), ParseQAngle(replayFrame.RotationString!), ParseVector(replayFrame.SpeedString!));
+                    player.PlayerPawn.Value!.Teleport(new Vector(ParseVector(replayFrame.PositionString!).X, ParseVector(replayFrame.PositionString!).Y, ParseVector(replayFrame.PositionString!).Z), new QAngle(ParseQAngle(replayFrame.RotationString!).X, ParseQAngle(replayFrame.RotationString!).Y, ParseQAngle(replayFrame.RotationString!).Z), new Vector(ParseVector(replayFrame.SpeedString!).X, ParseVector(replayFrame.SpeedString!).Y, ParseVector(replayFrame.SpeedString!).Z));
 
                     var replayButtons = $"{((replayFrame.Buttons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                         $"{((replayFrame.Buttons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +

@@ -17,8 +17,7 @@ using System.Runtime.Intrinsics.X86;
 using System.Text.Json;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
-using CounterStrikeSharp.API.Modules.Utils;
-using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
+using static SharpTimer.Structs;
 
 namespace SharpTimer
 {
@@ -27,7 +26,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1f";
+        public override string ModuleVersion => $"0.3.1g";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -65,10 +64,10 @@ namespace SharpTimer
         public QAngle? currentRespawnAng = null;
         public string currentMapStartTrigger = "trigger_startzone";
         public string currentMapEndTrigger = "trigger_endzone";
-        public Vector currentMapStartC1 = new(0, 0, 0);
-        public Vector currentMapStartC2 = new(0, 0, 0);
-        public Vector currentMapEndC1 = new(0, 0, 0);
-        public Vector currentMapEndC2 = new(0, 0, 0);
+        public Vector? currentMapStartC1 = new(0, 0, 0);
+        public Vector? currentMapStartC2 = new(0, 0, 0);
+        public Vector? currentMapEndC1 = new(0, 0, 0);
+        public Vector? currentMapEndC2 = new(0, 0, 0);
         public Vector? currentEndPos = null;
 
         private Dictionary<nint, int> cpTriggers = [];
@@ -80,11 +79,11 @@ namespace SharpTimer
         private Dictionary<int, QAngle?> bonusRespawnAngs = [];
         public string currentBonusStartTrigger = "b1_start";
         public string currentBonusEndTrigger = "b1_end";
-        public Vector[] currentBonusStartC1 = new Vector[10];
-        public Vector[] currentBonusStartC2 = new Vector[10];
-        public Vector[] currentBonusEndC1 = new Vector[10];
-        public Vector[] currentBonusEndC2 = new Vector[10];
-        public Vector[] currentBonusEndPos = new Vector[10];
+        public Vector?[] currentBonusStartC1 = new Vector?[10];
+        public Vector?[] currentBonusStartC2 = new Vector?[10];
+        public Vector?[] currentBonusEndC1 = new Vector?[10];
+        public Vector?[] currentBonusEndC2 = new Vector?[10];
+        public Vector?[] currentBonusEndPos = new Vector?[10];
 
         private Dictionary<nint, int> bonusCheckpointTriggers = [];
         private int bonusCheckpointTriggerCount;

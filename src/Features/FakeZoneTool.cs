@@ -267,22 +267,22 @@ namespace SharpTimer
                     if (playerTimer.IsAddingStartZone)
                     {
                         Vector pawnPosition = player.Pawn?.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
-                        DrawZoneToolWireframe(ParseVector(playerTimer.StartZoneC1!), pawnPosition, player.Slot);
+                        DrawZoneToolWireframe(new Vector(ParseVector(playerTimer.StartZoneC1!).X, ParseVector(playerTimer.StartZoneC1!).Y, ParseVector(playerTimer.StartZoneC1!).Z), pawnPosition, player.Slot);
                     }
                     else if (playerTimer.IsAddingEndZone)
                     {
                         Vector pawnPosition = player.Pawn?.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
-                        DrawZoneToolWireframe(ParseVector(playerTimer.EndZoneC1!), pawnPosition, player.Slot);
+                        DrawZoneToolWireframe(new Vector(ParseVector(playerTimer.EndZoneC1!).X, ParseVector(playerTimer.EndZoneC1!).Y, ParseVector(playerTimer.EndZoneC1!).Z), pawnPosition, player.Slot);
                     }
                     else if (playerTimer.IsAddingBonusStartZone)
                     {
                         Vector pawnPosition = player.Pawn?.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
-                        DrawZoneToolWireframe(ParseVector(playerTimer.BonusStartZoneC1!), pawnPosition, player.Slot);
+                        DrawZoneToolWireframe(new Vector(ParseVector(playerTimer.BonusStartZoneC1!).X, ParseVector(playerTimer.BonusStartZoneC1!).Y, ParseVector(playerTimer.BonusStartZoneC1!).Z), pawnPosition, player.Slot);
                     }
                     else if (playerTimer.IsAddingBonusEndZone)
                     {
                         Vector pawnPosition = player.Pawn?.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
-                        DrawZoneToolWireframe(ParseVector(playerTimer.BonusEndZoneC1!), pawnPosition, player.Slot);
+                        DrawZoneToolWireframe(new Vector(ParseVector(playerTimer.BonusEndZoneC1!).X, ParseVector(playerTimer.BonusEndZoneC1!).Y, ParseVector(playerTimer.BonusEndZoneC1!).Z), pawnPosition, player.Slot);
                     }
                 }
             }

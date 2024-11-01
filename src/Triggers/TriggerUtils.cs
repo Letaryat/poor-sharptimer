@@ -13,9 +13,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using CounterStrikeSharp.API.Modules.Utils;
+using static SharpTimer.Structs;
 using System.Text.RegularExpressions;
-using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
 namespace SharpTimer
 {
@@ -339,18 +338,18 @@ namespace SharpTimer
 
                 foreach (var info_tp in entityCache.InfoTeleportDestinations)
                 {
-                    if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!, trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin!, trigger.Collision.Maxs + trigger.CBodyComponent!.SceneNode!.AbsOrigin!))
+                    if (info_tp.Entity?.Name != null && IsVectorInsideBox(GetVector(info_tp.AbsOrigin!), GetVector(trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin!), GetVector(trigger.Collision.Maxs + trigger.CBodyComponent!.SceneNode!.AbsOrigin!)))
                     {
                         if (info_tp.CBodyComponent!.SceneNode!.AbsOrigin != null && info_tp.AbsRotation != null)
                         {
-                            return (info_tp.CBodyComponent.SceneNode.AbsOrigin, info_tp.AbsRotation);
+                            return (GetVector(info_tp.CBodyComponent.SceneNode.AbsOrigin), GetQAngle(info_tp.AbsRotation));
                         }
                     }
                 }
 
                 if (trigger.CBodyComponent!.SceneNode!.AbsOrigin != null)
                 {
-                    return (trigger.CBodyComponent.SceneNode.AbsOrigin, null);
+                    return (new Vector(trigger.CBodyComponent.SceneNode.AbsOrigin.X, trigger.CBodyComponent.SceneNode.AbsOrigin.Y, trigger.CBodyComponent.SceneNode.AbsOrigin.Z), null);
                 }
             }
 
@@ -366,7 +365,7 @@ namespace SharpTimer
                 if (trigger == null || trigger.Entity!.Name == null || !IsValidEndTriggerName(trigger.Entity.Name.ToString()))
                     continue;
 
-                if (trigger.CBodyComponent!.SceneNode!.AbsOrigin != null) return trigger.CBodyComponent.SceneNode.AbsOrigin;
+                if (trigger.CBodyComponent!.SceneNode!.AbsOrigin != null) return GetVector(trigger.CBodyComponent.SceneNode.AbsOrigin);
 
             }
 
@@ -387,12 +386,12 @@ namespace SharpTimer
                 {
                     foreach (var info_tp in entityCache.InfoTeleportDestinations)
                     {
-                        if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!, trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin, trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin))
+                        if (info_tp.Entity?.Name != null && IsVectorInsideBox(GetVector(info_tp.AbsOrigin!), GetVector(trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin), GetVector(trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin)))
                         {
                             if (info_tp.CBodyComponent?.SceneNode?.AbsOrigin != null && info_tp.AbsRotation != null)
                             {
-                                stageTriggerPoses[X] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
-                                stageTriggerAngs[X] = info_tp.AbsRotation;
+                                stageTriggerPoses[X] = GetVector(info_tp.CBodyComponent.SceneNode.AbsOrigin);
+                                stageTriggerAngs[X] = GetQAngle(info_tp.AbsRotation);
                                 SharpTimerDebug($"Added !stage {X} pos {stageTriggerPoses[X]} ang {stageTriggerAngs[X]}");
                             }
                         }
@@ -487,7 +486,7 @@ namespace SharpTimer
 
                     foreach (var info_tp in entityCache.InfoTeleportDestinations)
                     {
-                        if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!, trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin, trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin))
+                        if (info_tp.Entity?.Name != null && IsVectorInsideBox(GetVector(info_tp.AbsOrigin!), GetVector(trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin), GetVector(trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin)))
                         {
                             if (info_tp.CBodyComponent?.SceneNode?.AbsOrigin != null && info_tp.AbsRotation != null)
                             {
@@ -499,16 +498,16 @@ namespace SharpTimer
                                     }
                                     else
                                     {
-                                        bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
-                                        bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
+                                        bonusRespawnPoses[bonusX] = GetVector(info_tp.CBodyComponent.SceneNode.AbsOrigin);
+                                        bonusRespawnAngs[bonusX] = GetQAngle(info_tp.AbsRotation);
                                         SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
                                         bonusPosAndAngSet = true;
                                     }
                                 }
                                 catch (Exception)
                                 {
-                                    bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
-                                    bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
+                                    bonusRespawnPoses[bonusX] = GetVector(info_tp.CBodyComponent.SceneNode.AbsOrigin);
+                                    bonusRespawnAngs[bonusX] = GetQAngle(info_tp.AbsRotation);
                                     SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
                                     bonusPosAndAngSet = true;
                                 }
@@ -526,13 +525,13 @@ namespace SharpTimer
                             }
                             else
                             {
-                                bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
+                                bonusRespawnPoses[bonusX] = GetVector(trigger.CBodyComponent.SceneNode.AbsOrigin);
                                 SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
                             }
                         }
                         catch (Exception)
                         {
-                            bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
+                            bonusRespawnPoses[bonusX] = GetVector(trigger.CBodyComponent.SceneNode.AbsOrigin);
                             SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
                         }
                     }
@@ -555,8 +554,8 @@ namespace SharpTimer
 
                 if (IsValidStartTriggerName(trigger.Entity.Name.ToString()))
                 {
-                    startMins = trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin;
-                    startMaxs = trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin;
+                    startMins = GetVector(trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin);
+                    startMaxs = GetVector(trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin);
                     currentMapStartTriggerMaxs = startMaxs;
                     currentMapStartTriggerMins = startMins;
                     continue;
@@ -564,8 +563,8 @@ namespace SharpTimer
 
                 if (IsValidEndTriggerName(trigger.Entity.Name.ToString()))
                 {
-                    endMins = trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin;
-                    endMaxs = trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin;
+                    endMins = GetVector(trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin);
+                    endMaxs = GetVector(trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin);
                     continue;
                 }
             }

@@ -16,7 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
-using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
+using Vector = SharpTimer.Structs.Vector;
+using QAngle = SharpTimer.Structs.QAngle;
 
 namespace SharpTimer
 {
@@ -74,11 +75,11 @@ namespace SharpTimer
                     {
                         if (movementUnlockerCapEnabled && velocity.Length2D() > movementUnlockerCapValue)
                         {
-                            float mult = movementUnlockerCapValue / velocity.Length2D();
+                            float? mult = movementUnlockerCapValue / velocity.Length2D();
                             velocity.X *= mult;
                             velocity.Y *= mult;
-                            player.PlayerPawn.Value!.AbsVelocity.X = velocity.X;
-                            player.PlayerPawn.Value!.AbsVelocity.Y = velocity.Y;
+                            player.PlayerPawn.Value!.AbsVelocity.X = (float)velocity.X!;
+                            player.PlayerPawn.Value!.AbsVelocity.Y = (float)velocity.Y!;
                         }
                     }
                     else if (playerJumpStat.FramesOnGround == 1)
@@ -182,13 +183,13 @@ namespace SharpTimer
 
                 double maxHeight;
                 if (IsVectorHigherThan(playerpos, ParseVector(LastJumpFrame.PositionString!)))
-                    maxHeight = playerpos.Z - ParseVector(playerJumpStat.LastPosOnGround ?? "0 0 0").Z;
+                    maxHeight = (double)(playerpos.Z - ParseVector(playerJumpStat.LastPosOnGround ?? "0 0 0").Z)!;
                 else
                     maxHeight = LastJumpFrame?.MaxHeight ?? 0;
 
                 double maxSpeed;
                 if (velocity.Length2D() > LastJumpFrame!.MaxSpeed)
-                    maxSpeed = velocity.Length2D();
+                    maxSpeed = (double)velocity.Length2D()!;
                 else
                     maxSpeed = LastJumpFrame?.MaxSpeed ?? 0;
 
@@ -281,14 +282,14 @@ namespace SharpTimer
             }
         }
 
-        double Calculate2DDistanceWithVerticalMargins(Vector vector1, Vector vector2, bool noVertCheck = false)
+        double Calculate2DDistanceWithVerticalMargins(Vector? vector1, Vector? vector2, bool noVertCheck = false)
         {
             if (vector1 == null || vector2 == null)
             {
                 return 0;
             }
 
-            float verticalDistance = Math.Abs(vector1.Z - vector2.Z);
+            float verticalDistance = (float)Math.Abs((decimal)(vector1.Value.Z - vector2.Value.Z)!);
 
             if (verticalDistance >= 32 && noVertCheck == false)
             {
@@ -314,7 +315,7 @@ namespace SharpTimer
             int leftSync = 0;
             int leftFrames = 0;
             bool inGroup = false;
-            QAngle previousRotation = null!;
+            QAngle? previousRotation = null!;
 
             var frames = timersync ? playerJumpStat.timerSyncFrames : playerJumpStat.jumpFrames;
             foreach (var frame in frames)
@@ -329,7 +330,7 @@ namespace SharpTimer
                 {
                     inGroup = true;
                     leftFrames++;
-                    if (previousRotation != null && ParseQAngle(frame.RotationString!).Y > previousRotation.Y)
+                    if (previousRotation != null && ParseQAngle(frame.RotationString!).Y > previousRotation.Value.Y)
                         leftSync++;
                 }
                 previousRotation = ParseQAngle(frame.RotationString!);
@@ -347,7 +348,7 @@ namespace SharpTimer
             int rightSync = 0;
             int rightFrames = 0;
             bool inGroup = false;
-            QAngle previousRotation = null!;
+            QAngle? previousRotation = null!;
 
             var frames = timersync ? playerJumpStat.timerSyncFrames : playerJumpStat.jumpFrames;
             foreach (var frame in frames)
@@ -363,7 +364,7 @@ namespace SharpTimer
                 {
                     inGroup = true;
                     rightFrames++;
-                    if (previousRotation != null && ParseQAngle(frame.RotationString!).Y < previousRotation.Y)
+                    if (previousRotation != null && ParseQAngle(frame.RotationString!).Y < previousRotation.Value.Y)
                         rightSync++;
                 }
                 previousRotation = ParseQAngle(frame.RotationString!);
@@ -393,15 +394,15 @@ namespace SharpTimer
         public static void InterpolateVectors(Vector vector1, Vector vector2, PlayerJumpStats playerJumpStat)
         {
             int numInterpolations = playerJumpStat.jumpFrames.Count;
-            float stepX = (vector2.X - vector1.X) / (numInterpolations + 1);
-            float stepY = (vector2.Y - vector1.Y) / (numInterpolations + 1);
-            float stepZ = (vector2.Z - vector1.Z) / (numInterpolations + 1);
+            float? stepX = (vector2.X - vector1.X) / (numInterpolations + 1);
+            float? stepY = (vector2.Y - vector1.Y) / (numInterpolations + 1);
+            float? stepZ = (vector2.Z - vector1.Z) / (numInterpolations + 1);
 
             for (int i = 0; i < numInterpolations; i++)
             {
-                float interpolatedX = vector1.X + stepX * (i + 1);
-                float interpolatedY = vector1.Y + stepY * (i + 1);
-                float interpolatedZ = vector1.Z + stepZ * (i + 1);
+                float? interpolatedX = vector1.X + stepX * (i + 1);
+                float? interpolatedY = vector1.Y + stepY * (i + 1);
+                float? interpolatedZ = vector1.Z + stepZ * (i + 1);
 
                 var interpFrame = new PlayerJumpStats.JumpInterp
                 {
@@ -436,11 +437,11 @@ namespace SharpTimer
 
             double sync = (strafeFrames != 0) ? Math.Round(syncedFrames * 100f / strafeFrames, 2) : 0;
 
-            PrintToChat(player, Localizer["js_msg1", playerJumpStat.LastJumpType!, color, Math.Round(distance, 2), Math.Round(ParseVector(playerJumpStat.LastSpeed!).Length2D(), 2), Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2), strafes]);
+            PrintToChat(player, Localizer["js_msg1", playerJumpStat.LastJumpType!, color, Math.Round(distance, 2), Math.Round((decimal)ParseVector(playerJumpStat.LastSpeed!).Length2D()!, 2), Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2), strafes]);
             PrintToChat(player, Localizer["js_msg2", Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2), GetMaxWidth(playerpos, playerJumpStat), playerJumpStat.WTicks, sync]);
 
             player.PrintToConsole($"-----------------------------------------------------------------------------------------------------------------------");
-            player.PrintToConsole($" {Localizer["js_msg1", playerJumpStat.LastJumpType!, color, Math.Round(distance, 2), Math.Round(ParseVector(playerJumpStat.LastSpeed!).Length2D(), 2), Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2), strafes]}");
+            player.PrintToConsole($" {Localizer["js_msg1", playerJumpStat.LastJumpType!, color, Math.Round(distance, 2), Math.Round((decimal)ParseVector(playerJumpStat.LastSpeed!).Length2D()!, 2), Math.Round(playerJumpStat.jumpFrames.Last().MaxSpeed, 2), strafes]}");
             player.PrintToConsole($" {Localizer["js_msg2", Math.Round(playerJumpStat.jumpFrames.Last().MaxHeight, 2), GetMaxWidth(playerpos, playerJumpStat), playerJumpStat.WTicks, sync]}");
         }
     }

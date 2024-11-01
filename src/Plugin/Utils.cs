@@ -22,7 +22,8 @@ using System.Drawing;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
+using Vector = SharpTimer.Structs.Vector;
+using QAngle = SharpTimer.Structs.QAngle;
 using CounterStrikeSharp.API.Modules.Entities;
 
 namespace SharpTimer
@@ -437,71 +438,71 @@ namespace SharpTimer
 
             beam.Width = 1.5f;
 
-            beam.Teleport(startPos, new QAngle(0, 0, 0), new Vector(0, 0, 0));
+            beam.Teleport(new CounterStrikeSharp.API.Modules.Utils.Vector(startPos.X, startPos.Y, startPos.Z), new CounterStrikeSharp.API.Modules.Utils.QAngle(0, 0, 0), new CounterStrikeSharp.API.Modules.Utils.Vector(0, 0, 0));
 
-            beam.EndPos.X = endPos.X;
-            beam.EndPos.Y = endPos.Y;
-            beam.EndPos.Z = endPos.Z;
+            beam.EndPos.X = (float)endPos.X!;
+            beam.EndPos.Y = (float)endPos.Y!;
+            beam.EndPos.Z = (float)endPos.Z!;
 
             beam.DispatchSpawn();
             SharpTimerDebug($"Beam Spawned at S:{startPos} E:{beam.EndPos}");
         }
 
-        public void DrawWireframe3D(Vector corner1, Vector corner8, string _color)
+        public void DrawWireframe3D(Vector? corner1, Vector? corner8, string _color)
         {
-            Vector corner2 = new(corner1.X, corner8.Y, corner1.Z);
-            Vector corner3 = new(corner8.X, corner8.Y, corner1.Z);
-            Vector corner4 = new(corner8.X, corner1.Y, corner1.Z);
+            Vector corner2 = new(corner1!.Value.X, corner8!.Value.Y, corner1.Value.Z);
+            Vector corner3 = new(corner8.Value.X, corner8.Value.Y, corner1.Value.Z);
+            Vector corner4 = new(corner8.Value.X, corner1.Value.Y, corner1.Value.Z);
 
-            Vector corner5 = new(corner8.X, corner1.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
-            Vector corner6 = new(corner1.X, corner1.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
-            Vector corner7 = new(corner1.X, corner8.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
-            if (Box3DZones) corner8 = new(corner8.X, corner8.Y, corner8.Z + fakeTriggerHeight);
+            Vector corner5 = new(corner8.Value.X, corner1.Value.Y, corner8.Value.Z + (Box3DZones ? fakeTriggerHeight : 0));
+            Vector corner6 = new(corner1.Value.X, corner1.Value.Y, corner8.Value.Z + (Box3DZones ? fakeTriggerHeight : 0));
+            Vector corner7 = new(corner1.Value.X, corner8.Value.Y, corner8.Value.Z + (Box3DZones ? fakeTriggerHeight : 0));
+            if (Box3DZones) corner8 = new(corner8.Value.X, corner8.Value.Y, corner8.Value.Z + fakeTriggerHeight);
 
             //top square
-            DrawLaserBetween(corner1, corner2, _color);
+            DrawLaserBetween(corner1.Value, corner2, _color);
             DrawLaserBetween(corner2, corner3, _color);
             DrawLaserBetween(corner3, corner4, _color);
-            DrawLaserBetween(corner4, corner1, _color);
+            DrawLaserBetween(corner4, corner1.Value, _color);
 
             //bottom square
             DrawLaserBetween(corner5, corner6, _color);
             DrawLaserBetween(corner6, corner7, _color);
-            DrawLaserBetween(corner7, corner8, _color);
-            DrawLaserBetween(corner8, corner5, _color);
+            DrawLaserBetween(corner7, corner8.Value, _color);
+            DrawLaserBetween(corner8.Value, corner5, _color);
 
             //connect them both to build a cube
-            DrawLaserBetween(corner1, corner6, _color);
+            DrawLaserBetween(corner1.Value, corner6, _color);
             DrawLaserBetween(corner2, corner7, _color);
-            DrawLaserBetween(corner3, corner8, _color);
+            DrawLaserBetween(corner3, corner8.Value, _color);
             DrawLaserBetween(corner4, corner5, _color);
         }
 
-        private bool IsVectorInsideBox(Vector playerVector, Vector corner1, Vector corner2)
+        private bool IsVectorInsideBox(Vector? playerVector, Vector? corner1, Vector? corner2)
         {
-            float minX = Math.Min(corner1.X, corner2.X);
-            float minY = Math.Min(corner1.Y, corner2.Y);
-            float minZ = Math.Min(corner1.Z, corner2.Z);
+            float minX = Math.Min((byte)corner1!.Value.X!, (byte)corner2!.Value.X!);
+            float minY = Math.Min((byte)corner1!.Value.Y!, (byte)corner2!.Value.Y!);
+            float minZ = Math.Min((byte)corner1!.Value.Z!, (byte)corner2!.Value.Z!);
 
-            float maxX = Math.Max(corner1.X, corner2.X);
-            float maxY = Math.Max(corner1.Y, corner2.Y);
-            float maxZ = Math.Max(corner1.Z, corner2.Z + fakeTriggerHeight);
+            float maxX = Math.Max((byte)corner1!.Value.X, (byte)corner2!.Value.X);
+            float maxY = Math.Max((byte)corner1!.Value.Y, (byte)corner2!.Value.Y!);
+            float maxZ = Math.Max((byte)corner1!.Value.Z, (byte)corner2!.Value.Z! + fakeTriggerHeight);
 
-            return playerVector.X >= minX && playerVector.X <= maxX &&
-                   playerVector.Y >= minY && playerVector.Y <= maxY &&
-                   playerVector.Z >= minZ && playerVector.Z <= maxZ;
+            return playerVector!.Value.X >= minX && playerVector!.Value.X <= maxX &&
+                   playerVector!.Value.Y >= minY && playerVector!.Value.Y <= maxY &&
+                   playerVector!.Value.Z >= minZ && playerVector!.Value.Z <= maxZ;
         }
 
-        static Vector CalculateMiddleVector(Vector corner1, Vector corner2)
+        static Vector CalculateMiddleVector(Vector? corner1, Vector? corner2)
         {
-            if (corner1 == null || corner2 == null)
+            if (corner1 ==  null || corner2 == null)
             {
                 return new Vector(0, 0, 0);
             }
 
-            float middleX = (corner1.X + corner2.X) / 2;
-            float middleY = (corner1.Y + corner2.Y) / 2;
-            float middleZ = (corner1.Z + corner2.Z) / 2;
+            float? middleX = (corner1.Value.X + corner2.Value.X) / 2;
+            float? middleY = (corner1.Value.Y + corner2.Value.Y) / 2;
+            float? middleZ = (corner1.Value.Z + corner2.Value.Z) / 2;
             return new Vector(middleX, middleY, middleZ);
         }
 
@@ -549,55 +550,55 @@ namespace SharpTimer
             return new QAngle(0, 0, 0);
         }
 
-        public static double Distance(Vector vector1, Vector vector2)
+        public static double Distance(Vector? vector1, Vector? vector2)
         {
             if (vector1 == null || vector2 == null)
             {
                 return 0;
             }
 
-            double deltaX = vector1.X - vector2.X;
-            double deltaY = vector1.Y - vector2.Y;
-            double deltaZ = vector1.Z - vector2.Z;
+            double? deltaX = vector1.Value.X - vector2.Value.X;
+            double? deltaY = vector1.Value.Y - vector2.Value.Y;
+            double? deltaZ = vector1.Value.Z - vector2.Value.Z;
 
-            return Math.Sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+            return Math.Sqrt((double)(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ)!);
         }
 
-        public static double Distance2D(Vector vector1, Vector vector2)
+        public static double Distance2D(Vector? vector1, Vector? vector2)
         {
             if (vector1 == null || vector2 == null)
             {
                 return 0;
             }
 
-            double deltaX = vector1.X - vector2.X;
-            double deltaY = vector1.Y - vector2.Y;
+            double? deltaX = vector1.Value.X - vector2.Value.X;
+            double? deltaY = vector1.Value.Y - vector2.Value.Y;
 
-            return Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+            return Math.Sqrt((double)(deltaX * deltaX + deltaY * deltaY)!);
         }
 
-        private static Vector Normalize(Vector vector)
+        private static Vector Normalize(Vector? vector)
         {
-            float magnitude = (float)Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z);
+            float magnitude = (float)Math.Sqrt((double)(vector!.Value.X * vector.Value.X + vector.Value.Y * vector.Value.Y + vector.Value.Z * vector.Value.Z)!);
 
             if (magnitude > 0)
             {
-                return new Vector(vector.X / magnitude, vector.Y / magnitude, vector.Z / magnitude);
+                return new Vector(vector.Value.X / magnitude, vector.Value.Y / magnitude, vector.Value.Z / magnitude);
             }
             else
             {
-                return vector;
+                return vector.Value;
             }
         }
 
-        public static bool IsVectorHigherThan(Vector vector1, Vector vector2)
+        public static bool IsVectorHigherThan(Vector? vector1, Vector? vector2)
         {
             if (vector1 == null || vector2 == null)
             {
                 return false;
             }
 
-            return vector1.Z >= vector2.Z;
+            return vector1.Value.Z >= vector2.Value.Z;
         }
 
         public async Task<Dictionary<string, PlayerRecord>> GetSortedRecords(int bonusX = 0, string mapName = "")
@@ -1324,10 +1325,10 @@ namespace SharpTimer
 
             currentEndPos = null;
 
-            currentBonusStartC1 = new Vector[10];
-            currentBonusStartC2 = new Vector[10];
-            currentBonusEndC1 = new Vector[10];
-            currentBonusEndC2 = new Vector[10];
+            currentBonusStartC1 = new Vector?[10];
+            currentBonusStartC2 = new Vector?[10];
+            currentBonusEndC1 = new Vector?[10];
+            currentBonusEndC2 = new Vector?[10];
 
             // totalBonuses = new int[10];
             currentMapStartTriggerMaxs = null;
@@ -1434,6 +1435,26 @@ namespace SharpTimer
             {
                 return -1;
             }
+        }
+
+        public static Vector GetVector(CounterStrikeSharp.API.Modules.Utils.Vector cssVector)
+        {
+            return new Vector(cssVector.X, cssVector.Y, cssVector.Z);
+        }
+
+        public static CounterStrikeSharp.API.Modules.Utils.Vector VectorToNative(Vector stvector)
+        {
+            return new CounterStrikeSharp.API.Modules.Utils.Vector(stvector.X, stvector.Y, stvector.Z);
+        }
+
+        public static QAngle GetQAngle(CounterStrikeSharp.API.Modules.Utils.QAngle cssQAngle)
+        {
+            return new QAngle(cssQAngle.X, cssQAngle.Y, cssQAngle.Z);
+        }
+
+        public static CounterStrikeSharp.API.Modules.Utils.QAngle QAngleToNative(QAngle stQAngle)
+        {
+            return new CounterStrikeSharp.API.Modules.Utils.QAngle(stQAngle.X, stQAngle.Y, stQAngle.Z);
         }
 
         public string GetClosestMapCFGMatch()

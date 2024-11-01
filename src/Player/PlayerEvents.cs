@@ -19,6 +19,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
+using QAngle = SharpTimer.Structs.QAngle;
 using CounterStrikeSharp.API.Modules.Cvars;
 
 namespace SharpTimer
@@ -112,22 +113,24 @@ namespace SharpTimer
             //just.. dont ask.
             AddTimer(0f, () =>
             {
+                // This is forced to use native Vector due to the native Teleport function requiring it
                 if (spawnOnRespawnPos == true && currentRespawnPos != null)
-                    player!.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
+                    player!.PlayerPawn.Value!.Teleport(new Vector(currentRespawnPos.Value.X, currentRespawnPos.Value.Y, currentRespawnPos.Value.Z), null, null);
             });
 
             if (enableReplays && enableSRreplayBot && connectedReplayBots.Count == 0)
                     {
                         AddTimer(5.0f, () =>
                         {
-                            if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0)
+                            if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0 && ConVar.Find("mp_humanteam")!.StringValue == "ct") 
+                            {
                                 _ = Task.Run(async () => await SpawnReplayBot());
+                            }
                             else
                             {
-                                PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
-                                PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
-                                PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
-                                SharpTimerError("Couldnt Spawn Replay bot! Please make sure mp_force_pick_time is set to 1 in your custom_exec.cfg");
+                                SharpTimerError("Couldnt Spawn Replay bot! Please make sure you have the following in your custom_exec.cfg\n"
+                                    + "mp_force_pick_time 1\n"
+                                    + "mp_humanteam ct\n");
                             }
                         });
                     }
