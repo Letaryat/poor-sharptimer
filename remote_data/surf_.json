@@ -947,6 +947,10 @@
         "Tier": 2,
         "Type": "Linear"
     },
+    "surf_santorini_ksf": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
     "surf_saturday": {
         "Tier": 2,
         "Type": "Linear"
@@ -1691,6 +1695,10 @@
         "Tier": 3,
         "Type": "Linear"
     },
+    "surf_prisma": {
+        "Tier": 1,
+        "Type": "Hybrid"
+    },
     "surf_prismatic": {
         "Tier": 3,
         "Type": "Linear"
@@ -2024,7 +2032,7 @@
         "Type": "Linear"
     },
     "surf_adventure": {
-        "Tier": 4,
+        "Tier": 1,
         "Type": "Linear"
     },
     "surf_airflow": {
