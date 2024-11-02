@@ -132,5 +132,6 @@
   "connect_message": "Player {red}{0} {default}connected!",
   "connected_message": "Player {red}{0} {default}connected for the {1} time!",
   "connected_message_first": "Player {red}{0} {default}connected for the first time!",
-  "disconnect_message": "Player {red}{0} {default}disconnected!"
+  "disconnect_message": "Player {red}{0} {default}disconnected!",
+  "afk_message": "{red}You are about to be moved to AFK!"
 }

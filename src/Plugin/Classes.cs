@@ -104,7 +104,8 @@ namespace SharpTimer
     {
         //timer
         public bool IsTimerRunning { get; set; }
-
+        public int AFKTicks { get; set; }
+        public bool AFKWarned { get; set; }
         public bool IsOnBhopBlock { get; set; }
         public bool IsNoclip { get; set; }
         public bool IsTimerBlocked { get; set; }

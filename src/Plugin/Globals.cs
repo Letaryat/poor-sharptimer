@@ -36,6 +36,7 @@ namespace SharpTimer
         private Dictionary<int, PlayerReplays> playerReplays = [];
         private Dictionary<int, List<PlayerCheckpoint>> playerCheckpoints = [];
         public Dictionary<int, CCSPlayerController> connectedPlayers = [];
+        public Dictionary<int, CCSPlayerController> connectedAFKPlayers = [];
         private Dictionary<int, CCSPlayerController> connectedReplayBots = [];
         private Dictionary<uint, CCSPlayerController> specTargets = [];
         private EntityCache? entityCache;
@@ -224,7 +225,9 @@ namespace SharpTimer
         public bool forcePlayerSpeedEnabled = false;
         public float forcedPlayerSpeed = 250;
         public int bhopBlockTime = 16;
-
+        public bool afkHibernation = true;
+        public bool afkWarning = true;
+        public int afkSeconds = 60;
         public double lowgravPointModifier = 1.1;
         public double sidewaysPointModifier = 1.3;
         public double halfSidewaysPointModifier = 1.3;

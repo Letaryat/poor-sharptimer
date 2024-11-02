@@ -25,7 +25,8 @@ namespace SharpTimer
         public void PlayerOnTick()
         {
             try
-            {
+            {     
+                int currentTick = Server.TickCount;  
                 foreach (CCSPlayerController player in connectedPlayers.Values)
                 {
                     if (player == null || !player.IsValid) continue;
@@ -54,7 +55,33 @@ namespace SharpTimer
                         int timerTicks = playerTimer.TimerTicks;
                         PlayerButtons? playerButtons = player.Buttons;
                         Vector playerSpeed = player.PlayerPawn!.Value!.AbsVelocity;
+
+                        if(connectedAFKPlayers.ContainsKey(player.Slot))
+                        {
+                            if(!playerSpeed.IsZero())
+                            {
+                                connectedAFKPlayers.Remove(player.Slot);
+                                playerTimer.AFKWarned = false;
+                                playerTimer.AFKTicks = 0;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+
+                        if(playerTimer.AFKTicks >= afkSeconds*48 && !playerTimer.AFKWarned && afkWarning)
+                        {
+                            player.PrintToChat($"{Localizer["prefix"]} {Localizer["afk_message"]}");
+                            playerTimer.AFKWarned = true;
+                        }
                         
+                        if(playerTimer.AFKTicks >= afkSeconds*64)
+                            connectedAFKPlayers[player.Slot] = connectedPlayers[player.Slot];
+
+                        if(playerSpeed.IsZero())
+                            playerTimer.AFKTicks++;
+
                         if (!startzoneJumping && playerTimers[player.Slot].inStartzone)
                         {
                             if((playerButtons & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.OldJumpPressed)
@@ -72,6 +99,8 @@ namespace SharpTimer
                         {
                             playerTimer.BonusTimerTicks++;
                         }
+
+                        if (playerTimer.MovementService!.OldJumpPressed == true) playerTimer.MovementService.OldJumpPressed = false;
 
                         if(playerTimer.currentStyle.Equals(4)) //check if 400vel
                         {
@@ -206,7 +235,7 @@ namespace SharpTimer
                         if (playerTimer.TicksSinceLastCmd < cmdCooldown) playerTimer.TicksSinceLastCmd++;
                         if (playerTimer.TicksSinceLastRankUpdate < 511) playerTimer.TicksSinceLastRankUpdate++;
 
-                        if (Server.TickCount % (64 / hudTickrate) != 0) continue;
+                        if (currentTick % (64 / hudTickrate) != 0) continue;
 
                         if ((CsTeam)player.TeamNum == CsTeam.Spectator)
                         {
@@ -268,7 +297,6 @@ namespace SharpTimer
                                                 $"{((playerButtons & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.OldJumpPressed ? "J" : "_")} " +
                                                 $"{((playerButtons & PlayerButtons.Duck) != 0 ? "C" : "_")}";
 
-                        if (playerTimer.MovementService!.OldJumpPressed == true) playerTimer.MovementService.OldJumpPressed = false;
 
                         string hudContent = (hudEnabled ? timerLine +
                                             (VelocityHudEnabled ? veloLine : "") +

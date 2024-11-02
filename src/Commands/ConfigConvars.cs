@@ -686,6 +686,41 @@ namespace SharpTimer
             killServerCommands = bool.TryParse(args, out bool killServerCommandsValue) ? killServerCommandsValue : args != "0" && killServerCommands;
         }
 
+        [ConsoleCommand("sharptimer_enable_afk_hibernation", "If True the plugin will reduce functionality to afk players to improve performance. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerAFKHibernationConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            afkHibernation = bool.TryParse(args, out bool afkValue) ? afkValue : args != "0" && afkHibernation;
+        }
+
+        [ConsoleCommand("sharptimer_enable_afk_warning", "If true the plugin will warn the player who is about to be moved to afk. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerAFKWarningConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            afkWarning = bool.TryParse(args, out bool afkValue) ? afkValue : args != "0" && afkWarning;
+        }
+
+        [ConsoleCommand("sharptimer_afk_seconds", "Amount of seconds a player is allowed to afk before being hibernated. Default value: 60")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerAFKSecondsConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (int.TryParse(args, out int secs) && secs >= 0)
+            {
+                afkSeconds = secs;
+                SharpTimerConPrint($"SharpTimer afk period: {secs}s");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid afk period. Please provide a positive integer.");
+            }
+        }
+
         [ConsoleCommand("sharptimer_hud_updates_per_second", "Updates per second of the HUD. Default value: 64")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerHUDUpdatesConvar(CCSPlayerController? player, CommandInfo command)
