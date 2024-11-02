@@ -206,7 +206,7 @@ namespace SharpTimer
                         if (playerTimer.TicksSinceLastCmd < cmdCooldown) playerTimer.TicksSinceLastCmd++;
                         if (playerTimer.TicksSinceLastRankUpdate < 511) playerTimer.TicksSinceLastRankUpdate++;
 
-                        if (Server.TickCount % (64 / hudTickrate) != 0) return;
+                        if (Server.TickCount % (64 / hudTickrate) != 0) continue;
 
                         if ((CsTeam)player.TeamNum == CsTeam.Spectator)
                         {
