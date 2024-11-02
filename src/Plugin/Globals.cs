@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1f";
+        public override string ModuleVersion => $"0.3.1g";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -169,6 +169,7 @@ namespace SharpTimer
 
         public bool keysOverlayEnabled = true;
         public bool hudOverlayEnabled = true;
+        public int hudTickrate = 64;
         public bool VelocityHudEnabled = true;
         public bool StrafeHudEnabled = true;
         public bool MapTierHudEnabled = true;

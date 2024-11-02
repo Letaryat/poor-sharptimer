@@ -686,6 +686,23 @@ namespace SharpTimer
             killServerCommands = bool.TryParse(args, out bool killServerCommandsValue) ? killServerCommandsValue : args != "0" && killServerCommands;
         }
 
+        [ConsoleCommand("sharptimer_hud_updates_per_second", "Updates per second of the HUD. Default value: 64")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerHUDUpdatesConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (int.TryParse(args, out int tickrate) && tickrate >= 0)
+            {
+                hudTickrate = tickrate;
+                SharpTimerConPrint($"SharpTimer hud updates per second: {tickrate}");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid HUD updates per second. Please provide a positive integer.");
+            }
+        }
+
         [ConsoleCommand("sharptimer_enable_timer_hud", "If Timer Hud should be globally enabled or not. Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerHUDConvar(CCSPlayerController? player, CommandInfo command)
