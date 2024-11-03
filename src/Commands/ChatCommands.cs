@@ -1294,9 +1294,10 @@ namespace SharpTimer
 
                 if (jumpStatsEnabled) InvalidateJS(player.Slot);
 
-                if (stageTriggerCount != 0 || cpTriggerCount != 0)//remove previous stage times if the map has stages
+                if (stageTriggerCount != 0 || cpTriggerCount != 0)//remove previous stage times and checkpoints if the map has stages or checkpoints
                 {
                     playerTimers[player.Slot].StageTimes!.Clear();
+                    playerTimers[player.Slot].CurrentMapCheckpoint = 0;
                 }
 
                 if (toEnd == false)
