@@ -46,20 +46,24 @@ namespace SharpTimer
         // Step 2
         // This function calculates tier ranking
         // This is the first step in calculating the players specific ranking on the map
-        public double CalculateTier(int completions)
+        public async Task<double> CalculateTier(int completions, string mapname)
         {
             // Define max WR points for each tier (fallback to t1)
             int maxWR;
-            int tier;
-            if (currentMapTier is not null)
+            var (tier, _) = await FindMapInfoFromHTTP(GetMapInfoSource(), mapname);
+            if (tier is not null)
             {
-                maxWR = maxRecordPointsBase * (int)currentMapTier;
-                tier = (int)currentMapTier;
+                maxWR = maxRecordPointsBase * (int)tier;             // Get tier from remote_data by default
+            }
+            else if (currentMapTier is not null)
+            {
+                maxWR = maxRecordPointsBase * (int)currentMapTier;  // If remote_data tier doesnt exist, check local data
+                tier = currentMapTier;
             }
             else
             {
                 maxWR = maxRecordPointsBase;
-                tier = 1;
+                tier = 1;                                           // If nothing exists, tier = 1
             }
 
             switch (tier)

@@ -819,6 +819,15 @@ namespace SharpTimer
             enableDebug = bool.TryParse(args, out bool enableDebugValue) ? enableDebugValue : args != "0" && enableDebug;
         }
 
+        [ConsoleCommand("sharptimer_remote_data_disable", "Disable fetching map tier and type from github. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerRemoteDataConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            disableRemoteData = bool.TryParse(args, out bool value) ? value : args != "0" && disableRemoteData;
+        }
+
         [ConsoleCommand("sharptimer_enable_checkpoint_verification", "Enable or disable checkpoint verification system. Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerCheckpointVerificationConvar(CCSPlayerController? player, CommandInfo command)

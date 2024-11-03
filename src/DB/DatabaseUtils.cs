@@ -1492,11 +1492,13 @@ namespace SharpTimer
             PrintToChatAll(Localizer["gained_points", playerName, Convert.ToInt32(newPoints - playerPoints), newPoints]);
         }
 
-        public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0, int completions = 0)
+        public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0, int completions = 0, string mapname = "")
         {
             SharpTimerDebug($"Trying to set player points in database for {playerName}");
             try
             {
+                if (mapname == "") mapname = currentMapName!;
+
                 int timeNowUnix = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 // get player columns
                 int timesConnected = 0;
@@ -1578,7 +1580,7 @@ namespace SharpTimer
                             newPoints = CalculateCompletion();
 
                             // Then calculate max points based on times finished
-                            double maxPoints = CalculateTier(completions);
+                            double maxPoints = await CalculateTier(completions, mapname);
 
                             // Then grab the top 10 and calculate distributed points
                             Dictionary<string, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, "", style);
@@ -1705,7 +1707,7 @@ namespace SharpTimer
                             newPoints = CalculateCompletion();
 
                             // Then calculate max points based on times finished
-                            double maxPoints = CalculateTier(completions);
+                            double maxPoints = await CalculateTier(completions, mapname);
 
                             // Then grab the top 10 and calculate distributed points
                             Dictionary<string, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, "", style);
@@ -2879,10 +2881,11 @@ namespace SharpTimer
                     string playerSteamID = record.SteamID!;
                     string playerName = record.PlayerName!;
                     int timerTicks = record.TimerTicks;
+                    string mapName = record.MapName!;
 
                     if (enableDb && globalRanksEnabled == true)
                     {
-                        _ = Task.Run(async () => await SavePlayerPoints(playerSteamID, playerName, -1, timerTicks, 0, false, 0, 0, await PlayerCompletions(playerSteamID, 0, 0)));
+                        _ = Task.Run(async () => await SavePlayerPoints(playerSteamID, playerName, -1, timerTicks, 0, false, 0, 0, 0, mapName));
                         await Task.Delay(100);
                     }
                 }

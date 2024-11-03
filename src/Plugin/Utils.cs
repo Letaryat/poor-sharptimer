@@ -695,17 +695,19 @@ namespace SharpTimer
             return (steamId64, playerName, timerTicks);
         }
 
-        private async Task<(int? Tier, string? Type)> FindMapInfoFromHTTP(string url)
+        private async Task<(int? Tier, string? Type)> FindMapInfoFromHTTP(string url, string mapname = "")
         {
             try
             {
+                if (mapname == "")
+                    mapname = currentMapName!;
                 SharpTimerDebug($"Trying to fetch remote_data for {currentMapName} from {url}");
 
                 var response = await httpClient.GetStringAsync(url);
 
                 using (var jsonDocument = JsonDocument.Parse(response))
                 {
-                    if (jsonDocument.RootElement.TryGetProperty(currentMapName!, out var mapInfo))
+                    if (jsonDocument.RootElement.TryGetProperty(mapname, out var mapInfo))
                     {
                         int? tier = null;
                         string? type = null;
@@ -756,6 +758,17 @@ namespace SharpTimer
 
         private string GetMapInfoSource()
         {
+            if (!disableRemoteData)
+            {
+                return currentMapName switch
+                {
+                    var name when name!.StartsWith("kz_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "remote_data", "kz_.json")!,
+                    var name when name!.StartsWith("bhop_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "remote_data", "bhop_.json")!,
+                    var name when name!.StartsWith("surf_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "remote_data", "surf_.json"),
+                    _ => null
+                } ?? Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "remote_data", "surf_.json");
+            }
+
             return currentMapName switch
             {
                 var name when name!.StartsWith("kz_") => remoteKZDataSource!,
