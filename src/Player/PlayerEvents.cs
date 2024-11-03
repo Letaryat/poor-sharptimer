@@ -165,11 +165,6 @@ namespace SharpTimer
 
                     specTargets.Remove(player.Pawn.Value!.EntityHandle.Index);
 
-                    playerTimers[player.Slot].TotalSync = 0;
-                    playerTimers[player.Slot].GoodSync = 0;
-                    playerTimers[player.Slot].Sync = 0;
-                    playerTimers[player.Slot].Rotation = new List<QAngle>();
-
                     if (enableReplays)
                     {
                         //schizo removing data from memory

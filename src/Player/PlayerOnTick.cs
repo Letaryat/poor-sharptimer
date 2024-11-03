@@ -111,7 +111,7 @@ namespace SharpTimer
 
                         if(playerTimer.currentStyle.Equals(10) && !player.PlayerPawn.Value.GroundEntity.IsValid) //check if ff
                         {
-                            AddTimer(2.0f, () => { IncreaseVelocity(player); });
+                            if (currentTick % 2 != 0) IncreaseVelocity(player);
                         }
 
                         if (isOnBhopBlock)

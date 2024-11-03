@@ -105,7 +105,14 @@ namespace SharpTimer
                         Server.NextFrame(() => 
                         {
                             InvalidateTimer(player);
-                            if(playerTimers[player.Slot].IsReplaying) StopReplay(player);
+                            try
+                            {
+                                if(playerTimers[player.Slot].IsReplaying) StopReplay(player);
+                            }
+                            catch (Exception ex)
+                            {
+                                // playerTimers for requested player does not exist
+                            }
                         });
                     }
                 }
