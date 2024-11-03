@@ -758,15 +758,15 @@ namespace SharpTimer
 
         private string GetMapInfoSource()
         {
-            if (!disableRemoteData)
+            if (disableRemoteData)
             {
                 return currentMapName switch
                 {
-                    var name when name!.StartsWith("kz_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "remote_data", "kz_.json")!,
-                    var name when name!.StartsWith("bhop_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "remote_data", "bhop_.json")!,
-                    var name when name!.StartsWith("surf_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "remote_data", "surf_.json"),
+                    var name when name!.StartsWith("kz_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "kz_.json")!,
+                    var name when name!.StartsWith("bhop_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "bhop_.json")!,
+                    var name when name!.StartsWith("surf_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json"),
                     _ => null
-                } ?? Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "remote_data", "surf_.json");
+                } ?? Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json");
             }
 
             return currentMapName switch
