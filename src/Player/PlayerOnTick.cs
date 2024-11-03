@@ -81,6 +81,8 @@ namespace SharpTimer
 
                         if(playerSpeed.IsZero())
                             playerTimer.AFKTicks++;
+                        else
+                            playerTimer.AFKTicks = 0;
 
                         if (!startzoneJumping && playerTimers[player.Slot].inStartzone)
                         {
