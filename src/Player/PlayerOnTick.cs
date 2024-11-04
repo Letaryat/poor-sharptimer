@@ -56,6 +56,12 @@ namespace SharpTimer
                         PlayerButtons? playerButtons = player.Buttons;
                         Vector playerSpeed = player.PlayerPawn!.Value!.AbsVelocity;
 
+                        if ((CsTeam)player.TeamNum == CsTeam.Spectator)
+                        {
+                            SpectatorOnTick(player);
+                            continue;
+                        }
+                        
                         if(connectedAFKPlayers.ContainsKey(player.Slot))
                         {
                             if(!playerSpeed.IsZero())
@@ -75,7 +81,7 @@ namespace SharpTimer
                             player.PrintToChat($"{Localizer["prefix"]} {Localizer["afk_message"]}");
                             playerTimer.AFKWarned = true;
                         }
-                        
+                            
                         if(playerTimer.AFKTicks >= afkSeconds*64)
                             connectedAFKPlayers[player.Slot] = connectedPlayers[player.Slot];
 
@@ -238,12 +244,6 @@ namespace SharpTimer
                         if (playerTimer.TicksSinceLastRankUpdate < 511) playerTimer.TicksSinceLastRankUpdate++;
 
                         if (currentTick % (64 / hudTickrate) != 0) continue;
-
-                        if ((CsTeam)player.TeamNum == CsTeam.Spectator)
-                        {
-                            SpectatorOnTick(player);
-                            continue;
-                        }
 
                         bool keyEnabled = !playerTimer.HideKeys && keysOverlayEnabled;
                         bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;

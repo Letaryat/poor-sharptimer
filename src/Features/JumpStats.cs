@@ -414,10 +414,17 @@ namespace SharpTimer
 
         public void InvalidateJS(int playerSlot)
         {
-            if (playerJumpStats.TryGetValue(playerSlot, out PlayerJumpStats? value))
+            try
             {
-                value.LastFramesOnGround = 0;
-                value.Jumped = false;
+                if (playerJumpStats.TryGetValue(playerSlot, out PlayerJumpStats? value))
+                {
+                    value.LastFramesOnGround = 0;
+                    value.Jumped = false;
+                }
+            }
+            catch(Exception ex)
+            {
+                // Suppress trigger_teleport null reference exceptions (the player has likely disconnected)
             }
         }
 
