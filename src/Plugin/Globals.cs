@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1g";
+        public override string ModuleVersion => $"0.3.1h";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -121,6 +121,7 @@ namespace SharpTimer
         public bool foundReplayBot = false;
         public string replayBotName = "";
         public int maxReplayFrames = 19200;
+        public string apiKey = "";
 
         public bool globalRanksEnabled = false;
         public float? globalPointsMultiplier = 1.0f;

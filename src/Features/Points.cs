@@ -1,10 +1,3 @@
-using System.Diagnostics.Eventing.Reader;
-using System.Net;
-using System.Text;
-using System.Text.Json;
-using System.Xml;
-using CounterStrikeSharp.API.Core;
-
 namespace SharpTimer
 {
     public partial class SharpTimer

@@ -33,6 +33,12 @@ namespace SharpTimer
 
                     var playerSlot = player.Slot;
 
+                    if ((CsTeam)player.TeamNum == CsTeam.Spectator)
+                    {
+                        SpectatorOnTick(player);
+                        continue;
+                    }
+
                     if (playerTimers[playerSlot].IsAddingStartZone || playerTimers[playerSlot].IsAddingEndZone || playerTimers[playerSlot].IsAddingBonusStartZone || playerTimers[playerSlot].IsAddingBonusEndZone)
                     {
                         OnTickZoneTool(player);
@@ -55,12 +61,6 @@ namespace SharpTimer
                         int timerTicks = playerTimer.TimerTicks;
                         PlayerButtons? playerButtons = player.Buttons;
                         Vector playerSpeed = player.PlayerPawn!.Value!.AbsVelocity;
-
-                        if ((CsTeam)player.TeamNum == CsTeam.Spectator)
-                        {
-                            SpectatorOnTick(player);
-                            continue;
-                        }
                         
                         if(connectedAFKPlayers.ContainsKey(player.Slot))
                         {

@@ -683,6 +683,18 @@ namespace SharpTimer
                             playerPoints = 320000;
                         }
 
+                        var payload = new
+                        {
+                            MapName = currentMapNamee,
+                            TimerTicks = timerTicks,
+                            SteamID = steamId,
+                            PlayerName = playerName,
+                            FormattedTime = FormatTime(timerTicks),
+                            UnixStamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                            TimesFinished = dBtimesFinished,
+                            Style = style
+                        };
+
                         await row.CloseAsync();
                         // Update or insert the record
                         string? upsertQuery;
@@ -765,7 +777,8 @@ namespace SharpTimer
                             if (style == 0 && (stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && enableDb && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                             var prevSRID = await GetMapRecordSteamIDFromDatabase(bonusX, 0, style);
                             var prevSR = await GetPreviousPlayerRecordFromDatabase(prevSRID.Item1, currentMapNamee, prevSRID.Item2, bonusX, style);
-                            await upsertCommand!.ExecuteNonQueryAsync();
+                            await upsertCommand!.ExecuteNonQueryAsync();           
+                            _ = Task.Run(async () => await SubmitRecordAsync(payload));
                             Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
                             if (enableDb && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
                             if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, dBtimesFinished, style, prevSR)));

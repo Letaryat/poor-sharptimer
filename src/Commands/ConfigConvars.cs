@@ -828,6 +828,21 @@ namespace SharpTimer
             disableRemoteData = bool.TryParse(args, out bool value) ? value : args != "0" && disableRemoteData;
         }
 
+        [ConsoleCommand("sharptimer_global_api_key", "Global api key")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerAPIKeyConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+
+            if (string.IsNullOrEmpty(args))
+            {
+                apiKey = $"";
+                return;
+            }
+
+            apiKey = $"{args}";
+        }
+
         [ConsoleCommand("sharptimer_enable_checkpoint_verification", "Enable or disable checkpoint verification system. Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerCheckpointVerificationConvar(CCSPlayerController? player, CommandInfo command)

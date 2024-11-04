@@ -737,10 +737,56 @@ namespace SharpTimer
             }
         }
 
+        private async Task<(int? Tier, string? Type)> FindMapInfoFromLocal(string path, string mapname = "")
+        {
+            try
+            {
+                if (mapname == "")
+                    mapname = currentMapName!;
+                SharpTimerDebug($"Trying to fetch local_data for {currentMapName} from {path}");
+
+                using (var jsonDocument = await LoadJson(path))
+                {
+                    
+                    if (jsonDocument!.RootElement.TryGetProperty(mapname, out var mapInfo))
+                    {
+                        int? tier = null;
+                        string? type = null;
+
+                        if (mapInfo.TryGetProperty("Tier", out var tierElement))
+                        {
+                            tier = tierElement.GetInt32();
+                        }
+
+                        if (mapInfo.TryGetProperty("Type", out var typeElement))
+                        {
+                            type = typeElement.GetString();
+                        }
+
+                        SharpTimerDebug($"Fetched local_data success! {tier} {type}");
+
+                        return (tier, type);
+                    } 
+                }
+
+                return (null, null);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error Getting local_data for {currentMapName}: {ex.Message}");
+                return (null, null);
+            }
+        }
+
         private async Task GetMapInfo()
         {
             string mapInfoSource = GetMapInfoSource();
-            var (mapTier, mapType) = await FindMapInfoFromHTTP(mapInfoSource);
+            int? mapTier;
+            string? mapType;
+            if (disableRemoteData)
+                (mapTier, mapType) = await FindMapInfoFromLocal(mapInfoSource);
+            else
+                (mapTier, mapType) = await FindMapInfoFromHTTP(mapInfoSource);
             currentMapTier = mapTier;
             currentMapType = mapType;
             string tierString = currentMapTier != null ? $" | Tier: {currentMapTier}" : "";
@@ -768,7 +814,6 @@ namespace SharpTimer
                     _ => null
                 } ?? Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json");
             }
-
             return currentMapName switch
             {
                 var name when name!.StartsWith("kz_") => remoteKZDataSource!,
