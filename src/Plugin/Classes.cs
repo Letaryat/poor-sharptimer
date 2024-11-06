@@ -292,6 +292,7 @@ namespace SharpTimer
         public int style { get; set; }
         public int points { get; set; }
         public int max_velocity { get; set; }
+        public float air_max_wishspeed { get; set; }
     }
 
     // PlayerPoints for MySql

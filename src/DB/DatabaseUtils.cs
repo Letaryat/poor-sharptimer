@@ -772,7 +772,7 @@ namespace SharpTimer
 
                             Server.NextFrame(async () =>
                             {
-                                var (globalCheck, maxVel) = CheckCvarsAndMaxVelo();
+                                var (globalCheck, maxVel, maxWish) = CheckCvarsAndMaxVelo();
                                 if (!globalCheck)
                                     return;
                                 
@@ -789,7 +789,8 @@ namespace SharpTimer
                                         times_finished = dBtimesFinished,
                                         style = style,
                                         points = await CalculatePlayerPoints(steamId, playerName, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished, currentMapNamee, true),
-                                        max_velocity = (int)maxVel
+                                        max_velocity = (int)maxVel,
+                                        air_max_wishspeed = maxWish
                                     }
                                 };
 
@@ -848,7 +849,7 @@ namespace SharpTimer
 
                             Server.NextFrame(async () =>
                             {
-                                var (globalCheck, maxVel) = CheckCvarsAndMaxVelo();
+                                var (globalCheck, maxVel, maxWish) = CheckCvarsAndMaxVelo();
                                 if (!globalCheck)
                                     return;
                                 
@@ -865,7 +866,8 @@ namespace SharpTimer
                                         times_finished = dBtimesFinished,
                                         style = style,
                                         points = await CalculatePlayerPoints(steamId, playerName, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished, currentMapNamee, true),
-                                        max_velocity = (int)maxVel
+                                        max_velocity = (int)maxVel,
+                                        air_max_wishspeed = maxWish
                                     }
                                 };
 

@@ -226,11 +226,10 @@ namespace SharpTimer
             return 0;
         }
 
-        public (bool, float) CheckCvarsAndMaxVelo()
+        public (bool, float, float) CheckCvarsAndMaxVelo()
         {
             if (IsApproximatelyEqual(ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>(), 10)
              && IsApproximatelyEqual(ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>(), 150)
-             && IsApproximatelyEqual(ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>(), 30)
              && IsApproximatelyEqual(ConVar.Find("sv_friction")!.GetPrimitiveValue<float>(), (float)5.2)
              && IsApproximatelyEqual(ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>(), 800)
              && IsApproximatelyEqual(ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>(), 1)
@@ -243,12 +242,11 @@ namespace SharpTimer
              && ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>() == false)
              {
                 // THICK
-                return (true, ConVar.Find("sv_maxvelocity")!.GetPrimitiveValue<float>());
+                return (true, ConVar.Find("sv_maxvelocity")!.GetPrimitiveValue<float>(), ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>());
              }
             SharpTimerDebug($"GLOBAL CHECK FAILED");
             SharpTimerDebug($"sv_accelerate: {ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>()} [should be 10]");
             SharpTimerDebug($"sv_airaccelerate: {ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>()} [should be 150]");
-            SharpTimerDebug($"sv_air_max_wishspeed: {ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>()} [should be 30]");
             SharpTimerDebug($"sv_friction: {ConVar.Find("sv_friction")!.GetPrimitiveValue<float>()} [should be 5.2]");
             SharpTimerDebug($"sv_gravity: {ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>()} [should be 800]");
             SharpTimerDebug($"sv_ladder_scale_speed: {ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>()} [should be 1]");
@@ -260,7 +258,7 @@ namespace SharpTimer
             SharpTimerDebug($"sv_wateraccelerate: {ConVar.Find("sv_wateraccelerate")!.GetPrimitiveValue<float>()} [should be 10]");
             SharpTimerDebug($"sv_cheats: {ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>()} [should be false]");
 
-            return (false, ConVar.Find("sv_maxvelocity")!.GetPrimitiveValue<float>());
+            return (false, ConVar.Find("sv_maxvelocity")!.GetPrimitiveValue<float>(), ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>());
         }
     }
 }
