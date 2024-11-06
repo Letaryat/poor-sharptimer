@@ -790,7 +790,7 @@ namespace SharpTimer
                                         style = style,
                                         points = await CalculatePlayerPoints(steamId, playerName, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished, currentMapNamee, true),
                                         max_velocity = (int)maxVel,
-                                        air_max_wishspeed = maxWish
+                                        air_max_wishspeed = (float)maxWish
                                     }
                                 };
 
@@ -867,7 +867,7 @@ namespace SharpTimer
                                         style = style,
                                         points = await CalculatePlayerPoints(steamId, playerName, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished, currentMapNamee, true),
                                         max_velocity = (int)maxVel,
-                                        air_max_wishspeed = maxWish
+                                        air_max_wishspeed = (float)maxWish
                                     }
                                 };
 
@@ -1839,6 +1839,10 @@ namespace SharpTimer
                 // Zero out new points if style points are disabled and player is using styles
                 if (!enableStylePoints && style != 0)
                     newPoints = 0;
+
+                // 0 completions is an easy identifier for importpoints
+                if (completions == 0)
+                    return (int)newPoints;
 
                 // Zero out new points if player has exceeded max completions and has not set a pb
                 if (globalPointsMaxCompletions > 0 && await PlayerCompletions(steamId, bonusX, style) > globalPointsMaxCompletions && !beatPB)

@@ -134,7 +134,7 @@ namespace SharpTimer
 
             var playerSlot = player!.Slot;
 
-            var (globalCheck, maxVel) = CheckCvarsAndMaxVelo();
+            var (globalCheck, maxVel, maxWish) = CheckCvarsAndMaxVelo();
             if(!globalCheck)
                 Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.LightRed}Failed"));
             else

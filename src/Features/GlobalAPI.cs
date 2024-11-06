@@ -19,6 +19,7 @@ namespace SharpTimer
         {
             if(apiKey == "")
                 return;
+
             try
             {
                 string jsonPayload = JsonSerializer.Serialize(payload);
