@@ -126,6 +126,26 @@ namespace SharpTimer
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, arg, "69", "unknown", 0, playerTimers[playerSlot].currentStyle));
         }
 
+        [ConsoleCommand("css_gc", "Globalcheck")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+        public void GlobalCheckCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            var playerSlot = player!.Slot;
+
+            var (globalCheck, maxVel) = CheckCvarsAndMaxVelo();
+            if(!globalCheck)
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.LightRed}Failed"));
+            else
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.Green}Passed"));
+
+            if(apiKey == "")
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.LightRed}Missing API Key!"));
+            else
+                return;
+        }
+
         [ConsoleCommand("css_replayb", "Replay a top 10 server bonus record")]
         [ConsoleCommand("css_replaybonus", "Replay a top 10 server bonus record")]
         [CommandHelper(minArgs: 1, usage: "[1-10] [bonus stage]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
@@ -538,6 +558,33 @@ namespace SharpTimer
             _ = Task.Run(async () => await PrintTop10PlayerPoints(player));
         }
 
+
+        [ConsoleCommand("css_wr", "Prints world record for current map")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void PrintWR(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedClient(player) || globalRanksEnabled == false)
+                return;
+
+            var playerName = player!.PlayerName;
+
+            SharpTimerDebug($"{playerName} calling css_points...");
+
+            if (CommandCooldown(player))
+                return;
+
+            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+
+            var payload = new
+            {
+                map_name = currentMapName,
+                style = 0,
+                limit = 1
+            };
+
+            _ = Task.Run(async () => await PrintWorldRecordAsync(player, payload));
+            
+        }
         [ConsoleCommand("css_topbonus", "Prints top players of this map bonus")]
         [ConsoleCommand("css_btop", "alias for !topbonus")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]

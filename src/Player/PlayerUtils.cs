@@ -319,19 +319,49 @@ namespace SharpTimer
                 return UnrankedTitle;
             }
         }
-        public async Task<double> GetPlayerMapPercentile(string steamId, string playerName, int bonusX = 0, int style = 0)
+        public async Task<double> GetPlayerMapPercentile(string steamId, string playerName, string mapname = "", int bonusX = 0, int style = 0, bool global = false, int timerTicks = 0)
         {
             try
             {
-                string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
+                string currentMapNamee;
+                if (mapname == "")
+                    currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
+                else
+                    currentMapNamee = bonusX == 0 ? mapname! : $"{mapname}_bonus{bonusX}";
 
-                int savedPlayerTime = enableDb ? await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, bonusX, style) : await GetPreviousPlayerRecord(steamId, bonusX);
+                int savedPlayerTime;
 
-                Dictionary<string, PlayerRecord> sortedRecords = enableDb ? await GetSortedRecordsFromDatabase(0, bonusX, "", style) : await GetSortedRecords();
+                if (!global)
+                    savedPlayerTime = await GetPreviousPlayerRecordFromDatabase(steamId, currentMapNamee!, playerName, bonusX, style);
+                else
+                    savedPlayerTime = await GetPreviousPlayerRecordFromGlobal(steamId, currentMapNamee!, playerName, bonusX, style);
 
-                int placement = sortedRecords.Count(kv => kv.Value.TimerTicks < savedPlayerTime) + 1;
+                if (savedPlayerTime == 0)
+                    savedPlayerTime = timerTicks;
+
+                Dictionary<string, PlayerRecord> sortedRecords;
+
+                if (!global)
+                    sortedRecords = await GetSortedRecordsFromDatabase(0, bonusX, currentMapNamee, style);
+                else
+                    sortedRecords = await GetSortedRecordsFromGlobal(0, bonusX, currentMapNamee, style);
+
+                int placement = 1;
                 int totalPlayers = sortedRecords.Count;
-                double percentage = (double)placement / totalPlayers * 100;
+
+                if (totalPlayers > 0)
+                {
+                    placement = sortedRecords.Count(kv => kv.Value.TimerTicks < savedPlayerTime) + 1;
+
+                    if (placement > totalPlayers)
+                    {
+                        placement = totalPlayers;
+                    }
+                }
+
+                double percentage = totalPlayers == 0 ? 100 : (double)placement / totalPlayers * 100;
+
+                SharpTimerDebug($"Player: {playerName}, Placement: {placement}, Total Players: {totalPlayers}, Percentage: {percentage}th");
 
                 return percentage;
             }

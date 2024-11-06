@@ -437,11 +437,10 @@ namespace SharpTimer
                 if (validCp)
                 {
                     cpTriggers[trigger.Handle] = X;
+                    cpTriggerCount++;
                     SharpTimerDebug($"Added Checkpoint {X} Trigger {trigger.Handle}");
                 }
             }
-
-            cpTriggerCount = cpTriggers.Any() ? cpTriggers.OrderByDescending(x => x.Value).First().Value : 0;
 
             useCheckpointTriggers = cpTriggerCount != 0;
 

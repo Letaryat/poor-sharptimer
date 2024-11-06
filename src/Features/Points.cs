@@ -43,7 +43,14 @@ namespace SharpTimer
         {
             // Define max WR points for each tier (fallback to t1)
             int maxWR;
-            var (tier, _) = await FindMapInfoFromHTTP(GetMapInfoSource(), mapname);
+            int? tier;
+            string _;
+
+            if(disableRemoteData)
+                (tier, _) = await FindMapInfoFromLocal(GetMapInfoSource(), mapname);
+            else
+                (tier, _) = await FindMapInfoFromHTTP(GetMapInfoSource(), mapname);
+                
             if (tier is not null)
             {
                 maxWR = maxRecordPointsBase * (int)tier;             // Get tier from remote_data by default

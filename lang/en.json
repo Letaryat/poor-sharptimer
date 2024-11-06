@@ -40,6 +40,8 @@
   "current_bonus_pb": "Your current PB on {lime}Bonus {0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
   "current_sr": "Current Server Record on {lime}{0}{white}:",
   "current_sr_player": "{lime}{0} {white}- {lime}{1}",
+  "current_wr": "Current World Record on {lime}{0}{white}:",
+  "current_wr_player": "{lime}{0} {white}- {lime}{1}",
   "reached_max_free": "You reached your maximum free points rewards of {lime}{0}{default}!",
   "gained_points": "{lime}{0} {default}gained {green}+{1} {default}Points {grey}({2})",
   "top_10_points": "Top 10 Players with the most points:",

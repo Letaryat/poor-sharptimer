@@ -280,6 +280,20 @@ namespace SharpTimer
         public int TimerTicks { get; set; }
     }
 
+    public class Record
+    {
+        public string? map_name { get; set; }
+        public long steamid { get; set; }
+        public string? player_name { get; set; }
+        public int timer_ticks { get; set; }
+        public string? formatted_time { get; set; }
+        public long unix_stamp { get; set; }
+        public int times_finished { get; set; }
+        public int style { get; set; }
+        public int points { get; set; }
+        public int max_velocity { get; set; }
+    }
+
     // PlayerPoints for MySql
     public class PlayerPoints
     {

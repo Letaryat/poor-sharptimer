@@ -787,6 +787,7 @@ namespace SharpTimer
                 (mapTier, mapType) = await FindMapInfoFromLocal(mapInfoSource);
             else
                 (mapTier, mapType) = await FindMapInfoFromHTTP(mapInfoSource);
+                
             currentMapTier = mapTier;
             currentMapType = mapType;
             string tierString = currentMapTier != null ? $" | Tier: {currentMapTier}" : "";
@@ -1553,6 +1554,11 @@ namespace SharpTimer
                 SharpTimerError($"Error GetClosestMapCFGMatch: {ex.StackTrace}");
                 return "null";
             }
+        }
+
+        public bool IsApproximatelyEqual(float actual, float expected, float tolerance = 0.01f)
+        {
+            return Math.Abs(actual - expected) < tolerance;
         }
     }
 }

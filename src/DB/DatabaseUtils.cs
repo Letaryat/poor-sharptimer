@@ -683,18 +683,6 @@ namespace SharpTimer
                             playerPoints = 320000;
                         }
 
-                        var payload = new
-                        {
-                            MapName = currentMapNamee,
-                            TimerTicks = timerTicks,
-                            SteamID = steamId,
-                            PlayerName = playerName,
-                            FormattedTime = FormatTime(timerTicks),
-                            UnixStamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                            TimesFinished = dBtimesFinished,
-                            Style = style
-                        };
-
                         await row.CloseAsync();
                         // Update or insert the record
                         string? upsertQuery;
@@ -773,15 +761,40 @@ namespace SharpTimer
                             upsertCommand!.AddParameterWithValue("@UnixStamp", dBunixStamp);
                             upsertCommand!.AddParameterWithValue("@SteamID", steamId);
                             upsertCommand!.AddParameterWithValue("@Style", style);
-                            if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, playerPoints, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished);
                             if (style == 0 && (stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && enableDb && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                             var prevSRID = await GetMapRecordSteamIDFromDatabase(bonusX, 0, style);
                             var prevSR = await GetPreviousPlayerRecordFromDatabase(prevSRID.Item1, currentMapNamee, prevSRID.Item2, bonusX, style);
-                            await upsertCommand!.ExecuteNonQueryAsync();           
-                            _ = Task.Run(async () => await SubmitRecordAsync(payload));
+                            await upsertCommand!.ExecuteNonQueryAsync();
                             Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
                             if (enableDb && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
+                            if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished);
                             if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, dBtimesFinished, style, prevSR)));
+
+                            Server.NextFrame(async () =>
+                            {
+                                var (globalCheck, maxVel) = CheckCvarsAndMaxVelo();
+                                if (!globalCheck)
+                                    return;
+                                
+                                var payload = new List<Record>
+                                {
+                                    new Record
+                                    {
+                                        map_name = currentMapNamee,
+                                        timer_ticks = timerTicks,
+                                        steamid = Convert.ToInt64(steamId),
+                                        player_name = playerName,
+                                        formatted_time = FormatTime(timerTicks),
+                                        unix_stamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                                        times_finished = dBtimesFinished,
+                                        style = style,
+                                        points = await CalculatePlayerPoints(steamId, playerName, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished, currentMapNamee, true),
+                                        max_velocity = (int)maxVel
+                                    }
+                                };
+
+                                _ = Task.Run(async () => await SubmitRecordAsync(payload));
+                            });
                         }
 
                     }
@@ -832,6 +845,32 @@ namespace SharpTimer
                             Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
                             if (IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
                             if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, 1, style, prevSR)));
+
+                            Server.NextFrame(async () =>
+                            {
+                                var (globalCheck, maxVel) = CheckCvarsAndMaxVelo();
+                                if (!globalCheck)
+                                    return;
+                                
+                                var payload = new List<Record>
+                                {
+                                    new Record
+                                    {
+                                        map_name = currentMapNamee,
+                                        timer_ticks = timerTicks,
+                                        steamid = Convert.ToInt64(steamId),
+                                        player_name = playerName,
+                                        formatted_time = FormatTime(timerTicks),
+                                        unix_stamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                                        times_finished = dBtimesFinished,
+                                        style = style,
+                                        points = await CalculatePlayerPoints(steamId, playerName, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished, currentMapNamee, true),
+                                        max_velocity = (int)maxVel
+                                    }
+                                };
+
+                                _ = Task.Run(async () => await SubmitRecordAsync(payload));
+                            });
                         }
 
                     }
@@ -1587,53 +1626,7 @@ namespace SharpTimer
                                     break;
                             }
 
-                            double newPoints;
-
-                            // First calculate basic map completion points based on tier
-                            newPoints = CalculateCompletion();
-
-                            // Then calculate max points based on times finished
-                            double maxPoints = await CalculateTier(completions, mapname);
-
-                            // Then grab the top 10 and calculate distributed points
-                            Dictionary<string, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, "", style);
-                            int rank = 1;
-                            bool isTop10 = false;
-                            foreach (var kvp in sortedRecords.Take(10))
-                            {
-                                if (steamId == kvp.Key)
-                                {
-                                    newPoints += CalculateTop10(maxPoints, rank);
-                                    isTop10 = true;
-                                }
-                                rank++;
-                            }
-
-                            // If not in top 10, calculate groups based on percentile
-                            if(!isTop10)
-                                newPoints += CalculateGroups(maxPoints, await GetPlayerMapPercentile(steamId, playerName, bonusX, style));
-
-                            // Apply style multiplier if enabled
-                            if(enableStylePoints)
-                                newPoints *= GetStyleMultiplier(style);
-                            
-                            // Apply bonus multiplier if bonus completion
-                            if(bonusX != 0)
-                                newPoints *= globalPointsBonusMultiplier;
-
-                            // Hastily round the new points to prevent 123.4567890123456789 points
-                            newPoints = Math.Round(newPoints);
-
-                            // Zero out new points if style points are disabled and player is using styles
-                            if(!enableStylePoints && style != 0)
-                                newPoints = 0;  
-                            
-                            // Zero out new points if player has exceeded max completions and has not set a pb
-                            if(globalPointsMaxCompletions > 0 && await PlayerCompletions(steamId, bonusX, style) > globalPointsMaxCompletions && !beatPB)
-                                newPoints = 0;
-
-                            // Add final calculation to players points
-                            newPoints += playerPoints;  
+                            int newPoints = await CalculatePlayerPoints(steamId, playerName, timerTicks, oldTicks, beatPB, bonusX, style, completions, mapname, false) + playerPoints;
 
                             await row.CloseAsync();
                             // Update or insert the record
@@ -1713,50 +1706,7 @@ namespace SharpTimer
                         {
                             Server.NextFrame(() => SharpTimerDebug($"No player stats yet"));
 
-
-                            double newPoints;
-
-                            // First calculate basic map completion points based on tier
-                            newPoints = CalculateCompletion();
-
-                            // Then calculate max points based on times finished
-                            double maxPoints = await CalculateTier(completions, mapname);
-
-                            // Then grab the top 10 and calculate distributed points
-                            Dictionary<string, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, "", style);
-                            int rank = 1;
-                            bool isTop10 = false;
-                            foreach (var kvp in sortedRecords.Take(10))
-                            {
-                                if (steamId == kvp.Key)
-                                {
-                                    newPoints += CalculateTop10(maxPoints, rank);
-                                    isTop10 = true;
-                                }
-                                rank++;
-                            }
-
-                            // If not in top 10, calculate groups based on percentile
-                            if(!isTop10)
-                                newPoints += CalculateGroups(maxPoints, await GetPlayerMapPercentile(steamId, playerName, bonusX, style));
-
-                            // Apply style multiplier if enabled
-                            if(enableStylePoints)
-                                newPoints *= GetStyleMultiplier(style);
-                            
-                            // Apply bonus multiplier if bonus completion
-                            if(bonusX != 0)
-                                newPoints *= globalPointsBonusMultiplier;
-
-                            // Hastily round the new points to prevent 123.4567890123456789 points
-                            newPoints = Math.Round(newPoints);
-
-                            // Zero out new points if style points are disabled and player is using styles
-                            if(!enableStylePoints && style != 0)
-                                newPoints = 0;  
-
-                            // Add final calculation to players points
-                            newPoints += playerPoints;  
+                            int newPoints = await CalculatePlayerPoints(steamId, playerName, timerTicks, oldTicks, beatPB, bonusX, style, completions, mapname, false) + playerPoints;
 
                             await row.CloseAsync();
 
@@ -1822,6 +1772,85 @@ namespace SharpTimer
             }
         }
 
+        public async Task<int> CalculatePlayerPoints(string steamId, string playerName, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0, int completions = 0, string mapname = "", bool forGlobal = false)
+        {
+            SharpTimerDebug($"Trying to calculate player points for {playerName}");
+            try
+            {
+                if (mapname == "") mapname = currentMapName!;
+
+                double newPoints;
+
+                // First calculate basic map completion points based on tier
+                newPoints = CalculateCompletion();
+
+                // Then calculate max points based on times finished
+                double maxPoints = await CalculateTier(completions, mapname);
+
+                // Then grab the top 10 and calculate distributed points
+                Dictionary<string, PlayerRecord> sortedRecords = new Dictionary<string, PlayerRecord>();
+                if (forGlobal)
+                    sortedRecords = await GetSortedRecordsFromGlobal(10, bonusX, mapname, style);
+                else
+                    sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, mapname, style);
+
+                int rank = 1;
+                bool isTop10 = false;
+                if (!sortedRecords.Any())
+                {
+                    newPoints += CalculateTop10(maxPoints, rank);
+                    SharpTimerDebug($"First map entry, player {playerName} is rank #1");
+                    isTop10 = true;
+                }
+                else
+                {
+                    foreach (var kvp in sortedRecords.Take(10))
+                    {
+                        if (kvp.Value.TimerTicks > timerTicks)
+                        {
+                            newPoints += CalculateTop10(maxPoints, rank);
+                            isTop10 = true;
+                            SharpTimerDebug($"Player {playerName} is rank #{rank}");
+                            break;
+                        }
+                        rank++;
+                    }
+                }
+
+                // If not in top 10, calculate groups based on percentile
+                if (!isTop10)
+                {
+                    newPoints += CalculateGroups(maxPoints, await GetPlayerMapPercentile(steamId, playerName, mapname, bonusX, style, forGlobal, timerTicks));
+                }
+
+                // Apply style multiplier if enabled
+                if (enableStylePoints)
+                    newPoints *= GetStyleMultiplier(style);
+
+                // Apply bonus multiplier if bonus completion
+                if (bonusX != 0)
+                    newPoints *= globalPointsBonusMultiplier;
+
+                // Hastily round the new points to prevent 123.4567890123456789 points
+                newPoints = Math.Round(newPoints);
+
+                // Zero out new points if style points are disabled and player is using styles
+                if (!enableStylePoints && style != 0)
+                    newPoints = 0;
+
+                // Zero out new points if player has exceeded max completions and has not set a pb
+                if (globalPointsMaxCompletions > 0 && await PlayerCompletions(steamId, bonusX, style) > globalPointsMaxCompletions && !beatPB)
+                    newPoints = 0;
+
+                return (int)newPoints;
+            }
+            catch (Exception ex)
+            {
+                Server.NextFrame(() => SharpTimerError($"Error calculating player points for {playerName}: {ex}"));
+            }
+            return 0;
+        }
+
         public async Task<int> PlayerCompletions(string steamId, int bonusX = 0, int style = 0)
         {
             try
@@ -1867,7 +1896,7 @@ namespace SharpTimer
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Server.NextFrame(() => SharpTimerError($"Error getting player completions from database for id:{steamId}: {ex}"));
             }
@@ -2251,46 +2280,46 @@ namespace SharpTimer
                 {
                     string? selectQuery;
                     DbCommand? selectCommand;
-                        switch (dbType)
-                        {
-                            case DatabaseType.MySQL:
-                                // Get the top N records based on TimerTicks
-                                selectQuery = "SELECT Velocity, TimerTicks " +
-                                                "FROM PlayerStageTimes " +
-                                                "WHERE MapName = @MapName " +
-                                                "AND Stage = @Stage " +
-                                                "AND SteamID = @SteamID " +
-                                                "ORDER BY TimerTicks ASC " +
-                                                $"LIMIT 1;";
-                                selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
-                                break;
-                            case DatabaseType.PostgreSQL:
-                                // Get the top N records based on TimerTicks
-                                selectQuery = @"SELECT ""Velocity"", ""TimerTicks"" " +
-                                                @"FROM ""PlayerStageTimes"" " +
-                                                @"WHERE ""MapName"" = @MapName " +
-                                                @"AND ""Stage"" = @Stage " +
-                                                @"AND ""SteamID"" = @SteamID " +
-                                                @"ORDER BY ""TimerTicks"" ASC " +
-                                                $"LIMIT 1;";
-                                selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
-                                break;
-                            case DatabaseType.SQLite:
-                                // Get the top N records based on TimerTicks
-                                selectQuery = "SELECT Velocity, TimerTicks " +
-                                                "FROM PlayerStageTimes " +
-                                                "WHERE MapName = @MapName " +
-                                                "AND Stage = @Stage " +
-                                                "AND SteamID = @SteamID " +
-                                                "ORDER BY TimerTicks ASC " +
-                                                $"LIMIT 1;";
-                                selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
-                                break;
-                            default:
-                                selectQuery = null;
-                                selectCommand = null;
-                                break;
-                        }
+                    switch (dbType)
+                    {
+                        case DatabaseType.MySQL:
+                            // Get the top N records based on TimerTicks
+                            selectQuery = "SELECT Velocity, TimerTicks " +
+                                            "FROM PlayerStageTimes " +
+                                            "WHERE MapName = @MapName " +
+                                            "AND Stage = @Stage " +
+                                            "AND SteamID = @SteamID " +
+                                            "ORDER BY TimerTicks ASC " +
+                                            $"LIMIT 1;";
+                            selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
+                            break;
+                        case DatabaseType.PostgreSQL:
+                            // Get the top N records based on TimerTicks
+                            selectQuery = @"SELECT ""Velocity"", ""TimerTicks"" " +
+                                            @"FROM ""PlayerStageTimes"" " +
+                                            @"WHERE ""MapName"" = @MapName " +
+                                            @"AND ""Stage"" = @Stage " +
+                                            @"AND ""SteamID"" = @SteamID " +
+                                            @"ORDER BY ""TimerTicks"" ASC " +
+                                            $"LIMIT 1;";
+                            selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                            break;
+                        case DatabaseType.SQLite:
+                            // Get the top N records based on TimerTicks
+                            selectQuery = "SELECT Velocity, TimerTicks " +
+                                            "FROM PlayerStageTimes " +
+                                            "WHERE MapName = @MapName " +
+                                            "AND Stage = @Stage " +
+                                            "AND SteamID = @SteamID " +
+                                            "ORDER BY TimerTicks ASC " +
+                                            $"LIMIT 1;";
+                            selectCommand = new SQLiteCommand(selectQuery, (SQLiteConnection)connection);
+                            break;
+                        default:
+                            selectQuery = null;
+                            selectCommand = null;
+                            break;
+                    }
 
                     using (selectCommand)
                     {
@@ -2686,14 +2715,14 @@ namespace SharpTimer
                                     PlayerName = playerName,
                                     SteamID = steamId,
                                     TimerTicks = timerTicks,
-                                    MapName = mapname 
+                                    MapName = mapname
                                 });
                             }
 
-                             var sortedList = sortedRecords
-                                                .SelectMany(recordEntry => recordEntry.Value)
-                                                .OrderBy(record => record.TimerTicks)
-                                                .ToList(); 
+                            var sortedList = sortedRecords
+                                               .SelectMany(recordEntry => recordEntry.Value)
+                                               .OrderBy(record => record.TimerTicks)
+                                               .ToList();
 
                             SharpTimerDebug($"Got GetSortedRecords {(bonusX != 0 ? $"bonus {bonusX}" : "")} from database");
 
