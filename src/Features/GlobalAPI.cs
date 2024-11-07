@@ -45,6 +45,81 @@ namespace SharpTimer
             }
         }
 
+        public async Task<int> GetRecordIDAsync(object payload)
+        {
+            if(apiKey == "")
+                return 0;
+
+            try
+            {
+                string jsonPayload = JsonSerializer.Serialize(payload);
+                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add("x-secret-key", apiKey);
+
+                HttpResponseMessage response = await client.PostAsync($"{apiUrl}/GetID", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    using (var jsonDoc = JsonDocument.Parse(json))
+                    {
+                        if (jsonDoc.RootElement.TryGetProperty("data", out var data) && data.ValueKind != JsonValueKind.Null)
+                        {
+                            var recordId = data.GetInt32();
+                            return recordId;
+                        }
+                        else
+                        {
+                            SharpTimerError($"No record ID found");
+                            return 0;
+                        }
+                    }
+                }
+                else
+                {
+                    SharpTimerError($"Failed to retrieve record_id. Status code: {response.StatusCode}; Message: {response.Content}");
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in GetRecordIDAsync: {ex.Message}");
+                return 0;
+            }
+        }
+
+        public async Task SubmitReplayAsync(object payload)
+        {
+            if(apiKey == "")
+                return;
+
+            try
+            {
+                string jsonPayload = JsonSerializer.Serialize(payload);
+                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add("x-secret-key", apiKey);
+
+                HttpResponseMessage response = await client.PostAsync($"{apiUrl}/Replays/Upload", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    SharpTimerConPrint("Replay uploaded successfully.");
+                }
+                else
+                {
+                    SharpTimerError($"Failed to upload replay. Status code: {response.StatusCode}; Message: {response.Content}");
+                }
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in SubmitReplayAsync: {ex.Message}");
+            }
+        }
+
         public async Task PrintWorldRecordAsync(CCSPlayerController player, object payload)
         {
             try
@@ -56,6 +131,7 @@ namespace SharpTimer
                 client.DefaultRequestHeaders.Add("x-secret-key", apiKey);
 
                 HttpResponseMessage response = await client.PostAsync($"{apiUrl}/Sort", content);
+                
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -66,17 +142,28 @@ namespace SharpTimer
 
                         if (root.TryGetProperty("data", out var dataArray) && dataArray.GetArrayLength() > 0)
                         {
-                            var playerRecord = dataArray[0];
+                            var records = new Dictionary<string, PlayerRecord>();
+                            foreach (var playerRecord in dataArray.EnumerateArray())
+                            {
+                                string playerName = playerRecord.GetProperty("player_name").GetString()!;
+                                int timerTicks = playerRecord.GetProperty("timer_ticks").GetInt32();
+                                long steamId = playerRecord.GetProperty("steamid").GetInt64();
 
-                            string playerName = playerRecord.GetProperty("player_name").GetString()!;
-                            int timerTicks = playerRecord.GetProperty("timer_ticks").GetInt32();
-                            long steamId = playerRecord.GetProperty("steamid").GetInt64();
-
-                            SharpTimerDebug($"Fetched {currentMapName} world record successfully! PlayerName: {playerName}, TimerTicks: {timerTicks}, SteamId: {steamId}");
+                                records[steamId.ToString()] = new PlayerRecord
+                                {
+                                    PlayerName = playerName,
+                                    TimerTicks = timerTicks
+                                };                        
+                            }
                             Server.NextFrame(() =>
                             {
                                 PrintToChat(player, Localizer["current_wr", currentMapName!]);
-                                PrintToChat(player, Localizer["current_wr_player", playerName!, FormatTime(timerTicks)]);
+                                int position = 1;
+                                foreach (var record in records)
+                                {
+                                    PrintToChat(player, $"{Localizer["records_map", position, record.Value.PlayerName!, "", FormatTime(record.Value.TimerTicks)]}");
+                                    position++;
+                                }  
                             });
                         }
                     }
@@ -202,13 +289,13 @@ namespace SharpTimer
                     {
                         var root = jsonDoc.RootElement;
 
-                        if (root.TryGetProperty("data", out var dataArray) && dataArray.GetArrayLength() > 0)
+                        if (root.TryGetProperty("data", out var dataProperty) && dataProperty.ValueKind == JsonValueKind.Object)
                         {
-                            var playerRecord = dataArray[0];
+                            var playerRecord = dataProperty;
 
-                            int recordid = playerRecord.GetProperty("record_id").GetInt32();
+                            int recordId = playerRecord.GetProperty("record_id").GetInt32();
                             int timerTicks = playerRecord.GetProperty("timer_ticks").GetInt32();
-                            string unixStamp = playerRecord.GetProperty("unix_stamp").GetString()!;
+                            long unixStamp = playerRecord.GetProperty("unix_stamp").GetInt64();
 
                             return timerTicks;
                         }
@@ -229,37 +316,47 @@ namespace SharpTimer
 
         public (bool, float, float) CheckCvarsAndMaxVelo()
         {
-            if (IsApproximatelyEqual(ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>(), 10)
-             && IsApproximatelyEqual(ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>(), 150)
-             && IsApproximatelyEqual(ConVar.Find("sv_friction")!.GetPrimitiveValue<float>(), (float)5.2)
-             && IsApproximatelyEqual(ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>(), 800)
-             && IsApproximatelyEqual(ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>(), 1)
-             && IsApproximatelyEqual(ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>(), 320)
-             && IsApproximatelyEqual(ConVar.Find("sv_staminajumpcost")!.GetPrimitiveValue<float>(), 0)
-             && IsApproximatelyEqual(ConVar.Find("sv_staminalandcost")!.GetPrimitiveValue<float>(), 0)
-             && IsApproximatelyEqual(ConVar.Find("sv_staminamax")!.GetPrimitiveValue<float>(), 0)
-             && IsApproximatelyEqual(ConVar.Find("sv_staminarecoveryrate")!.GetPrimitiveValue<float>(), 0)
-             && IsApproximatelyEqual(ConVar.Find("sv_wateraccelerate")!.GetPrimitiveValue<float>(), 10)
-             && ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>() == false)
-             {
-                // THICK
-                return (true, ConVar.Find("sv_maxvelocity")!.GetPrimitiveValue<float>(), ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>());
-             }
-            SharpTimerDebug($"GLOBAL CHECK FAILED");
-            SharpTimerDebug($"sv_accelerate: {ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>()} [should be 10]");
-            SharpTimerDebug($"sv_airaccelerate: {ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>()} [should be 150]");
-            SharpTimerDebug($"sv_friction: {ConVar.Find("sv_friction")!.GetPrimitiveValue<float>()} [should be 5.2]");
-            SharpTimerDebug($"sv_gravity: {ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>()} [should be 800]");
-            SharpTimerDebug($"sv_ladder_scale_speed: {ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>()} [should be 1]");
-            SharpTimerDebug($"sv_maxspeed: {ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>()} [should be 320]");
-            SharpTimerDebug($"sv_staminajumpcost: {ConVar.Find("sv_staminajumpcost")!.GetPrimitiveValue<float>()} [should be 0]");
-            SharpTimerDebug($"sv_staminalandcost: {ConVar.Find("sv_staminalandcost")!.GetPrimitiveValue<float>()} [should be 0]");
-            SharpTimerDebug($"sv_staminamax: {ConVar.Find("sv_staminamax")!.GetPrimitiveValue<float>()} [should be 0]");
-            SharpTimerDebug($"sv_staminarecoveryrate: {ConVar.Find("sv_staminarecoveryrate")!.GetPrimitiveValue<float>()} [should be 0]");
-            SharpTimerDebug($"sv_wateraccelerate: {ConVar.Find("sv_wateraccelerate")!.GetPrimitiveValue<float>()} [should be 10]");
-            SharpTimerDebug($"sv_cheats: {ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>()} [should be false]");
+            if (!globalDisabled)
+            {
+                if (IsApproximatelyEqual(ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>(), 10)
+                && IsApproximatelyEqual(ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>(), 150)
+                && IsApproximatelyEqual(ConVar.Find("sv_friction")!.GetPrimitiveValue<float>(), (float)5.2)
+                && IsApproximatelyEqual(ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>(), 800)
+                && IsApproximatelyEqual(ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>(), 1)
+                && IsApproximatelyEqual(ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>(), 320)
+                && IsApproximatelyEqual(ConVar.Find("sv_staminajumpcost")!.GetPrimitiveValue<float>(), 0)
+                && IsApproximatelyEqual(ConVar.Find("sv_staminalandcost")!.GetPrimitiveValue<float>(), 0)
+                && IsApproximatelyEqual(ConVar.Find("sv_staminamax")!.GetPrimitiveValue<float>(), 0)
+                && IsApproximatelyEqual(ConVar.Find("sv_staminarecoveryrate")!.GetPrimitiveValue<float>(), 0)
+                && IsApproximatelyEqual(ConVar.Find("sv_wateraccelerate")!.GetPrimitiveValue<float>(), 10)
+                && ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>() == false
+                && (IsApproximatelyEqual(ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>(), 30) || IsApproximatelyEqual(ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>(), (float)37.41)))
+                {
+                    // THICK
+                    globalChecksPassed = true;
+                    return (true, ConVar.Find("sv_maxvelocity")!.GetPrimitiveValue<float>(), ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>());
+                }
+                //Checks failed, disable global api
+                SharpTimerDebug($"GLOBAL CHECK FAILED -- Current Values:");
+                SharpTimerDebug($"sv_accelerate: {ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>()} [should be 10]");
+                SharpTimerDebug($"sv_airaccelerate: {ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>()} [should be 150]");
+                SharpTimerDebug($"sv_friction: {ConVar.Find("sv_friction")!.GetPrimitiveValue<float>()} [should be 5.2]");
+                SharpTimerDebug($"sv_gravity: {ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>()} [should be 800]");
+                SharpTimerDebug($"sv_ladder_scale_speed: {ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>()} [should be 1]");
+                SharpTimerDebug($"sv_maxspeed: {ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>()} [should be 320]");
+                SharpTimerDebug($"sv_staminajumpcost: {ConVar.Find("sv_staminajumpcost")!.GetPrimitiveValue<float>()} [should be 0]");
+                SharpTimerDebug($"sv_staminalandcost: {ConVar.Find("sv_staminalandcost")!.GetPrimitiveValue<float>()} [should be 0]");
+                SharpTimerDebug($"sv_staminamax: {ConVar.Find("sv_staminamax")!.GetPrimitiveValue<float>()} [should be 0]");
+                SharpTimerDebug($"sv_staminarecoveryrate: {ConVar.Find("sv_staminarecoveryrate")!.GetPrimitiveValue<float>()} [should be 0]");
+                SharpTimerDebug($"sv_wateraccelerate: {ConVar.Find("sv_wateraccelerate")!.GetPrimitiveValue<float>()} [should be 10]");
+                SharpTimerDebug($"sv_air_max_wishspeed: {ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>()} [should be 30 or 37.41]");
+                SharpTimerDebug($"sv_cheats: {ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>()} [should be false]");
 
-            return (false, ConVar.Find("sv_maxvelocity")!.GetPrimitiveValue<float>(), ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>());
+                globalDisabled = true;
+                globalChecksPassed = false;
+                return (false, 0, 0);
+            }
+            return (false, 0, 0);
         }
     }
 }

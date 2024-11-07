@@ -64,6 +64,9 @@ namespace SharpTimer
 
             if(isLinux) RunCommand.Hook(OnRunCommand, HookMode.Pre);
 
+            float randomf = new Random().Next(1, 31);
+            AddTimer((float)randomf, () => CheckCvarsAndMaxVelo());
+
             currentMapName = Server.MapName;
 
             RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);

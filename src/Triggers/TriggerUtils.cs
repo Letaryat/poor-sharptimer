@@ -436,10 +436,29 @@ namespace SharpTimer
                 var (validCp, X) = IsValidCheckpointTriggerName(trigger.Entity.Name.ToString());
                 if (validCp)
                 {
-                    cpTriggers[trigger.Handle] = X;
                     cpTriggerCount++;
-                    SharpTimerDebug($"Added Checkpoint {X} Trigger {trigger.Handle}");
+                    cpTriggers[trigger.Handle] = X;
+                    //SharpTimerDebug($"Added Checkpoint {cpTriggerCount} Trigger {trigger.Handle}");
                 }
+            }
+
+           // Check for duplicate values in cpTriggers
+            var duplicateValues = cpTriggers.Values.GroupBy(x => x)
+                                                .Where(g => g.Count() > 1)
+                                                .Select(g => g.Key)
+                                                .ToList();
+
+            if (duplicateValues.Any())
+            {
+                SharpTimerDebug($"Duplicate checkpoint # detected");
+                foreach (var value in duplicateValues)
+                {
+                    cpTriggerCount--; //lower total cpTriggerCount to account for duplicate checkpoints
+                }
+            }
+            else
+            {
+                Console.WriteLine("No duplicate values found in cpTriggers.");
             }
 
             useCheckpointTriggers = cpTriggerCount != 0;

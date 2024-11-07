@@ -776,7 +776,7 @@ namespace SharpTimer
                                 if (!globalCheck)
                                     return;
                                 
-                                var payload = new List<Record>
+                                var record_payload = new List<Record>
                                 {
                                     new Record
                                     {
@@ -794,7 +794,21 @@ namespace SharpTimer
                                     }
                                 };
 
-                                _ = Task.Run(async () => await SubmitRecordAsync(payload));
+                                _ = Task.Run(async () => 
+                                {
+                                    await SubmitRecordAsync(record_payload); // submit the record to db to generate new record_id
+                                }).ContinueWith(async task =>                // THEN submit the replay using the record_id
+                                {
+                                    var replay_payload = new ReplayData
+                                    {
+                                        record_id = await GetRecordIDAsync(new { map_name = record_payload[0].map_name, unix_stamp = record_payload[0].unix_stamp}),
+                                        map_name = currentMapNamee,
+                                        style = style,
+                                        replay_data = await GetReplayJson(player!, player!.Slot)
+                                    };
+
+                                    await SubmitReplayAsync(replay_payload);
+                                });
                             });
                         }
 
@@ -853,7 +867,7 @@ namespace SharpTimer
                                 if (!globalCheck)
                                     return;
                                 
-                                var payload = new List<Record>
+                                var record_payload = new List<Record>
                                 {
                                     new Record
                                     {
@@ -871,7 +885,21 @@ namespace SharpTimer
                                     }
                                 };
 
-                                _ = Task.Run(async () => await SubmitRecordAsync(payload));
+                                _ = Task.Run(async () => 
+                                {
+                                    await SubmitRecordAsync(record_payload); // submit the record to db to generate new record_id
+                                }).ContinueWith(async task =>                // THEN submit the replay using the record_id
+                                {
+                                    var replay_payload = new ReplayData
+                                    {
+                                        record_id = await GetRecordIDAsync(new { record_payload[0].map_name, record_payload[0].unix_stamp}),
+                                        map_name = currentMapNamee,
+                                        style = style,
+                                        replay_data = await GetReplayJson(player!, player!.Slot)
+                                    };
+
+                                    await SubmitReplayAsync(replay_payload);
+                                });
                             });
                         }
 
@@ -1823,6 +1851,16 @@ namespace SharpTimer
                 if (!isTop10)
                 {
                     newPoints += CalculateGroups(maxPoints, await GetPlayerMapPercentile(steamId, playerName, mapname, bonusX, style, forGlobal, timerTicks));
+                }
+
+                // if for global points, disregard current server multipliers
+                if (forGlobal)
+                {
+                    newPoints *= GetStyleMultiplier(style, true);
+                    if (bonusX != 0)
+                        newPoints *= 0.5;
+                    newPoints = Math.Round(newPoints);
+                    return (int)newPoints;
                 }
 
                 // Apply style multiplier if enabled

@@ -216,6 +216,31 @@ namespace SharpTimer
             });
         }
 
+        public async Task<string> GetReplayJson(CCSPlayerController player, int playerSlot)
+        {
+            if (!IsAllowedPlayer(player))
+            {
+                SharpTimerError($"Error in GetReplayJson: Player not allowed or not on server anymore");
+                return "";
+            }
+
+            try
+            {
+                if (playerReplays[playerSlot].replayFrames.Count >= maxReplayFrames) return "";
+
+                var indexedReplayFrames = playerReplays[playerSlot].replayFrames
+                    .Select((frame, index) => new IndexedReplayFrames { Index = index, Frame = frame })
+                    .ToList();
+
+                return JsonSerializer.Serialize(indexedReplayFrames);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error during serialization: {ex.Message}");
+                return "";
+            }
+        }
+
         private async Task ReadReplayFromJson(CCSPlayerController player, string steamId, int playerSlot, int bonusX = 0, int style = 0)
         {
             string fileName = $"{steamId}_replay.json";

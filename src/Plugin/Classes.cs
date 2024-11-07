@@ -295,6 +295,14 @@ namespace SharpTimer
         public float air_max_wishspeed { get; set; }
     }
 
+    public class ReplayData
+    {
+        public int record_id { get; set; }
+        public string? map_name { get; set; }
+        public int style { get; set; }
+        public string? replay_data { get; set; }
+    }
+
     // PlayerPoints for MySql
     public class PlayerPoints
     {

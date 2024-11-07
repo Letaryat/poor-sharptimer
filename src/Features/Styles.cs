@@ -168,8 +168,38 @@ namespace SharpTimer
             }
         }
 
-        public double GetStyleMultiplier(int style)
+        public double GetStyleMultiplier(int style, bool global = false)
         {
+            if (global)
+            {
+                switch(style)
+                {
+                    case 0:
+                        return 1;
+                    case 1:
+                        return 0.8;
+                    case 2:
+                        return 1.3;
+                    case 3:
+                        return 1.3;
+                    case 4:
+                        return 1.5;
+                    case 5:
+                        return 1;
+                    case 6:
+                        return 1.33;
+                    case 7:
+                        return 1.33;
+                    case 8:
+                        return 1.33;
+                    case 9:
+                        return 1.3;
+                    case 10:
+                        return 0.8;
+                    default:
+                        return 1;
+                }
+            }
             switch(style)
             {
                 case 0:

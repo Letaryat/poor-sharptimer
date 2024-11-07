@@ -579,7 +579,7 @@ namespace SharpTimer
             {
                 map_name = currentMapName,
                 style = 0,
-                limit = 1
+                limit = 10
             };
 
             _ = Task.Run(async () => await PrintWorldRecordAsync(player, payload));
