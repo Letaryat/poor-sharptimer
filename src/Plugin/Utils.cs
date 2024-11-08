@@ -1135,6 +1135,9 @@ namespace SharpTimer
                                 currentBonusEndPos[bonus] = CalculateMiddleVector(currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
                                 bonusRespawnPoses[bonus] = ParseVector(mapInfo.BonusRespawnPos);
                                 SharpTimerConPrint($"Found Fake Bonus {bonus} Trigger Corners: START {currentBonusStartC1[bonus]}, {currentBonusStartC2[bonus]} | END {currentBonusEndC1[bonus]}, {currentBonusEndC2[bonus]}");
+
+                                // Disable global for lackluster maps
+                                globalDisabled = true;
                             }
                             if (currentBonusStartC1[bonus] != null && currentBonusStartC2[bonus] != null && currentBonusEndC1[bonus] != null && currentBonusEndC2[bonus] != null)
                             {
@@ -1161,6 +1164,9 @@ namespace SharpTimer
                         currentMapEndC2 = ParseVector(mapInfo.MapEndC2);
                         currentEndPos = CalculateMiddleVector(currentMapEndC1, currentMapEndC2);
                         SharpTimerConPrint($"Found Fake Trigger Corners: START {currentMapStartC1}, {currentMapStartC2} | END {currentMapEndC1}, {currentMapEndC2}");
+
+                        // Disable global for lackluster maps
+                        globalDisabled = true;
                     }
 
                     if (!string.IsNullOrEmpty(mapInfo.MapStartTrigger) && !string.IsNullOrEmpty(mapInfo.MapEndTrigger))
@@ -1606,7 +1612,7 @@ namespace SharpTimer
             string ip = $"{GetServerIp()}:{ConVar.Find("hostport")!.GetPrimitiveValue<int>()}";
             string hostname = ConVar.Find("hostname")!.StringValue;
 
-            return (ip, hostname);
+            return (hostname, ip);
         }
     }
 }

@@ -167,6 +167,17 @@ namespace SharpTimer
                 return;
         }
 
+        [ConsoleCommand("css_gethash", "GetHash")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+        [RequiresPermissions("@css/cheats")]
+        public void GetHashCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            var hash = GetHash();
+            Server.NextFrame(() => player!.PrintToConsole($"ST HASH: {hash}"));
+        }
+
         [ConsoleCommand("css_replayb", "Replay a top 10 server bonus record")]
         [ConsoleCommand("css_replaybonus", "Replay a top 10 server bonus record")]
         [CommandHelper(minArgs: 1, usage: "[1-10] [bonus stage]", whoCanExecute: CommandUsage.CLIENT_ONLY)]

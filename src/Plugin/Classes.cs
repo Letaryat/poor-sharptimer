@@ -342,6 +342,7 @@ namespace SharpTimer
         public float air_max_wishspeed { get; set; }
         public string? hostname { get; set; }
         public string? ip { get; set; }
+        public string? hash { get; set; }
     }
 
     public class ReplayData
@@ -349,6 +350,7 @@ namespace SharpTimer
         public int record_id { get; set; }
         public string? map_name { get; set; }
         public int style { get; set; }
+        public string? hash { get; set; }
         public string? replay_data { get; set; }
     }
 

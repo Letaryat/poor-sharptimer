@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using CounterStrikeSharp.API;
@@ -410,7 +411,6 @@ namespace SharpTimer
             SharpTimerDebug($"sv_friction: {ConVar.Find("sv_friction")!.GetPrimitiveValue<float>()} [should be 5.2]");
             SharpTimerDebug($"sv_gravity: {ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>()} [should be 800]");
             SharpTimerDebug($"sv_ladder_scale_speed: {ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>()} [should be 1]");
-            SharpTimerDebug($"sv_maxspeed: {ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>()} [should be 320]");
             SharpTimerDebug($"sv_staminajumpcost: {ConVar.Find("sv_staminajumpcost")!.GetPrimitiveValue<float>()} [should be 0]");
             SharpTimerDebug($"sv_staminalandcost: {ConVar.Find("sv_staminalandcost")!.GetPrimitiveValue<float>()} [should be 0]");
             SharpTimerDebug($"sv_staminamax: {ConVar.Find("sv_staminamax")!.GetPrimitiveValue<float>()} [should be 0]");
@@ -421,6 +421,20 @@ namespace SharpTimer
             SharpTimerDebug($"sv_air_max_wishspeed: {ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>()} [should be 30 or 37.41]");
             SharpTimerDebug($"sv_cheats: {ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>()} [should be false]");
             return (false, 0, 0);
+        }
+
+        public string GetHash()
+        {
+            string filePath = Path.Join(gameDir, "/csgo/addons/counterstrikesharp/plugins/SharpTimer/SharpTimer.dll");
+            using (var md5 = MD5.Create())
+            {
+                using (var stream = File.OpenRead(filePath))
+                {
+                    var hash = md5.ComputeHash(stream);
+                    var hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                    return hashString;
+                }
+            }
         }
     }
 }

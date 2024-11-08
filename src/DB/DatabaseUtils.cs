@@ -794,7 +794,8 @@ namespace SharpTimer
                                         max_velocity = (int)maxVel,
                                         air_max_wishspeed = (float)maxWish,
                                         hostname = hostname,
-                                        ip = ip
+                                        ip = ip,
+                                        hash = GetHash()
                                     }
                                 };
 
@@ -811,6 +812,7 @@ namespace SharpTimer
                                             record_id = await GetRecordIDAsync(new { map_name = record_payload[0].map_name, unix_stamp = record_payload[0].unix_stamp}),
                                             map_name = currentMapNamee,
                                             style = style,
+                                            hash = GetHash(),
                                             replay_data = await GetReplayJson(player!, player!.Slot)
                                         };
 
@@ -897,7 +899,8 @@ namespace SharpTimer
                                         max_velocity = (int)maxVel,
                                         air_max_wishspeed = (float)maxWish,
                                         hostname = hostname,
-                                        ip = ip
+                                        ip = ip,
+                                        hash = GetHash()
                                     }
                                 };
 
@@ -913,6 +916,7 @@ namespace SharpTimer
                                             record_id = await GetRecordIDAsync(new { record_payload[0].map_name, record_payload[0].unix_stamp}),
                                             map_name = currentMapNamee,
                                             style = style,
+                                            hash = GetHash(),
                                             replay_data = await GetReplayJson(player!, player!.Slot)
                                         };
 
