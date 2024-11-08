@@ -13,6 +13,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
@@ -727,14 +728,14 @@ namespace SharpTimer
         {
             string args = command.ArgString;
 
-            if (int.TryParse(args, out int tickrate) && tickrate >= 0)
+            if (int.TryParse(args, out int tickrate) && tickrate >= 0 && tickrate <= 64)
             {
                 hudTickrate = tickrate;
                 SharpTimerConPrint($"SharpTimer hud updates per second: {tickrate}");
             }
             else
             {
-                SharpTimerConPrint("Invalid HUD updates per second. Please provide a positive integer.");
+                SharpTimerConPrint("Invalid HUD updates per second. Please provide a positive integer below 64.");
             }
         }
 
@@ -1114,6 +1115,7 @@ namespace SharpTimer
             if (int.TryParse(args, out int speed) && speed > 0)
             {
                 maxStartingSpeed = speed;
+                Server.ExecuteCommand($"sv_maxspeed {maxStartingSpeed}");
                 SharpTimerConPrint($"SharpTimer max trigger speed set to {speed}.");
             }
             else

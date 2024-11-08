@@ -65,7 +65,7 @@ namespace SharpTimer
             if(isLinux) RunCommand.Hook(OnRunCommand, HookMode.Pre);
 
             float randomf = new Random().Next(1, 31);
-            AddTimer((float)randomf, () => CheckCvarsAndMaxVelo());
+            AddTimer((float)randomf, () => CheckCvarsAndMaxVelo(), CounterStrikeSharp.API.Modules.Timers.TimerFlags.REPEAT);
 
             currentMapName = Server.MapName;
 

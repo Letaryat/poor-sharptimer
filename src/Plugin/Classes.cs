@@ -253,12 +253,11 @@ namespace SharpTimer
         public int BonusX { get; set; }
         public int Style { get; set; }
         public List<ReplayFrames> replayFrames { get; set; } = [];
-
         public class ReplayFrames
         {
-            public string? PositionString { get; set; }
-            public string? RotationString { get; set; }
-            public string? SpeedString { get; set; }
+            public ReplayVector? Position { get; set; }
+            public ReplayQAngle? Rotation { get; set; }
+            public ReplayVector? Speed { get; set; }
             public PlayerButtons? Buttons { get; set; }
             public uint Flags { get; set; }
             public MoveType_t MoveType { get; set; }
@@ -271,9 +270,57 @@ namespace SharpTimer
         public PlayerReplays.ReplayFrames? Frame { get; set; }
     }
 
+    public class ReplayVector
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+
+        public ReplayVector(float x, float y, float z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        public static ReplayVector GetVectorish(Vector actualVector)
+        {
+            return new ReplayVector(actualVector.X, actualVector.Y, actualVector.Z);
+        }
+        public static Vector ToVector(ReplayVector replayVector)
+        {
+            return new Vector(replayVector.X, replayVector.Y, replayVector.Z);
+        }
+    }
+
+    public class ReplayQAngle
+    {
+        public float Pitch { get; set; }
+        public float Yaw { get; set; }
+        public float Roll { get; set; }
+
+        public ReplayQAngle(float pitch, float yaw, float roll)
+        {
+            Pitch = pitch;
+            Yaw = yaw;
+            Roll = roll;
+        }
+
+        public static ReplayQAngle GetQAngleish(QAngle actualQAngle)
+        {
+            return new ReplayQAngle(actualQAngle.X, actualQAngle.Y, actualQAngle.Z);
+        }
+
+        public static QAngle ToQAngle(ReplayQAngle replayQAngle)
+        {
+            return new QAngle(replayQAngle.Pitch, replayQAngle.Yaw, replayQAngle.Roll);
+        }
+    }
+
     // PlayerRecords for JSON
     public class PlayerRecord
     {
+        public int RecordID { get; set; }
         public string? PlayerName { get; set; }
         public string? SteamID { get; set; }
         public string? MapName { get; set; }
@@ -293,6 +340,8 @@ namespace SharpTimer
         public int points { get; set; }
         public int max_velocity { get; set; }
         public float air_max_wishspeed { get; set; }
+        public string? hostname { get; set; }
+        public string? ip { get; set; }
     }
 
     public class ReplayData

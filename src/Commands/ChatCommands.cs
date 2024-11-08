@@ -126,6 +126,27 @@ namespace SharpTimer
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, arg, "69", "unknown", 0, playerTimers[playerSlot].currentStyle));
         }
 
+        [ConsoleCommand("css_replaywr", "Replay a top 10 world record")]
+        [CommandHelper(minArgs: 1, usage: "[1-10]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void ReplayTop10WRCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player) || enableReplays == false) return;
+
+            var playerSlot = player!.Slot;
+
+            QuietStopTimer(player);
+
+            if (IsTimerBlocked(player))
+                return;
+
+            if (ReplayCheck(player))
+                return;
+
+            string arg = command.ArgByIndex(1);
+
+            _ = Task.Run(async () => await ReplayHandler(player, playerSlot, arg, "69", "unknown", 0, playerTimers[playerSlot].currentStyle, true));
+        }
+
         [ConsoleCommand("css_gc", "Globalcheck")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
         public void GlobalCheckCommand(CCSPlayerController? player, CommandInfo command)
@@ -194,7 +215,7 @@ namespace SharpTimer
             _ = Task.Run(async () => await ReplayHandler(player, playerSlot, "self", steamID, playerName, bonusX, playerTimers[playerSlot].currentStyle));
         }
 
-        public async Task ReplayHandler(CCSPlayerController player, int playerSlot, string arg = "1", string pbSteamID = "69", string playerName = "unknown", int bonusX = 0, int style = 0)
+        public async Task ReplayHandler(CCSPlayerController player, int playerSlot, string arg = "1", string pbSteamID = "69", string playerName = "unknown", int bonusX = 0, int style = 0, bool wr = false)
         {
             bool self = false;
 
@@ -212,6 +233,7 @@ namespace SharpTimer
             playerReplays[playerSlot] = new PlayerReplays();
 
             var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
+            var (wrID, wrSteamID, wrPlayerName, wrTime) = (0, "null", "null", "null");
 
             if (!self)
             {
@@ -223,6 +245,15 @@ namespace SharpTimer
                 {
                     (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamID(bonusX, top10);
                 }
+                if (wr)
+                {
+                    var sortedRecords = await GetSortedRecordsFromGlobal(10, bonusX, currentMapName!, style);
+                    wrID = sortedRecords[top10-1].RecordID;
+                    wrSteamID = sortedRecords[top10-1].SteamID;
+                    wrPlayerName = sortedRecords[top10-1].PlayerName;
+                    wrTime = FormatTime(sortedRecords[top10-1].TimerTicks);
+                }
+                    
             }
 
 
@@ -235,14 +266,20 @@ namespace SharpTimer
                 return;
             }
 
-            await ReadReplayFromJson(player, !self ? srSteamID : pbSteamID, playerSlot, bonusX, style);
+            if (wr)
+                await ReadReplayFromGlobal(player, wrID, style, bonusX);
+            else
+                await ReadReplayFromJson(player, !self ? srSteamID : pbSteamID, playerSlot, bonusX, style);
 
             if (playerReplays[playerSlot].replayFrames.Count == 0) return;
 
-            if (enableDb) await GetReplayVIPGif(!self ? srSteamID : pbSteamID, playerSlot);
+            if (!wr) await GetReplayVIPGif(!self ? srSteamID : pbSteamID, playerSlot);
 
             playerTimers[playerSlot].IsReplaying = !playerTimers[playerSlot].IsReplaying;
-            playerTimers[playerSlot].ReplayHUDString = !self ? $"{srPlayerName} | {srTime}" : $"{playerName} | {playerTimers[playerSlot].CachedPB}";
+            if (wr)
+                playerTimers[playerSlot].ReplayHUDString = $"{wrPlayerName} | {wrTime}";
+            else
+                playerTimers[playerSlot].ReplayHUDString = !self ? $"{srPlayerName} | {srTime}" : $"{playerName} | {playerTimers[playerSlot].CachedPB}";
 
             playerTimers[playerSlot].IsTimerRunning = false;
             playerTimers[playerSlot].TimerTicks = 0;
@@ -254,7 +291,9 @@ namespace SharpTimer
 
             if (IsAllowedPlayer(player))
             {
-                if (!self)
+                if (wr)
+                    Server.NextFrame(() => PrintToChat(player, Localizer["replaying_world_top", top10]));
+                else if (!self)
                     Server.NextFrame(() => PrintToChat(player, Localizer["replaying_server_top", top10]));
                 else
                     Server.NextFrame(() => PrintToChat(player, Localizer["replaying_pb"]));
@@ -478,6 +517,7 @@ namespace SharpTimer
         }
 
         [ConsoleCommand("css_hideweapon", "Hides the players weapon")]
+        [ConsoleCommand("css_hw", "Hides the players weapon")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void HideWeaponCommand(CCSPlayerController? player, CommandInfo command)
         {
@@ -624,15 +664,8 @@ namespace SharpTimer
             else
                 currentMapNamee = mapName;
 
-            Dictionary<string, PlayerRecord> sortedRecords;
-            if (enableDb)
-            {
-                sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, mapName, style);
-            }
-            else
-            {
-                sortedRecords = await GetSortedRecords(bonusX, mapName);
-            }
+            var sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, mapName, style);
+
 
             if (sortedRecords.Count == 0)
             {
@@ -664,7 +697,7 @@ namespace SharpTimer
                 int timerTicks = kvp.Value.TimerTicks;
 
                 bool showReplays = false;
-                if (enableReplays == true) showReplays = await CheckSRReplay(kvp.Key, bonusX);
+                if (enableReplays == true) showReplays = await CheckSRReplay(kvp.Value.SteamID!, bonusX);
 
                 string replayIndicator = enableReplays ? (showReplays ? $"{ChatColors.Red}◉" : "") : "";
 
@@ -815,12 +848,8 @@ namespace SharpTimer
         {
             if (!IsAllowedClient(player) || rankEnabled == false) return;
             SharpTimerDebug($"Handling !sr for {_playerName}...");
-            Dictionary<string, PlayerRecord> sortedRecords;
-
-            if (!enableDb)
-                sortedRecords = await GetSortedRecords();
-            else
-                sortedRecords = await GetSortedRecordsFromDatabase();
+            
+            var sortedRecords = await GetSortedRecordsFromDatabase();
 
             if (sortedRecords.Count == 0)
                 return;
@@ -1693,7 +1722,7 @@ namespace SharpTimer
             if (jumpStatsEnabled) InvalidateJS(player.Slot);
 
             // Get the most recent checkpoint from the player's list
-            PlayerCheckpoint lastCheckpoint = playerCheckpoints[player.Slot].Last();
+            PlayerCheckpoint lastCheckpoint = playerCheckpoints[player.Slot][playerTimers[player.Slot].CheckpointIndex];
 
             // Convert position and rotation strings to Vector and QAngle
             Vector position = ParseVector(lastCheckpoint.PositionString ?? "0 0 0");
@@ -1754,6 +1783,7 @@ namespace SharpTimer
                 index = (index - 1 + checkpoints.Count) % checkpoints.Count;
 
                 PlayerCheckpoint previousCheckpoint = checkpoints[index];
+                
 
                 // Update the player's checkpoint index
                 playerTimers[player.Slot].CheckpointIndex = index;
@@ -1765,6 +1795,7 @@ namespace SharpTimer
 
                 // Teleport the player to the previous checkpoint, including the saved rotation
                 player.PlayerPawn.Value!.Teleport(position, rotation, speed);
+
                 // Play a sound or provide feedback to the player
                 PlaySound(player, tpSound);
                 PrintToChat(player, Localizer["used_previous_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]);

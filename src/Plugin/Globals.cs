@@ -27,7 +27,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1k";
+        public override string ModuleVersion => $"0.3.1l";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -40,7 +40,7 @@ namespace SharpTimer
         private Dictionary<int, CCSPlayerController> connectedReplayBots = [];
         private Dictionary<uint, CCSPlayerController> specTargets = [];
         private EntityCache? entityCache;
-        public Dictionary<string, PlayerRecord>? SortedCachedRecords = [];
+        public Dictionary<int, PlayerRecord>? SortedCachedRecords = [];
         private static readonly HttpClient httpClient = new();
 
         public static JsonSerializerOptions jsonSerializerOptions = new()

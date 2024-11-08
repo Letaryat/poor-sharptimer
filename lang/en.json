@@ -52,6 +52,7 @@
   "end_your_replay": "End your current replay first {lime}!stopreplay",
   "available_replay_cmds": "Available replay cmds: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
   "no_sr_replay": "No Server Record to replay!",
+  "replaying_world_top": "Replaying the World Top {0} type {lime}!stop or {lime}!stopreplay {default}to exit the replay",
   "replaying_server_top": "Replaying the Server Top {0} type {lime}!stop or {lime}!stopreplay {default}to exit the replay",
   "replaying_pb": "Replaying your PB type {lime}!stop or {lime}!stopreplay {default}to exit the replay",
   "ending_replay": "Ending Replay!",

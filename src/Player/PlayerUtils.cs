@@ -300,12 +300,12 @@ namespace SharpTimer
 
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
 
-                int savedPlayerTime = enableDb ? await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, bonusX, style) : await GetPreviousPlayerRecord(steamId, bonusX);
+                int savedPlayerTime = await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, bonusX, style);
 
                 if (savedPlayerTime == 0)
                     return getRankImg ? UnrankedIcon : UnrankedTitle;
 
-                Dictionary<string, PlayerRecord> sortedRecords = enableDb ? await GetSortedRecordsFromDatabase(0, bonusX, currentMapNamee, style) : await GetSortedRecords();
+                Dictionary<int, PlayerRecord> sortedRecords = await GetSortedRecordsFromDatabase(0, bonusX, currentMapNamee, style);
 
                 int placement = sortedRecords.Count(kv => kv.Value.TimerTicks < savedPlayerTime) + 1;
                 int totalPlayers = sortedRecords.Count;
@@ -339,7 +339,7 @@ namespace SharpTimer
                 if (savedPlayerTime == 0)
                     savedPlayerTime = timerTicks;
 
-                Dictionary<string, PlayerRecord> sortedRecords;
+                Dictionary<int, PlayerRecord> sortedRecords;
 
                 if (!global)
                     sortedRecords = await GetSortedRecordsFromDatabase(0, bonusX, currentMapNamee, style);

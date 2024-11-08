@@ -455,6 +455,17 @@ namespace SharpTimer
                 {
                     cpTriggerCount--; //lower total cpTriggerCount to account for duplicate checkpoints
                 }
+
+                if ((cpTriggers.Count - cpTriggerCount) % 2 == 0) // check if ALL cptriggers minus duplicates is an even number. this will return true for maps that split in two
+                {
+                    SharpTimerDebug($"Map has multiple routes, duplicate checkpoints OK");
+                }
+                else
+                {
+                    // map checkpoints are fucked, disable global and ring the bell of shame
+                    SharpTimerDebug($"The map checkpoints are fucked and the porter should be ashamed");
+                    globalDisabled = true;
+                }
             }
             else
             {

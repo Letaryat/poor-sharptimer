@@ -27,6 +27,7 @@ using System.Data.Common;
 using System.Data.SQLite;
 using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.Entity.Core.Metadata.Edm;
+using CounterStrikeSharp.API.Modules.Cvars;
 
 namespace SharpTimer
 {
@@ -669,18 +670,12 @@ namespace SharpTimer
                             dBFormattedTime = formattedTime;
                             playerPoints = timerTicks;
                             beatPB = true;
-                            if (playerPoints < 32)
-                            {
-                                beatPB = false;
-                                playerPoints = 320000;
-                            }
                             if (enableReplays == true && enableDb) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
                         }
                         else
                         {
                             new_dBtimerTicks = dBtimerTicks;
                             beatPB = false;
-                            playerPoints = 320000;
                         }
 
                         await row.CloseAsync();
@@ -769,12 +764,19 @@ namespace SharpTimer
                             if (enableDb && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
                             if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished);
                             if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, dBtimesFinished, style, prevSR)));
-
+                    
                             Server.NextFrame(async () =>
                             {
+                                var (hostname, ip) = GetHostnameAndIp();
                                 var (globalCheck, maxVel, maxWish) = CheckCvarsAndMaxVelo();
                                 if (!globalCheck)
                                     return;
+
+                                //first lets see if the new record beats global pb
+                                var beatGlobalPB = false;
+                                var prevPBTicks = await GetPreviousPlayerRecordFromGlobal(steamId, currentMapName!, playerName, bonusX, style);
+                                if (prevPBTicks > timerTicks || prevPBTicks == 0)
+                                    beatGlobalPB = true;
                                 
                                 var record_payload = new List<Record>
                                 {
@@ -790,7 +792,9 @@ namespace SharpTimer
                                         style = style,
                                         points = await CalculatePlayerPoints(steamId, playerName, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished, currentMapNamee, true),
                                         max_velocity = (int)maxVel,
-                                        air_max_wishspeed = (float)maxWish
+                                        air_max_wishspeed = (float)maxWish,
+                                        hostname = hostname,
+                                        ip = ip
                                     }
                                 };
 
@@ -799,15 +803,19 @@ namespace SharpTimer
                                     await SubmitRecordAsync(record_payload); // submit the record to db to generate new record_id
                                 }).ContinueWith(async task =>                // THEN submit the replay using the record_id
                                 {
-                                    var replay_payload = new ReplayData
+                                    // only submit replay if beat global pb
+                                    if (beatGlobalPB)
                                     {
-                                        record_id = await GetRecordIDAsync(new { map_name = record_payload[0].map_name, unix_stamp = record_payload[0].unix_stamp}),
-                                        map_name = currentMapNamee,
-                                        style = style,
-                                        replay_data = await GetReplayJson(player!, player!.Slot)
-                                    };
+                                        var replay_payload = new ReplayData
+                                        {
+                                            record_id = await GetRecordIDAsync(new { map_name = record_payload[0].map_name, unix_stamp = record_payload[0].unix_stamp}),
+                                            map_name = currentMapNamee,
+                                            style = style,
+                                            replay_data = await GetReplayJson(player!, player!.Slot)
+                                        };
 
-                                    await SubmitReplayAsync(replay_payload);
+                                        await SubmitReplayAsync(replay_payload);
+                                    }
                                 });
                             });
                         }
@@ -860,12 +868,18 @@ namespace SharpTimer
                             Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
                             if (IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
                             if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, 1, style, prevSR)));
-
+                            
                             Server.NextFrame(async () =>
                             {
+                                var (hostname, ip) = GetHostnameAndIp();
                                 var (globalCheck, maxVel, maxWish) = CheckCvarsAndMaxVelo();
                                 if (!globalCheck)
                                     return;
+
+                                var beatGlobalPB = false;
+                                var prevPBTicks = await GetPreviousPlayerRecordFromGlobal(steamId, currentMapName!, playerName, bonusX, style);
+                                if (prevPBTicks > timerTicks || prevPBTicks == 0)
+                                    beatGlobalPB = true;
                                 
                                 var record_payload = new List<Record>
                                 {
@@ -881,7 +895,9 @@ namespace SharpTimer
                                         style = style,
                                         points = await CalculatePlayerPoints(steamId, playerName, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished, currentMapNamee, true),
                                         max_velocity = (int)maxVel,
-                                        air_max_wishspeed = (float)maxWish
+                                        air_max_wishspeed = (float)maxWish,
+                                        hostname = hostname,
+                                        ip = ip
                                     }
                                 };
 
@@ -890,15 +906,18 @@ namespace SharpTimer
                                     await SubmitRecordAsync(record_payload); // submit the record to db to generate new record_id
                                 }).ContinueWith(async task =>                // THEN submit the replay using the record_id
                                 {
-                                    var replay_payload = new ReplayData
+                                    if (beatGlobalPB)
                                     {
-                                        record_id = await GetRecordIDAsync(new { record_payload[0].map_name, record_payload[0].unix_stamp}),
-                                        map_name = currentMapNamee,
-                                        style = style,
-                                        replay_data = await GetReplayJson(player!, player!.Slot)
-                                    };
+                                        var replay_payload = new ReplayData
+                                        {
+                                            record_id = await GetRecordIDAsync(new { record_payload[0].map_name, record_payload[0].unix_stamp}),
+                                            map_name = currentMapNamee,
+                                            style = style,
+                                            replay_data = await GetReplayJson(player!, player!.Slot)
+                                        };
 
-                                    await SubmitReplayAsync(replay_payload);
+                                        await SubmitReplayAsync(replay_payload);
+                                    }
                                 });
                             });
                         }
@@ -1814,15 +1833,16 @@ namespace SharpTimer
                 // First calculate basic map completion points based on tier
                 newPoints = CalculateCompletion();
 
-                // Then calculate max points based on times finished
-                double maxPoints = await CalculateTier(completions, mapname);
-
-                // Then grab the top 10 and calculate distributed points
-                Dictionary<string, PlayerRecord> sortedRecords = new Dictionary<string, PlayerRecord>();
+                // now grab sortedrecords for getting total map completes and top10
+                var sortedRecords = new Dictionary<int, PlayerRecord>();
                 if (forGlobal)
-                    sortedRecords = await GetSortedRecordsFromGlobal(10, bonusX, mapname, style);
+                    sortedRecords = await GetSortedRecordsFromGlobal(0, bonusX, mapname, style);
                 else
-                    sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, mapname, style);
+                    sortedRecords = await GetSortedRecordsFromDatabase(0, bonusX, mapname, style);
+
+                // Then calculate max points based on **map total** times finished
+                double maxPoints = await CalculateTier(sortedRecords.Count, mapname);
+
 
                 int rank = 1;
                 bool isTop10 = false;
@@ -2583,7 +2603,7 @@ namespace SharpTimer
             return playerPoints;
         }
 
-        public async Task<Dictionary<string, PlayerRecord>> GetSortedRecordsFromDatabase(int limit = 0, int bonusX = 0, string mapName = "", int style = 0)
+        public async Task<Dictionary<int, PlayerRecord>> GetSortedRecordsFromDatabase(int limit = 0, int bonusX = 0, string mapName = "", int style = 0)
         {
             SharpTimerDebug($"Trying GetSortedRecords {(bonusX != 0 ? $"bonus {bonusX}" : "")} from database");
             using (var connection = await OpenConnectionAsync())
@@ -2651,17 +2671,20 @@ namespace SharpTimer
                         selectCommand!.AddParameterWithValue("@Style", style);
                         using (var reader = await selectCommand!.ExecuteReaderAsync())
                         {
-                            var sortedRecords = new Dictionary<string, PlayerRecord>();
+                            var sortedRecords = new Dictionary<int, PlayerRecord>();
+                            int record = 0;
                             while (await reader.ReadAsync())
                             {
                                 string steamId = reader.GetString(0);
                                 string playerName = reader.IsDBNull(1) ? "Unknown" : reader.GetString(1);
                                 int timerTicks = reader.GetInt32(2);
-                                sortedRecords.Add(steamId, new PlayerRecord
+                                sortedRecords.Add(record, new PlayerRecord
                                 {
+                                    SteamID = steamId,
                                     PlayerName = playerName,
                                     TimerTicks = timerTicks
                                 });
+                                record++;
                             }
 
                             // Sort the records by TimerTicks

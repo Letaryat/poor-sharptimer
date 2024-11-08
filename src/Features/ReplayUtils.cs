@@ -20,6 +20,8 @@ using CounterStrikeSharp.API.Modules.Entities.Constants;
 using System.Text.Json;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 using CounterStrikeSharp.API.Modules.Entities;
+using static SharpTimer.PlayerReplays;
+using System.Text.Json.Serialization;
 
 namespace SharpTimer
 {
@@ -32,14 +34,11 @@ namespace SharpTimer
                 if (!IsAllowedPlayer(player)) return;
 
                 // Get the player's current position and rotation
-                Vector currentPosition = player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
-                Vector currentSpeed = player.PlayerPawn.Value!.AbsVelocity ?? new Vector(0, 0, 0);
-                QAngle currentRotation = player.PlayerPawn.Value.EyeAngles ?? new QAngle(0, 0, 0);
+                ReplayVector currentPosition = ReplayVector.GetVectorish(player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0));
+                ReplayVector currentSpeed = ReplayVector.GetVectorish(player.PlayerPawn.Value!.AbsVelocity ?? new Vector(0, 0, 0));
+                ReplayQAngle currentRotation = ReplayQAngle.GetQAngleish(player.PlayerPawn.Value.EyeAngles ?? new QAngle(0, 0, 0));
 
-                // Convert position and rotation to strings
-                string positionString = $"{currentPosition.X} {currentPosition.Y} {currentPosition.Z}";
-                string rotationString = $"{currentRotation.X} {currentRotation.Y} {currentRotation.Z}";
-                string speedString = $"{currentSpeed.X} {currentSpeed.Y} {currentSpeed.Z}";
+
 
                 var buttons = player.Buttons;
                 var flags = player.Pawn.Value.Flags;
@@ -47,9 +46,9 @@ namespace SharpTimer
 
                 var ReplayFrame = new PlayerReplays.ReplayFrames
                 {
-                    PositionString = positionString,
-                    RotationString = rotationString,
-                    SpeedString = speedString,
+                    Position = currentPosition,
+                    Rotation = currentRotation,
+                    Speed = currentSpeed,
                     Buttons = buttons,
                     Flags = flags,
                     MoveType = moveType
@@ -93,7 +92,7 @@ namespace SharpTimer
                         value.MovementService!.DuckAmount = 0;
                     }
 
-                    player.PlayerPawn.Value!.Teleport(ParseVector(replayFrame.PositionString!), ParseQAngle(replayFrame.RotationString!), ParseVector(replayFrame.SpeedString!));
+                    player.PlayerPawn.Value!.Teleport(ReplayVector.ToVector(replayFrame.Position!), ReplayQAngle.ToQAngle(replayFrame.Rotation!), ReplayVector.ToVector(replayFrame.Speed!));
 
                     var replayButtons = $"{((replayFrame.Buttons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                         $"{((replayFrame.Buttons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
@@ -187,7 +186,7 @@ namespace SharpTimer
 
                 string fileName = $"{steamID}_replay.json";
                 string playerReplaysDirectory;
-                if(style != 0) playerReplaysDirectory = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", bonusX == 0 ? $"{currentMapName}" : $"{currentMapName}_bonus{bonusX}", GetNamedStyle(style));
+                if (style != 0) playerReplaysDirectory = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", bonusX == 0 ? $"{currentMapName}" : $"{currentMapName}_bonus{bonusX}", GetNamedStyle(style));
                 else playerReplaysDirectory = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", bonusX == 0 ? $"{currentMapName}" : $"{currentMapName}_bonus{bonusX}");
                 string playerReplaysPath = Path.Join(playerReplaysDirectory, fileName);
 
@@ -245,41 +244,81 @@ namespace SharpTimer
         {
             string fileName = $"{steamId}_replay.json";
             string playerReplaysPath;
-            if(style != 0) playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}", GetNamedStyle(style), fileName);
+            if (style != 0) playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}", GetNamedStyle(style), fileName);
             else playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}", fileName);
 
             try
             {
                 if (File.Exists(playerReplaysPath))
                 {
-                    string jsonString = await File.ReadAllTextAsync(playerReplaysPath);
-                    var indexedReplayFrames = JsonSerializer.Deserialize<List<IndexedReplayFrames>>(jsonString);
-
-                    if (indexedReplayFrames != null)
+                    var jsonString = await File.ReadAllTextAsync(playerReplaysPath);
+                    if (!jsonString.Contains("PositionString"))
                     {
-                        var replayFrames = indexedReplayFrames
-                            .OrderBy(frame => frame.Index)
-                            .Select(frame => frame.Frame)
-                            .ToList();
+                        var indexedReplayFrames = JsonSerializer.Deserialize<List<IndexedReplayFrames>>(jsonString);
 
-                        if (!playerReplays.TryGetValue(playerSlot, out PlayerReplays? value))
+                        if (indexedReplayFrames != null)
                         {
-                            value = new PlayerReplays();
-                            playerReplays[playerSlot] = value;
-                        }
+                            var replayFrames = indexedReplayFrames
+                                .OrderBy(frame => frame.Index)
+                                .Select(frame => frame.Frame)
+                                .ToList();
 
-                        value.replayFrames = replayFrames!;
+                            if (!playerReplays.TryGetValue(playerSlot, out PlayerReplays? value))
+                            {
+                                value = new PlayerReplays();
+                                playerReplays[playerSlot] = value;
+                            }
+
+                            value.replayFrames = replayFrames!;
+                        }
                     }
                     else
                     {
-                        SharpTimerError($"Error: Failed to deserialize replay frames from {playerReplaysPath}");
-                        Server.NextFrame(() => PrintToChat(player, Localizer["replay_corrupt"]));
+                        Server.NextFrame(() => { PrintToChat(player, $"Unsupported replay format"); });
                     }
                 }
                 else
                 {
                     SharpTimerError($"File does not exist: {playerReplaysPath}");
                     Server.NextFrame(() => PrintToChat(player, Localizer["replay_dont_exist"]));
+                }
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error during deserialization: {ex.Message}");
+            }
+        }
+
+        private async Task ReadReplayFromGlobal(CCSPlayerController player, int recordId, int style, int bonusX = 0)
+        {
+            string currentMapFull = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
+            var payload = new
+            {
+                record_id = recordId,
+                map_name = currentMapFull,
+                style = style
+            };
+
+            try
+            {
+
+                var jsonString = await GetReplayFromGlobal(payload);
+                var indexedReplayFrames = JsonSerializer.Deserialize<List<IndexedReplayFrames>>(jsonString);
+
+                if (indexedReplayFrames != null)
+                {
+                    var replayFrames = indexedReplayFrames
+                        .OrderBy(frame => frame.Index)
+                        .Select(frame => frame.Frame)
+                        .ToList();
+
+                    if (!playerReplays.TryGetValue(player.Slot, out PlayerReplays? value))
+                    {
+                        value = new PlayerReplays();
+                        playerReplays[player.Slot] = value;
+                    }
+
+                    value.replayFrames = replayFrames!;
                 }
             }
             catch (Exception ex)
@@ -314,7 +353,7 @@ namespace SharpTimer
                     Server.ExecuteCommand("bot_zombie 1");
                     Server.ExecuteCommand("bot_chatter off");
                     Server.ExecuteCommand("sv_cheats 0");
-                    
+
                     AddTimer(3.0f, () =>
                     {
                         foundReplayBot = false;
@@ -398,29 +437,31 @@ namespace SharpTimer
 
             string fileName = $"{(topSteamID == "x" ? $"{srSteamID}" : $"{topSteamID}")}_replay.json";
             string playerReplaysPath;
-            if(style != 0) playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", (bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}"), GetNamedStyle(style), fileName);
+            if (style != 0) playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", (bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}"), GetNamedStyle(style), fileName);
             else playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", (bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}"), fileName);
 
             try
             {
                 if (File.Exists(playerReplaysPath))
                 {
-                    string jsonString = File.ReadAllText(playerReplaysPath);
-                    var indexedReplayFrames = JsonSerializer.Deserialize<List<IndexedReplayFrames>>(jsonString);
-
-                    if (indexedReplayFrames != null)
+                    var jsonString = await File.ReadAllTextAsync(playerReplaysPath);
+                    if (!jsonString.Contains("PositionString"))
                     {
-                        return true;
+                        var indexedReplayFrames = JsonSerializer.Deserialize<List<IndexedReplayFrames>>(jsonString);
+
+                        if (indexedReplayFrames != null)
+                        {
+                            return true;
+                        }
+                        return false;
                     }
                     else
                     {
-                        Console.WriteLine($"Error: Failed to deserialize replay frames from {playerReplaysPath}");
                         return false;
                     }
                 }
                 else
                 {
-                    Console.WriteLine($"File does not exist: {playerReplaysPath}");
                     return false;
                 }
             }

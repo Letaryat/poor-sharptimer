@@ -24,11 +24,15 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 using CounterStrikeSharp.API.Modules.Entities;
+using System.Runtime.InteropServices;
 
 namespace SharpTimer
 {
     public partial class SharpTimer
     {
+        private delegate nint CNetworkSystemUpdatePublicIp(nint a1);
+        private static CNetworkSystemUpdatePublicIp? _networkSystemUpdatePublicIp;
+
         public async Task<(bool IsLatest, string LatestVersion)> IsLatestVersion()
         {
             try
@@ -95,17 +99,8 @@ namespace SharpTimer
             {
                 Task.Run(async () =>
                 {
-                    Dictionary<string, PlayerRecord> sortedRecords;
-                    if (!enableDb)
-                    {
-                        SharpTimerDebug($"Getting Server Record AD using json");
-                        sortedRecords = await GetSortedRecords();
-                    }
-                    else
-                    {
-                        SharpTimerDebug($"Getting Server Record AD using database");
-                        sortedRecords = await GetSortedRecordsFromDatabase(100);
-                    }
+                    SharpTimerDebug($"Getting Server Record AD using database");
+                    var sortedRecords = await GetSortedRecordsFromDatabase(100);
 
                     SharpTimerDebug($"Running Server Record AD...");
 
@@ -643,6 +638,24 @@ namespace SharpTimer
             return sortedRecords;
         }
 
+        public static PlayerRecord GetRecordByPosition(Dictionary<string, PlayerRecord> sortedRecords, int position)
+        {
+            if (position < 1 || position > sortedRecords.Count)
+            {
+                return null;
+            }
+
+            var recordsList = sortedRecords.Values.ToList();
+            for (int i = 0; i < recordsList.Count; i++)
+            {
+                if (i + 1 == position)
+                {
+                    return recordsList[i];
+                }
+            }
+            return null; 
+        }
+
         public async Task<(string, string, string)> GetMapRecordSteamID(int bonusX = 0, int top10 = 0)
         {
             string mapRecordsPath = Path.Combine(playerRecordsPath!, bonusX == 0 ? $"{currentMapName}.json" : $"{currentMapName}_bonus{bonusX}.json");
@@ -880,6 +893,7 @@ namespace SharpTimer
                     stageTriggerPoses.Clear();
 
                     KillServerCommandEnts();
+                    globalDisabled = false;
 
                     if (!sqlCheck)
                     {
@@ -1040,8 +1054,6 @@ namespace SharpTimer
 
                 entityCache = new EntityCache();
                 UpdateEntityCache();
-
-                _ = Task.Run(async () => { SortedCachedRecords = await GetSortedRecords(); });
 
                 ClearMapData();
 
@@ -1559,6 +1571,42 @@ namespace SharpTimer
         public bool IsApproximatelyEqual(float actual, float expected, float tolerance = 0.01f)
         {
             return Math.Abs(actual - expected) < tolerance;
+        }
+
+        // https://github.com/daffyyyy/CS2-SimpleAdmin/blob/main/CS2-SimpleAdmin/Helper.cs#L457C5-L481C6
+        // remember, dont reinvent the wheel
+        public static string GetServerIp()
+        {
+            var networkSystem = NativeAPI.GetValveInterface(0, "NetworkSystemVersion001");
+
+            unsafe
+            {
+                if (_networkSystemUpdatePublicIp == null)
+                {
+                    var funcPtr = *(nint*)(*(nint*)(networkSystem) + 256);
+                    _networkSystemUpdatePublicIp = Marshal.GetDelegateForFunctionPointer<CNetworkSystemUpdatePublicIp>(funcPtr);
+                }
+                /*
+                struct netadr_t
+                {
+                uint32_t type
+                uint8_t ip[4]
+                uint16_t port
+                }
+                */
+                // + 4 to skip type, because the size of uint32_t is 4 bytes
+                var ipBytes = (byte*)(_networkSystemUpdatePublicIp(networkSystem) + 4);
+                // port is always 0, use the one from convar "hostport"
+                return $"{ipBytes[0]}.{ipBytes[1]}.{ipBytes[2]}.{ipBytes[3]}";
+            }
+        }
+
+        public (string, string) GetHostnameAndIp()
+        {
+            string ip = $"{GetServerIp()}:{ConVar.Find("hostport")!.GetPrimitiveValue<int>()}";
+            string hostname = ConVar.Find("hostname")!.StringValue;
+
+            return (ip, hostname);
         }
     }
 }
