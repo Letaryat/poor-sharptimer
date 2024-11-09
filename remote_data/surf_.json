@@ -2033,7 +2033,7 @@
     },
     "surf_adventure": {
         "Tier": 1,
-        "Type": "Linear"
+        "Type": "Staged"
     },
     "surf_airflow": {
         "Tier": 4,
