@@ -1580,6 +1580,10 @@ namespace SharpTimer
 
             playerTimers[player!.Slot].TicksSinceLastCmd = 0;
             playerTimers[player!.Slot].HidePlayers = !playerTimers[player!.Slot].HidePlayers;
+            if (playerTimers[player!.Slot].HidePlayers)
+                PrintToChat(player, $"Hide: {ChatColors.Green}Enabled");
+            else
+                PrintToChat(player, $"Hide: {ChatColors.LightRed}Disabled");
         }
         /*
         [ConsoleCommand("css_mode", "Changes mode")]

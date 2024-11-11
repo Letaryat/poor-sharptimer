@@ -199,6 +199,27 @@ namespace SharpTimer
         //set respawn
         public string? SetRespawnPos { get; set; }
         public string? SetRespawnAng { get; set; }
+
+        public class ViewAngle
+        {
+            public float X { get; set; }
+            public float Y { get; set; }
+            public float Z { get; set; }
+
+            public ViewAngle (QAngle angles)
+            {
+                X = angles.X;
+                Y = angles.Y;
+                Z = angles.Z;
+            }
+
+        }
+
+        public List<ViewAngle> ViewAngles { get; set; } = new List<ViewAngle>();
+        public List<float> YawSpeed { get; set; } = new List<float>();
+        public List<float> YawAccel { get; set; } = new List<float>();
+        public int YawAccelSpikes { get; set; }
+        public bool ACFlagged { get; set; }
     }
 
     public class CurrentZoneInfo
