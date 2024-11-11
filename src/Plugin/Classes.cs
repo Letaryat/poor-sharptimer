@@ -119,6 +119,13 @@ namespace SharpTimer
         public int currentStyle { get; set; }
         public bool changedStyle { get; set; }
 
+        public CurrentMode Mode { get; set; }
+        public enum CurrentMode
+        {
+            Classic,
+            Arcade
+        }
+
         //replay
         public bool IsReplaying { get; set; }
         public bool IsRecordingReplay { get; set; }
@@ -153,6 +160,7 @@ namespace SharpTimer
         public bool Azerty { get; set; }
         public bool HideTimerHud { get; set; }
         public bool HideKeys { get; set; }
+        public bool HidePlayers { get; set; }
         public bool SoundsEnabled { get; set; }
         public bool BindsDisabled { get; set; }
         public bool HideJumpStats { get; set; }

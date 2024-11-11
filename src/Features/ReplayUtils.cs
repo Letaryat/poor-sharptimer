@@ -38,8 +38,6 @@ namespace SharpTimer
                 ReplayVector currentSpeed = ReplayVector.GetVectorish(player.PlayerPawn.Value!.AbsVelocity ?? new Vector(0, 0, 0));
                 ReplayQAngle currentRotation = ReplayQAngle.GetQAngleish(player.PlayerPawn.Value.EyeAngles ?? new QAngle(0, 0, 0));
 
-
-
                 var buttons = player.Buttons;
                 var flags = player.Pawn.Value.Flags;
                 var moveType = player.Pawn.Value.MoveType;
@@ -72,6 +70,7 @@ namespace SharpTimer
 
                 if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? value))
                 {
+                    
                     var replayFrame = playerReplays[player.Slot].replayFrames[plackbackTick];
 
                     if (((PlayerFlags)replayFrame.Flags & PlayerFlags.FL_ONGROUND) != 0)
@@ -92,7 +91,15 @@ namespace SharpTimer
                         value.MovementService!.DuckAmount = 0;
                     }
 
-                    player.PlayerPawn.Value!.Teleport(ReplayVector.ToVector(replayFrame.Position!), ReplayQAngle.ToQAngle(replayFrame.Rotation!), ReplayVector.ToVector(replayFrame.Speed!));
+                    var current_pos = player!.PlayerPawn.Value!.AbsOrigin!;
+                    Vector velocity = (ReplayVector.ToVector(replayFrame.Position!) - current_pos) * 64;
+
+                    if ((current_pos - ReplayVector.ToVector(replayFrame.Position!)).Length() > 200)
+                        player.PlayerPawn.Value.Teleport(ReplayVector.ToVector(replayFrame.Position!), ReplayQAngle.ToQAngle(replayFrame.Rotation!), new Vector(nint.Zero));
+                    else
+                        player.PlayerPawn.Value.Teleport(new Vector(nint.Zero), ReplayQAngle.ToQAngle(replayFrame.Rotation!), velocity);
+
+                    //player.PlayerPawn.Value!.Teleport(ReplayVector.ToVector(replayFrame.Position!), ReplayQAngle.ToQAngle(replayFrame.Rotation!), ReplayVector.ToVector(replayFrame.Speed!));
 
                     var replayButtons = $"{((replayFrame.Buttons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                         $"{((replayFrame.Buttons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
@@ -144,7 +151,6 @@ namespace SharpTimer
 
         private void OnRecordingStart(CCSPlayerController player, int bonusX = 0, int style = 0)
         {
-            //playerReplays[player.Slot].replayFrames.Clear();
             try
             {
                 playerReplays.Remove(player.Slot);

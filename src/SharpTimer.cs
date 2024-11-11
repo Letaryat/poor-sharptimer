@@ -18,12 +18,15 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using CounterStrikeSharp.API.Modules.UserMessages;
 using System.Runtime.InteropServices;
+using static SharpTimer.PlayerTimerInfo;
 
 namespace SharpTimer
 {
-    [MinimumApiVersion(281)]
+    [MinimumApiVersion(286)]
     public partial class SharpTimer : BasePlugin
     {
         //public required MemoryFunctionVoid<CCSPlayer_MovementServices, IntPtr> RunCommandLinux;
@@ -68,6 +71,63 @@ namespace SharpTimer
             AddTimer((float)randomf, () => CheckCvarsAndMaxVelo(), CounterStrikeSharp.API.Modules.Timers.TimerFlags.REPEAT);
 
             currentMapName = Server.MapName;
+
+            RegisterListener<Listeners.CheckTransmit>((CCheckTransmitInfoList infoList) =>
+            {
+                IEnumerable<CCSPlayerController> players = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
+
+                if (!players.Any())
+                    return;
+
+                foreach ((CCheckTransmitInfo info, CCSPlayerController? player) in infoList)
+                {
+                    if (player == null || player.IsBot || !player.IsValid)
+                        continue;
+
+                    if(player.Slot == 0)
+                        continue;
+                    
+                    if (!playerTimers[player.Slot].HidePlayers)
+                        continue;
+
+                    foreach (var target in Utilities.GetPlayers())
+                    {
+                        if (target == null || target.IsHLTV || target.IsBot || !target.IsValid)
+                            continue;
+                        
+                        var pawn = target.Pawn.Value!;
+                        if (pawn is null)
+                            continue;
+                        
+                        if (player.Pawn.Value?.As<CCSPlayerPawnBase>().PlayerState == CSPlayerState.STATE_OBSERVER_MODE)
+                            continue;
+
+                        if (pawn == player.Pawn.Value)
+                            continue;
+
+                        if ((LifeState_t)pawn.LifeState != LifeState_t.LIFE_ALIVE)
+                        {
+                            info.TransmitEntities.Remove(pawn);
+                            continue;
+                        }
+                        HookUserMessage(UserMessage.FindIdByName("CMsgTEFireBullets"), sound =>
+                        {
+                            return HookResult.Handled;
+                        }, HookMode.Pre);
+                        HookUserMessage(UserMessage.FindIdByName("CCSUsrMsg_WeaponSound"), sound =>
+                        {
+                            return HookResult.Handled;
+                        }, HookMode.Pre);
+                        HookUserMessage(UserMessage.FindIdByName("CMsgSosStartSoundEvent"), sound =>
+                        {
+                            return HookResult.Handled;
+                        }, HookMode.Pre);
+                        info.TransmitEntities.Remove(pawn);
+                    }
+                }
+            });
+
+            
 
             RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);
 
@@ -272,7 +332,7 @@ namespace SharpTimer
             if (player != null && !player.IsBot && player.IsValid && !player.IsHLTV)
             {
                 try
-                {
+                {  
                     var moveForward = getMovementButton.Contains("Forward");
                     var moveBackward = getMovementButton.Contains("Backward");
                     var moveLeft = getMovementButton.Contains("Left");

@@ -1568,6 +1568,55 @@ namespace SharpTimer
             PrintToChat(player, Localizer["info_runtime", RuntimeInformation.RuntimeIdentifier]);
         }
 
+        [ConsoleCommand("css_hide", "Hides players")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+        public void HideCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player))
+                return;
+
+            if (CommandCooldown(player))
+                return;
+
+            playerTimers[player!.Slot].TicksSinceLastCmd = 0;
+            playerTimers[player!.Slot].HidePlayers = !playerTimers[player!.Slot].HidePlayers;
+        }
+        /*
+        [ConsoleCommand("css_mode", "Changes mode")]
+        [CommandHelper(minArgs: 1, usage: "[mode]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void ModeCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player) || goToEnabled == false) return;
+            SharpTimerDebug($"{player!.PlayerName} calling css_goto...");
+
+            if (CommandCooldown(player))
+                return;
+
+            if (ReplayCheck(player))
+                return;
+
+            if (IsTimerBlocked(player))
+                return;
+
+            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+
+            string mode = command.GetArg(1).ToLower();
+            switch(mode)
+            {
+                case "classic":
+                    playerTimers[player.Slot].Mode = PlayerTimerInfo.CurrentMode.Classic;
+                    break;
+                case "arcade":
+                    playerTimers[player.Slot].Mode = PlayerTimerInfo.CurrentMode.Arcade;
+                    break;
+                default:
+                    playerTimers[player.Slot].Mode = PlayerTimerInfo.CurrentMode.Classic;
+                    break;
+                
+            }
+            Server.NextFrame(() => PrintToChat(player, $"Mode changed to: {playerTimers[player.Slot].Mode.ToString()}"));
+        }
+        */
         [ConsoleCommand("css_goto", "Teleports you to a player")]
         [CommandHelper(minArgs: 1, usage: "[name]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void GoToPlayer(CCSPlayerController? player, CommandInfo command)
@@ -1688,6 +1737,7 @@ namespace SharpTimer
 
             // Get the count of checkpoints for this player
             int checkpointCount = playerCheckpoints[player.Slot].Count;
+            playerTimers[player.Slot].CheckpointIndex = checkpointCount - 1;
 
             // Print the chat message with the checkpoint count
             PrintToChat(player, Localizer["checkpoint_set", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint"), checkpointCount]);
