@@ -140,7 +140,8 @@ namespace SharpTimer
 
                         if (jumpStatsEnabled == true) OnJumpStatTick(player, playerSpeed, player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!, player.PlayerPawn?.Value.EyeAngles!, playerButtons);
                         if (StrafeHudEnabled == true) OnSyncTick(player, playerButtons, player.PlayerPawn?.Value.EyeAngles!);
-                        if(StrafeHudEnabled == true && playerTimers[player.Slot].inStartzone) 
+
+                        if(playerTimer.Rotation.Count > 0 && StrafeHudEnabled == true && playerTimers[player.Slot].inStartzone) 
                         { 
                             playerTimer.Sync = 100.00f;
                             playerTimer.Rotation.Clear();
