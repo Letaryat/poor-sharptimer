@@ -211,47 +211,103 @@ namespace SharpTimer
                 SharpTimerDebug($"Exception in OnJumpStatTickInAir: {ex}");
             }
         }
- 
+
+        /// updated sync calculation function
         public void OnSyncTick(CCSPlayerController player, PlayerButtons? buttons, QAngle eyeangle)
         {
             try
             {
                 var playerTimer = playerTimers[player.Slot];
-                bool left = false;
-                bool right = false;
 
-                #pragma warning disable CS0219 // annoyence
-                bool leftRight = false;
-                #pragma warning restore CS0219
+                // Start with 100% sync initially if TotalSync hasn't been incremented
+                if (playerTimers[player.Slot].inStartzone)
+                    playerTimer.Sync = 100.00f;
+
+                // Check if the player is on the ground; reset air and sync frames if true
+
+                bool strafingLeft = false;
+                bool strafingRight = false;
+
+
 
                 if ((buttons & PlayerButtons.Moveleft) != 0 && (buttons & PlayerButtons.Moveright) != 0)
-                    leftRight = true;
+                {
+                    return; // Ignore if both left and right are pressed
+                }
                 else if ((buttons & PlayerButtons.Moveleft) != 0)
-                    left = true;
+                {
+                    strafingLeft = true;
+                }
                 else if ((buttons & PlayerButtons.Moveright) != 0)
-                    right = true;
-                else return;
+                {
+                    strafingRight = true;
+                }
+                else
+                {
+                    return; // Ignore if neither left nor right is pressed
+                }
 
+                // Add the current eye angle to the rotation history
                 QAngle newEyeAngle = new QAngle(eyeangle.X, eyeangle.Y, eyeangle.Z);
                 playerTimer.Rotation.Add(newEyeAngle);
-                playerTimer.TotalSync++;
 
-                //Check left goodsync
-                if (playerTimer.Rotation != null && playerTimer.Rotation.Count > 1 && eyeangle.Y > playerTimer.Rotation[playerTimer.TotalSync - 2].Y && left)
-                    playerTimer.GoodSync++;
+                // Only proceed if we have enough data points in Rotation
+                if (playerTimer.Rotation.Count > 1)
+                {
+                    float previousEyeAngleY = playerTimer.Rotation[playerTimer.Rotation.Count - 2].Y; // Use Rotation.Count - 2
+                    float currentEyeAngleY = eyeangle.Y;
+                    if (!player.IsBot)
+                    {
+                        //player.PrintToConsole($"previousEyeAngleY: {previousEyeAngleY} / currentEyeAngleY: {currentEyeAngleY} "); 
+                    }
+                    // Normalize angle difference to handle wrapping from -180 to 180
+                    float deltaY = currentEyeAngleY - previousEyeAngleY;
+                    if (deltaY > 180)
+                    {
+                        deltaY -= 360;
+                    }
+                    else if (deltaY < -180)
+                    {
+                        deltaY += 360;
+                    }
+                    if (Math.Abs(deltaY) < 0.01f) return;
+                    bool onGround = ((PlayerFlags)player.Pawn.Value!.Flags & PlayerFlags.FL_ONGROUND) == PlayerFlags.FL_ONGROUND;
+                    if (onGround || (!onGround && (buttons & (PlayerButtons.Moveleft | PlayerButtons.Moveright)) == 0))
+                    {
+                        return; // Ignore calculation if the player is on the ground or airborne without pressing movement buttons
+                    }
 
-                //Check right goodsync
-                if (playerTimer.Rotation != null && playerTimer.Rotation.Count > 1 && eyeangle.Y < playerTimer.Rotation[playerTimer.TotalSync - 2].Y && right)
-                    playerTimer.GoodSync++;
+                    else
+                    {
+                        // Increment frames in the air
+                        playerTimer.TotalSync++;
+                    }
 
-                playerTimer.Sync = Math.Round((float)playerTimers[player.Slot].GoodSync / playerTimers[player.Slot].TotalSync * 100, 0);
+                    // Determine rotation direction
+                    bool rotatingLeft = deltaY > 0;
+                    bool rotatingRight = deltaY < 0;
+
+                    // Add sync frame if strafing and rotating match and the player is airborne
+                    if (!onGround && ((strafingLeft && rotatingLeft) || (strafingRight && rotatingRight)))
+                    {
+                        playerTimer.GoodSync++; // Increment sync frames
+                    }
+                    //player.PrintToConsole($"Sync: {playerTimer.GoodSync} / {playerTimer.TotalSync} , deltaY: {deltaY}");
+                }
+
+                // Calculate sync percentage
+                if (playerTimer.TotalSync >= 2) // Adjust threshold as needed
+                {
+                    playerTimer.Sync = (playerTimer.TotalSync > 0)
+                        ? (playerTimer.GoodSync / (float)playerTimer.TotalSync) * 100
+                        : 0;
+                }
             }
             catch (Exception ex)
             {
                 SharpTimerDebug($"Exception in OnSyncTick: {ex}");
             }
         }
-
         public static char GetJSColor(double distance)
         {
             if (distance < 230)

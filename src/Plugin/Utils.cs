@@ -1355,7 +1355,7 @@ namespace SharpTimer
             stageTriggers.Clear();
             stageTriggerAngs.Clear();
             stageTriggerPoses.Clear();
-
+            connectedReplayBots.Clear();//maybe a fix for not spawning replayBot on map change,works for me tho
             stageTriggerCount = 0;
             useStageTriggers = false;
 

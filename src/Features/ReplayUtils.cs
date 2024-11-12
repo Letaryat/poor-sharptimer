@@ -263,11 +263,28 @@ namespace SharpTimer
             }
         }
 
+        //ReplayBot spawn with SR records.May be should intergrate with the Global API
         private async Task SpawnReplayBot()
         {
             try
             {
-                if (await CheckSRReplay() != true) return;
+
+                Dictionary<string, PlayerRecord> sortedRecords;
+                if (!enableDb)
+                {
+                    sortedRecords = await GetSortedRecords();
+                }
+                else
+                {
+                    sortedRecords = await GetSortedRecordsFromDatabase(1);
+                }
+
+                if (sortedRecords.Count == 0 || await CheckSRReplay() != true) return;
+
+
+                var serverRecord = sortedRecords.FirstOrDefault();
+                string playerName = serverRecord.Value.PlayerName!;
+                string bestTime = FormatTime(serverRecord.Value.TimerTicks);
 
                 Server.NextFrame(() =>
                 {
@@ -280,6 +297,7 @@ namespace SharpTimer
                             if (connectedReplayBots.TryGetValue(bot.Slot, out var someValue)) connectedReplayBots.Remove(bot.Slot);
                         }
                     }
+                    replayBotName = $"[SR] {playerName} {bestTime}";
                     Server.ExecuteCommand("sv_cheats 1");
                     Server.ExecuteCommand("bot_add_ct");
                     Server.ExecuteCommand("bot_quota 1");
@@ -287,8 +305,9 @@ namespace SharpTimer
                     Server.ExecuteCommand("bot_stop 1");
                     Server.ExecuteCommand("bot_freeze 1");
                     Server.ExecuteCommand("bot_zombie 1");
+                    Server.ExecuteCommand("bot_chatter off");
                     Server.ExecuteCommand("sv_cheats 0");
-                    
+
                     AddTimer(3.0f, () =>
                     {
                         foundReplayBot = false;
@@ -313,8 +332,8 @@ namespace SharpTimer
                                     tempPlayer.PlayerPawn.Value!.Bot!.IsSleeping = true;
                                     tempPlayer.PlayerPawn.Value!.Bot!.AllowActive = true;
                                     tempPlayer.RemoveWeapons();
-                                    tempPlayer!.Pawn.Value!.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_NONE;
-                                    tempPlayer!.Pawn.Value!.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_NONE;
+                                    tempPlayer!.Pawn.Value!.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
+                                    tempPlayer!.Pawn.Value!.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
                                     Utilities.SetStateChanged(tempPlayer, "CCollisionProperty", "m_CollisionGroup");
                                     Utilities.SetStateChanged(tempPlayer, "CCollisionProperty", "m_collisionAttribute");
                                     SharpTimerDebug($"Removed Collison for replay bot!");
