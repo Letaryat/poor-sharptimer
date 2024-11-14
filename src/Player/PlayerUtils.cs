@@ -27,42 +27,52 @@ namespace SharpTimer
         public void PrintAllEnabledCommands(CCSPlayerController player)
         {
             SharpTimerDebug($"Printing Commands for {player.PlayerName}");
-            player.PrintToChat($" {Localizer["prefix"]} Available Commands:");
+            player.PrintToChat($"{Localizer["prefix"]} Check your console for a list of available commands!");
 
-            if (respawnEnabled) player.PrintToChat($" {Localizer["prefix"]} !r (css_r) - Respawns you");
-            if (respawnEnabled && bonusRespawnPoses.Count != 0) player.PrintToChat($" {Localizer["prefix"]} !rb <#> / !b <#> (css_rb / css_b) - Respawns you to a bonus");
-            if (respawnEnabled && bonusRespawnPoses.Count != 0) player.PrintToChat($" {Localizer["prefix"]} !setresp / !startpos (css_setresp / css_startpos) - Save a custom respawn point within the start trigger");
-            if (topEnabled) player.PrintToChat($" {Localizer["prefix"]} !top (css_top) - Lists top 10 records on this map");
-            if (topEnabled && bonusRespawnPoses.Count != 0) player.PrintToChat($" {Localizer["prefix"]} !topbonus <#> (css_topbonus) - Lists top 10 records of a bonus");
-            if (rankEnabled) player.PrintToChat($" {Localizer["prefix"]} !rank (css_rank) - Shows your current rank and pb");
-            if (globalRanksEnabled) player.PrintToChat($" {Localizer["prefix"]} !points (css_points) - Prints top 10 points");
-            if (goToEnabled) player.PrintToChat($" {Localizer["prefix"]} !goto <name> (css_goto) - Teleports you to a player");
-            if (stageTriggerPoses.Count != 0) player.PrintToChat($" {Localizer["prefix"]} !stage <#> (css_stage) - Teleports you to a stage");
-            player.PrintToChat($" {Localizer["prefix"]} !sounds (css_sounds) - Toggle timer sounds!");
-            player.PrintToChat($" {Localizer["prefix"]} !hud (css_hud) - Toggle timer hud!");
-            player.PrintToChat($" {Localizer["prefix"]} !keys (css_keys) - Toggle hud keys!");
-            player.PrintToChat($" {Localizer["prefix"]} !fov <0-140> (css_fov) - Change your field of view!");
+            if (respawnEnabled) player.PrintToConsole($"• !r (css_r) - Respawns you");
+            if (respawnEnabled && bonusRespawnPoses.Count != 0) player.PrintToConsole($"• !rb <#> / !b <#> (css_rb / css_b) - Respawns you to a bonus");
+            if (respawnEnabled && bonusRespawnPoses.Count != 0) player.PrintToConsole($"• !setresp / !startpos (css_setresp / css_startpos) - Save a custom respawn point within the start trigger");
+            if (topEnabled) player.PrintToConsole($"• !top (css_top) - Lists top 10 records on this map");
+            if (topEnabled && bonusRespawnPoses.Count != 0) player.PrintToConsole($"• !topbonus <#> (css_topbonus) - Lists top 10 records of a bonus");
+            if (rankEnabled) player.PrintToConsole($"• !rank (css_rank) - Shows your current rank and pb");
+            if (globalRanksEnabled) player.PrintToConsole($"• !points (css_points) - Prints top 10 points");
+            if (goToEnabled) player.PrintToConsole($"• !goto <name> (css_goto) - Teleports you to a player");
+            if (stageTriggerPoses.Count != 0) player.PrintToConsole($"• !stage <#> (css_stage) - Teleports you to a stage");
+            player.PrintToConsole($"• !sounds (css_sounds) - Toggle timer sounds!");
+            player.PrintToConsole($"• !hud (css_hud) - Toggle timer hud!");
+            player.PrintToConsole($"• !keys (css_keys) - Toggle hud keys!");
+            player.PrintToConsole($"• !fov <0-140> (css_fov) - Change your field of view!");
 
             if (cpEnabled)
             {
-                PrintToChat(player, currentMapName!.Contains("surf_") ? "!saveloc (css_saveloc) - Saves a Loc" : "!cp (css_cp) - Sets a Checkpoint");
-                PrintToChat(player, currentMapName!.Contains("surf_") ? "!loadloc (css_loadloc) - Teleports you to the last Loc" : "!tp (css_tp) - Teleports you to the last Checkpoint");
-                PrintToChat(player, currentMapName!.Contains("surf_") ? "!prevloc (css_prevloc) - Teleports you one Loc back" : "!prevcp (css_prevcp) - Teleports you one Checkpoint back");
-                PrintToChat(player, currentMapName!.Contains("surf_") ? "!nextloc (css_nextloc) - Teleports you one Loc forward" : "!nextcp (css_nextcp) - Teleports you one Checkpoint forward");
+                if (currentMapName!.Contains("surf_"))
+                {
+                    player.PrintToConsole($"• !saveloc (css_saveloc) - Saves a Loc");
+                    player.PrintToConsole($"• !loadloc (css_loadloc) - Teleports you to the last Loc");
+                    player.PrintToConsole($"• !prevloc (css_prevloc) - Teleports you one Loc back");
+                    player.PrintToConsole($"• !nextloc (css_nextloc) - Teleports you one Loc forward");
+                }
+                else
+                {
+                    player.PrintToConsole($"• !cp (css_cp) - Sets a Checkpoint");
+                    player.PrintToConsole($"• !tp (css_tp) - Teleports you to the last Checkpoint");
+                    player.PrintToConsole($"• !prevcp (css_prevcp) - Teleports you one Checkpoint back");
+                    player.PrintToConsole($"• !nextcp (css_nextcp) - Teleports you one Checkpoint forward");
+                }
             }
 
             if (enableReplays)
             {
-                player.PrintToChat($" {Localizer["prefix"]} !replay / !replaysr (css_replay / css_replaysr) - Replay the current map server record");
-                player.PrintToChat($" {Localizer["prefix"]} !replaytop [1-10] (css_replaytop) - Replay a top 10 server map record ");
-                player.PrintToChat($" {Localizer["prefix"]} !replaypb (css_replaypb) - Replay your pb for the current map");
-                player.PrintToChat($" {Localizer["prefix"]} !replaybonus / !replayb [1-10] [bonus stage] (css_replaybonus) - Replay a top 10 server bonus record");
-                player.PrintToChat($" {Localizer["prefix"]} !replaybonuspb / !replaybpb (css_replaybonuspb) - Replay your pb for a bonus");
+                player.PrintToConsole($"• !replay / !replaysr (css_replay / css_replaysr) - Replay the current map server record");
+                player.PrintToConsole($"• !replaytop [1-10] (css_replaytop) - Replay a top 10 server map record ");
+                player.PrintToConsole($"• !replaypb (css_replaypb) - Replay your pb for the current map");
+                player.PrintToConsole($"• !replaybonus / !replayb [1-10] [bonus stage] (css_replaybonus) - Replay a top 10 server bonus record");
+                player.PrintToConsole($"• !replaybonuspb / !replaybpb (css_replaybonuspb) - Replay your pb for a bonus");
             }
 
-            if (jumpStatsEnabled) player.PrintToChat($" {Localizer["prefix"]} !jumpstats (css_jumpstats) - Toggles JumpStats");
-            player.PrintToChat($" {Localizer["prefix"]} !hideweapon (css_hideweapon) - Toggles weapon visibility");
-            if(enableStyles) player.PrintToChat($" {Localizer["prefix"]} !styles (css_styles) - List all styles");
+            if (jumpStatsEnabled) player.PrintToConsole($"• !jumpstats (css_jumpstats) - Toggles JumpStats");
+            player.PrintToConsole($"• !hideweapon (css_hideweapon) - Toggles weapon visibility");
+            if (enableStyles) player.PrintToConsole($"• !styles (css_styles) - List all styles");
         }
 
         public void ForcePlayerSpeed(CCSPlayerController player, string activeWeapon)
