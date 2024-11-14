@@ -75,7 +75,7 @@ namespace SharpTimer
                     if (enableDb) _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, playerSlot, true));
 
                     if (connectMsgEnabled == true && !enableDb) PrintToChatAll(Localizer["connect_message", player.PlayerName]);
-                    if (cmdJoinMsgEnabled == true) PrintAllEnabledCommands(player);
+                    if (cmdJoinMsgEnabled == true && isForBot == false) PrintAllEnabledCommands(player);
 
                     SharpTimerDebug($"Added player {player.PlayerName} with UserID {player.UserId} to connectedPlayers");
                     SharpTimerDebug($"Total players connected: {connectedPlayers.Count}");
