@@ -218,8 +218,14 @@ namespace SharpTimer
         public List<ViewAngle> ViewAngles { get; set; } = new List<ViewAngle>();
         public List<float> YawSpeed { get; set; } = new List<float>();
         public List<float> YawAccel { get; set; } = new List<float>();
-        public int YawAccelSpikes { get; set; }
-        public bool ACFlagged { get; set; }
+        public List<double> AvgAccel { get; set; } = new List<double>();
+        public double YawAccelPercent { get; set; }
+        public List<double> YawAccelPercents { get; set; }  = new List<double>();
+        public List<bool> MoveLeft { get; set; } = new List<bool>();
+        public List<bool> MoveRight { get; set; } = new List<bool>();
+        public int PerfectStrafes { get; set; }
+        public int MismatchedInputs { get; set; }
+        public bool ACFlagged { get; set; } = false;
     }
 
     public class CurrentZoneInfo
@@ -354,6 +360,7 @@ namespace SharpTimer
         public string? SteamID { get; set; }
         public string? MapName { get; set; }
         public int TimerTicks { get; set; }
+        public bool Replay { get; set; }
     }
 
     public class Record

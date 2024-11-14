@@ -686,6 +686,14 @@ namespace SharpTimer
 
             killServerCommands = bool.TryParse(args, out bool killServerCommandsValue) ? killServerCommandsValue : args != "0" && killServerCommands;
         }
+        [ConsoleCommand("sharptimer_enable_anticheat", "If enabled, suspicious players will be flagged. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerAnticheatCommandConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            useAnticheat = bool.TryParse(args, out bool value) ? value : args != "0" && useAnticheat;
+        }
 
         [ConsoleCommand("sharptimer_enable_afk_hibernation", "If True the plugin will reduce functionality to afk players to improve performance. Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]

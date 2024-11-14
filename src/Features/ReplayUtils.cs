@@ -91,15 +91,7 @@ namespace SharpTimer
                         value.MovementService!.DuckAmount = 0;
                     }
 
-                    var current_pos = player!.PlayerPawn.Value!.AbsOrigin!;
-                    Vector velocity = (ReplayVector.ToVector(replayFrame.Position!) - current_pos) * 64;
-
-                    if ((current_pos - ReplayVector.ToVector(replayFrame.Position!)).Length() > 200)
-                        player.PlayerPawn.Value.Teleport(ReplayVector.ToVector(replayFrame.Position!), ReplayQAngle.ToQAngle(replayFrame.Rotation!), new Vector(nint.Zero));
-                    else
-                        player.PlayerPawn.Value.Teleport(new Vector(nint.Zero), ReplayQAngle.ToQAngle(replayFrame.Rotation!), velocity);
-
-                    //player.PlayerPawn.Value!.Teleport(ReplayVector.ToVector(replayFrame.Position!), ReplayQAngle.ToQAngle(replayFrame.Rotation!), ReplayVector.ToVector(replayFrame.Speed!));
+                    player.PlayerPawn.Value!.Teleport(ReplayVector.ToVector(replayFrame.Position!), ReplayQAngle.ToQAngle(replayFrame.Rotation!), ReplayVector.ToVector(replayFrame.Speed!));
 
                     var replayButtons = $"{((replayFrame.Buttons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                         $"{((replayFrame.Buttons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
@@ -409,6 +401,9 @@ namespace SharpTimer
             {
                 var botSlot = bot.Slot;
                 var botName = bot.PlayerName;
+                
+                if(bot.IsHLTV)
+                    return;
 
                 AddTimer(3.0f, () =>
                 {

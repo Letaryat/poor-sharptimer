@@ -14,21 +14,21 @@
       }
     },
     "INetworkServerService_GetIGameServer": {
-    "offsets": {
-      "windows": 23,
-      "linux": 24
+      "offsets": {
+        "windows": 23,
+        "linux": 24
+      }
+    },
+    "INetworkGameServer_Slots": {
+      "offsets": {
+        "windows": 624,
+        "linux": 640
+      }
+    },
+    "CServerSideClient_m_nForceWaitForTick": {
+      "offsets": {
+        "windows": 308,
+        "linux": 324
+      }
     }
-  },
-  "INetworkGameServer_Slots": {
-    "offsets": {
-      "windows": 624,
-      "linux": 640
-    }
-  },
-  "CServerSideClient_m_nForceWaitForTick": {
-    "offsets": {
-      "windows": 308,
-      "linux": 324
-    }
-  }
 }

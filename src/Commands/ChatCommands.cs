@@ -21,6 +21,7 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Admin;
+using System.Net;
 
 namespace SharpTimer
 {
@@ -149,22 +150,43 @@ namespace SharpTimer
 
         [ConsoleCommand("css_gc", "Globalcheck")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
-        public void GlobalCheckCommand(CCSPlayerController? player, CommandInfo command)
+        public async void GlobalCheckCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsAllowedPlayer(player)) return;
 
             var playerSlot = player!.Slot;
 
-            var (globalCheck, maxVel, maxWish) = CheckCvarsAndMaxVelo();
-            if(!globalCheck)
-                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.LightRed}Failed"));
-            else
-                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.Green}Passed"));
-
-            if(apiKey == "")
+            if (apiKey == "")
+            {
                 Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.LightRed}Missing API Key!"));
-            else
                 return;
+            }
+            
+            var validKey = await CheckKeyAsync();
+            if (!validKey)
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.LightRed}Invalid API Key!"));
+            else
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.Green}Valid API Key"));
+
+            var validHash = await CheckHashAsync();
+            if (!validHash)
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.LightRed}Invalid ST build!"));
+            else
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.Green}Valid ST build"));
+
+            Server.NextFrame(() =>
+            {
+                var (globalCheck, maxVel, maxWish) = CheckCvarsAndMaxVelo();
+                if (!globalCheck)
+                    PrintToChat(player, $"[GC] {ChatColors.LightRed}Cvar Check Failed");
+                else
+                    PrintToChat(player, $"[GC] {ChatColors.Green}Cvar Check Passed");
+            });
+
+            if (!globalDisabled && validKey && validHash)
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.Green}All checks passed!"));
+            else
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.LightRed}Some checks failed"));
         }
 
         [ConsoleCommand("css_gethash", "GetHash")]
@@ -569,6 +591,7 @@ namespace SharpTimer
 
         [ConsoleCommand("css_top", "Prints top players of this map")]
         [ConsoleCommand("css_mtop", "alias for !top")]
+        [ConsoleCommand("css_maptop", "alias for !top")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void PrintTopRecords(CCSPlayerController? player, CommandInfo command)
         {
@@ -619,7 +642,7 @@ namespace SharpTimer
 
             var playerName = player!.PlayerName;
 
-            SharpTimerDebug($"{playerName} calling css_points...");
+            SharpTimerDebug($"{playerName} calling css_wr...");
 
             if (CommandCooldown(player))
                 return;
@@ -1180,6 +1203,9 @@ namespace SharpTimer
             if (ReplayCheck(player))
                 return;
 
+            if (IsTimerBlocked(player))
+                return;
+
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
             playerTimers[player.Slot].IsTimerRunning = false;
             playerTimers[player.Slot].TimerTicks = 0;
@@ -1591,7 +1617,7 @@ namespace SharpTimer
         public void ModeCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsAllowedPlayer(player) || goToEnabled == false) return;
-            SharpTimerDebug($"{player!.PlayerName} calling css_goto...");
+            SharpTimerDebug($"{player!.PlayerName} calling css_mode...");
 
             if (CommandCooldown(player))
                 return;
@@ -1609,12 +1635,15 @@ namespace SharpTimer
             {
                 case "classic":
                     playerTimers[player.Slot].Mode = PlayerTimerInfo.CurrentMode.Classic;
+                    SetModeClassic(player);
                     break;
                 case "arcade":
                     playerTimers[player.Slot].Mode = PlayerTimerInfo.CurrentMode.Arcade;
+                    SetModeArcade(player);
                     break;
                 default:
                     playerTimers[player.Slot].Mode = PlayerTimerInfo.CurrentMode.Classic;
+                    SetModeClassic(player);
                     break;
                 
             }

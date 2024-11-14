@@ -8,6 +8,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Utils;
 
 namespace SharpTimer
 {
@@ -155,11 +156,13 @@ namespace SharpTimer
                                 string playerName = playerRecord.GetProperty("player_name").GetString()!;
                                 int timerTicks = playerRecord.GetProperty("timer_ticks").GetInt32();
                                 long steamId = playerRecord.GetProperty("steamid").GetInt64();
+                                bool replayExists = playerRecord.GetProperty("replay").GetBoolean();
 
                                 records[steamId.ToString()] = new PlayerRecord
                                 {
                                     PlayerName = playerName,
-                                    TimerTicks = timerTicks
+                                    TimerTicks = timerTicks,
+                                    Replay = replayExists
                                 };                        
                             }
                             Server.NextFrame(() =>
@@ -168,7 +171,8 @@ namespace SharpTimer
                                 int position = 1;
                                 foreach (var record in records)
                                 {
-                                    PrintToChat(player, $"{Localizer["records_map", position, record.Value.PlayerName!, "", FormatTime(record.Value.TimerTicks)]}");
+                                    string replayIndicator = record.Value.Replay ? $"{ChatColors.Red}◉" : "";
+                                    PrintToChat(player, $"{Localizer["records_map", position, record.Value.PlayerName!, replayIndicator, FormatTime(record.Value.TimerTicks)]}");
                                     position++;
                                 }  
                             });
@@ -358,6 +362,74 @@ namespace SharpTimer
                 SharpTimerError($"Error getting previous player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} from global: {ex.Message}");
             }
             return 0;
+        }
+
+        public async Task<bool> CheckKeyAsync()
+        {
+            if(apiKey == "")
+                return false;
+
+            if(globalDisabled)
+                return false;
+
+            try
+            {
+                var content = new StringContent("", Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add("x-secret-key", apiKey);
+
+                HttpResponseMessage response = await client.PostAsync($"{apiUrl}/Checks/Key", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> CheckHashAsync()
+        {
+            if(apiKey == "")
+                return false;
+
+            if(globalDisabled)
+                return false;
+
+            try
+            {
+                var json = JsonSerializer.Serialize(new
+                {
+                    Hash = GetHash()
+                });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add("x-secret-key", apiKey);
+
+                HttpResponseMessage response = await client.PostAsync($"{apiUrl}/Checks/Hash", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
         public (bool, float, float) CheckCvarsAndMaxVelo()

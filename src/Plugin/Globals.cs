@@ -15,6 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using System.Runtime.Intrinsics.X86;
 using System.Text.Json;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -27,7 +28,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1o";
+        public override string ModuleVersion => $"0.3.1p";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -76,6 +77,7 @@ namespace SharpTimer
         public int cpTriggerCount;
         private bool useCheckpointTriggers = false;
         public bool useCheckpointVerification = true;
+        public bool useAnticheat = false;
 
         private Dictionary<int, Vector?> bonusRespawnPoses = [];
         private Dictionary<int, QAngle?> bonusRespawnAngs = [];
@@ -275,6 +277,7 @@ namespace SharpTimer
         public string discordWebhookBotName = "SharpTimer";
         public string discordWebhookPFPUrl = "https://cdn.discordapp.com/icons/1196646791450472488/634963a8207fdb1b30bf909d31f05e57.webp";
         public string discordWebhookImageRepoURL = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimerDiscordWebhookMapPics/main/images/";
+        private string? discordACWebhookUrl;
         public string? discordPBWebhookUrl;
         public string? discordSRWebhookUrl;
         public string? discordPBBonusWebhookUrl;
