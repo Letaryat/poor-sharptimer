@@ -35,6 +35,7 @@ namespace SharpTimer
             if (topEnabled) player.PrintToConsole($"• !top (css_top) - Lists top 10 records on this map");
             if (topEnabled && bonusRespawnPoses.Count != 0) player.PrintToConsole($"• !topbonus <#> (css_topbonus) - Lists top 10 records of a bonus");
             if (rankEnabled) player.PrintToConsole($"• !rank (css_rank) - Shows your current rank and pb");
+            if (rankEnabled) player.PrintToConsole($"• !ranks (css_ranks) - Shows a list of the server ranks");
             if (globalRanksEnabled) player.PrintToConsole($"• !points (css_points) - Prints top 10 points");
             if (goToEnabled) player.PrintToConsole($"• !goto <name> (css_goto) - Teleports you to a player");
             if (stageTriggerPoses.Count != 0) player.PrintToConsole($"• !stage <#> (css_stage) - Teleports you to a stage");
