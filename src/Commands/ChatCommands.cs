@@ -1395,6 +1395,28 @@ namespace SharpTimer
             }
         }
 
+        [ConsoleCommand("css_ranks", "Ranks command")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void RanksCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player)) return;
+
+            if (!rankEnabled)
+            {
+                PrintToChat(player, "This server has not enabled ranks");
+                return;
+            }
+
+            var rankList = string.Join($"{ChatColors.White}, ", 
+                rankDataList
+                    .Where(rank => rank.Title != UnrankedTitle)
+                    .OrderByDescending(rank => rank.Percent)
+                    .Select(rank => ReplaceVars($"{rank.Color}{rank.Title.Replace("[", "").Replace("]", "")}"))
+            );
+
+            PrintToChat(player, $"{rankList}");
+        }
+
         public void RespawnPlayer(CCSPlayerController? player, bool toEnd = false)
         {
             try
