@@ -1553,6 +1553,8 @@ namespace SharpTimer
             disableDamage = false;
             fovChangerEnabled = false;
 
+            removeCrouchFatigueEnabled = false;
+
             //ranks are known bugged rn
             globalRanksEnabled = false;
             rankEnabled = false;
@@ -1567,10 +1569,14 @@ namespace SharpTimer
                 {
                     clearInitializedPlayer(connectedPlayer.Value);
                 }
+
+                //this is a movement thing
+                playerTimers.TryGetValue(current.Slot, out PlayerTimerInfo? playerTimer);
+                playerTimer.MovementService.DuckSpeed = 8.0f;
             }
 
             //movement
-            Server.ExecuteCommand("sv_timebetweenducks 0.4");
+            Server.ExecuteCommand("sv_timebetweenducks 0.400000");
         }
 
         public void EnablePlugin()
@@ -1587,14 +1593,21 @@ namespace SharpTimer
             displayChatTags = true;
             displayScoreboardTags = true;
 
+            removeCrouchFatigueEnabled = true;
+
             //init
             foreach (var connectedPlayer in connectedPlayers)
             {
-                initalizePlayer(connectedPlayer.Value);
+                var current = connectedPlayer.Value;
+                initalizePlayer(current);
+
+                //this is a movement thing
+                playerTimers.TryGetValue(current.Slot, out PlayerTimerInfo? playerTimer);
+                playerTimer.MovementService.DuckSpeed = 7.0f;
             }
 
             //movement
-            Server.ExecuteCommand("sv_timebetweenducks 0");
+            Server.ExecuteCommand("sv_timebetweenducks 0.000000");
         }
     }
 }

@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
+using Microsoft.Extensions.Logging;
 
 
 namespace SharpTimer
@@ -1226,21 +1227,26 @@ namespace SharpTimer
             remoteSurfDataSource = $"{args}";
         }
 
-        [ConsoleCommand("sharptimer_disable", "Disable SharpTimer")]
+        [ConsoleCommand("sharptimer_enable", "Enable SharpTimer")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerDisable(CCSPlayerController? player, CommandInfo command)
+        public void SharpTimerEnable(CCSPlayerController? player, CommandInfo command)
         {
 
             string args = command.ArgString.Trim();
-
-            Boolean.TryParse(args, out var arg);
-
-            if(args == "1" || arg)
+            if (!string.IsNullOrEmpty(args))
             {
-                DisablePlugin();
+                Boolean.TryParse(args, out var arg);
+
+                if(args == "1" || arg)
+                {
+                    EnablePlugin();
+                } else
+                {
+                    DisablePlugin();
+                }
             } else
             {
-                EnablePlugin();
+                Logger.LogInformation($"sharptimer_enable = {!isDisabled}.");
             }
         }
     }
