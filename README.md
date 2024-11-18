@@ -94,13 +94,15 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 [**Web panel** *(optional but recommended)*](https://github.com/Letaryat/sharptimer-web-panel)
 
-[**SharpTimer-WallLists** *(optional but recommended)*](https://github.com/M-archand/SharpTimer-WallLists)
-
 [**CS2-TeleportAnglesFix** *(optional but recommended)*](https://github.com/M-archand/CS2-TeleportAnglesFix)
 
 [**STFixes** *(optional but recommended)*](https://github.com/rcnoob/STFixes)
 
-[**Flashing HUD Fix** *(optional but recommended)*](https://github.com/deabb/CS2FlashingHtmlHudFix)
+[**Flashing HUD Fix** *(optional but recommended)*](https://github.com/M-archand/CS2FlashingHtmlHudFix)
+
+[**SharpTimer-WallLists** *(optional)*](https://github.com/M-archand/SharpTimer-WallLists)
+
+[**SharpTimer-Trails** *(optional)*](https://github.com/M-archand/SharpTimer-Trails)
 
 
 ## Install
