@@ -268,6 +268,8 @@ namespace SharpTimer
         public string UnrankedColor = "{default}";
         public static string UnrankedIcon = "https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/rank_icons/unranked.png";
 
+        public bool isDisabled = false;
+
         public List<RankData> rankDataList = new List<RankData>();
         public class RankData
         {

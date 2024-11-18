@@ -28,7 +28,7 @@ namespace SharpTimer
             {
                 foreach (CCSPlayerController player in connectedPlayers.Values)
                 {
-                    if (player == null || !player.IsValid) continue;
+                    if (player == null || !player.IsValid || isDisabled) continue;
 
                     var playerSlot = player.Slot;
 
@@ -219,7 +219,7 @@ namespace SharpTimer
                         {
                             if (playerTimer.TicksSinceLastRankUpdate > 511 &&
                             playerTimer.CachedRank != null &&
-                            (player.Clan != null || !player.Clan!.Contains($"[{playerTimer.CachedRank}]")))
+                            (player.Clan != null || !player.Clan!.Contains($"[{playerTimer.CachedRank}]") || !isDisabled))
                             {
                                 AddScoreboardTagToPlayer(player, playerTimer.CachedRank);
                                 playerTimer.TicksSinceLastRankUpdate = 0;

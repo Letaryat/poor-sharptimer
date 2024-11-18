@@ -131,7 +131,7 @@ namespace SharpTimer
 
         private void ADtimerMessages()
         {
-            if (isADMessagesTimerRunning) return;
+            if (isADMessagesTimerRunning || isDisabled) return;
 
             var timer = AddTimer(adMessagesTimer, () =>
             {
@@ -1543,6 +1543,58 @@ namespace SharpTimer
                 SharpTimerError($"Error GetClosestMapCFGMatch: {ex.StackTrace}");
                 return "null";
             }
+        }
+
+        public void DisablePlugin()
+        {
+            //set globals
+            isDisabled = true;
+
+            disableDamage = false;
+            fovChangerEnabled = false;
+
+            //ranks are known bugged rn
+            globalRanksEnabled = false;
+            rankEnabled = false;
+            displayChatTags = false;
+            displayScoreboardTags = false;
+
+            //de-init
+            foreach (var connectedPlayer in connectedPlayers)
+            {
+                var current = connectedPlayer.Value;
+                if (current.IsValid && !current.IsBot && connectedPlayer.Key != 0)
+                {
+                    clearInitializedPlayer(connectedPlayer.Value);
+                }
+            }
+
+            //movement
+            Server.ExecuteCommand("sv_timebetweenducks 0.4");
+        }
+
+        public void EnablePlugin()
+        {
+            //set globals
+            isDisabled = false;
+
+            disableDamage = true;
+            fovChangerEnabled = true;
+
+            //ranks are known bugged rn
+            globalRanksEnabled = true;
+            rankEnabled = true;
+            displayChatTags = true;
+            displayScoreboardTags = true;
+
+            //init
+            foreach (var connectedPlayer in connectedPlayers)
+            {
+                initalizePlayer(connectedPlayer.Value);
+            }
+
+            //movement
+            Server.ExecuteCommand("sv_timebetweenducks 0");
         }
     }
 }

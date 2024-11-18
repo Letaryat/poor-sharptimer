@@ -13,6 +13,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
@@ -1226,6 +1227,24 @@ namespace SharpTimer
             }
 
             remoteSurfDataSource = $"{args}";
+        }
+
+        [ConsoleCommand("sharptimer_disable", "Disable SharpTimer")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerDisable(CCSPlayerController? player, CommandInfo command)
+        {
+
+            string args = command.ArgString.Trim();
+
+            Boolean.TryParse(args, out var arg);
+
+            if(args == "1" || arg)
+            {
+                DisablePlugin();
+            } else
+            {
+                EnablePlugin();
+            }
         }
     }
 }

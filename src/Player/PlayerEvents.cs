@@ -47,12 +47,97 @@ namespace SharpTimer
                 }
 
                 int playerSlot = player.Slot;
+                connectedPlayers[playerSlot] = new CCSPlayerController(player.Handle);
+
+                string steamID = player.SteamID.ToString();
+                string playerName = player.PlayerName;
+
+                initalizePlayer(player, isForBot);
+
+                /*try
+                {
+                    playerTimers[playerSlot] = new PlayerTimerInfo();
+                    playerJumpStats[playerSlot] = new PlayerJumpStats();
+                    if (enableReplays) playerReplays[playerSlot] = new PlayerReplays();
+                    playerTimers[playerSlot].MovementService = new CCSPlayer_MovementServices(player.PlayerPawn.Value.MovementServices!.Handle);
+                    playerTimers[playerSlot].StageTimes = new Dictionary<int, int>();
+                    playerTimers[playerSlot].StageVelos = new Dictionary<int, string>();
+                    if (AdminManager.PlayerHasPermissions(player, "@css/root")) playerTimers[playerSlot].ZoneToolWire = new Dictionary<int, CBeam>();
+                    playerTimers[playerSlot].CurrentMapStage = 0;
+                    playerTimers[playerSlot].CurrentMapCheckpoint = 0;
+                    SetNormalStyle(player);
+                    playerTimers[playerSlot].IsRecordingReplay = false;
+                    playerTimers[playerSlot].SetRespawnPos = null;
+                    playerTimers[playerSlot].SetRespawnAng = null;
+                    playerTimers[playerSlot].SoundsEnabled = soundsEnabledByDefault;
+
+                    if (isForBot == false) _ = Task.Run(async () => await IsPlayerATester(steamID, playerSlot));
+
+                    //PlayerSettings
+                    if (enableDb) _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, playerSlot, true));
+
+                    if (connectMsgEnabled == true && !enableDb) PrintToChatAll(Localizer["connect_message", player.PlayerName]);
+                    if (cmdJoinMsgEnabled == true) PrintAllEnabledCommands(player);
+
+                    SharpTimerDebug($"Added player {player.PlayerName} with UserID {player.UserId} to connectedPlayers");
+                    SharpTimerDebug($"Total players connected: {connectedPlayers.Count}");
+                    SharpTimerDebug($"Total playerTimers: {playerTimers.Count}");
+                    SharpTimerDebug($"Total playerReplays: {playerReplays.Count}");
+
+                    if (removeLegsEnabled == true)
+                    {
+                        player.PlayerPawn.Value.Render = Color.FromArgb(254, 254, 254, 254);
+                        Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
+                    }
+                }
+                finally
+                {
+                    if (connectedPlayers[playerSlot] == null)
+                    {
+                        connectedPlayers.Remove(playerSlot);
+                    }
+
+                    if (playerTimers[playerSlot] == null)
+                    {
+                        playerTimers.Remove(playerSlot);
+                    }
+                }*/
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in OnPlayerConnect: {ex.Message}");
+            }
+        }
+
+        private void initalizePlayer(CCSPlayerController? player, bool isForBot = false)
+        {
+            try
+            {
+                if (player == null)
+                {
+                    SharpTimerError("Player object is null.");
+                    return;
+                }
+
+                if (player.PlayerPawn == null)
+                {
+                    SharpTimerError("PlayerPawn is null.");
+                    return;
+                }
+
+                if (player.PlayerPawn.Value!.MovementServices == null)
+                {
+                    SharpTimerError("MovementServices is null.");
+                    return;
+                }
+
+
+                int playerSlot = player.Slot;
                 string steamID = player.SteamID.ToString();
                 string playerName = player.PlayerName;
 
                 try
                 {
-                    connectedPlayers[playerSlot] = new CCSPlayerController(player.Handle);
                     playerTimers[playerSlot] = new PlayerTimerInfo();
                     playerJumpStats[playerSlot] = new PlayerJumpStats();
                     if (enableReplays) playerReplays[playerSlot] = new PlayerReplays();
@@ -106,6 +191,7 @@ namespace SharpTimer
             }
         }
 
+
         private void OnPlayerSpawn(CCSPlayerController? player)
         {
             //just.. dont ask.
@@ -129,8 +215,59 @@ namespace SharpTimer
                 }
                 if (connectedPlayers.TryGetValue(player.Slot, out var connectedPlayer))
                 {
+
+                    clearInitializedPlayer(player, isForBot);
+
+                    /*//schizo removing data from memory
+                    playerTimers[player.Slot] = new PlayerTimerInfo();
+                    playerTimers.Remove(player.Slot);
+
+                    //schizo removing data from memory
+                    playerCheckpoints[player.Slot] = new List<PlayerCheckpoint>();
+                    playerCheckpoints.Remove(player.Slot);
+
+                    specTargets.Remove(player.Pawn.Value!.EntityHandle.Index);
+
+                    playerTimers[player.Slot].TotalSync = 0;
+                    playerTimers[player.Slot].GoodSync = 0;
+                    playerTimers[player.Slot].Sync = 0;
+                    playerTimers[player.Slot].Rotation = new List<QAngle>();
+
+                    if (enableReplays)
+                    {
+                        //schizo removing data from memory
+                        playerReplays[player.Slot] = new PlayerReplays();
+                        playerReplays.Remove(player.Slot);
+                    }
+
+                    SharpTimerDebug($"Removed player {connectedPlayer.PlayerName} with UserID {connectedPlayer.UserId} from connectedPlayers.");
+                    SharpTimerDebug($"Removed specTarget index {player.Pawn.Value.EntityHandle.Index} from specTargets.");
+                    SharpTimerDebug($"Total players connected: {connectedPlayers.Count}");
+                    SharpTimerDebug($"Total playerTimers: {playerTimers.Count}");
+                    SharpTimerDebug($"Total specTargets: {specTargets.Count}");*/
+
                     connectedPlayers.Remove(player.Slot);
 
+                    if (connectMsgEnabled == true && isForBot == false)
+                    {
+                        PrintToChatAll(Localizer["disconnect_message", connectedPlayer.PlayerName]);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in OnPlayerDisconnect (probably replay bot related lolxd): {ex.Message}");
+            }
+        }
+
+        private void clearInitializedPlayer(CCSPlayerController? player, bool isForBot = false)
+        {
+            if (player == null) return;
+
+            try
+            {
+                if (connectedPlayers.TryGetValue(player.Slot, out var connectedPlayer))
+                {
                     //schizo removing data from memory
                     playerTimers[player.Slot] = new PlayerTimerInfo();
                     playerTimers.Remove(player.Slot);
@@ -171,6 +308,7 @@ namespace SharpTimer
             }
         }
 
+
         private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo message)
         {
             if (displayChatTags == false)
@@ -178,7 +316,7 @@ namespace SharpTimer
 
             string msg;
 
-            if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(message.GetArg(1)))
+            if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(message.GetArg(1)) || isDisabled)
                 return HookResult.Handled;
             else
                 msg = message.GetArg(1);
