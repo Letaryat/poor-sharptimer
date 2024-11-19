@@ -184,6 +184,7 @@ namespace SharpTimer
 
         public bool topEnabled = true;
         public bool rankEnabled = true;
+        private bool rankEnabledInitialized = false;
         public bool helpEnabled = true;
         public bool startzoneJumping = true;
         public bool spawnOnRespawnPos = false;

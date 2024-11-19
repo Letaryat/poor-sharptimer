@@ -1054,9 +1054,12 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerRankConvar(CCSPlayerController? player, CommandInfo command)
         {
-            string args = command.ArgString;
+            if (rankEnabledInitialized) return;
 
+            string args = command.ArgString;
             rankEnabled = bool.TryParse(args, out bool rankEnabledValue) ? rankEnabledValue : args != "0" && rankEnabled;
+
+            rankEnabledInitialized = true;
         }
 
         [ConsoleCommand("sharptimer_goto_enabled", "Whether !goto is enabled by default or not. Default value: false")]
