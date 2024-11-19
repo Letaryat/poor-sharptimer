@@ -361,7 +361,7 @@ namespace SharpTimer
             {
                 PrintToChat(player, Localizer["ending_replay"]);
                 playerTimers[playerSlot].IsReplaying = false;
-                if (player.PlayerPawn.Value!.MoveType != MoveType_t.MOVETYPE_WALK || player.PlayerPawn.Value.ActualMoveType == MoveType_t.MOVETYPE_WALK) SetMoveType(player, MoveType_t.MOVETYPE_WALK);
+                if (player.PlayerPawn.Value!.MoveType != MoveType_t.MOVETYPE_WALK || player.PlayerPawn.Value.ActualMoveType != MoveType_t.MOVETYPE_WALK) SetMoveType(player, MoveType_t.MOVETYPE_WALK);
                 playerReplays.Remove(playerSlot);
                 playerReplays[playerSlot] = new PlayerReplays();
                 playerTimers[playerSlot].IsTimerBlocked = false;

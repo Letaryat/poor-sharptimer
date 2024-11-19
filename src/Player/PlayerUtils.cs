@@ -665,6 +665,7 @@ namespace SharpTimer
 
             player.PlayerPawn.Value!.MoveType = nMoveType; // necessary to maintain client prediction
             player.PlayerPawn.Value!.ActualMoveType = nMoveType;
+            Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
         }
 
         public string GetRankColorForChat(CCSPlayerController player)
