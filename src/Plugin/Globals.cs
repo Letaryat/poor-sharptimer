@@ -28,7 +28,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1p";
+        public override string ModuleVersion => $"0.3.1q";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -233,6 +233,7 @@ namespace SharpTimer
         public bool afkHibernation = true;
         public bool afkWarning = true;
         public int afkSeconds = 60;
+        public int globalCacheInterval = 120;
         public double lowgravPointModifier = 1.1;
         public double sidewaysPointModifier = 1.3;
         public double halfSidewaysPointModifier = 1.3;

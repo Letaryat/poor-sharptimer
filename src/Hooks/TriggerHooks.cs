@@ -285,9 +285,8 @@ namespace SharpTimer
 
                 var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
 
-                if (player == null)
+                if (player == null || player.IsBot || player.IsHLTV || !player.IsValid)
                 {
-
                     return HookResult.Continue;
                 }
 
@@ -303,7 +302,6 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in trigger_teleport hook: {ex.Message}");
                 return HookResult.Continue;
             }
         }
@@ -325,7 +323,7 @@ namespace SharpTimer
 
                 var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
 
-                if (player == null)
+                if (player == null || player.IsBot || player.IsHLTV || !player.IsValid)
                 {
                     SharpTimerDebug("Player is null in trigger_teleport hook.");
                     return HookResult.Continue;
@@ -352,7 +350,6 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in trigger_teleport hook: {ex.Message}");
                 return HookResult.Continue;
             }
         }

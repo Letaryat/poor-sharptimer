@@ -42,6 +42,12 @@ namespace SharpTimer
         }
     }
 
+    public class RecordCache
+    {
+        public Dictionary<int, PlayerRecord>? CachedWorldRecords { get; set; }
+        public List<PlayerPoints>? CachedGlobalPoints { get; set; }
+    }
+
     // MapData JSON
     public class MapInfo
     {
@@ -224,8 +230,12 @@ namespace SharpTimer
         public List<bool> MoveLeft { get; set; } = new List<bool>();
         public List<bool> MoveRight { get; set; } = new List<bool>();
         public int PerfectStrafes { get; set; }
+        public int TotalStrafes { get; set; }
         public int MismatchedInputs { get; set; }
-        public bool ACFlagged { get; set; } = false;
+        public bool YawSpikeFlagged { get; set; } = false;
+        public bool MismatchedInputsFlagged { get; set; } = false;
+        public bool PerfectStrafesFlagged { get; set; } = false;
+        public bool AHKFlagged { get; set; } = false;
     }
 
     public class CurrentZoneInfo

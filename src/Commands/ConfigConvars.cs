@@ -678,6 +678,23 @@ namespace SharpTimer
             }
         }
 
+        [ConsoleCommand("sharptimer_global_cache_interval", "Refresh interval of record and point caching. Default value: 120")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerGlobalCacheConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (int.TryParse(args, out int value) && value > 0)
+            {
+                globalCacheInterval = value;
+                SharpTimerConPrint($"SharpTimer global cache refresh interval set to {value} seconds.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid global ache refresh interval value. Please provide a positive float.");
+            }
+        }
+
         [ConsoleCommand("sharptimer_kill_pointservercommand_entities", "If True the plugin will kill all point_servercommand ents (necessary to make xplay maps usable due to them being bad ports). Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerPointServerCommandConvar(CCSPlayerController? player, CommandInfo command)
@@ -688,7 +705,7 @@ namespace SharpTimer
         }
         [ConsoleCommand("sharptimer_enable_anticheat", "If enabled, suspicious players will be flagged. Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerAnticheatCommandConvar(CCSPlayerController? player, CommandInfo command)
+        public void SharpTimerAnticheatConvar(CCSPlayerController? player, CommandInfo command)
         {
             string args = command.ArgString;
 

@@ -15,14 +15,15 @@ namespace SharpTimer
     public partial class SharpTimer
     {
         private readonly HttpClient client = new HttpClient();
+        RecordCache cache = new RecordCache();
         private string apiUrl = "https://stglobalapi.azurewebsites.net/api";
 
         public async Task SubmitRecordAsync(object payload)
         {
-            if(apiKey == "")
+            if (apiKey == "")
                 return;
 
-            if(globalDisabled)
+            if (globalDisabled)
                 return;
 
             try
@@ -50,9 +51,81 @@ namespace SharpTimer
             }
         }
 
+        public async Task CacheWorldRecords()
+        {
+            var sortedRecords = await GetSortedRecordsFromGlobal(10, 0, currentMapName!, 0);
+
+            cache.CachedWorldRecords = sortedRecords;
+        }
+
+        public async Task CacheGlobalPoints()
+        {
+            var sortedPoints = await GetTopPointsAsync();
+
+            cache.CachedGlobalPoints = sortedPoints;
+        }
+
+        public async Task<List<PlayerPoints>> GetTopPointsAsync(int limit = 10)
+        {
+            if (apiKey == "")
+                return null;
+
+            try
+            {
+                var payload = new
+                {
+                    limit
+                };
+
+                string jsonPayload = JsonSerializer.Serialize(payload);
+                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add("x-secret-key", apiKey);
+
+                HttpResponseMessage response = await client.PostAsync($"{apiUrl}/GetPoints", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    using (var jsonDoc = JsonDocument.Parse(json))
+                    {
+                        var root = jsonDoc.RootElement;
+                        var player_points = new List<PlayerPoints>();
+
+                        if (root.TryGetProperty("data", out var dataArray) && dataArray.GetArrayLength() > 0)
+                        {
+                            foreach (var playerPoints in dataArray.EnumerateArray())
+                            {
+                                string playerName = playerPoints.GetProperty("player_name").GetString()!;
+                                int points = playerPoints.GetProperty("total_points").GetInt32();
+                                player_points.Add(new PlayerPoints
+                                {
+                                    PlayerName = playerName,
+                                    GlobalPoints = points
+                                });
+                            }
+                            return player_points;
+                        }
+                        return null;
+                    }
+                }
+                else
+                {
+                    SharpTimerError($"Failed to get top points. Status code: {response.StatusCode}; Message: {response.Content}");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in GetRecordIDAsync: {ex.Message}");
+                return null;
+            }
+        }
+
         public async Task<int> GetRecordIDAsync(object payload)
         {
-            if(apiKey == "")
+            if (apiKey == "")
                 return 0;
 
             try
@@ -97,11 +170,11 @@ namespace SharpTimer
 
         public async Task SubmitReplayAsync(object payload)
         {
-            if(apiKey == "")
+            if (apiKey == "")
                 return;
 
-            if(globalDisabled)
-                return; 
+            if (globalDisabled)
+                return;
 
             try
             {
@@ -128,71 +201,52 @@ namespace SharpTimer
             }
         }
 
-        public async Task PrintWorldRecordAsync(CCSPlayerController player, object payload)
+        public void PrintWorldRecord(CCSPlayerController player)
         {
             try
             {
-                string jsonPayload = JsonSerializer.Serialize(payload);
-                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-                client.DefaultRequestHeaders.Clear();
-                client.DefaultRequestHeaders.Add("x-secret-key", apiKey);
-
-                HttpResponseMessage response = await client.PostAsync($"{apiUrl}/Sort", content);
-                
-
-                if (response.IsSuccessStatusCode)
+                Server.NextFrame(() =>
                 {
-                    var json = await response.Content.ReadAsStringAsync();
-                    using (var jsonDoc = JsonDocument.Parse(json))
+                    PrintToChat(player, Localizer["current_wr", currentMapName!]);
+                    int position = 1;
+                    foreach (var record in cache.CachedWorldRecords!)
                     {
-                        var root = jsonDoc.RootElement;
-
-                        if (root.TryGetProperty("data", out var dataArray) && dataArray.GetArrayLength() > 0)
-                        {
-                            var records = new Dictionary<string, PlayerRecord>();
-                            foreach (var playerRecord in dataArray.EnumerateArray())
-                            {
-                                string playerName = playerRecord.GetProperty("player_name").GetString()!;
-                                int timerTicks = playerRecord.GetProperty("timer_ticks").GetInt32();
-                                long steamId = playerRecord.GetProperty("steamid").GetInt64();
-                                bool replayExists = playerRecord.GetProperty("replay").GetBoolean();
-
-                                records[steamId.ToString()] = new PlayerRecord
-                                {
-                                    PlayerName = playerName,
-                                    TimerTicks = timerTicks,
-                                    Replay = replayExists
-                                };                        
-                            }
-                            Server.NextFrame(() =>
-                            {
-                                PrintToChat(player, Localizer["current_wr", currentMapName!]);
-                                int position = 1;
-                                foreach (var record in records)
-                                {
-                                    string replayIndicator = record.Value.Replay ? $"{ChatColors.Red}◉" : "";
-                                    PrintToChat(player, $"{Localizer["records_map", position, record.Value.PlayerName!, replayIndicator, FormatTime(record.Value.TimerTicks)]}");
-                                    position++;
-                                }  
-                            });
-                        }
+                        string replayIndicator = record.Value.Replay ? $"{ChatColors.Red}◉" : "";
+                        PrintToChat(player, $"{Localizer["records_map", position, record.Value.PlayerName!, replayIndicator, FormatTime(record.Value.TimerTicks)]}");
+                        position++;
                     }
-                }
-                else
-                {
-                    SharpTimerError($"Failed to submit record. Status code: {response.StatusCode}");
-                }
+                });
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in PrintWorldRecordAsync: {ex.Message}");
+                SharpTimerError($"Error in PrintWorldRecord: {ex.Message}");
+            }
+        }
+
+        public void PrintGlobalPoints(CCSPlayerController player)
+        {
+            try
+            {
+                Server.NextFrame(() =>
+                {
+                    PrintToChat(player, Localizer["top_10_points"]);
+                    int position = 1;
+                    foreach (var p in cache.CachedGlobalPoints!)
+                    {
+                        PrintToChat(player, $"{Localizer["top_10_points_list", position, p.PlayerName!, p.GlobalPoints]}");
+                        position++;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in PrintGlobalPoints: {ex.Message}");
             }
         }
 
         public async Task<Dictionary<int, PlayerRecord>> GetSortedRecordsFromGlobal(int limit = 0, int bonusX = 0, string mapName = "", int style = 0)
         {
-            
+
             SharpTimerDebug($"Trying GetSortedRecordsFromGlobal {(bonusX != 0 ? $"bonus {bonusX}" : "")}");
             using (var connection = await OpenConnectionAsync())
             {
@@ -238,13 +292,15 @@ namespace SharpTimer
                                     int timerTicks = playerRecord.GetProperty("timer_ticks").GetInt32();
                                     long steamId = playerRecord.GetProperty("steamid").GetInt64();
                                     int recordId = playerRecord.GetProperty("record_id").GetInt32();
+                                    bool replayExists = playerRecord.GetProperty("replay").GetBoolean();
 
                                     sortedRecords[record] = new PlayerRecord
                                     {
                                         RecordID = recordId,
                                         SteamID = steamId.ToString(),
                                         PlayerName = playerName,
-                                        TimerTicks = timerTicks
+                                        TimerTicks = timerTicks,
+                                        Replay = replayExists
                                     };
                                     record++;
                                 }
@@ -278,10 +334,10 @@ namespace SharpTimer
 
         public async Task<string> GetReplayFromGlobal(object payload)
         {
-            if(apiKey == "")
+            if (apiKey == "")
                 return "";
 
-            if(globalDisabled)
+            if (globalDisabled)
                 return "";
 
             try
@@ -366,10 +422,10 @@ namespace SharpTimer
 
         public async Task<bool> CheckKeyAsync()
         {
-            if(apiKey == "")
+            if (apiKey == "")
                 return false;
 
-            if(globalDisabled)
+            if (globalDisabled)
                 return false;
 
             try
@@ -398,10 +454,10 @@ namespace SharpTimer
 
         public async Task<bool> CheckHashAsync()
         {
-            if(apiKey == "")
+            if (apiKey == "")
                 return false;
 
-            if(globalDisabled)
+            if (globalDisabled)
                 return false;
 
             try
@@ -437,7 +493,7 @@ namespace SharpTimer
             if (!globalDisabled)
             {
                 if (IsApproximatelyEqual(ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>(), 10)
-                && ((IsApproximatelyEqual(ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>(), 150) && currentMapName!.Contains("surf_")) 
+                && ((IsApproximatelyEqual(ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>(), 150) && currentMapName!.Contains("surf_"))
                     || (IsApproximatelyEqual(ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>(), 1000) && currentMapName!.Contains("bhop_")))
                 && IsApproximatelyEqual(ConVar.Find("sv_friction")!.GetPrimitiveValue<float>(), (float)5.2)
                 && IsApproximatelyEqual(ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>(), 800)

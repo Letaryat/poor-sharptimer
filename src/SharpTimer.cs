@@ -29,8 +29,6 @@ namespace SharpTimer
     [MinimumApiVersion(287)]
     public partial class SharpTimer : BasePlugin
     {
-        //public required MemoryFunctionVoid<CCSPlayer_MovementServices, IntPtr> RunCommandLinux;
-        //public required MemoryFunctionVoid<IntPtr, IntPtr, IntPtr, CCSPlayer_MovementServices> RunCommandWindows;
         public required IRunCommand RunCommand;
         private static readonly MemoryFunctionVoid<CCSPlayerPawn, CSPlayerState> StateTransition = new(GameData.GetSignature("StateTransition"));
         private readonly INetworkServerService networkServerService = new();
@@ -88,7 +86,7 @@ namespace SharpTimer
 
                 foreach ((CCheckTransmitInfo info, CCSPlayerController? player) in infoList)
                 {
-                    if (player == null || player.IsBot || !player.IsValid)
+                    if (player == null || player.IsBot || !player.IsValid || player.IsHLTV)
                         continue;
 
                     if (!playerTimers[player.Slot].HidePlayers)
@@ -412,10 +410,8 @@ namespace SharpTimer
                     // AC Stuff
                     if (useAnticheat)
                     {
-                        var viewAngles = userCmd.GetViewAngles();
-                        var sideMove = baseCmd.GetSideMove();
-                        ParseStrafes(player, viewAngles!);
-                        ParseInputs(player, sideMove, moveLeft, moveRight);
+                        ParseInputs(player, baseCmd.GetSideMove(), moveLeft, moveRight);
+                        ParseStrafes(player, userCmd.GetViewAngles()!);
                     }
                     
                     // Style Stuff
@@ -485,6 +481,7 @@ namespace SharpTimer
             RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
 
             if (isLinux) RunCommand.Unhook(OnRunCommand, HookMode.Pre);
+            StateTransition.Unhook(Hook_StateTransition, HookMode.Post);
 
             SharpTimerConPrint("Plugin Unloaded");
         }

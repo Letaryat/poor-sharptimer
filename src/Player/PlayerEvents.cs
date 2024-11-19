@@ -202,6 +202,8 @@ namespace SharpTimer
             else
                 msg = message.GetArg(1);
 
+            playerTimers[player.Slot].AFKTicks = 0;
+
             if (msg.Length > 0 && (msg[0] == '!' || msg[0] == '/' || msg[0] == '.'))
                 return HookResult.Continue;
             else

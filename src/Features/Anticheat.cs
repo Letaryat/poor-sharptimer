@@ -21,7 +21,7 @@ namespace SharpTimer
         {
             var playerTimer = playerTimers[player!.Slot];
 
-            if (playerTimer.ACFlagged)
+            if (playerTimer.YawSpikeFlagged && playerTimer.PerfectStrafesFlagged)
                 return;
 
             playerTimer.ViewAngles.Add(new ViewAngle(viewangles));
@@ -40,7 +40,6 @@ namespace SharpTimer
                     bool switchedStrafeDirection = Math.Sign(lastSpeed) != Math.Sign(lastLastSpeed);
                     playerTimer.YawAccel.Add(Math.Abs(CalculateYawAccel(currentSpeed, lastSpeed)));
 
-                    /*
                     var lastLeft = playerTimer.MoveLeft[playerTimer.MoveLeft.Count - 2];
                     var currentLeft = playerTimer.MoveLeft[playerTimer.MoveLeft.Count - 1];
                     var lastRight = playerTimer.MoveRight[playerTimer.MoveRight.Count - 2];
@@ -48,7 +47,8 @@ namespace SharpTimer
 
                     if (((lastLeft == false && currentLeft == true) || (lastRight == false && currentRight == true)) && switchedStrafeDirection) // player had tick perfect turn switch and input switch
                         playerTimer.PerfectStrafes++;
-                    */
+                    if (switchedStrafeDirection)
+                        playerTimer.TotalStrafes++;
 
                     if (playerTimer.YawAccel.Count > 2)
                     {
@@ -62,7 +62,7 @@ namespace SharpTimer
                             var avgAccel = (currentAccel + lastLastAccel) * 0.5;
                             if (avgAccel < 1 && (lastAccel - avgAccel) > 2.0f && switchedStrafeDirection)
                             {
-                                playerTimer.YawAccelPercent = playerTimer.YawAccelPercent * 0.9 + 0.1;  // ++ rolling avg
+                                playerTimer.YawAccelPercent = playerTimer.YawAccelPercent * 0.99 + 0.01;  // ++ rolling avg
                             }
                             else if (switchedStrafeDirection)
                             {
@@ -76,9 +76,9 @@ namespace SharpTimer
             if (playerTimer.YawAccelPercent > 0.9)
             {
                 // maybe cheator if more than 90% of yaw accel is noisy/jumpy
-                if (!playerTimer.ACFlagged)
+                if (!playerTimer.YawSpikeFlagged)
                 {
-                    playerTimer.ACFlagged = true;
+                    playerTimer.YawSpikeFlagged = true;
                     StartStopRecord(player, "Unusually frequent m_yaw accel spikes (Strafe optimizer)");
                     Server.NextFrame(async () => await DiscordACMessage(player, "Unusually frequent m_yaw accel spikes (Strafe optimizer)"));
                     SharpTimerConPrint($"::::BEGIN:::: Yaw Accel Spike % of Total");
@@ -90,17 +90,17 @@ namespace SharpTimer
                 }
             }
 
-            /*
-            if (playerTimer.PerfectStrafes > 100)
+            
+            if ((playerTimer.PerfectStrafes / playerTimer.TotalStrafes) > 0.7 && playerTimer.TotalStrafes > 100)
             {
-                if (!playerTimer.ACFlagged)
+                if (!playerTimer.PerfectStrafesFlagged)
                 {
-                    playerTimer.ACFlagged = true;
+                    playerTimer.PerfectStrafesFlagged = true;
                     StartStopRecord(player, "Unusually frequent perfect strafe/inputs (Autostrafe)");
                     Server.NextFrame(async () => await DiscordACMessage(player, "Unusually frequent perfect strafe/inputs (Autostrafe)"));
                 }
             }
-            */
+            
 
             // reset every 200 ticks
             if (playerTimer.ViewAngles.Count > 200)
@@ -115,13 +115,13 @@ namespace SharpTimer
         // Strafe sync/autostrafe input detection
         private void ParseInputs(CCSPlayerController player, float sidemove, bool moveleft, bool moveright)
         {
-            if (playerTimers[player.Slot].ACFlagged)
+            if (playerTimers[player.Slot].MismatchedInputsFlagged)
                 return;
 
-            if (!playerTimers[player.Slot].ACFlagged && playerTimers[player.Slot].MismatchedInputs > 1)
+            if (playerTimers[player.Slot].MismatchedInputs > 1)
             {
                 StartStopRecord(player, "Mismatched Inputs (Strafe sync/autostrafe)");
-                playerTimers[player.Slot].ACFlagged = true;
+                playerTimers[player.Slot].MismatchedInputsFlagged = true;
                 Server.NextFrame(async () => await DiscordACMessage(player, "Mismatched Inputs (Strafe sync/autostrafe)"));
             }
 

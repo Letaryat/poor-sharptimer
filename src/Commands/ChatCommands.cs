@@ -637,7 +637,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void PrintWR(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedClient(player) || globalRanksEnabled == false)
+            if (!IsAllowedClient(player))
                 return;
 
             var playerName = player!.PlayerName;
@@ -649,14 +649,26 @@ namespace SharpTimer
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
-            var payload = new
-            {
-                map_name = currentMapName,
-                style = 0,
-                limit = 10
-            };
+            PrintWorldRecord(player);
+            
+        }
+        [ConsoleCommand("css_gpoints", "Prints top global points")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void PrintGlobalPoints(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedClient(player))
+                return;
 
-            _ = Task.Run(async () => await PrintWorldRecordAsync(player, payload));
+            var playerName = player!.PlayerName;
+
+            SharpTimerDebug($"{playerName} calling css_gpoints...");
+
+            if (CommandCooldown(player))
+                return;
+
+            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+
+            PrintGlobalPoints(player);
             
         }
         [ConsoleCommand("css_topbonus", "Prints top players of this map bonus")]
@@ -1280,6 +1292,12 @@ namespace SharpTimer
             if (!enableStyles)
             {
                 PrintToChat(player, Localizer["styles_disabled"]);
+                return;
+            }
+
+            if (!player!.PlayerPawn.Value!.AbsVelocity.IsZero())
+            {
+                PrintToChat(player, Localizer["styles_moving"]);
                 return;
             }
 

@@ -928,6 +928,12 @@ namespace SharpTimer
                         }
                         sqlCheck = true;
                     }
+
+                    CacheWorldRecords();
+                    AddTimer(globalCacheInterval, async () => await CacheWorldRecords(), TimerFlags.REPEAT);
+
+                    CacheGlobalPoints();
+                    AddTimer(globalCacheInterval, async () => await CacheGlobalPoints(), TimerFlags.REPEAT);
                 });
             }
             catch (Exception ex)

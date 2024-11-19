@@ -1877,12 +1877,13 @@ namespace SharpTimer
                     newPoints += CalculateGroups(maxPoints, await GetPlayerMapPercentile(steamId, playerName, mapname, bonusX, style, forGlobal, timerTicks));
                 }
 
-                // if for global points, disregard current server multipliers
+                // if for global points, zero out style and bonus points
                 if (forGlobal)
                 {
-                    newPoints *= GetStyleMultiplier(style, true);
+                    if (style != 0)
+                        newPoints = 0;
                     if (bonusX != 0)
-                        newPoints *= 0.5;
+                        newPoints = 0;
                     newPoints = Math.Round(newPoints);
                     return (int)newPoints;
                 }
