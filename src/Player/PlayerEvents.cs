@@ -53,6 +53,9 @@ namespace SharpTimer
                 string playerName = player.PlayerName;
 
                 initalizePlayer(player, isForBot);
+
+                if (connectMsgEnabled == true && !isDisabled) PrintToChatAll(Localizer["connect_message", player.PlayerName]);
+                if (cmdJoinMsgEnabled == true && !isDisabled) PrintAllEnabledCommands(player);
             }
             catch (Exception ex)
             {
@@ -108,9 +111,6 @@ namespace SharpTimer
 
                     //PlayerSettings
                     if (enableDb) _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, playerSlot, true));
-
-                    if (connectMsgEnabled == true && !enableDb) PrintToChatAll(Localizer["connect_message", player.PlayerName]);
-                    if (cmdJoinMsgEnabled == true) PrintAllEnabledCommands(player);
 
                     SharpTimerDebug($"Added player {player.PlayerName} with UserID {player.UserId} to connectedPlayers");
                     SharpTimerDebug($"Total players connected: {connectedPlayers.Count}");
@@ -192,29 +192,29 @@ namespace SharpTimer
                 if (connectedPlayers.TryGetValue(player.Slot, out var connectedPlayer))
                 {
                     //schizo removing data from memory
-                    playerTimers[player.Slot] = new PlayerTimerInfo();
-                    playerTimers.Remove(player.Slot);
+                    playerTimers[connectedPlayer.Slot] = new PlayerTimerInfo();
+                    playerTimers.Remove(connectedPlayer.Slot);
 
                     //schizo removing data from memory
-                    playerCheckpoints[player.Slot] = new List<PlayerCheckpoint>();
-                    playerCheckpoints.Remove(player.Slot);
+                    playerCheckpoints[connectedPlayer.Slot] = new List<PlayerCheckpoint>();
+                    playerCheckpoints.Remove(connectedPlayer.Slot);
 
-                    specTargets.Remove(player.Pawn.Value!.EntityHandle.Index);
+                    specTargets.Remove(connectedPlayer.Pawn.Value!.EntityHandle.Index);
 
-                    playerTimers[player.Slot].TotalSync = 0;
-                    playerTimers[player.Slot].GoodSync = 0;
-                    playerTimers[player.Slot].Sync = 0;
-                    playerTimers[player.Slot].Rotation = new List<QAngle>();
+                    playerTimers[connectedPlayer.Slot].TotalSync = 0;
+                    playerTimers[connectedPlayer.Slot].GoodSync = 0;
+                    playerTimers[connectedPlayer.Slot].Sync = 0;
+                    playerTimers[connectedPlayer.Slot].Rotation = new List<QAngle>();
 
                     if (enableReplays)
                     {
                         //schizo removing data from memory
-                        playerReplays[player.Slot] = new PlayerReplays();
-                        playerReplays.Remove(player.Slot);
+                        playerReplays[connectedPlayer.Slot] = new PlayerReplays();
+                        playerReplays.Remove(connectedPlayer.Slot);
                     }
 
                     SharpTimerDebug($"Removed player {connectedPlayer.PlayerName} with UserID {connectedPlayer.UserId} from connectedPlayers.");
-                    SharpTimerDebug($"Removed specTarget index {player.Pawn.Value.EntityHandle.Index} from specTargets.");
+                    SharpTimerDebug($"Removed specTarget index {connectedPlayer.Pawn.Value.EntityHandle.Index} from specTargets.");
                     SharpTimerDebug($"Total players connected: {connectedPlayers.Count}");
                     SharpTimerDebug($"Total playerTimers: {playerTimers.Count}");
                     SharpTimerDebug($"Total specTargets: {specTargets.Count}");
@@ -234,12 +234,12 @@ namespace SharpTimer
 
         private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo message)
         {
-            if (displayChatTags == false)
+            if (displayChatTags == false || isDisabled)
                 return HookResult.Continue;
 
             string msg;
 
-            if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(message.GetArg(1)) || isDisabled)
+            if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(message.GetArg(1)))
                 return HookResult.Handled;
             else
                 msg = message.GetArg(1);

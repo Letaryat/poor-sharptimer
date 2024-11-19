@@ -23,6 +23,7 @@ namespace SharpTimer
     {
         public bool IsAllowedPlayer(CCSPlayerController? player)
         {
+            if (isDisabled) return false;
             if (player == null || !player.IsValid || player.Pawn == null || !player.PlayerPawn.IsValid || !player.PawnIsAlive || playerTimers[player.Slot].IsNoclip)
             {
                 return false;

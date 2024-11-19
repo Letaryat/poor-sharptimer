@@ -141,7 +141,7 @@ namespace SharpTimer
 
                 AddTimer(3.0f, () =>
                 {
-                    if (enableDb && playerTimers.ContainsKey(player.Slot) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
+                    if (enableDb && !isDisabled && playerTimers.ContainsKey(player.Slot) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
                     {
                         SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
                         SetFov(player, playerTimers[player.Slot].PlayerFov, true);

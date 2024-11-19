@@ -71,7 +71,7 @@ namespace SharpTimer
         {
             var ent = h.GetParam<CEntityInstance>(0);
             var info = h.GetParam<CTakeDamageInfo>(1);
-            if(disableDamage) h.GetParam<CTakeDamageInfo>(1).Damage = 0;
+            if(disableDamage && !isDisabled) h.GetParam<CTakeDamageInfo>(1).Damage = 0;
 
             if (!ent.IsValid || !info.Attacker.IsValid)
                 return HookResult.Continue;
@@ -84,7 +84,7 @@ namespace SharpTimer
 
         HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
         {
-            if (disableDamage == true)
+            if (disableDamage == true && !isDisabled)
             {
                 var player = @event.Userid;
 

@@ -24,6 +24,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 using CounterStrikeSharp.API.Modules.Entities;
+using System.Numerics;
 
 namespace SharpTimer
 {
@@ -1024,8 +1025,8 @@ namespace SharpTimer
                     }
                 });
 
-                if (adServerRecordEnabled == true) ADtimerServerRecord();
-                if (adMessagesEnabled == true) ADtimerMessages();
+                if (adServerRecordEnabled == true && !isDisabled) ADtimerServerRecord();
+                if (adMessagesEnabled == true && !isDisabled) ADtimerMessages();
 
                 entityCache = new EntityCache();
                 UpdateEntityCache();
@@ -1552,6 +1553,14 @@ namespace SharpTimer
 
             disableDamage = false;
             fovChangerEnabled = false;
+            removeLegsEnabled = false;
+            removeCollisionEnabled = false;
+            goToEnabled = false;
+            forcePlayerSpeedEnabled = false;
+            connectMsgEnabled = false;
+            cmdJoinMsgEnabled = false;
+            adServerRecordEnabled = false;
+            adMessagesEnabled = false;
 
             removeCrouchFatigueEnabled = false;
 
@@ -1565,18 +1574,31 @@ namespace SharpTimer
             foreach (var connectedPlayer in connectedPlayers)
             {
                 var current = connectedPlayer.Value;
+
+                //show legs
+                current.PlayerPawn.Value.Render = Color.FromArgb(255, 255, 255, 255);
+                Utilities.SetStateChanged(current.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
+
+                SetFov(current, 90);
+
+                //this is a movement thing
+                playerTimers.TryGetValue(current.Slot, out PlayerTimerInfo? playerTimer);
+                playerTimer.MovementService.DuckSpeed = 8.0f;
+
                 if (current.IsValid && !current.IsBot && connectedPlayer.Key != 0)
                 {
                     clearInitializedPlayer(connectedPlayer.Value);
                 }
 
-                //this is a movement thing
-                playerTimers.TryGetValue(current.Slot, out PlayerTimerInfo? playerTimer);
-                playerTimer.MovementService.DuckSpeed = 8.0f;
             }
+
+            DamageUnHook();
 
             //movement
             Server.ExecuteCommand("sv_timebetweenducks 0.400000");
+
+            //round restart required for collision update
+            Server.ExecuteCommand("mp_restartgame 1");
         }
 
         public void EnablePlugin()
@@ -1586,6 +1608,14 @@ namespace SharpTimer
 
             disableDamage = true;
             fovChangerEnabled = true;
+            removeLegsEnabled = true;
+            removeCollisionEnabled = true;
+            goToEnabled = true;
+            forcePlayerSpeedEnabled = true;
+            connectMsgEnabled = true;
+            cmdJoinMsgEnabled = true;
+            adServerRecordEnabled = true;
+            adMessagesEnabled = true;
 
             //ranks are known bugged rn
             globalRanksEnabled = true;
@@ -1604,10 +1634,19 @@ namespace SharpTimer
                 //this is a movement thing
                 playerTimers.TryGetValue(current.Slot, out PlayerTimerInfo? playerTimer);
                 playerTimer.MovementService.DuckSpeed = 7.0f;
+
+                //hide legs, feet contact shadows will remain
+                current.PlayerPawn.Value.Render = Color.FromArgb(254, 254, 254, 254);
+                Utilities.SetStateChanged(current.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
             }
+
+            DamageHook();
 
             //movement
             Server.ExecuteCommand("sv_timebetweenducks 0.000000");
+
+            //round restart required for collision update
+            Server.ExecuteCommand("mp_restartgame 1");
         }
     }
 }

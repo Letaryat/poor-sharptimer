@@ -1272,6 +1272,7 @@ namespace SharpTimer
 
         public async Task SetPlayerStats(CCSPlayerController? player, string steamId, string playerName, int playerSlot)
         {
+            if(isDisabled) return;
             SharpTimerDebug($"Trying to set player stats in database for {playerName}");
             try
             {
@@ -1497,6 +1498,7 @@ namespace SharpTimer
             SharpTimerDebug($"Trying to set player points in database for {playerName}");
             try
             {
+                if (isDisabled) return;
                 int timeNowUnix = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 // get player columns
                 int timesConnected = 0;

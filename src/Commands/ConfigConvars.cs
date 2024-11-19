@@ -661,14 +661,17 @@ namespace SharpTimer
         {
             string args = command.ArgString;
 
-            if (int.TryParse(args, out int speed) && speed > 0)
+            if (!isDisabled)
             {
-                forcedPlayerSpeed = speed;
-                SharpTimerConPrint($"SharpTimer forced player speed set to {speed}.");
-            }
-            else
-            {
-                SharpTimerConPrint("Invalid forced player speed value. Please provide a positive integer.");
+                if (int.TryParse(args, out int speed) && speed > 0)
+                {
+                    forcedPlayerSpeed = speed;
+                    SharpTimerConPrint($"SharpTimer forced player speed set to {speed}.");
+                }
+                else
+                {
+                    SharpTimerConPrint("Invalid forced player speed value. Please provide a positive integer.");
+                }
             }
         }
 
@@ -1235,14 +1238,21 @@ namespace SharpTimer
             string args = command.ArgString.Trim();
             if (!string.IsNullOrEmpty(args))
             {
-                Boolean.TryParse(args, out var arg);
+                var parsed = Boolean.TryParse(args, out var arg);
 
-                if(args == "1" || arg)
+                if (!parsed && args != "1" && args != "0")
                 {
-                    EnablePlugin();
+                    Logger.LogInformation($"unexpected input: {args}");
                 } else
                 {
-                    DisablePlugin();
+                    if (args == "1" || arg)
+                    {
+                        EnablePlugin();
+                    }
+                    else
+                    {
+                        DisablePlugin();
+                    }
                 }
             } else
             {

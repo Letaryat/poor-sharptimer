@@ -26,6 +26,7 @@ namespace SharpTimer
     {
         public void PrintAllEnabledCommands(CCSPlayerController player)
         {
+            if(isDisabled) return;
             SharpTimerDebug($"Printing Commands for {player.PlayerName}");
             player.PrintToChat($" {Localizer["prefix"]} Available Commands:");
 
