@@ -549,19 +549,38 @@ namespace SharpTimer
 
         }
 
-        [ConsoleCommand("css_hideweapon", "Hides the players weapon")]
-        [ConsoleCommand("css_hw", "Hides the players weapon")]
+        [ConsoleCommand("css_hideweapon", "Toggles the player's weapon visibility")]
+        [ConsoleCommand("css_hw", "Toggles the player's weapon visibility")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void HideWeaponCommand(CCSPlayerController? player, CommandInfo command)
+        public void ToggleWeaponCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player)) return;
+            if (player == null || !IsAllowedPlayer(player))
+                return;
 
-            HideWeapon(player);
+            if (player.Team == CsTeam.None || player.Team == CsTeam.Spectator)
+                return;
+
+            var hasWeapons = player.PlayerPawn?.Value?.WeaponServices?.MyWeapons?.Count > 0;
+
+            if (hasWeapons == true)
+            {
+                player.RemoveWeapons();
+            }
+            else
+            {
+                if (player.Team == CsTeam.Terrorist)
+                {
+                    player.GiveNamedItem("weapon_knife_t");
+                    player.GiveNamedItem("weapon_glock");
+                }
+                else if (player.Team == CsTeam.CounterTerrorist)
+                {
+                    player.GiveNamedItem("weapon_knife");
+                    player.GiveNamedItem("weapon_usp_silencer");
+                }
+            }
         }
-        public void HideWeapon(CCSPlayerController? player)
-        {
-            player!.RemoveWeapons();
-        }
+
         [ConsoleCommand("css_fov", "Sets the player's FOV")]
         [CommandHelper(minArgs: 1, usage: "[fov]")]
         public void FovCommand(CCSPlayerController? player, CommandInfo command)
