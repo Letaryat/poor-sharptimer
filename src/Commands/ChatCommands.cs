@@ -402,7 +402,7 @@ namespace SharpTimer
                 player.CommitSuicide(false, true);
                 player.ChangeTeam(CsTeam.CounterTerrorist);
             }
-            else if (player.Team == CsTeam.CounterTerrorist || player.Team == CsTeam.Terrorist || player.Team == CsTeam.None)
+            if (player.Team != CsTeam.Spectator)
             {
                 player.ChangeTeam(CsTeam.Spectator);
                 player.PrintToChat("You have been moved to Spectator.");
@@ -560,10 +560,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void ToggleWeaponCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (player == null || !IsAllowedPlayer(player))
-                return;
-
-            if (player.Team == CsTeam.None || player.Team == CsTeam.Spectator)
+            if (player == null || !IsAllowedPlayer(player) || player.Team == CsTeam.Spectator)
                 return;
 
             var hasWeapons = player.PlayerPawn?.Value?.WeaponServices?.MyWeapons?.Count > 0;
