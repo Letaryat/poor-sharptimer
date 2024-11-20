@@ -405,7 +405,7 @@ namespace SharpTimer
             if (player.Team != CsTeam.Spectator)
             {
                 player.ChangeTeam(CsTeam.Spectator);
-                player.PrintToChat("You have been moved to Spectator.");
+                player.PrintToChat($"{Localizer["prefix"]} You have been moved to Spectator.");
             }
         }
 
