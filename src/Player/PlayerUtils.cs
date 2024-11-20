@@ -73,6 +73,7 @@ namespace SharpTimer
 
             if (jumpStatsEnabled) player.PrintToConsole($"• !jumpstats (css_jumpstats) - Toggles JumpStats");
             player.PrintToConsole($"• !hideweapon (css_hideweapon) - Toggles weapon visibility");
+            player.PrintToConsole($"• !spec (css_spec) - Moves you to Spectator or back to a team");
             if (enableStyles) player.PrintToConsole($"• !styles (css_styles) - List all styles");
         }
 
