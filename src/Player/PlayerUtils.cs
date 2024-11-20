@@ -43,6 +43,7 @@ namespace SharpTimer
             player.PrintToConsole($"• !hud (css_hud) - Toggle timer hud!");
             player.PrintToConsole($"• !keys (css_keys) - Toggle hud keys!");
             player.PrintToConsole($"• !fov <0-140> (css_fov) - Change your field of view!");
+            player.PrintToConsole($"• !hw (css_hw) - Hides your weapons");
 
             if (cpEnabled)
             {
