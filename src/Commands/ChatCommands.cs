@@ -402,7 +402,7 @@ namespace SharpTimer
                 player.CommitSuicide(false, true);
                 player.ChangeTeam(CsTeam.CounterTerrorist);
             }
-            if (player.Team != CsTeam.Spectator)
+            else if (player.Team != CsTeam.Spectator)
             {
                 player.ChangeTeam(CsTeam.Spectator);
                 player.PrintToChat($"{Localizer["prefix"]} You have been moved to Spectator.");
