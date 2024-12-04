@@ -331,6 +331,10 @@
         "Tier": 1,
         "Type": "Linear"
     },
+    "surf_mineshaft": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
     "surf_minuet": {
         "Tier": 1,
         "Type": "Linear"
@@ -726,6 +730,14 @@
     "surf_holiday": {
         "Tier": 2,
         "Type": "Staged"
+    },
+    "surf_hologram": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
+    "surf_hologram2": {
+        "Tier": 1,
+        "Type": "Linear"
     },
     "surf_hotwheels": {
         "Tier": 2,
