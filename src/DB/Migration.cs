@@ -1,10 +1,8 @@
-using CounterStrikeSharp.API;
-using MySqlConnector;
-using Npgsql;
 using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
-using System.Threading.Tasks;
+using MySqlConnector;
+using Npgsql;
 
 namespace SharpTimer;
 
@@ -12,7 +10,7 @@ public partial class SharpTimer
 {
     public void ExecuteMigrations(IDbConnection connection)
     {
-        string migrationsDirectory = "";
+        var migrationsDirectory = "";
         switch (dbType)
         {
             case DatabaseType.MySQL:
@@ -27,7 +25,7 @@ public partial class SharpTimer
         }
 
         var files = Directory.GetFiles(migrationsDirectory, "*.sql")
-                             .OrderBy(f => f);
+            .OrderBy(f => f);
 
         using (connection)
         {
@@ -36,27 +34,27 @@ public partial class SharpTimer
             {
                 case DatabaseType.MySQL:
                     cmd = new MySqlCommand("""
-                                                     CREATE TABLE IF NOT EXISTS st_migrations (
-                                                         id INT PRIMARY KEY AUTO_INCREMENT,
-                                                         version VARCHAR(255) NOT NULL
-                                                     );
-                                         """, (MySqlConnection)connection);
+                                                       CREATE TABLE IF NOT EXISTS st_migrations (
+                                                           id INT PRIMARY KEY AUTO_INCREMENT,
+                                                           version VARCHAR(255) NOT NULL
+                                                       );
+                                           """, (MySqlConnection)connection);
                     break;
                 case DatabaseType.PostgreSQL:
                     cmd = new NpgsqlCommand("""
-                                                     CREATE TABLE IF NOT EXISTS st_migrations (
-                                                         id SERIAL PRIMARY KEY,
-                                                         version VARCHAR(255) NOT NULL
-                                                     );
-                                         """, (NpgsqlConnection)connection);
+                                                        CREATE TABLE IF NOT EXISTS st_migrations (
+                                                            id SERIAL PRIMARY KEY,
+                                                            version VARCHAR(255) NOT NULL
+                                                        );
+                                            """, (NpgsqlConnection)connection);
                     break;
                 case DatabaseType.SQLite:
                     cmd = new SQLiteCommand("""
-                                                     CREATE TABLE IF NOT EXISTS st_migrations (
-                                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                         version VARCHAR(255) NOT NULL
-                                                     );
-                                         """, (SQLiteConnection)connection);
+                                                        CREATE TABLE IF NOT EXISTS st_migrations (
+                                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                            version VARCHAR(255) NOT NULL
+                                                        );
+                                            """, (SQLiteConnection)connection);
                     break;
             }
 
@@ -87,8 +85,8 @@ public partial class SharpTimer
                     case DatabaseType.SQLite:
                         cmdMigration = new SQLiteCommand(sqlScript, (SQLiteConnection)connection);
                         break;
-
                 }
+
                 using (cmdMigration)
                 {
                     cmdMigration?.ExecuteNonQuery();
@@ -108,15 +106,19 @@ public partial class SharpTimer
         switch (dbType)
         {
             case DatabaseType.MySQL:
-                cmd = new MySqlCommand("SELECT version FROM st_migrations ORDER BY id DESC LIMIT 1;", (MySqlConnection)connection);
+                cmd = new MySqlCommand("SELECT version FROM st_migrations ORDER BY id DESC LIMIT 1;",
+                    (MySqlConnection)connection);
                 break;
             case DatabaseType.PostgreSQL:
-                cmd = new NpgsqlCommand("SELECT version FROM st_migrations ORDER BY id DESC LIMIT 1;", (NpgsqlConnection)connection);
+                cmd = new NpgsqlCommand("SELECT version FROM st_migrations ORDER BY id DESC LIMIT 1;",
+                    (NpgsqlConnection)connection);
                 break;
             case DatabaseType.SQLite:
-                cmd = new SQLiteCommand("SELECT version FROM st_migrations ORDER BY id DESC LIMIT 1;", (SQLiteConnection)connection);
+                cmd = new SQLiteCommand("SELECT version FROM st_migrations ORDER BY id DESC LIMIT 1;",
+                    (SQLiteConnection)connection);
                 break;
         }
+
         using (cmd)
         {
             var result = cmd?.ExecuteScalar();
@@ -130,16 +132,19 @@ public partial class SharpTimer
         switch (dbType)
         {
             case DatabaseType.MySQL:
-                cmd = new MySqlCommand("INSERT INTO st_migrations (version) VALUES (@Version);", (MySqlConnection)connection);
+                cmd = new MySqlCommand("INSERT INTO st_migrations (version) VALUES (@Version);",
+                    (MySqlConnection)connection);
                 break;
             case DatabaseType.PostgreSQL:
-                cmd = new NpgsqlCommand("INSERT INTO st_migrations (version) VALUES (@Version);", (NpgsqlConnection)connection);
+                cmd = new NpgsqlCommand("INSERT INTO st_migrations (version) VALUES (@Version);",
+                    (NpgsqlConnection)connection);
                 break;
             case DatabaseType.SQLite:
-                cmd = new SQLiteCommand("INSERT INTO st_migrations (version) VALUES (@Version);", (SQLiteConnection)connection);
+                cmd = new SQLiteCommand("INSERT INTO st_migrations (version) VALUES (@Version);",
+                    (SQLiteConnection)connection);
                 break;
-
         }
+
         using (cmd)
         {
             cmd?.AddParameterWithValue("@Version", version);

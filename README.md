@@ -1,5 +1,6 @@
 > [!NOTE]
-> The original creator of SharpTimer is dea_bb, who discontinued support for the project after version 0.2.6. This fork is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
+> The original creator of SharpTimer is dea_bb, who discontinued support for the project after version 0.2.6. This fork
+> is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
 
 
 
@@ -13,12 +14,12 @@
 	<a href="https://ko-fi.com/rcnoob"><img width="185" src="https://files.catbox.moe/rig9aq.svg" alt="Badge"></a>
 </p>
 
-
 # SharpTimer
+
 SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using CounterStrikeSharp<br>
 
-
 ## Features
+
 <details> 
   <summary>Timer, speedometer and key input with color customization</summary>
    <img src="https://i.imgur.com/TxAwgbC.png">
@@ -86,9 +87,11 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 [**CounterStrikeSharp** *(v281 and up)*](https://github.com/roflmuffin/CounterStrikeSharp/releases)
 
-[**SharpTimerModelSetter** *(optional but recommended for custom player models)*](https://github.com/johandrevwyk/STCustomModels)
+[**SharpTimerModelSetter** *(optional but recommended for custom player
+models)*](https://github.com/johandrevwyk/STCustomModels)
 
-[**MovementUnlocker** *(optional but recommended for surf and bhop servers)*](https://github.com/Source2ZE/MovementUnlocker)
+[**MovementUnlocker** *(optional but recommended for surf and bhop
+servers)*](https://github.com/Source2ZE/MovementUnlocker)
 
 [**RampBugFix** *(optional but recommended for surf servers)*](https://github.com/Interesting-exe/CS2Fixes-RampbugFix/)
 
@@ -102,75 +105,78 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 [**Flashing HUD Fix** *(optional but recommended)*](https://github.com/deabb/CS2FlashingHtmlHudFix)
 
-
 ## Install
+
 * Download the [latest release](https://github.com/Letaryat/poor-sharptimer/releases),
 
 * Unzip into your servers `game/csgo/` directory,
 
 * :exclamation: See `game/csgo/cfg/SharpTimer/config.cfg` for basic plugin configuration,
 
-* :exclamation: It is recommended to have a custom server cfg with your desired settings (for example [SURF](https://github.com/rcnoob/cs-cfg/blob/main/surf.cfg) or [BHOP](https://github.com/rcnoob/cs-cfg/blob/main/bhop.cfg)),
+* :exclamation: It is recommended to have a custom server cfg with your desired settings (for
+  example [SURF](https://github.com/rcnoob/cs-cfg/blob/main/surf.cfg)
+  or [BHOP](https://github.com/rcnoob/cs-cfg/blob/main/bhop.cfg)),
 
 # [SharpTimer Wiki/Docs](https://github.com/Letaryat/poor-sharptimer/wiki)
 
 # TODO List
+
 - [x] HUD
-  - [x] Speedometer
-  - [x] Pre
-  - [x] Timer
-  - [x] Info
-    - [x] PB
-    - [x] Map Rank Icon
-    - [x] Map Rank (ie 1/100)
-    - [x] Map Tier
-    - [x] Map Type
-  - [x] Spectator HUD
+    - [x] Speedometer
+    - [x] Pre
+    - [x] Timer
+    - [x] Info
+        - [x] PB
+        - [x] Map Rank Icon
+        - [x] Map Rank (ie 1/100)
+        - [x] Map Tier
+        - [x] Map Type
+    - [x] Spectator HUD
 - [x] Zones
-  - [x] Hook common triggers by default
-  - [x] Manual Zones
-  - [x] Hook Bonus Zones Triggers (KZ & Surf) 
+    - [x] Hook common triggers by default
+    - [x] Manual Zones
+    - [x] Hook Bonus Zones Triggers (KZ & Surf)
 - [x] Player PBs
-  - [x] Save to Json
-  - [x] Save to MySQL
+    - [x] Save to Json
+    - [x] Save to MySQL
 - [x] Ranks
-  - [x] Map !top
-  - [x] Map !topbonus
-  - [x] Global server ranks
-    - [x] !points
-    - [x] Global Point system
+    - [x] Map !top
+    - [x] Map !topbonus
+    - [x] Global server ranks
+        - [x] !points
+        - [x] Global Point system
 - [ ] Surf Stages/Checkpoint support
-  - [x] Stage/Checkpoint PBs with u/s
-    - [x] Json Stage/Checkpoint PBs saving
-    - [ ] MySql Stage/Checkpoint PBs saving
+    - [x] Stage/Checkpoint PBs with u/s
+        - [x] Json Stage/Checkpoint PBs saving
+        - [ ] MySql Stage/Checkpoint PBs saving
 - [x] MySQL
-	- [x] Basic Player Records
-  - [x] Player Server Stats
-  - [x] Player Map Stats
+    - [x] Basic Player Records
+    - [x] Player Server Stats
+    - [x] Player Map Stats
 - [x] Replays
 - [x] Jumpstats
-  - [x] Distance
-  - [x] Pre
-  - [x] Max
-  - [x] Height
-  - [x] Width
-  - [ ] Sync
-  - [ ] Jump Types
-    - [x] Long Jump
-    - [x] BunnyHop
-    - [x] MultiBunnyHop
-    - [x] Jump Bug
-    - [ ] Edge Bug
-    - [ ] Ladder Jump
+    - [x] Distance
+    - [x] Pre
+    - [x] Max
+    - [x] Height
+    - [x] Width
+    - [ ] Sync
+    - [ ] Jump Types
+        - [x] Long Jump
+        - [x] BunnyHop
+        - [x] MultiBunnyHop
+        - [x] Jump Bug
+        - [ ] Edge Bug
+        - [ ] Ladder Jump
 - [ ] Silly Stuff
-  - [x] Color customization
-  - [x] Special Tester Gifs
-  - [x] Custom Player Gifs
-  - [x] Dioscord Webhook
-  - [ ] Strafe Sync Bar on HUD
-
+    - [x] Color customization
+    - [x] Special Tester Gifs
+    - [x] Custom Player Gifs
+    - [x] Dioscord Webhook
+    - [ ] Strafe Sync Bar on HUD
 
 ## Authors:
+
 [DEA_BB](https://twitter.com/dea_bb)
 [Letaryat](https://github.com/Letaryat)
 [rcnoob](https://github.com/rcnoob)

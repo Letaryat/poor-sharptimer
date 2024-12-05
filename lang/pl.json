@@ -1,6 +1,5 @@
 {
   "prefix": "{lime}SharpTimer ●{white}",
-
   //timer
   "timer_time": "Time: [{lime}{0}{default}] {1}",
   "timer_style": "Style: [{lime}{0}{default}]",
@@ -9,7 +8,6 @@
   "timer_disabled": "Timer: {red}Disabled",
   "timer_cancelled": "Timer zostal wylaczony z powodu proby oszukiwania!",
   "timer_reset": "Timer zostal zresetowany z powodu proby oszukiwania!",
-
   //records
   "no_records_available": "Brak dostepnych rekordow dla {0}",
   "no_records_available_bonus": "Brak dostepnych rekordow dla bonusu {0} na {1}",
@@ -23,7 +21,6 @@
   "map_finish_rank": "Ranga: [{lime}{0}{default}] Ukonczono: [{lime}{1}{default}]",
   "top10_records": "Top 10 {0} rekordow dla {1}:",
   "top10_records_bonus": "Top 10 {0} rekordow dla Bonus {1} na {2}:",
-
   //stages
   "invalid_bonus_stage": "Wprowadz prawidlowy etap bonusu np: {lime}!topbonus 1",
   "invalid_bonus_rb": "Wprowadz prawidlowy etap bonusu np: {lime}!rb <index>",
@@ -31,7 +28,6 @@
   "stages_unavalible_respawnpos": "{lightred}Brak RespawnStagePos z indexem {0} dla obecnej mapy!",
   "stages_enter_valid": "Podaj prawidlowy etap np: {lime}!stage <index>",
   "map_no_stages": "{lightred}Obecna mapa nie posiada etapow!",
-
   //rank
   "current_rank": "Twoja obecna ranga to: {0}{1}{lime}",
   "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
@@ -43,7 +39,6 @@
   "gained_points": "{lime}{0} {default}zdobyłeś {green}+{1} {default}punkty {grey}({2})",
   "top_10_points": "10 najlepszych graczy z największą liczbą punktów:",
   "top_10_points_list": "#{0}: {lime} {1} {default}: {lime} {2} {default} punkty",
-
   //replay
   "no_replay": "Brak powtorki!",
   "end_your_replay": "Pierw zakoncz obecna potworke komenda: {lime}!stopreplay",
@@ -54,7 +49,6 @@
   "ending_replay": "Zakonczanie powtorki!",
   "replay_corrupt": "Ta powtorka wydaje sie byc zepsuta!",
   "replay_dont_exist": "Ta powtorka nie istnieje!",
-
   //settings
   "hud_shown": "Hud zostal: {green}Pokazane",
   "hud_hidden": "Hud zostal: {red}Ukryte",
@@ -64,7 +58,6 @@
   "jumpstats_hidden": "Statystyki skokow zostaly: {red}Ukryte",
   "sounds_on": "Dzwieki zostaly: {green}Wlaczone",
   "sounds_off": "Dzwieki zostaly: {red}Wylaczone",
-
   //zones
   "no_respawnpos": "{lightred}Brak RespawnPos dla tej mapy!",
   "no_respawnpos_bonus": "{lightred}Nie znaleziono RespawnBonusPos dla tej mapy!",
@@ -73,7 +66,6 @@
   "map_using_manual_zones": "Obecna mapa uzywa manualnie skonfigurowanych stref!",
   "saved_custom_respawnpos": "Zapisano niestandardowy Respawnpos!",
   "not_inside_startzone": "Nie jestes w startzone!",
-
   //styles
   "styles_list": "Styl {0}. {lime}{1}",
   "style_example": "Przyklad {lime}/style 1 lub lowgravity",
@@ -81,7 +73,6 @@
   "style_not_found": "Styl {0} nie istnieje",
   "styles_disabled": "Style sa obecnie wylaczone na tym serwerze",
   "styles_not_supported": "Style obecnie nie sa wspierane na lokalnych rekordach :(",
-
   //checkpoints
   "checkpoint_set": "{0} Ustawiono! {lime}#{1}",
   "no_checkpoint_set": "Nie {0} zostal ustawiony!",
@@ -90,14 +81,11 @@
   "used_checkpoint": "Przeniesiono do nastepnego {0}",
   "used_recent_checkpoint": "Przeniesiono do ostatniego {0}",
   "used_previous_checkpoint": "Przeniesiono do poprzedniego {0}",
-
   "goto_player": "Przeniesiono do {lime}{0}",
   "goto_player_not_found": "{lightred}Gracz pod dana nazwa nie zostal znaleziony. Jezeli nazwa posiada spacje sprobuj uzyc: {lime}!goto 'some name'",
-
   //jumpstats
   "js_msg1": "{lime}JS: {grey} {0}: {1}{2}{grey} | Pre: {lime}{3}{grey} | Max: {lime}{4}{grey} | Strafes: {lime}{5}",
   "js_msg2": "{grey}Height: {lime}{0}{grey} | Width: {lime}{1}{grey} | WT: {lime}{2}{grey} | Sync: {lime}{3}%",
-
   //other
   "command_cooldown": "Odczekaj zanim ponownie skorzystasz z komendy!",
   "error_occured": "{lightred}Wystapil blad.",

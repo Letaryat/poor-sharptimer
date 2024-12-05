@@ -1,6 +1,5 @@
 {
   "prefix": "{lime}SharpTimer ●{white}",
-
   //timer
   "timer_time": "Temps: [{lime}{0}{default}] {1}",
   "timer_style": "Style: [{lime}{0}{default}]",
@@ -9,7 +8,6 @@
   "timer_disabled": "Timer: {red}Désactivé",
   "timer_cancelled": "Timer annulée en raison d'une tentative de saut illégale",
   "timer_reset": "Vous avez été réinitialisé en raison d'une tentative de saut illégale.",
-
   //records
   "no_records_available": "Aucun enregistrement n'est disponible pour {0}",
   "no_records_available_bonus": "Aucun enregistrement n'est disponible pour le Bonus {0} sur {1}",
@@ -23,7 +21,6 @@
   "map_finish_rank": "Classement: [{lime}{0}{default}] Temps accompli: [{lime}{1}{default}]",
   "top10_records": "Top 10 {0} des records pour {1}:",
   "top10_records_bonus": "Top 10 {0} des records pour le Bonus {1} sur {2}:",
-
   //stages
   "invalid_bonus_stage": "Veuillez saisir un numéro de stage valide pour le Bonus. ex : {lime}!topbonus 1",
   "invalid_bonus_rb": "Veuillez saisir un numéro de stage valide. ex: {lime}!rb <index>",
@@ -31,7 +28,6 @@
   "stages_unavalible_respawnpos": "{lightred}Pas de RespawnStagePos avec l'index {0} trouvé pour la map actuelle !",
   "stages_enter_valid": "Veuillez saisir un numéro stage valide. ex: {lime}!stage <index>",
   "map_no_stages": "{lightred}La map actuelle ne contient aucun stage!",
-
   //rank
   "current_rank": "Vous êtes actuellement {0}{1}{lime}",
   "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
@@ -43,7 +39,6 @@
   "gained_points": "{lime}{0} {default}gagné {green}+{1} {default}Points {grey}({2})",
   "top_10_points": "Top 10 des joueurs avec le plus de points :",
   "top_10_points_list": "#{0} : {lime}{1} {default} : {lime}{2} {default}points",
-
   //replay
   "no_replay": "Pas de replay en cours",
   "end_your_replay": "Terminez d'abord votre replay en cours {lime}!stopreplay",
@@ -54,7 +49,6 @@
   "ending_replay": "Replay terminé !",
   "replay_corrupt": "Le replay demandé semble être corrompu",
   "replay_dont_exist": "Le replay demandé n'existe pas",
-
   //settings
   "hud_shown": "L'Hud est maintenant: {green}Affiché",
   "hud_hidden": "L'Hud est maintenant: {red}Caché",
@@ -64,7 +58,6 @@
   "jumpstats_hidden": "Les statistiques de saut sont maintenant:  {red}Caché",
   "sounds_on": "Les sons sont maintenant: {green}Activé",
   "sounds_off": "Les sons sont maintenant: {red}Désactivé",
-
   //zones
   "no_respawnpos": "{lightred}Aucun RespawnPos n'a été trouvé pour la map actuelle !",
   "no_respawnpos_bonus": "{lightred}Aucun RespawnBonusPos n'a été trouvé pour la map actuelle !",
@@ -73,7 +66,6 @@
   "map_using_manual_zones": "La map actuelle utilise des zones manuelles",
   "saved_custom_respawnpos": "Enregistrement des Positions personnalisées de réapparition de la zone de départ !",
   "not_inside_startzone": "Vous n'êtes pas dans la zone de départ !",
-
   //styles
   "styles_list": "Style {0}. {lime}{1}",
   "style_example": "example: {lime}/style 1 ou lowgravity",
@@ -81,7 +73,6 @@
   "style_not_found": "Le style {0} n'existe pas",
   "styles_disabled": "Les styles sont actuellement désactivés sur ce serveur",
   "styles_not_supported": "Les styles ne sont actuellement pas pris en charge par les enregistrements locaux :(",
-
   //checkpoints
   "checkpoint_set": "{0} définit! {lime}#{1}",
   "no_checkpoint_set": "Aucune {0} définit!",
@@ -90,14 +81,11 @@
   "used_checkpoint": "Téléporté au suivant {0}",
   "used_recent_checkpoint": "Téléporté au plus récent {0}",
   "used_previous_checkpoint": "Téléportation vers le précédent {0}",
-
   "goto_player": "Téléportation vers {lime}{0}",
   "goto_player_not_found": "{lightred}Le nom du joueur n'a pas été trouvé ! Si le nom contient des espaces, essayez {lime}!goto 'joueur lambda'",
-
   //jumpstats
   "js_msg1": "{lime}JS: {grey} {0}: {1}{2}{grey} | Pre: {lime}{3}{grey} | Max: {lime}{4}{grey} | Strafes: {lime}{5}",
   "js_msg2": "{grey}Hauteur: {lime}{0}{grey} | Largeur: {lime}{1}{grey} | WT: {lime}{2}{grey} | Sync: {lime}{3}%",
-
   //other
   "command_cooldown": "La commande est en attente. Chill...",
   "error_occured": "{lightred}Une erreur s'est produite.",

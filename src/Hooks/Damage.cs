@@ -20,92 +20,88 @@ using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 
-namespace SharpTimer
+namespace SharpTimer;
+
+public partial class SharpTimer
 {
-    public partial class SharpTimer
+    public void DamageHook()
     {
-        public void DamageHook()
+        try
         {
-            try
+            SharpTimerDebug("Init Damage hook...");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                SharpTimerDebug("Init Damage hook...");
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    SharpTimerDebug("Trying to register Linux Damage hook...");
-                    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(this.OnTakeDamage, HookMode.Pre);
-                }
-                else
-                {
-                    SharpTimerDebug("Trying to register Windows Damage hook...");
-                    RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt, HookMode.Pre);
-                }
+                SharpTimerDebug("Trying to register Linux Damage hook...");
+                VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
             }
-            catch (Exception ex)
-            {
-                if (ex.Message == "Invalid function pointer")
-                    SharpTimerError($"Error in DamageHook: Conflict between cs2fixes and SharpTimer");
-                else
-                    SharpTimerError($"Error in DamageHook: {ex.Message}");
-            }
-        }
-
-        public void DamageUnHook()
-        {
-            try
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage, HookMode.Pre);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message == "Invalid function pointer")
-                    SharpTimerError($"Error in DamageUnHook: Conflict between cs2fixes and SharpTimer");
-                else
-                    SharpTimerError($"Error in DamageUnHook: {ex.Message}");
-            }
-        }
-
-        HookResult OnTakeDamage(DynamicHook h)
-        {
-            var ent = h.GetParam<CEntityInstance>(0);
-            var info = h.GetParam<CTakeDamageInfo>(1);
-            if(disableDamage) h.GetParam<CTakeDamageInfo>(1).Damage = 0;
-
-            if (!ent.IsValid || !info.Attacker.IsValid)
-                return HookResult.Continue;
-
-            if (ent.DesignerName == "player" && info.Attacker.Value!.DesignerName == "player")
-                return HookResult.Handled;
             else
-                return HookResult.Continue;
-        }
-
-        HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
-        {
-            if (disableDamage == true)
             {
-                var player = @event.Userid;
-
-                if (!player!.IsValid)
-                    return HookResult.Continue;
-
-                Vector playerSpeed = player!.PlayerPawn.Value!.AbsVelocity ?? new Vector(0, 0, 0);
-
-                player.PlayerPawn.Value.Health = int.MaxValue;
-                player.PlayerPawn.Value.ArmorValue = int.MaxValue;
-
-                if (!player.PawnHasHelmet)
-                    player.GiveNamedItem("item_assaultsuit");
-
-                Server.NextFrame(() =>
-                {
-                    if (IsAllowedPlayer(player)) AdjustPlayerVelocity(player, playerSpeed.Length(), true);
-                });
+                SharpTimerDebug("Trying to register Windows Damage hook...");
+                RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt, HookMode.Pre);
             }
-
-            return HookResult.Continue;
         }
+        catch (Exception ex)
+        {
+            if (ex.Message == "Invalid function pointer")
+                SharpTimerError("Error in DamageHook: Conflict between cs2fixes and SharpTimer");
+            else
+                SharpTimerError($"Error in DamageHook: {ex.Message}");
+        }
+    }
+
+    public void DamageUnHook()
+    {
+        try
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage, HookMode.Pre);
+        }
+        catch (Exception ex)
+        {
+            if (ex.Message == "Invalid function pointer")
+                SharpTimerError("Error in DamageUnHook: Conflict between cs2fixes and SharpTimer");
+            else
+                SharpTimerError($"Error in DamageUnHook: {ex.Message}");
+        }
+    }
+
+    private HookResult OnTakeDamage(DynamicHook h)
+    {
+        var ent = h.GetParam<CEntityInstance>(0);
+        var info = h.GetParam<CTakeDamageInfo>(1);
+        if (disableDamage) h.GetParam<CTakeDamageInfo>(1).Damage = 0;
+
+        if (!ent.IsValid || !info.Attacker.IsValid)
+            return HookResult.Continue;
+
+        if (ent.DesignerName == "player" && info.Attacker.Value!.DesignerName == "player")
+            return HookResult.Handled;
+        return HookResult.Continue;
+    }
+
+    private HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
+    {
+        if (disableDamage)
+        {
+            var player = @event.Userid;
+
+            if (!player!.IsValid)
+                return HookResult.Continue;
+
+            var playerSpeed = player!.PlayerPawn.Value!.AbsVelocity ?? new Vector(0, 0, 0);
+
+            player.PlayerPawn.Value.Health = int.MaxValue;
+            player.PlayerPawn.Value.ArmorValue = int.MaxValue;
+
+            if (!player.PawnHasHelmet)
+                player.GiveNamedItem("item_assaultsuit");
+
+            Server.NextFrame(() =>
+            {
+                if (IsAllowedPlayer(player)) AdjustPlayerVelocity(player, playerSpeed.Length(), true);
+            });
+        }
+
+        return HookResult.Continue;
     }
 }

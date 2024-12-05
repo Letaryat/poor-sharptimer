@@ -1,0 +1,2 @@
+ALTER TABLE "PlayerStats"
+    ADD COLUMN "HideWeapon" BOOLEAN DEFAULT FALSE;

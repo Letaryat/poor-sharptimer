@@ -15,343 +15,347 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using CounterStrikeSharp.API.Core;
 
-namespace SharpTimer
+namespace SharpTimer;
+
+public partial class SharpTimer
 {
-    public partial class SharpTimer
+    public HookResult TriggerMultipleOnStartTouch(CEntityInstance activator, CEntityInstance caller)
     {
-        public HookResult TriggerMultipleOnStartTouch(CEntityInstance activator, CEntityInstance caller)
+        try
         {
-            try
+            if (activator == null || caller == null)
             {
-                if (activator == null || caller == null)
+                SharpTimerDebug("Null reference detected in trigger_multiple OnStartTouch hook.");
+                return HookResult.Continue;
+            }
+
+            if (activator.DesignerName != "player" || useTriggers == false) return HookResult.Continue;
+
+            var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
+
+            if (player == null)
+            {
+                SharpTimerDebug("Player is null in trigger_multiple OnStartTouch hook.");
+                return HookResult.Continue;
+            }
+
+            if (!IsAllowedPlayer(player) || caller.Entity!.Name == null) return HookResult.Continue;
+
+            var callerHandle = caller.Handle;
+            var playerSlot = player.Slot;
+            var playerName = player.PlayerName;
+            var steamID = player.SteamID.ToString();
+            var callerName = caller.Entity.Name;
+
+            if (caller.Entity.Name == "bhop_block" && !playerTimers[player.Slot].IsTimerBlocked)
+            {
+                playerTimers[player.Slot].IsOnBhopBlock = true;
+                return HookResult.Continue;
+            }
+
+            if (useStageTriggers && stageTriggers.ContainsKey(callerHandle) &&
+                playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsTimerRunning)
+            {
+                if (stageTriggers[callerHandle] == 1)
                 {
-                    SharpTimerDebug("Null reference detected in trigger_multiple OnStartTouch hook.");
+                    playerTimers[playerSlot].CurrentMapStage = 1;
                     return HookResult.Continue;
                 }
 
-                if (activator.DesignerName != "player" || useTriggers == false) return HookResult.Continue;
+                _ = Task.Run(async () =>
+                    await HandlePlayerStageTimes(player, callerHandle, playerSlot, steamID, playerName));
+                return HookResult.Continue;
+            }
 
-                var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
+            if (useCheckpointTriggers && cpTriggers.ContainsKey(callerHandle) &&
+                playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsTimerRunning)
+            {
+                _ = Task.Run(async () =>
+                    await HandlePlayerCheckpointTimes(player, callerHandle, playerSlot, steamID, playerName));
+                return HookResult.Continue;
+            }
 
-                if (player == null)
+            if (useBonusCheckpointTriggers && bonusCheckpointTriggers.ContainsKey(callerHandle) &&
+                playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsBonusTimerRunning)
+            {
+                _ = Task.Run(async () =>
+                    await HandlePlayerBonusCheckpointTimes(player, callerHandle, playerSlot, steamID, playerName));
+                return HookResult.Continue;
+            }
+
+            if (IsValidEndTriggerName(callerName) && playerTimers[playerSlot].IsTimerRunning &&
+                !playerTimers[playerSlot].IsTimerBlocked)
+            {
+                OnTimerStop(player);
+                if (enableReplays) OnRecordingStop(player);
+                SharpTimerDebug($"Player {playerName} entered EndZone");
+                return HookResult.Continue;
+            }
+
+            if (IsValidStartTriggerName(callerName))
+            {
+                if (playerTimers.TryGetValue(playerSlot, out var playerTimer)) playerTimer.inStartzone = true;
+                if (!playerTimers[playerSlot].IsTimerBlocked) playerCheckpoints.Remove(playerSlot);
+
+                InvalidateTimer(player, callerHandle);
+
+                if ((maxStartingSpeedEnabled && use2DSpeed == false &&
+                     Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxStartingSpeed) ||
+                    (maxStartingSpeedEnabled && use2DSpeed &&
+                     Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxStartingSpeed))
                 {
-                    SharpTimerDebug("Player is null in trigger_multiple OnStartTouch hook.");
-                    return HookResult.Continue;
+                    Action<CCSPlayerController?, float, bool> adjustVelocity =
+                        use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                    adjustVelocity(player, maxStartingSpeed, false);
                 }
 
-                if (!IsAllowedPlayer(player) || caller.Entity!.Name == null) return HookResult.Continue;
-
-                var callerHandle = caller.Handle;
-                var playerSlot = player.Slot;
-                var playerName = player.PlayerName;
-                var steamID = player.SteamID.ToString();
-                var callerName = caller.Entity.Name;
-
-                if (caller.Entity.Name.ToString() == "bhop_block" && !playerTimers[player.Slot].IsTimerBlocked)
+                playerTimers[playerSlot].CurrentZoneInfo = new CurrentZoneInfo
                 {
-                    playerTimers[player.Slot].IsOnBhopBlock = true;
-                    return HookResult.Continue;
-                }
+                    InMainMapStartZone = true,
+                    InBonusStartZone = false,
+                    CurrentBonusNumber = 0
+                };
 
-                if (useStageTriggers == true && stageTriggers.ContainsKey(callerHandle) && playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsTimerRunning == true)
-                {
-                    if (stageTriggers[callerHandle] == 1)
-                    {
-                        playerTimers[playerSlot].CurrentMapStage = 1;
-                        return HookResult.Continue;
-                    }
-                    else
-                    {
-                        _ = Task.Run(async () => await HandlePlayerStageTimes(player, callerHandle, playerSlot, steamID, playerName));
-                        return HookResult.Continue;
-                    }
-                }
-
-                if (useCheckpointTriggers == true && cpTriggers.ContainsKey(callerHandle) && playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsTimerRunning == true)
-                {
-                    _ = Task.Run(async () => await HandlePlayerCheckpointTimes(player, callerHandle, playerSlot, steamID, playerName));
-                    return HookResult.Continue;
-                }
-
-                if (useBonusCheckpointTriggers == true && bonusCheckpointTriggers.ContainsKey(callerHandle) && playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsBonusTimerRunning == true)
-                {
-                    _ = Task.Run(async () => await HandlePlayerBonusCheckpointTimes(player, callerHandle, playerSlot, steamID, playerName));
-                    return HookResult.Continue;
-                }
-
-                if (IsValidEndTriggerName(callerName) && playerTimers[playerSlot].IsTimerRunning && !playerTimers[playerSlot].IsTimerBlocked)
-                {
-                    OnTimerStop(player);
-                    if (enableReplays) OnRecordingStop(player);
-                    SharpTimerDebug($"Player {playerName} entered EndZone");
-                    return HookResult.Continue;
-                }
-
-                if (IsValidStartTriggerName(callerName))
-                {
-                    if(playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
-                    {
-                        playerTimer.inStartzone = true;
-                    }
-                    if (!playerTimers[playerSlot].IsTimerBlocked)
-                    {
-                        playerCheckpoints.Remove(playerSlot);
-                    }
-
-                    InvalidateTimer(player, callerHandle);
-
-                    if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxStartingSpeed))
-                    {
-                        Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, maxStartingSpeed, false);
-                    }
-
-                    playerTimers[playerSlot].CurrentZoneInfo = new()
-                    {
-                        InMainMapStartZone = true,
-                        InBonusStartZone = false,
-                        CurrentBonusNumber = 0
-                    };
-
-                    SharpTimerDebug($"Player {playerName} entered StartZone");
-
-                    return HookResult.Continue;
-                }
-
-                var (validEndBonus, endBonusX) = IsValidEndBonusTriggerName(callerName, playerSlot);
-
-                if (validEndBonus && playerTimers[playerSlot].IsBonusTimerRunning && !playerTimers[playerSlot].IsTimerBlocked)
-                {
-                    OnBonusTimerStop(player, endBonusX);
-                    if (enableReplays) OnRecordingStop(player);
-                    SharpTimerDebug($"Player {playerName} entered Bonus{endBonusX} EndZone");
-                    return HookResult.Continue;
-                }
-
-                var (validStartBonus, startBonusX) = IsValidStartBonusTriggerName(callerName);
-                var (validStartFakeBonus, fakeBonusX) = IsValidFakeStartBonusTriggerName(callerName);
-
-                if (validStartBonus || validStartFakeBonus)
-                {
-                    if (!playerTimers[playerSlot].IsTimerBlocked)
-                    {
-                        playerCheckpoints.Remove(playerSlot);
-                    }
-
-                    InvalidateTimer(player, callerHandle);
-
-                    if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxBonusStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxBonusStartingSpeed))
-                    {
-                        Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, maxBonusStartingSpeed, false);
-                    }
-
-                    playerTimers[playerSlot].CurrentZoneInfo = new()
-                    {
-                        InMainMapStartZone = false,
-                        InBonusStartZone = true,
-                        CurrentBonusNumber = (startBonusX != 0 ? startBonusX : fakeBonusX)
-                    };
-
-                    SharpTimerDebug($"Player {playerName} entered Bonus {(startBonusX != 0 ? startBonusX : fakeBonusX)} StartZone");
-                    return HookResult.Continue;
-                }
-
-                if (IsValidStopTriggerName(callerName))
-                {
-                    InvalidateTimer(player, callerHandle);
-                    PrintToChat(player, Localizer["timer_cancelled"]);
-                }
-
-                if (IsValidResetTriggerName(callerName))
-                {
-                    InvalidateTimer(player, callerHandle);
-                    RespawnPlayer(player);
-                    PrintToChat(player, Localizer["timer_reset"]);
-                }
+                SharpTimerDebug($"Player {playerName} entered StartZone");
 
                 return HookResult.Continue;
             }
-            catch (Exception ex)
+
+            var (validEndBonus, endBonusX) = IsValidEndBonusTriggerName(callerName, playerSlot);
+
+            if (validEndBonus && playerTimers[playerSlot].IsBonusTimerRunning &&
+                !playerTimers[playerSlot].IsTimerBlocked)
             {
-                SharpTimerError($"Exception in trigger_multiple OnStartTouch hook: {ex.Message}");
+                OnBonusTimerStop(player, endBonusX);
+                if (enableReplays) OnRecordingStop(player);
+                SharpTimerDebug($"Player {playerName} entered Bonus{endBonusX} EndZone");
                 return HookResult.Continue;
             }
+
+            var (validStartBonus, startBonusX) = IsValidStartBonusTriggerName(callerName);
+            var (validStartFakeBonus, fakeBonusX) = IsValidFakeStartBonusTriggerName(callerName);
+
+            if (validStartBonus || validStartFakeBonus)
+            {
+                if (!playerTimers[playerSlot].IsTimerBlocked) playerCheckpoints.Remove(playerSlot);
+
+                InvalidateTimer(player, callerHandle);
+
+                if ((maxStartingSpeedEnabled && use2DSpeed == false &&
+                     Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxBonusStartingSpeed) ||
+                    (maxStartingSpeedEnabled && use2DSpeed &&
+                     Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxBonusStartingSpeed))
+                {
+                    Action<CCSPlayerController?, float, bool> adjustVelocity =
+                        use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                    adjustVelocity(player, maxBonusStartingSpeed, false);
+                }
+
+                playerTimers[playerSlot].CurrentZoneInfo = new CurrentZoneInfo
+                {
+                    InMainMapStartZone = false,
+                    InBonusStartZone = true,
+                    CurrentBonusNumber = startBonusX != 0 ? startBonusX : fakeBonusX
+                };
+
+                SharpTimerDebug(
+                    $"Player {playerName} entered Bonus {(startBonusX != 0 ? startBonusX : fakeBonusX)} StartZone");
+                return HookResult.Continue;
+            }
+
+            if (IsValidStopTriggerName(callerName))
+            {
+                InvalidateTimer(player, callerHandle);
+                PrintToChat(player, Localizer["timer_cancelled"]);
+            }
+
+            if (IsValidResetTriggerName(callerName))
+            {
+                InvalidateTimer(player, callerHandle);
+                RespawnPlayer(player);
+                PrintToChat(player, Localizer["timer_reset"]);
+            }
+
+            return HookResult.Continue;
         }
-
-        public HookResult TriggerMultipleOnEndTouch(CEntityInstance activator, CEntityInstance caller)
+        catch (Exception ex)
         {
-
-            try
-            {
-                if (activator == null || caller == null)
-                {
-                    SharpTimerDebug("Null reference detected in trigger_multiple OnEndTouch hook.");
-                    return HookResult.Continue;
-                }
-
-                if (activator.DesignerName != "player" || useTriggers == false) return HookResult.Continue;
-
-                var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
-
-                if (player == null)
-                {
-                    SharpTimerDebug("Player is null in trigger_multiple OnEndTouch hook.");
-                    return HookResult.Continue;
-                }
-
-                if (!IsAllowedPlayer(player) || caller.Entity!.Name == null) return HookResult.Continue;
-
-                var playerSlot = player.Slot;
-                var playerName = player.PlayerName;
-                var callerName = caller.Entity.Name;
-
-                if (caller.Entity.Name.ToString() == "bhop_block" && IsAllowedPlayer(player) && !playerTimers[player.Slot].IsTimerBlocked)
-                {
-                    playerTimers[player.Slot].IsOnBhopBlock = false;
-                    playerTimers[player.Slot].TicksOnBhopBlock = 0;
-
-                    return HookResult.Continue;
-                }
-
-                if (IsValidStartTriggerName(callerName) && !playerTimers[playerSlot].IsTimerBlocked)
-                {
-                    if(playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
-                    {
-                        playerTimer.inStartzone = false;
-                    }
-                    OnTimerStart(player);
-                    if (enableReplays) OnRecordingStart(player);
-
-                    if (((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxStartingSpeed)) &&
-                        !currentMapOverrideMaxSpeedLimit!.Contains(callerName) && currentMapOverrideMaxSpeedLimit != null)
-                    {
-                        Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, maxStartingSpeed, false);
-                    }
-
-                    SharpTimerDebug($"Player {playerName} left StartZone");
-
-                    return HookResult.Continue;
-                }
-
-                var (validStartBonus, StartBonusX) = IsValidStartBonusTriggerName(callerName);
-
-                if (validStartBonus == true && !playerTimers[playerSlot].IsTimerBlocked)
-                {
-                    OnTimerStart(player, StartBonusX);
-                    if (enableReplays) OnRecordingStart(player, StartBonusX);
-
-                    if (((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxBonusStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxBonusStartingSpeed)) &&
-                        !currentMapOverrideMaxSpeedLimit!.Contains(callerName) && currentMapOverrideMaxSpeedLimit != null)
-                    {
-                        Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, maxBonusStartingSpeed, false);
-                    }
-
-                    SharpTimerDebug($"Player {playerName} left BonusStartZone {StartBonusX}");
-
-                    return HookResult.Continue;
-                }
-                return HookResult.Continue;
-            }
-            catch (Exception ex)
-            {
-                SharpTimerError($"Exception in trigger_multiple OnEndTouch hook: {ex.Message}");
-                return HookResult.Continue;
-            }
+            SharpTimerError($"Exception in trigger_multiple OnStartTouch hook: {ex.Message}");
+            return HookResult.Continue;
         }
+    }
 
-        public HookResult TriggerTeleportOnStartTouch(CEntityInstance activator, CEntityInstance caller)
+    public HookResult TriggerMultipleOnEndTouch(CEntityInstance activator, CEntityInstance caller)
+    {
+        try
         {
-
-            try
+            if (activator == null || caller == null)
             {
-                if (activator == null || caller == null)
-                {
-                    SharpTimerDebug("Null reference detected in trigger_teleport hook.");
-                    return HookResult.Continue;
-                }
+                SharpTimerDebug("Null reference detected in trigger_multiple OnEndTouch hook.");
+                return HookResult.Continue;
+            }
 
-                if (activator.DesignerName != "player")
-                {
-                    SharpTimerDebug("activator.DesignerName != player in trigger_teleport hook.");
-                    return HookResult.Continue;
-                }
+            if (activator.DesignerName != "player" || useTriggers == false) return HookResult.Continue;
 
-                var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
+            var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
 
-                if (player == null || player.IsBot || player.IsHLTV || !player.IsValid)
-                {
-                    return HookResult.Continue;
-                }
+            if (player == null)
+            {
+                SharpTimerDebug("Player is null in trigger_multiple OnEndTouch hook.");
+                return HookResult.Continue;
+            }
 
-                if (!IsAllowedPlayer(player))
-                {
-                    SharpTimerDebug("Player not allowed in trigger_teleport hook.");
-                    return HookResult.Continue;
-                }
+            if (!IsAllowedPlayer(player) || caller.Entity!.Name == null) return HookResult.Continue;
 
-                if (jumpStatsEnabled) InvalidateJS(player.Slot);
+            var playerSlot = player.Slot;
+            var playerName = player.PlayerName;
+            var callerName = caller.Entity.Name;
+
+            if (caller.Entity.Name == "bhop_block" && IsAllowedPlayer(player) &&
+                !playerTimers[player.Slot].IsTimerBlocked)
+            {
+                playerTimers[player.Slot].IsOnBhopBlock = false;
+                playerTimers[player.Slot].TicksOnBhopBlock = 0;
 
                 return HookResult.Continue;
             }
-            catch (Exception ex)
+
+            if (IsValidStartTriggerName(callerName) && !playerTimers[playerSlot].IsTimerBlocked)
             {
+                if (playerTimers.TryGetValue(playerSlot, out var playerTimer)) playerTimer.inStartzone = false;
+                OnTimerStart(player);
+                if (enableReplays) OnRecordingStart(player);
+
+                if (((maxStartingSpeedEnabled && use2DSpeed == false &&
+                      Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxStartingSpeed) ||
+                     (maxStartingSpeedEnabled && use2DSpeed &&
+                      Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxStartingSpeed)) &&
+                    !currentMapOverrideMaxSpeedLimit!.Contains(callerName) && currentMapOverrideMaxSpeedLimit != null)
+                {
+                    Action<CCSPlayerController?, float, bool> adjustVelocity =
+                        use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                    adjustVelocity(player, maxStartingSpeed, false);
+                }
+
+                SharpTimerDebug($"Player {playerName} left StartZone");
+
                 return HookResult.Continue;
             }
+
+            var (validStartBonus, StartBonusX) = IsValidStartBonusTriggerName(callerName);
+
+            if (validStartBonus && !playerTimers[playerSlot].IsTimerBlocked)
+            {
+                OnTimerStart(player, StartBonusX);
+                if (enableReplays) OnRecordingStart(player, StartBonusX);
+
+                if (((maxStartingSpeedEnabled && use2DSpeed == false &&
+                      Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxBonusStartingSpeed) ||
+                     (maxStartingSpeedEnabled && use2DSpeed &&
+                      Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxBonusStartingSpeed)) &&
+                    !currentMapOverrideMaxSpeedLimit!.Contains(callerName) && currentMapOverrideMaxSpeedLimit != null)
+                {
+                    Action<CCSPlayerController?, float, bool> adjustVelocity =
+                        use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                    adjustVelocity(player, maxBonusStartingSpeed, false);
+                }
+
+                SharpTimerDebug($"Player {playerName} left BonusStartZone {StartBonusX}");
+
+                return HookResult.Continue;
+            }
+
+            return HookResult.Continue;
         }
-
-        public HookResult TriggerTeleportOnEndTouch(CEntityInstance activator, CEntityInstance caller)
+        catch (Exception ex)
         {
-            try
+            SharpTimerError($"Exception in trigger_multiple OnEndTouch hook: {ex.Message}");
+            return HookResult.Continue;
+        }
+    }
+
+    public HookResult TriggerTeleportOnStartTouch(CEntityInstance activator, CEntityInstance caller)
+    {
+        try
+        {
+            if (activator == null || caller == null)
             {
-                if (activator == null || caller == null)
-                {
-                    SharpTimerDebug("Null reference detected in trigger_teleport hook.");
-                    return HookResult.Continue;
-                }
-
-                if (activator.DesignerName != "player" || resetTriggerTeleportSpeedEnabled == false)
-                {
-                    return HookResult.Continue;
-                }
-
-                var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
-
-                if (player == null || player.IsBot || player.IsHLTV || !player.IsValid)
-                {
-                    SharpTimerDebug("Player is null in trigger_teleport hook.");
-                    return HookResult.Continue;
-                }
-
-                if (!IsAllowedPlayer(player)) return HookResult.Continue;
-
-                if (resetTriggerTeleportSpeedEnabled)
-                {
-                    string triggerName = caller.Entity!.Name.ToString();
-                    if (currentMapOverrideDisableTelehop != null && (!currentMapOverrideDisableTelehop!.Contains(triggerName) || currentMapOverrideDisableTelehop![0].ToLower() == "true"))
-                    {
-                        Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, 0, false);
-                    }
-                    /* if (!currentMapOverrideDisableTelehop)
-                    {
-                        Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, 0, false);
-                    } */
-                }
-
+                SharpTimerDebug("Null reference detected in trigger_teleport hook.");
                 return HookResult.Continue;
             }
-            catch (Exception ex)
+
+            if (activator.DesignerName != "player")
             {
+                SharpTimerDebug("activator.DesignerName != player in trigger_teleport hook.");
                 return HookResult.Continue;
             }
+
+            var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
+
+            if (player == null || player.IsBot || player.IsHLTV || !player.IsValid) return HookResult.Continue;
+
+            if (!IsAllowedPlayer(player))
+            {
+                SharpTimerDebug("Player not allowed in trigger_teleport hook.");
+                return HookResult.Continue;
+            }
+
+            if (jumpStatsEnabled) InvalidateJS(player.Slot);
+
+            return HookResult.Continue;
+        }
+        catch (Exception ex)
+        {
+            return HookResult.Continue;
+        }
+    }
+
+    public HookResult TriggerTeleportOnEndTouch(CEntityInstance activator, CEntityInstance caller)
+    {
+        try
+        {
+            if (activator == null || caller == null)
+            {
+                SharpTimerDebug("Null reference detected in trigger_teleport hook.");
+                return HookResult.Continue;
+            }
+
+            if (activator.DesignerName != "player" || resetTriggerTeleportSpeedEnabled == false)
+                return HookResult.Continue;
+
+            var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
+
+            if (player == null || player.IsBot || player.IsHLTV || !player.IsValid)
+            {
+                SharpTimerDebug("Player is null in trigger_teleport hook.");
+                return HookResult.Continue;
+            }
+
+            if (!IsAllowedPlayer(player)) return HookResult.Continue;
+
+            if (resetTriggerTeleportSpeedEnabled)
+            {
+                var triggerName = caller.Entity!.Name;
+                if (currentMapOverrideDisableTelehop != null &&
+                    (!currentMapOverrideDisableTelehop!.Contains(triggerName) ||
+                     currentMapOverrideDisableTelehop![0].ToLower() == "true"))
+                {
+                    Action<CCSPlayerController?, float, bool> adjustVelocity =
+                        use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                    adjustVelocity(player, 0, false);
+                }
+                /* if (!currentMapOverrideDisableTelehop)
+                {
+                    Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                    adjustVelocity(player, 0, false);
+                } */
+            }
+
+            return HookResult.Continue;
+        }
+        catch (Exception ex)
+        {
+            return HookResult.Continue;
         }
     }
 }
