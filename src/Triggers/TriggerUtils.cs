@@ -13,572 +13,593 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Text.RegularExpressions;
 using CounterStrikeSharp.API.Modules.Utils;
+using System.Text.RegularExpressions;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
-namespace SharpTimer;
-
-public partial class SharpTimer
+namespace SharpTimer
 {
-    private bool IsValidStartTriggerName(string triggerName)
+    public partial class SharpTimer
     {
-        try
+        private bool IsValidStartTriggerName(string triggerName)
         {
-            if (string.IsNullOrEmpty(triggerName)) return false;
-            string[] validStartTriggers =
-                ["map_start", "s1_start", "stage1_start", "timer_startzone", "zone_start", currentMapStartTrigger];
-            return validStartTriggers.Contains(triggerName);
-        }
-        catch (NullReferenceException ex)
-        {
-            SharpTimerError($"Null ref in IsValidStartTriggerName: {ex.Message}");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            SharpTimerError($"Exception in IsValidStartTriggerName: {ex.Message}");
-            return false;
-        }
-    }
-
-    private (bool valid, int X) IsValidStartBonusTriggerName(string triggerName)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(triggerName)) return (false, 0);
-
-            string[] patterns =
-            [
-                @"^b([1-9][0-9]?)_start$",
-                @"^bonus([1-9][0-9]?)_start$",
-                @"^timer_bonus([1-9][0-9]?)_startzone$"
-            ];
-
-            foreach (var pattern in patterns)
+            try
             {
-                var match = Regex.Match(triggerName, pattern);
-                if (match.Success)
+                if (string.IsNullOrEmpty(triggerName)) return false;
+                string[] validStartTriggers = ["map_start", "s1_start", "stage1_start", "timer_startzone", "zone_start", currentMapStartTrigger];
+                return validStartTriggers.Contains(triggerName);
+            }
+            catch (NullReferenceException ex)
+            {
+                SharpTimerError($"Null ref in IsValidStartTriggerName: {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidStartTriggerName: {ex.Message}");
+                return false;
+            }
+        }
+
+        private (bool valid, int X) IsValidStartBonusTriggerName(string triggerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return (false, 0);
+
+                string[] patterns = [
+                    @"^b([1-9][0-9]?)_start$",
+                    @"^bonus([1-9][0-9]?)_start$",
+                    @"^timer_bonus([1-9][0-9]?)_startzone$"
+                ];
+
+                foreach (var pattern in patterns)
                 {
-                    var X = int.Parse(match.Groups[1].Value);
-                    try
+                    var match = Regex.Match(triggerName, pattern);
+                    if (match.Success)
                     {
-                        if (totalBonuses[X] != 0)
+                        int X = int.Parse(match.Groups[1].Value);
+                        try
                         {
-                            SharpTimerDebug($"Fake bonus {X} found, overwriting real start trigger");
-                            return (false, X);
+                            if (totalBonuses[X] != 0)
+                            {
+                                SharpTimerDebug($"Fake bonus {X} found, overwriting real start trigger");
+                                return (false, X);
+                            }
+                            else
+                            {
+                                return (true, X);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            return (true, X);
+                        }
+                    }
+                }
+
+                return (false, 0);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidStartBonusTriggerName: {ex.Message}");
+                return (false, 0);
+            }
+        }
+        private (bool valid, int X) IsValidFakeStartBonusTriggerName(string triggerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return (false, 0);
+
+                string[] patterns = [
+                    @"^b([1-9][0-9]?)_start$",
+                    @"^bonus([1-9][0-9]?)_start$",
+                    @"^timer_bonus([1-9][0-9]?)_startzone$"
+                ];
+
+                foreach (var pattern in patterns)
+                {
+                    var match = Regex.Match(triggerName, pattern);
+                    if (match.Success)
+                    {
+                        int X = int.Parse(match.Groups[1].Value);
+                        try
+                        {
+                            if (totalBonuses[X] != 0)
+                            {
+                                return (true, X);
+                            }
+                            else
+                            {
+                                return (false, X);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            return (true, X);
+                        }
+                    }
+                }
+
+                return (false, 0);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidFakeStartBonusTriggerName: {ex.Message}");
+                return (false, 0);
+            }
+        }
+
+        private (bool valid, int X) IsValidStageTriggerName(string triggerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return (false, 0);
+
+                string[] patterns = [
+                    @"^s([1-9][0-9]?)_start$",
+                    @"^stage([1-9][0-9]?)_start$",
+                    @"^map_start$",
+                ];
+
+                foreach (var pattern in patterns)
+                {
+                    var match = Regex.Match(triggerName, pattern);
+                    if (match.Success)
+                    {
+                        if (pattern == @"^map_start$")
+                        {
+                            return (true, 1);
+                        }
+                        else
+                        {
+                            int X = int.Parse(match.Groups[1].Value);
+                            return (true, X);
+                        }
+                    }
+                }
+
+                return (false, 0);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidStageTriggerName: {ex.Message}");
+                return (false, 0);
+            }
+        }
+
+        private (bool valid, int X) IsValidCheckpointTriggerName(string triggerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return (false, 0);
+
+                string[] patterns = [
+                    @"^map_cp([1-9][0-9]?)$",
+                    @"^map_checkpoint([1-9][0-9]?)$"
+                ];
+
+                foreach (var pattern in patterns)
+                {
+                    var match = Regex.Match(triggerName, pattern);
+                    if (match.Success)
+                    {
+                        int X = int.Parse(match.Groups[1].Value);
+                        return (true, X);
+                    }
+                }
+
+                return (false, 0);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidCheckpointTriggerName: {ex.Message}");
+                return (false, 0);
+            }
+        }
+
+        private (bool valid, int X) IsValidBonusCheckpointTriggerName(string triggerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return (false, 0);
+
+                string[] patterns = [
+                    @"^bonus_cp([1-9][0-9]?)$",
+                    @"^bonus_checkpoint([1-9][0-9]?)$"
+                ];
+
+                foreach (var pattern in patterns)
+                {
+                    var match = Regex.Match(triggerName, pattern);
+                    if (match.Success)
+                    {
+                        int X = int.Parse(match.Groups[1].Value);
+                        return (true, X);
+                    }
+                }
+
+                return (false, 0);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidBonusCheckpointTriggerName: {ex.Message}");
+                return (false, 0);
+            }
+        }
+
+        private bool IsValidEndTriggerName(string triggerName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return false;
+                string[] validEndTriggers = ["map_end", "timer_endzone", "zone_end", currentMapEndTrigger];
+                return validEndTriggers.Contains(triggerName);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Exception in IsValidEndTriggerName: {ex.Message}");
+                return false;
+            }
+        }
+
+        private (bool valid, int X) IsValidEndBonusTriggerName(string triggerName, int playerSlot)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(triggerName)) return (false, 0);
+                string[] patterns = [
+                    @"^b([1-9][0-9]?)_end$",
+                    @"^bonus([1-9][0-9]?)_end$",
+                    @"^timer_bonus([1-9][0-9]?)_endzone$"
+                ];
+
+                foreach (var pattern in patterns)
+                {
+                    var match = Regex.Match(triggerName, pattern);
+                    if (match.Success)
+                    {
+                        int X = int.Parse(match.Groups[1].Value);
+                        try
+                        {
+                            if (totalBonuses[X] != 0)
+                            {
+                                SharpTimerDebug($"Fake bonus {X} found, overwriting real end trigger");
+                                return (false, X);
+                            }
+                            else
+                            {
+                                if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
+                                return (true, X);
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
+                            return (true, X);
                         }
 
-                        return (true, X);
-                    }
-                    catch (Exception)
-                    {
-                        return (true, X);
                     }
                 }
+
+                return (false, 0);
             }
-
-            return (false, 0);
-        }
-        catch (Exception ex)
-        {
-            SharpTimerError($"Exception in IsValidStartBonusTriggerName: {ex.Message}");
-            return (false, 0);
-        }
-    }
-
-    private (bool valid, int X) IsValidFakeStartBonusTriggerName(string triggerName)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(triggerName)) return (false, 0);
-
-            string[] patterns =
-            [
-                @"^b([1-9][0-9]?)_start$",
-                @"^bonus([1-9][0-9]?)_start$",
-                @"^timer_bonus([1-9][0-9]?)_startzone$"
-            ];
-
-            foreach (var pattern in patterns)
+            catch (Exception ex)
             {
-                var match = Regex.Match(triggerName, pattern);
-                if (match.Success)
-                {
-                    var X = int.Parse(match.Groups[1].Value);
-                    try
-                    {
-                        if (totalBonuses[X] != 0) return (true, X);
-
-                        return (false, X);
-                    }
-                    catch (Exception)
-                    {
-                        return (true, X);
-                    }
-                }
+                SharpTimerError($"Exception in IsValidEndBonusTriggerName: {ex.Message}");
+                return (false, 0);
             }
-
-            return (false, 0);
         }
-        catch (Exception ex)
+
+        private bool IsValidStopTriggerName(string triggerName)
         {
-            SharpTimerError($"Exception in IsValidFakeStartBonusTriggerName: {ex.Message}");
-            return (false, 0);
-        }
-    }
-
-    private (bool valid, int X) IsValidStageTriggerName(string triggerName)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(triggerName)) return (false, 0);
-
-            string[] patterns =
-            [
-                @"^s([1-9][0-9]?)_start$",
-                @"^stage([1-9][0-9]?)_start$",
-                @"^map_start$"
-            ];
-
-            foreach (var pattern in patterns)
+            try
             {
-                var match = Regex.Match(triggerName, pattern);
-                if (match.Success)
-                {
-                    if (pattern == @"^map_start$") return (true, 1);
-
-                    var X = int.Parse(match.Groups[1].Value);
-                    return (true, X);
-                }
+                if (string.IsNullOrEmpty(triggerName)) return false;
+                string[] validStopTriggers = ["st_stop", "surftimer_stop", "timer_stop"];
+                return validStopTriggers.Contains(triggerName);
             }
-
-            return (false, 0);
-        }
-        catch (Exception ex)
-        {
-            SharpTimerError($"Exception in IsValidStageTriggerName: {ex.Message}");
-            return (false, 0);
-        }
-    }
-
-    private (bool valid, int X) IsValidCheckpointTriggerName(string triggerName)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(triggerName)) return (false, 0);
-
-            string[] patterns =
-            [
-                @"^map_cp([1-9][0-9]?)$",
-                @"^map_checkpoint([1-9][0-9]?)$"
-            ];
-
-            foreach (var pattern in patterns)
+            catch (Exception ex)
             {
-                var match = Regex.Match(triggerName, pattern);
-                if (match.Success)
-                {
-                    var X = int.Parse(match.Groups[1].Value);
-                    return (true, X);
-                }
+                SharpTimerError($"Exception in IsValidStopTriggerName: {ex.Message}");
+                return false;
             }
-
-            return (false, 0);
         }
-        catch (Exception ex)
+
+        private bool IsValidResetTriggerName(string triggerName)
         {
-            SharpTimerError($"Exception in IsValidCheckpointTriggerName: {ex.Message}");
-            return (false, 0);
-        }
-    }
-
-    private (bool valid, int X) IsValidBonusCheckpointTriggerName(string triggerName)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(triggerName)) return (false, 0);
-
-            string[] patterns =
-            [
-                @"^bonus_cp([1-9][0-9]?)$",
-                @"^bonus_checkpoint([1-9][0-9]?)$"
-            ];
-
-            foreach (var pattern in patterns)
+            try
             {
-                var match = Regex.Match(triggerName, pattern);
-                if (match.Success)
-                {
-                    var X = int.Parse(match.Groups[1].Value);
-                    return (true, X);
-                }
+                if (string.IsNullOrEmpty(triggerName)) return false;
+                string[] validResetTriggers = ["st_reset", "surftimer_reset", "timer_reset"];
+                return validResetTriggers.Contains(triggerName);
             }
-
-            return (false, 0);
-        }
-        catch (Exception ex)
-        {
-            SharpTimerError($"Exception in IsValidBonusCheckpointTriggerName: {ex.Message}");
-            return (false, 0);
-        }
-    }
-
-    private bool IsValidEndTriggerName(string triggerName)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(triggerName)) return false;
-            string[] validEndTriggers = ["map_end", "timer_endzone", "zone_end", currentMapEndTrigger];
-            return validEndTriggers.Contains(triggerName);
-        }
-        catch (Exception ex)
-        {
-            SharpTimerError($"Exception in IsValidEndTriggerName: {ex.Message}");
-            return false;
-        }
-    }
-
-    private (bool valid, int X) IsValidEndBonusTriggerName(string triggerName, int playerSlot)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(triggerName)) return (false, 0);
-            string[] patterns =
-            [
-                @"^b([1-9][0-9]?)_end$",
-                @"^bonus([1-9][0-9]?)_end$",
-                @"^timer_bonus([1-9][0-9]?)_endzone$"
-            ];
-
-            foreach (var pattern in patterns)
+            catch (Exception ex)
             {
-                var match = Regex.Match(triggerName, pattern);
-                if (match.Success)
-                {
-                    var X = int.Parse(match.Groups[1].Value);
-                    try
-                    {
-                        if (totalBonuses[X] != 0)
-                        {
-                            SharpTimerDebug($"Fake bonus {X} found, overwriting real end trigger");
-                            return (false, X);
-                        }
-
-                        if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
-                        return (true, X);
-                    }
-                    catch (Exception)
-                    {
-                        if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
-                        return (true, X);
-                    }
-                }
+                SharpTimerError($"Exception in IsValidResetTriggerName: {ex.Message}");
+                return false;
             }
-
-            return (false, 0);
-        }
-        catch (Exception ex)
-        {
-            SharpTimerError($"Exception in IsValidEndBonusTriggerName: {ex.Message}");
-            return (false, 0);
-        }
-    }
-
-    private bool IsValidStopTriggerName(string triggerName)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(triggerName)) return false;
-            string[] validStopTriggers = ["st_stop", "surftimer_stop", "timer_stop"];
-            return validStopTriggers.Contains(triggerName);
-        }
-        catch (Exception ex)
-        {
-            SharpTimerError($"Exception in IsValidStopTriggerName: {ex.Message}");
-            return false;
-        }
-    }
-
-    private bool IsValidResetTriggerName(string triggerName)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(triggerName)) return false;
-            string[] validResetTriggers = ["st_reset", "surftimer_reset", "timer_reset"];
-            return validResetTriggers.Contains(triggerName);
-        }
-        catch (Exception ex)
-        {
-            SharpTimerError($"Exception in IsValidResetTriggerName: {ex.Message}");
-            return false;
-        }
-    }
-
-    private void UpdateEntityCache()
-    {
-        entityCache!.UpdateCache();
-    }
-
-    private (Vector?, QAngle?) FindStartTriggerPos()
-    {
-        currentRespawnPos = null;
-        currentRespawnAng = null;
-
-        foreach (var trigger in entityCache!.Triggers)
-        {
-            if (trigger == null || trigger.Entity!.Name == null || !IsValidStartTriggerName(trigger.Entity.Name))
-                continue;
-
-            foreach (var info_tp in entityCache.InfoTeleportDestinations)
-                if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!,
-                        trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin!,
-                        trigger.Collision.Maxs + trigger.CBodyComponent!.SceneNode!.AbsOrigin!))
-                    if (info_tp.CBodyComponent!.SceneNode!.AbsOrigin != null && info_tp.AbsRotation != null)
-                        return (info_tp.CBodyComponent.SceneNode.AbsOrigin, info_tp.AbsRotation);
-
-            if (trigger.CBodyComponent!.SceneNode!.AbsOrigin != null)
-                return (trigger.CBodyComponent.SceneNode.AbsOrigin, null);
         }
 
-        return (null, null);
-    }
-
-    private Vector? FindEndTriggerPos()
-    {
-        currentEndPos = null;
-
-        foreach (var trigger in entityCache!.Triggers)
+        private void UpdateEntityCache()
         {
-            if (trigger == null || trigger.Entity!.Name == null || !IsValidEndTriggerName(trigger.Entity.Name))
-                continue;
-
-            if (trigger.CBodyComponent!.SceneNode!.AbsOrigin != null) return trigger.CBodyComponent.SceneNode.AbsOrigin;
+            entityCache!.UpdateCache();
         }
 
-        return null;
-    }
-
-    private void FindStageTriggers()
-    {
-        stageTriggers.Clear();
-        stageTriggerPoses.Clear();
-
-        foreach (var trigger in entityCache!.Triggers)
+        private (Vector?, QAngle?) FindStartTriggerPos()
         {
-            if (trigger == null || trigger.Entity!.Name == null) continue;
+            currentRespawnPos = null;
+            currentRespawnAng = null;
 
-            var (validStage, X) = IsValidStageTriggerName(trigger.Entity.Name);
-            if (validStage)
+            foreach (var trigger in entityCache!.Triggers)
             {
+                if (trigger == null || trigger.Entity!.Name == null || !IsValidStartTriggerName(trigger.Entity.Name.ToString()))
+                    continue;
+
                 foreach (var info_tp in entityCache.InfoTeleportDestinations)
-                    if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!,
-                            trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin,
-                            trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin))
-                        if (info_tp.CBodyComponent?.SceneNode?.AbsOrigin != null && info_tp.AbsRotation != null)
+                {
+                    if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!, trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin!, trigger.Collision.Maxs + trigger.CBodyComponent!.SceneNode!.AbsOrigin!))
+                    {
+                        if (info_tp.CBodyComponent!.SceneNode!.AbsOrigin != null && info_tp.AbsRotation != null)
                         {
-                            stageTriggerPoses[X] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
-                            stageTriggerAngs[X] = info_tp.AbsRotation;
-                            SharpTimerDebug($"Added !stage {X} pos {stageTriggerPoses[X]} ang {stageTriggerAngs[X]}");
+                            return (info_tp.CBodyComponent.SceneNode.AbsOrigin, info_tp.AbsRotation);
                         }
+                    }
+                }
 
-                stageTriggers[trigger.Handle] = X;
-                SharpTimerDebug($"Added Stage {X} Trigger {trigger.Handle}");
+                if (trigger.CBodyComponent!.SceneNode!.AbsOrigin != null)
+                {
+                    return (trigger.CBodyComponent.SceneNode.AbsOrigin, null);
+                }
             }
+
+            return (null, null);
         }
 
-        stageTriggerCount = stageTriggers.Any() ? stageTriggers.OrderByDescending(x => x.Value).First().Value : 0;
-
-        if (stageTriggerCount == 1)
+        private Vector? FindEndTriggerPos()
         {
-            // If there's only one stage trigger, the map is linear
-            stageTriggerCount = 0;
-            useStageTriggers = false;
+            currentEndPos = null;
+
+            foreach (var trigger in entityCache!.Triggers)
+            {
+                if (trigger == null || trigger.Entity!.Name == null || !IsValidEndTriggerName(trigger.Entity.Name.ToString()))
+                    continue;
+
+                if (trigger.CBodyComponent!.SceneNode!.AbsOrigin != null) return trigger.CBodyComponent.SceneNode.AbsOrigin;
+
+            }
+
+            return null;
+        }
+
+        private void FindStageTriggers()
+        {
             stageTriggers.Clear();
             stageTriggerPoses.Clear();
-            stageTriggerAngs.Clear();
-            SharpTimerDebug("Only one Stage Trigger found. Not enough. Cancelling...");
-        }
-        else if (stageTriggerCount > 1)
-        {
-            useStageTriggers = true;
-        }
 
-        SharpTimerDebug($"Found a max of {stageTriggerCount} Stage triggers");
-        SharpTimerDebug($"Use stageTriggers is set to {useStageTriggers}");
-    }
-
-    private void FindCheckpointTriggers()
-    {
-        cpTriggers.Clear();
-        cpTriggerCount = 0;
-
-        foreach (var trigger in entityCache!.Triggers)
-        {
-            if (trigger == null || trigger.Entity!.Name == null) continue;
-
-            var (validCp, X) = IsValidCheckpointTriggerName(trigger.Entity.Name);
-            if (validCp)
+            foreach (var trigger in entityCache!.Triggers)
             {
-                cpTriggerCount++;
-                cpTriggers[trigger.Handle] = X;
-                //SharpTimerDebug($"Added Checkpoint {cpTriggerCount} Trigger {trigger.Handle}");
+                if (trigger == null || trigger.Entity!.Name == null) continue;
+
+                var (validStage, X) = IsValidStageTriggerName(trigger.Entity.Name.ToString());
+                if (validStage)
+                {
+                    foreach (var info_tp in entityCache.InfoTeleportDestinations)
+                    {
+                        if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!, trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin, trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin))
+                        {
+                            if (info_tp.CBodyComponent?.SceneNode?.AbsOrigin != null && info_tp.AbsRotation != null)
+                            {
+                                stageTriggerPoses[X] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
+                                stageTriggerAngs[X] = info_tp.AbsRotation;
+                                SharpTimerDebug($"Added !stage {X} pos {stageTriggerPoses[X]} ang {stageTriggerAngs[X]}");
+                            }
+                        }
+                    }
+
+                    stageTriggers[trigger.Handle] = X;
+                    SharpTimerDebug($"Added Stage {X} Trigger {trigger.Handle}");
+                }
             }
+
+            stageTriggerCount = stageTriggers.Any() ? stageTriggers.OrderByDescending(x => x.Value).First().Value : 0;
+
+            if (stageTriggerCount == 1)
+            {
+                // If there's only one stage trigger, the map is linear
+                stageTriggerCount = 0;
+                useStageTriggers = false;
+                stageTriggers.Clear();
+                stageTriggerPoses.Clear();
+                stageTriggerAngs.Clear();
+                SharpTimerDebug($"Only one Stage Trigger found. Not enough. Cancelling...");
+            }
+            else if (stageTriggerCount > 1)
+            {
+                useStageTriggers = true;
+            }
+
+            SharpTimerDebug($"Found a max of {stageTriggerCount} Stage triggers");
+            SharpTimerDebug($"Use stageTriggers is set to {useStageTriggers}");
         }
 
-        // Check for duplicate values in cpTriggers
-        var duplicateValues = cpTriggers.Values.GroupBy(x => x)
-            .Where(g => g.Count() > 1)
-            .Select(g => g.Key)
-            .ToList();
-
-        if (duplicateValues.Any())
+        private void FindCheckpointTriggers()
         {
-            SharpTimerDebug("Duplicate checkpoint # detected");
-            foreach (var value in
-                     duplicateValues)
-                cpTriggerCount--; //lower total cpTriggerCount to account for duplicate checkpoints
+            cpTriggers.Clear();
+            cpTriggerCount = 0;
 
-            if ((cpTriggers.Count - cpTriggerCount) % 2 ==
-                0) // check if ALL cptriggers minus duplicates is an even number. this will return true for maps that split in two
+            foreach (var trigger in entityCache!.Triggers)
             {
-                SharpTimerDebug("Map has multiple routes, duplicate checkpoints OK");
+                if (trigger == null || trigger.Entity!.Name == null) continue;
+
+                var (validCp, X) = IsValidCheckpointTriggerName(trigger.Entity.Name.ToString());
+                if (validCp)
+                {
+                    cpTriggerCount++;
+                    cpTriggers[trigger.Handle] = X;
+                    //SharpTimerDebug($"Added Checkpoint {cpTriggerCount} Trigger {trigger.Handle}");
+                }
+            }
+
+           // Check for duplicate values in cpTriggers
+            var duplicateValues = cpTriggers.Values.GroupBy(x => x)
+                                                .Where(g => g.Count() > 1)
+                                                .Select(g => g.Key)
+                                                .ToList();
+
+            if (duplicateValues.Any())
+            {
+                SharpTimerDebug($"Duplicate checkpoint # detected");
+                foreach (var value in duplicateValues)
+                {
+                    cpTriggerCount--; //lower total cpTriggerCount to account for duplicate checkpoints
+                }
+
+                if ((cpTriggers.Count - cpTriggerCount) % 2 == 0) // check if ALL cptriggers minus duplicates is an even number. this will return true for maps that split in two
+                {
+                    SharpTimerDebug($"Map has multiple routes, duplicate checkpoints OK");
+                }
+                else
+                {
+                    // map checkpoints are fucked, disable global and ring the bell of shame
+                    SharpTimerDebug($"The map checkpoints are fucked and the porter should be ashamed");
+                    globalDisabled = true;
+                }
             }
             else
             {
-                // map checkpoints are fucked, disable global and ring the bell of shame
-                SharpTimerDebug("The map checkpoints are fucked and the porter should be ashamed");
-                globalDisabled = true;
+                Console.WriteLine("No duplicate values found in cpTriggers.");
             }
+
+            useCheckpointTriggers = cpTriggerCount != 0;
+
+            SharpTimerDebug($"Found a max of {cpTriggerCount} Checkpoint triggers");
+            SharpTimerDebug($"Use useCheckpointTriggers is set to {useCheckpointTriggers}");
         }
-        else
+
+        private void FindBonusCheckpointTriggers()
         {
-            Console.WriteLine("No duplicate values found in cpTriggers.");
-        }
+            bonusCheckpointTriggers.Clear();
 
-        useCheckpointTriggers = cpTriggerCount != 0;
-
-        SharpTimerDebug($"Found a max of {cpTriggerCount} Checkpoint triggers");
-        SharpTimerDebug($"Use useCheckpointTriggers is set to {useCheckpointTriggers}");
-    }
-
-    private void FindBonusCheckpointTriggers()
-    {
-        bonusCheckpointTriggers.Clear();
-
-        foreach (var trigger in entityCache!.Triggers)
-        {
-            if (trigger == null || trigger.Entity!.Name == null) continue;
-
-            var (validCp, X) = IsValidBonusCheckpointTriggerName(trigger.Entity.Name);
-            if (validCp)
+            foreach (var trigger in entityCache!.Triggers)
             {
-                bonusCheckpointTriggers[trigger.Handle] = X;
-                SharpTimerDebug($"Added Bonus Checkpoint {X} Trigger {trigger.Handle}");
+                if (trigger == null || trigger.Entity!.Name == null) continue;
+
+                var (validCp, X) = IsValidBonusCheckpointTriggerName(trigger.Entity.Name.ToString());
+                if (validCp)
+                {
+                    bonusCheckpointTriggers[trigger.Handle] = X;
+                    SharpTimerDebug($"Added Bonus Checkpoint {X} Trigger {trigger.Handle}");
+                }
             }
+
+            bonusCheckpointTriggerCount = bonusCheckpointTriggers.Any() ? bonusCheckpointTriggers.OrderByDescending(x => x.Value).First().Value : 0;
+
+            useBonusCheckpointTriggers = bonusCheckpointTriggerCount != 0;
+
+            SharpTimerDebug($"Found a max of {bonusCheckpointTriggerCount} Bonus Checkpoint triggers");
+            SharpTimerDebug($"Use useBonusCheckpointTriggers is set to {useBonusCheckpointTriggers}");
         }
 
-        bonusCheckpointTriggerCount = bonusCheckpointTriggers.Any()
-            ? bonusCheckpointTriggers.OrderByDescending(x => x.Value).First().Value
-            : 0;
-
-        useBonusCheckpointTriggers = bonusCheckpointTriggerCount != 0;
-
-        SharpTimerDebug($"Found a max of {bonusCheckpointTriggerCount} Bonus Checkpoint triggers");
-        SharpTimerDebug($"Use useBonusCheckpointTriggers is set to {useBonusCheckpointTriggers}");
-    }
-
-    private void FindBonusStartTriggerPos()
-    {
-        foreach (var trigger in entityCache!.Triggers)
+        private void FindBonusStartTriggerPos()
         {
-            if (trigger == null || trigger.Entity!.Name == null) continue;
 
-            var (validStartBonus, bonusX) = IsValidStartBonusTriggerName(trigger.Entity.Name);
-            if (validStartBonus)
+            foreach (var trigger in entityCache!.Triggers)
             {
-                var bonusPosAndAngSet = false;
+                if (trigger == null || trigger.Entity!.Name == null) continue;
 
-                foreach (var info_tp in entityCache.InfoTeleportDestinations)
-                    if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!,
-                            trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin,
-                            trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin))
-                        if (info_tp.CBodyComponent?.SceneNode?.AbsOrigin != null && info_tp.AbsRotation != null)
-                            try
+                var (validStartBonus, bonusX) = IsValidStartBonusTriggerName(trigger.Entity.Name.ToString());
+                if (validStartBonus)
+                {
+                    bool bonusPosAndAngSet = false;
+
+                    foreach (var info_tp in entityCache.InfoTeleportDestinations)
+                    {
+                        if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!, trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin, trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin))
+                        {
+                            if (info_tp.CBodyComponent?.SceneNode?.AbsOrigin != null && info_tp.AbsRotation != null)
                             {
-                                if (bonusRespawnPoses[bonusX] != null)
+                                try
                                 {
-                                    SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
+                                    if (bonusRespawnPoses[bonusX] != null)
+                                    {
+                                        SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
+                                    }
+                                    else
+                                    {
+                                        bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
+                                        bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
+                                        SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
+                                        bonusPosAndAngSet = true;
+                                    }
                                 }
-                                else
+                                catch (Exception)
                                 {
                                     bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
                                     bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
-                                    SharpTimerDebug(
-                                        $"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
+                                    SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
                                     bonusPosAndAngSet = true;
                                 }
                             }
-                            catch (Exception)
-                            {
-                                bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
-                                bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
-                                SharpTimerDebug(
-                                    $"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
-                                bonusPosAndAngSet = true;
-                            }
-
-                if (!bonusPosAndAngSet && trigger.CBodyComponent?.SceneNode?.AbsOrigin != null)
-                    try
-                    {
-                        if (bonusRespawnPoses[bonusX] != null)
-                        {
-                            SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
                         }
-                        else
+                    }
+
+                    if (!bonusPosAndAngSet && trigger.CBodyComponent?.SceneNode?.AbsOrigin != null)
+                    {
+                        try
+                        {
+                            if (bonusRespawnPoses[bonusX] != null)
+                            {
+                                SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
+                            }
+                            else
+                            {
+                                bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
+                                SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
+                            }
+                        }
+                        catch (Exception)
                         {
                             bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
                             SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
                         }
                     }
-                    catch (Exception)
-                    {
-                        bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
-                        SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
-                    }
+                }
             }
         }
-    }
 
-    private (Vector?, Vector?, Vector?, Vector?) FindTriggerBounds()
-    {
-        Vector? startMins = null;
-        Vector? startMaxs = null;
-
-        Vector? endMins = null;
-        Vector? endMaxs = null;
-
-        foreach (var trigger in entityCache!.Triggers)
+        private (Vector?, Vector?, Vector?, Vector?) FindTriggerBounds()
         {
-            if (trigger == null || trigger.Entity!.Name == null)
-                continue;
+            Vector? startMins = null;
+            Vector? startMaxs = null;
 
-            if (IsValidStartTriggerName(trigger.Entity.Name))
+            Vector? endMins = null;
+            Vector? endMaxs = null;
+
+            foreach (var trigger in entityCache!.Triggers)
             {
-                startMins = trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin;
-                startMaxs = trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin;
-                currentMapStartTriggerMaxs = startMaxs;
-                currentMapStartTriggerMins = startMins;
-                continue;
+                if (trigger == null || trigger.Entity!.Name == null)
+                    continue;
+
+                if (IsValidStartTriggerName(trigger.Entity.Name.ToString()))
+                {
+                    startMins = trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin;
+                    startMaxs = trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin;
+                    currentMapStartTriggerMaxs = startMaxs;
+                    currentMapStartTriggerMins = startMins;
+                    continue;
+                }
+
+                if (IsValidEndTriggerName(trigger.Entity.Name.ToString()))
+                {
+                    endMins = trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin;
+                    endMaxs = trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin;
+                    continue;
+                }
             }
 
-            if (IsValidEndTriggerName(trigger.Entity.Name))
-            {
-                endMins = trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin;
-                endMaxs = trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin;
-            }
+            return (startMins, startMaxs, endMins, endMaxs);
         }
-
-        return (startMins, startMaxs, endMins, endMaxs);
     }
 }

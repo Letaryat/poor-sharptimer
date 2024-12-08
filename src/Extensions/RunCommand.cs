@@ -3,8 +3,7 @@ using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 
 namespace SharpTimer;
 
-public interface IRunCommand
-{
+public interface IRunCommand { 
     void Hook(Func<DynamicHook, HookResult> handler, HookMode mode);
     void Unhook(Func<DynamicHook, HookResult> handler, HookMode mode);
 }
@@ -12,21 +11,15 @@ public interface IRunCommand
 public class RunCommandWindows : IRunCommand
 {
     public MemoryFunctionVoid<IntPtr, IntPtr, IntPtr, CCSPlayer_MovementServices> _RunCommand;
-
-    public RunCommandWindows()
-    {
-        _RunCommand =
-            new MemoryFunctionVoid<IntPtr, IntPtr, IntPtr, CCSPlayer_MovementServices>(
-                GameData.GetSignature("RunCommand"));
+    public RunCommandWindows() {
+        _RunCommand = new(GameData.GetSignature("RunCommand"));
     }
 
-    public void Hook(Func<DynamicHook, HookResult> handler, HookMode mode)
-    {
+    public void Hook(Func<DynamicHook, HookResult> handler, HookMode mode) {
         _RunCommand.Hook(handler, mode);
     }
 
-    public void Unhook(Func<DynamicHook, HookResult> handler, HookMode mode)
-    {
+    public void Unhook(Func<DynamicHook, HookResult> handler, HookMode mode) {
         _RunCommand.Unhook(handler, mode);
     }
 }
@@ -34,19 +27,15 @@ public class RunCommandWindows : IRunCommand
 public class RunCommandLinux : IRunCommand
 {
     public MemoryFunctionVoid<CCSPlayer_MovementServices, IntPtr> _RunCommand;
-
-    public RunCommandLinux()
-    {
-        _RunCommand = new MemoryFunctionVoid<CCSPlayer_MovementServices, IntPtr>(GameData.GetSignature("RunCommand"));
+    public RunCommandLinux() {
+        _RunCommand = new(GameData.GetSignature("RunCommand"));
     }
 
-    public void Hook(Func<DynamicHook, HookResult> handler, HookMode mode)
-    {
+    public void Hook(Func<DynamicHook, HookResult> handler, HookMode mode) {
         _RunCommand.Hook(handler, mode);
     }
 
-    public void Unhook(Func<DynamicHook, HookResult> handler, HookMode mode)
-    {
+    public void Unhook(Func<DynamicHook, HookResult> handler, HookMode mode) {
         _RunCommand.Unhook(handler, mode);
     }
 }
