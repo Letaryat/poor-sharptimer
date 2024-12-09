@@ -61,6 +61,7 @@ namespace SharpTimer
                         int timerTicks = playerTimer.TimerTicks;
                         PlayerButtons? playerButtons = player.Buttons;
                         Vector playerSpeed = player.PlayerPawn!.Value!.AbsVelocity;
+                        var hasWeapons = player.PlayerPawn?.Value?.WeaponServices?.MyWeapons?.Count > 0;
                         
                         if(connectedAFKPlayers.ContainsKey(player.Slot))
                         {
@@ -107,6 +108,25 @@ namespace SharpTimer
                         {
                             playerTimer.BonusTimerTicks++;
                         }
+                        
+                        if (playerTimer.HideWeapon)
+                            if (hasWeapons)
+                                player.RemoveWeapons();
+                        
+                        if (!playerTimer.HideWeapon)
+                            if (!hasWeapons)
+                            {
+                                if (player.Team == CsTeam.Terrorist)
+                                {
+                                    player.GiveNamedItem("weapon_knife_t");
+                                    player.GiveNamedItem("weapon_glock");
+                                }
+                                else if (player.Team == CsTeam.Terrorist)
+                                {
+                                    player.GiveNamedItem("weapon_knife");
+                                    player.GiveNamedItem("weapon_usp_silencer");
+                                }
+                            }
 
                         if (playerTimer.MovementService!.OldJumpPressed == true) playerTimer.MovementService.OldJumpPressed = false;
 

@@ -246,7 +246,12 @@ namespace SharpTimer
 
         public async Task<Dictionary<int, PlayerRecord>> GetSortedRecordsFromGlobal(int limit = 0, int bonusX = 0, string mapName = "", int style = 0)
         {
+            if (apiKey == "")
+                return null;
 
+            if (globalDisabled)
+                return null;
+            
             SharpTimerDebug($"Trying GetSortedRecordsFromGlobal {(bonusX != 0 ? $"bonus {bonusX}" : "")}");
             using (var connection = await OpenConnectionAsync())
             {
@@ -368,6 +373,12 @@ namespace SharpTimer
 
         public async Task<int> GetPreviousPlayerRecordFromGlobal(string steamId, string currentMapName, string playerName, int bonusX = 0, int style = 0)
         {
+            if (apiKey == "")
+                return 0;
+
+            if (globalDisabled)
+                return 0;
+            
             SharpTimerDebug($"Trying to get Previous {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} from global for {playerName}");
             try
             {
