@@ -131,5 +131,45 @@
     "connect_message": "Spiller {red}{0} {default}koblet til!",
     "connected_message": "Spiller {red}{0} {default}koblet til for den {1} gang!",
     "connected_message_first": "Spiller {red}{0} {default}koblet til for første gang!",
-    "disconnect_message": "Spiller {red}{0} {default}frakoblet!"
+    "disconnect_message": "Spiller {red}{0} {default}frakoblet!",
+	
+	  // Error
+  "error_savingtime": "Feil ved lagring av tid: Spillerens tid er 0 ticks",
+  "error_stagenotmatchfinalone": "Feil ved lagring av tid: Spillerens nåværende nivå stemmer ikke overens med siste nivå {0}",
+  "error_checkpointnotmatchfinalone": "Feil ved lagring av tid: Spillerens nåværende sjekkpunkt stemmer ikke overens med siste sjekkpunkt {0}",
+
+  // help console Localizer
+  "Check_console": "Sjekk konsollen din for en liste over tilgjengelige kommandoer!",
+  "console_r": "• !r (css_r) - Respawner deg",
+  "console_rb": "• !rb <#> / !b <#> (css_rb / css_b) - Respawner deg til en bonus",
+  "console_setresp": "• !setresp / !startpos (css_setresp / css_startpos) - Lagre et tilpasset respawn-punkt innenfor start-triggeren",
+  "console_top": "• !top (css_top) - Vist de 10 beste rekordene på dette kartet",
+  "console_topbonus": "• !topbonus <#> (css_topbonus) - Vist de 10 beste bonus-rekordene",
+  "console_rank": "• !rank (css_rank) - Vist din nåværende rang og PB",
+  "console_ranks": "• !ranks (css_ranks) - Vist en liste over serverens rangerte spillere",
+  "console_points": "• !points (css_points) - Skriver ut de 10 beste poengene",
+  "console_goto": "• !goto <name> (css_goto) - Teleporterer deg til en spiller",
+  "console_stage": "• !stage <#> (css_stage) - Teleporterer deg til en scene",
+  "console_sounds": "• !sounds (css_sounds) - Bytt timerlyder!",
+  "console_hud": "• !hud (css_hud) - Bytt timer-hud!",
+  "console_keys": "• !keys (css_keys) - Bytt HUD-taster!",
+  "console_fov": "• !fov <0-140> (css_fov) - Endre synsfeltet ditt!",
+  "console_saveloc": "• !saveloc (css_saveloc) - Lagrer en plassering",
+  "console_loadloc": "• !loadloc (css_loadloc) - Teleporterer deg til den siste plasseringen",
+  "console_prevloc": "• !prevloc (css_prevloc) - Teleporterer deg en plassering tilbake",
+  "console_nextloc": "• !nextloc (css_nextloc) - Teleporterer deg en plassering fremover",
+  "console_cp": "• !cp (css_cp) - Setter et sjekkpunkt",
+  "console_tp": "• !tp (css_tp) - Teleporterer deg til det siste sjekkpunktet",
+  "console_prevcp": "• !prevcp (css_prevcp) - Teleporterer deg ett sjekkpunkt tilbake",
+  "console_nextcp": "• !nextcp (css_nextcp) - Teleporterer deg ett sjekkpunkt fremover",
+  "console_replay": "• !replay / !replaysr (css_replay / css_replaysr) - Spill av den nåværende kart-serverens rekord",
+  "console_replaytop": "• !replaytop [1-10] (css_replaytop) - Spill av et av de 10 beste serverkart-rekordene",
+  "console_replaypb": "• !replaypb (css_replaypb) - Spill av din PB for det nåværende kartet",
+  "console_replaybonus": "• !replaybonus / !replayb [1-10] [bonus stage] (css_replaybonus) - Spill av et av de 10 beste bonus-rekordene på serveren",
+  "console_replaybonuspb": "• !replaybonuspb / !replaybpb (css_replaybonuspb) - Spill av din PB for en bonus",
+  "console_jumpstats": "• !jumpstats (css_jumpstats) - Bytt JumpStats",
+  "console_hideweapon": "• !hideweapon (css_hideweapon) - Bytt synligheten på våpen",
+  "console_spec": "• !spec (css_spec) - Flytter deg til spekter eller tilbake til et lag",
+  "console_styles": "• !styles (css_styles) - List alle stiler"
+
 }
