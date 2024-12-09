@@ -924,6 +924,7 @@ namespace SharpTimer
                         }
                         using (var connection = OpenConnection())
                         {
+                            CheckTablesAsync();
                             ExecuteMigrations(connection);
                         }
                         sqlCheck = true;
