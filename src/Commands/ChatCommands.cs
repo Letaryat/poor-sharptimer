@@ -566,25 +566,7 @@ namespace SharpTimer
             if (player.Team == CsTeam.None || player.Team == CsTeam.Spectator)
                 return;
 
-            var hasWeapons = player.PlayerPawn?.Value?.WeaponServices?.MyWeapons?.Count > 0;
-
-            if (hasWeapons == true)
-            {
-                player.RemoveWeapons();
-            }
-            else
-            {
-                if (player.Team == CsTeam.Terrorist)
-                {
-                    player.GiveNamedItem("weapon_knife_t");
-                    player.GiveNamedItem("weapon_glock");
-                }
-                else if (player.Team == CsTeam.CounterTerrorist)
-                {
-                    player.GiveNamedItem("weapon_knife");
-                    player.GiveNamedItem("weapon_usp_silencer");
-                }
-            }
+            playerTimers[player.Slot].HideWeapon = !playerTimers[player.Slot].HideWeapon;
         }
 
         [ConsoleCommand("css_fov", "Sets the player's FOV")]
