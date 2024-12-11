@@ -118,7 +118,7 @@ namespace SharpTimer
             if (playerTimers[player.Slot].MismatchedInputsFlagged)
                 return;
 
-            if (playerTimers[player.Slot].MismatchedInputs > 1)
+            if (playerTimers[player.Slot].MismatchedInputs >= 10)
             {
                 StartStopRecord(player, "Mismatched Inputs (Strafe sync/autostrafe)");
                 playerTimers[player.Slot].MismatchedInputsFlagged = true;

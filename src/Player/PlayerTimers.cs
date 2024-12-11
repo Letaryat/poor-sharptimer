@@ -307,13 +307,13 @@ namespace SharpTimer
                 {
                     if (useStageTriggers == true) //use stagetime instead
                     {
-                        playerTimers[playerSlot].CurrentMapCheckpoint++;
+                        playerTimers[playerSlot].CurrentMapCheckpoint = cpTrigger;
                         return;
                     }
 
                     SharpTimerDebug($"Player {playerName} has a checkpoint trigger with handle {triggerHandle}");
 
-                    playerTimers[playerSlot].CurrentMapCheckpoint++;
+                    playerTimers[playerSlot].CurrentMapCheckpoint = cpTrigger;
 
                     var playerTimerTicks = playerTimers[playerSlot].TimerTicks; // store so its in sync with player
 
@@ -402,7 +402,7 @@ namespace SharpTimer
                 {
                     if (useStageTriggers == true) //use stagetime instead
                     {
-                        playerTimers[playerSlot].CurrentMapCheckpoint += 1;
+                        playerTimers[playerSlot].CurrentMapCheckpoint = bonusCheckpointTrigger;
                         return;
                     }
 
@@ -472,7 +472,7 @@ namespace SharpTimer
                                     }
                                 }
                             }
-                            playerTimer.CurrentMapCheckpoint += 1;
+                            playerTimer.CurrentMapCheckpoint = bonusCheckpointTrigger;
                         }
                     });
                 }

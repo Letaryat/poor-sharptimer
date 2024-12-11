@@ -43,9 +43,6 @@ namespace SharpTimer
             defaultServerHostname = ConVar.Find("hostname")!.StringValue;
             Server.ExecuteCommand($"execifexists SharpTimer/config.cfg");
 
-            if (apiKey != "")
-                Server.ExecuteCommand("tv_enable 1");
-
             gameDir = Server.GameDirectory;
             SharpTimerDebug($"Set gameDir to {gameDir}");
 
@@ -73,7 +70,8 @@ namespace SharpTimer
             StateTransition.Hook(Hook_StateTransition, HookMode.Post);
 
             float randomf = new Random().Next(5, 31);
-            AddTimer((float)randomf, () => CheckCvarsAndMaxVelo(), CounterStrikeSharp.API.Modules.Timers.TimerFlags.REPEAT);
+            if (apiKey != "")
+                AddTimer(randomf, () => CheckCvarsAndMaxVelo(), CounterStrikeSharp.API.Modules.Timers.TimerFlags.REPEAT);
 
             currentMapName = Server.MapName;
 

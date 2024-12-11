@@ -438,7 +438,7 @@ namespace SharpTimer
                 {
                     cpTriggerCount++;
                     cpTriggers[trigger.Handle] = X;
-                    //SharpTimerDebug($"Added Checkpoint {cpTriggerCount} Trigger {trigger.Handle}");
+                    SharpTimerDebug($"Added Checkpoint {cpTriggerCount} Trigger {trigger.Handle}");
                 }
             }
 

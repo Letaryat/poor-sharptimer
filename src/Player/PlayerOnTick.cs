@@ -116,6 +116,7 @@ namespace SharpTimer
                         if (!playerTimer.HideWeapon)
                             if (!hasWeapons)
                             {
+                                playerTimer.HideWeapon = true;
                                 if (player.Team == CsTeam.Terrorist)
                                 {
                                     player.GiveNamedItem("weapon_knife_t");
