@@ -108,26 +108,33 @@ namespace SharpTimer
                         {
                             playerTimer.BonusTimerTicks++;
                         }
-                        
+
                         if (playerTimer.HideWeapon)
+                        {
                             if (hasWeapons)
-                                player.RemoveWeapons();
-                        
-                        if (!playerTimer.HideWeapon)
-                            if (!hasWeapons)
                             {
-                                playerTimer.HideWeapon = true;
+                                player.RemoveWeapons();
+                                playerTimer.GivenWeapon = false;
+                            }
+                        }
+                        else
+                        {
+                            if (!hasWeapons && !playerTimer.GivenWeapon)
+                            {
                                 if (player.Team == CsTeam.Terrorist)
                                 {
                                     player.GiveNamedItem("weapon_knife_t");
                                     player.GiveNamedItem("weapon_glock");
                                 }
-                                else if (player.Team == CsTeam.Terrorist)
+                                else if (player.Team == CsTeam.CounterTerrorist)
                                 {
                                     player.GiveNamedItem("weapon_knife");
                                     player.GiveNamedItem("weapon_usp_silencer");
                                 }
+
+                                playerTimer.GivenWeapon = true;
                             }
+                        }
 
                         if (playerTimer.MovementService!.OldJumpPressed == true) playerTimer.MovementService.OldJumpPressed = false;
 
