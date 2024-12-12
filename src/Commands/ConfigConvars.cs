@@ -1532,8 +1532,25 @@ namespace SharpTimer
 
             enableStylePoints = bool.TryParse(args, out bool enableStylePointsValue) ? enableStylePointsValue : args != "0" && enableStylePoints;
         }
+        
+        [ConsoleCommand("sharptimer_style_multiplier_parachute", "Point modifier for parachute. Default value: 0.8")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerParachuteMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
 
-        [ConsoleCommand("sharptimer_style_multiplier_lowgrav", "Point modifier for lowgrav. Default value: 1.1")]
+            if (double.TryParse(args, out double pointModifier) && pointModifier > 0)
+            {
+                parachutePointModifier = pointModifier;
+                SharpTimerConPrint($"SharpTimer parachute point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                SharpTimerConPrint("Invalid parachute point modifier. Please provide a positive integer.");
+            }
+        }
+
+        [ConsoleCommand("sharptimer_style_multiplier_lowgrav", "Point modifier for lowgrav. Default value: 0.8")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerLowGravMultiplierConvar(CCSPlayerController? player, CommandInfo command)
         {
@@ -1651,7 +1668,7 @@ namespace SharpTimer
             }
         }
 
-        [ConsoleCommand("sharptimer_style_multiplier_highgrav", "Point modifier for 400vel. Default value: 1.3")]
+        [ConsoleCommand("sharptimer_style_multiplier_highgrav", "Point modifier for 400vel. Default value: 1.1")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerHighGravConvar(CCSPlayerController? player, CommandInfo command)
         {
@@ -1685,7 +1702,7 @@ namespace SharpTimer
             }
         }
 
-        [ConsoleCommand("sharptimer_style_multiplier_fastforward", "Point modifier for 400vel. Default value: 1.3")]
+        [ConsoleCommand("sharptimer_style_multiplier_fastforward", "Point modifier for 400vel. Default value: 0.8")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerFastForwardConvar(CCSPlayerController? player, CommandInfo command)
         {

@@ -235,7 +235,7 @@ namespace SharpTimer
         public bool afkWarning = true;
         public int afkSeconds = 60;
         public int globalCacheInterval = 120;
-        public double lowgravPointModifier = 1.1;
+        public double lowgravPointModifier = 0.8;
         public double sidewaysPointModifier = 1.3;
         public double halfSidewaysPointModifier = 1.3;
         public double onlywPointModifier = 1.33;
@@ -243,8 +243,9 @@ namespace SharpTimer
         public double onlysPointModifier = 1.33;
         public double onlydPointModifier = 1.33;
         public double velPointModifier = 1.5;
-        public double highgravPointModifier = 1.3;
-        public double fastForwardPointModifier = 1.3;
+        public double highgravPointModifier = 1.1;
+        public double fastForwardPointModifier = 0.8;
+        public double parachutePointModifier = 0.8;
 
         public bool jumpStatsEnabled = false;
         public float jumpStatsMinDist = 175;

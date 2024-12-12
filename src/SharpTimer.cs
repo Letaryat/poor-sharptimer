@@ -404,6 +404,7 @@ namespace SharpTimer
                     var moveBackward = getMovementButton.Contains("Backward");
                     var moveLeft = getMovementButton.Contains("Left");
                     var moveRight = getMovementButton.Contains("Right");
+                    var usingUse = getMovementButton.Contains("Use");
 
                     // AC Stuff
                     if (useAnticheat)
@@ -457,6 +458,16 @@ namespace SharpTimer
                         userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1544); //disable right (1024) + forward (8) + left (512) = 1544
                         baseCmd.DisableSideMove(); //disable side movement
                         baseCmd.DisableForwardMove(); //disable only forward movement
+                        return HookResult.Changed;
+                    }
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(11) && usingUse) //parachute
+                    {
+                        player.Pawn.Value!.GravityScale = 0.2f;
+                        return HookResult.Changed;
+                    }
+                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(11) && !usingUse) //parachute
+                    {
+                        player.Pawn.Value!.GravityScale = 1f;
                         return HookResult.Changed;
                     }
                     return HookResult.Changed;

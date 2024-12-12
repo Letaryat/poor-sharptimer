@@ -1340,6 +1340,7 @@ namespace SharpTimer
                     case 8:
                     case 9:
                     case 10:
+                    case 11:
                         setStyle(player, desiredStyleInt);
                         PrintToChat(player, Localizer["style_set", GetNamedStyle(desiredStyleInt)]);
                         break;
@@ -1409,6 +1410,11 @@ namespace SharpTimer
                     case "ff":
                         setStyle(player, 10);
                         PrintToChat(player, Localizer["style_set", GetNamedStyle(10)]);
+                        break;
+                    case "parachute":
+                    case "para":
+                        setStyle(player, 11);
+                        PrintToChat(player, Localizer["style_set", GetNamedStyle(11)]);
                         break;
                     default:
                         PrintToChat(player, Localizer["style_not_found", styleLowerCase]);
