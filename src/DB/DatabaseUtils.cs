@@ -28,6 +28,7 @@ using System.Data.SQLite;
 using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.Entity.Core.Metadata.Edm;
 using CounterStrikeSharp.API.Modules.Cvars;
+using System.Text.RegularExpressions;
 
 namespace SharpTimer
 {
@@ -1623,12 +1624,33 @@ namespace SharpTimer
             PrintToChatAll(Localizer["gained_points", playerName, Convert.ToInt32(newPoints - playerPoints), newPoints]);
         }
 
+        public (string, int) FixMapAndBonus(string mapName)
+        {
+            string pattern = @"_bonus(\d+)$";
+            Match match = Regex.Match(mapName, pattern);
+
+            if (match.Success)
+            {
+                int bonusNumber = int.Parse(match.Groups[1].Value);
+                string fixedMapName = Regex.Replace(mapName, pattern, "");
+
+                return (fixedMapName, bonusNumber);
+            }
+
+            // Unchanged if map name doesn't contain _bonusX from import
+            return (mapName, 0);
+        }
+
         public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0, int completions = 0, string mapname = "")
         {
             SharpTimerDebug($"Trying to set player points in database for {playerName}");
             try
             {
                 if (mapname == "") mapname = currentMapName!;
+
+                // If we're importing points, we need to fix mapname and bonusX
+                if (bonusX == 0)
+                    (mapname, bonusX) = FixMapAndBonus(mapname);
 
                 int timeNowUnix = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 // get player columns
