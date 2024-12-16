@@ -1641,7 +1641,7 @@ namespace SharpTimer
             return (mapName, 0);
         }
 
-        public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0, int completions = 0, string mapname = "")
+        public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0, int completions = 0, string mapname = "", bool import = false)
         {
             SharpTimerDebug($"Trying to set player points in database for {playerName}");
             try
@@ -1785,7 +1785,7 @@ namespace SharpTimer
 
                                     await upsertCommand!.ExecuteNonQueryAsync();
 
-                                    Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
+                                    if (!import) Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
                                     Server.NextFrame(() => SharpTimerDebug($"Set points in database for {playerName} from {playerPoints} to {newPoints}"));
                                 }
                                 else
@@ -1848,7 +1848,7 @@ namespace SharpTimer
 
                                     await upsertCommand!.ExecuteNonQueryAsync();
 
-                                    Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
+                                    if (!import) Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
                                     Server.NextFrame(() => SharpTimerDebug($"Set points in database for {playerName} from {playerPoints} to {newPoints}"));
                                 }
                                 else
@@ -3043,8 +3043,8 @@ namespace SharpTimer
 
                     if (enableDb && globalRanksEnabled == true)
                     {
-                        _ = Task.Run(async () => await SavePlayerPoints(playerSteamID, playerName, -1, timerTicks, 0, false, 0, 0, 0, mapName));
-                        await Task.Delay(100);
+                        _ = Task.Run(async () => await SavePlayerPoints(playerSteamID, playerName, -1, timerTicks, 0, false, 0, 0, 0, mapName, true));
+                        await Task.Delay(10);
                     }
                 }
             }
