@@ -563,6 +563,10 @@
         "Tier": 2,
         "Type": "Staged"
     },
+    "surf_colum_2": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
     "surf_crzyfrog_reloaded": {
         "Tier": 2,
         "Type": "Staged"
