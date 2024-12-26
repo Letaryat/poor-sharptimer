@@ -280,7 +280,7 @@ namespace SharpTimer
                                 }
                             }
 
-                            playerTimer.CurrentMapStage = stageTrigger;
+                            playerTimer.CurrentMapStage++;
                             playerTimer.StageTicks = 0;
                         }
                     });
@@ -307,13 +307,13 @@ namespace SharpTimer
                 {
                     if (useStageTriggers == true) //use stagetime instead
                     {
-                        playerTimers[playerSlot].CurrentMapCheckpoint = cpTrigger;
+                        playerTimers[playerSlot].CurrentMapCheckpoint++;
                         return;
                     }
 
                     SharpTimerDebug($"Player {playerName} has a checkpoint trigger with handle {triggerHandle}");
 
-                    playerTimers[playerSlot].CurrentMapCheckpoint = cpTrigger;
+                    playerTimers[playerSlot].CurrentMapCheckpoint++;
 
                     var playerTimerTicks = playerTimers[playerSlot].TimerTicks; // store so its in sync with player
 
@@ -356,7 +356,7 @@ namespace SharpTimer
                                                                    $" {(previousStageSpeed != srStageSpeed ? $"[SR {FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                             }
 
-                            if (playerTimer.StageVelos != null && playerTimer.StageTimes != null && playerTimer.IsTimerRunning == true && IsAllowedPlayer(player))
+                            if (playerTimer.StageVelos != null && playerTimer.StageTimes != null && playerTimer.IsTimerRunning == true && IsAllowedPlayer(player) && playerTimer.currentStyle == 0)
                             {
                                 if (!playerTimer.StageTimes.ContainsKey(cpTrigger))
                                 {
@@ -402,7 +402,7 @@ namespace SharpTimer
                 {
                     if (useStageTriggers == true) //use stagetime instead
                     {
-                        playerTimers[playerSlot].CurrentMapCheckpoint = bonusCheckpointTrigger;
+                        playerTimers[playerSlot].CurrentMapCheckpoint++;
                         return;
                     }
 
@@ -472,7 +472,7 @@ namespace SharpTimer
                                     }
                                 }
                             }
-                            playerTimer.CurrentMapCheckpoint = bonusCheckpointTrigger;
+                            playerTimer.CurrentMapCheckpoint++;
                         }
                     });
                 }

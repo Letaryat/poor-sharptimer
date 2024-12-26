@@ -168,6 +168,77 @@ namespace SharpTimer
             }
         }
 
+        public async Task<(int, int, int)> GetGlobalRank(CCSPlayerController? player)
+        {
+            if (apiKey == "")
+                return (0, 0, 0);
+            
+            try
+            {
+                var payload = new
+                {
+                    steamid = player!.SteamID
+                };
+                string jsonPayload = JsonSerializer.Serialize(payload);
+                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add("x-secret-key", apiKey);
+
+                HttpResponseMessage response = await client.PostAsync($"{apiUrl}/GetRank", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    using (var jsonDoc = JsonDocument.Parse(json))
+                    {
+                        if (jsonDoc.RootElement.TryGetProperty("data", out var data) &&
+                            data.ValueKind != JsonValueKind.Null)
+                        {
+                            int totalPoints = 0;
+                            int rank = 0;
+                            int totalPlayers = 0;
+
+                            if (data.TryGetProperty("total_points", out var pointsElement))
+                                totalPoints = pointsElement.GetInt32();
+                    
+                            if (data.TryGetProperty("rank", out var rankElement))
+                                rank = rankElement.GetInt32();
+                            
+                            if (data.TryGetProperty("total_players", out var playersElement))
+                                totalPlayers = playersElement.GetInt32();
+
+                            return (totalPoints, rank, totalPlayers);
+                        }
+                    }
+                }
+                else
+                {
+                    SharpTimerError($"Failed to retrieve player rank. Status code: {response.StatusCode}; Message: {response.Content}");
+                    return (0, 0, 0);
+                }
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in GetGlobalRankAsync: {ex.Message}");
+                return (0, 0, 0);
+            }
+            return (0, 0, 0);
+        }
+
+        public async Task PrintGlobalRankAsync(CCSPlayerController? player)
+        {
+            if (apiKey == "")
+                return;
+            
+            var (points, rank, totalPlayers) = await GetGlobalRank(player);
+            Server.NextFrame(() =>
+            {
+                PrintToChat(player, $"{Localizer["total_gpoints"]}: {points}");
+                PrintToChat(player, $"{Localizer["grank"]}: {rank}/{totalPlayers}");
+            });
+        }
+
         public async Task SubmitReplayAsync(object payload)
         {
             if (apiKey == "")
@@ -516,7 +587,8 @@ namespace SharpTimer
                 && IsApproximatelyEqual(ConVar.Find("sv_wateraccelerate")!.GetPrimitiveValue<float>(), 10)
                 && ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>() == false
                 && (IsApproximatelyEqual(ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>(), 30) || IsApproximatelyEqual(ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>(), (float)37.41))
-                && IsApproximatelyEqual(ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>(), 420))
+                && IsApproximatelyEqual(ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>(), 420)
+                && useCheckpointVerification)
                 {
                     // THICK
                     globalChecksPassed = true;
@@ -539,6 +611,8 @@ namespace SharpTimer
                 SharpTimerConPrint($"sv_air_max_wishspeed: {ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>()} [should be 30 or 37.41]");
                 SharpTimerConPrint($"sv_cheats: {ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>()} [should be false]");
                 SharpTimerConPrint($"Map is properly zoned?: {useTriggers} [should be true]");
+                SharpTimerConPrint($"Use checkpoint verification?: {useCheckpointVerification} [should be true]");
+                SharpTimerConPrint($"Using StripperCS2 on current map?: {Directory.Exists($"{gameDir}/addons/StripperCS2/maps/{Server.MapName}")} [should be false]");
 
                 globalDisabled = true;
                 globalChecksPassed = false;

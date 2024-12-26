@@ -658,7 +658,7 @@ namespace SharpTimer
         }
         [ConsoleCommand("css_gpoints", "Prints top global points")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void PrintGlobalPoints(CCSPlayerController? player, CommandInfo command)
+        public void PrintTopGlobalPoints(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsAllowedClient(player))
                 return;
@@ -674,6 +674,25 @@ namespace SharpTimer
 
             PrintGlobalPoints(player);
             
+        }
+        [ConsoleCommand("css_grank", "Prints personal global rank")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void PrintPlayerGlobalPoints(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedClient(player))
+                return;
+
+            var playerName = player!.PlayerName;
+
+            SharpTimerDebug($"{playerName} calling css_grank...");
+
+            if (CommandCooldown(player))
+                return;
+
+            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+
+            _ = Task.Run(async () => await PrintGlobalRankAsync(player));
+
         }
         [ConsoleCommand("css_topbonus", "Prints top players of this map bonus")]
         [ConsoleCommand("css_btop", "alias for !topbonus")]

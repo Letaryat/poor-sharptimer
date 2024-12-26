@@ -44,6 +44,8 @@
   "current_wr_player": "{lime}{0} {white}- {lime}{1}",
   "reached_max_free": "You reached your maximum free points rewards of {lime}{0}{default}!",
   "gained_points": "{lime}{0} {default}gained {green}+{1} {default}Points {grey}({2})",
+  "total_gpoints": "Total Global Points",
+  "grank": "Global Rank",
   "top_10_points": "Top 10 Players with the most points:",
   "top_10_points_list": "#{0}: {lime}{1} {default}: {lime}{2} {default}points",
 
