@@ -1791,8 +1791,6 @@ namespace SharpTimer
                                 else
                                 {
                                     SharpTimerError($"Error setting player points to database for {playerName}: player was not on the server anymore");
-
-                                    return;
                                 }
                             }
 
@@ -1854,11 +1852,8 @@ namespace SharpTimer
                                 else
                                 {
                                     SharpTimerError($"Error setting player points to database for {playerName}: player was not on the server anymore");
-
-                                    return;
                                 }
                             }
-
                         }
                     }
                 }
@@ -3047,6 +3042,7 @@ namespace SharpTimer
                         await Task.Delay(10);
                     }
                 }
+                PrintToChatAll("Points import completed");
             }
             catch (Exception ex)
             {
