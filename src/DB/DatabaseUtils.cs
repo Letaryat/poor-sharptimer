@@ -28,6 +28,7 @@ using System.Data.SQLite;
 using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.Entity.Core.Metadata.Edm;
 using CounterStrikeSharp.API.Modules.Cvars;
+using System.Text.RegularExpressions;
 
 namespace SharpTimer
 {
@@ -1623,12 +1624,33 @@ namespace SharpTimer
             PrintToChatAll(Localizer["gained_points", playerName, Convert.ToInt32(newPoints - playerPoints), newPoints]);
         }
 
-        public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0, int completions = 0, string mapname = "")
+        public (string, int) FixMapAndBonus(string mapName)
+        {
+            string pattern = @"_bonus(\d+)$";
+            Match match = Regex.Match(mapName, pattern);
+
+            if (match.Success)
+            {
+                int bonusNumber = int.Parse(match.Groups[1].Value);
+                string fixedMapName = Regex.Replace(mapName, pattern, "");
+
+                return (fixedMapName, bonusNumber);
+            }
+
+            // Unchanged if map name doesn't contain _bonusX from import
+            return (mapName, 0);
+        }
+
+        public async Task SavePlayerPoints(string steamId, string playerName, int playerSlot, int timerTicks, int oldTicks, bool beatPB = false, int bonusX = 0, int style = 0, int completions = 0, string mapname = "", bool import = false)
         {
             SharpTimerDebug($"Trying to set player points in database for {playerName}");
             try
             {
                 if (mapname == "") mapname = currentMapName!;
+
+                // If we're importing points, we need to fix mapname and bonusX
+                if (bonusX == 0)
+                    (mapname, bonusX) = FixMapAndBonus(mapname);
 
                 int timeNowUnix = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 // get player columns
@@ -1763,7 +1785,7 @@ namespace SharpTimer
 
                                     await upsertCommand!.ExecuteNonQueryAsync();
 
-                                    Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
+                                    if (!import) Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
                                     Server.NextFrame(() => SharpTimerDebug($"Set points in database for {playerName} from {playerPoints} to {newPoints}"));
                                 }
                                 else
@@ -1826,7 +1848,7 @@ namespace SharpTimer
 
                                     await upsertCommand!.ExecuteNonQueryAsync();
 
-                                    Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
+                                    if (!import) Server.NextFrame(() => GainPointsMessage(playerName, newPoints, playerPoints));
                                     Server.NextFrame(() => SharpTimerDebug($"Set points in database for {playerName} from {playerPoints} to {newPoints}"));
                                 }
                                 else
@@ -3021,8 +3043,8 @@ namespace SharpTimer
 
                     if (enableDb && globalRanksEnabled == true)
                     {
-                        _ = Task.Run(async () => await SavePlayerPoints(playerSteamID, playerName, -1, timerTicks, 0, false, 0, 0, 0, mapName));
-                        await Task.Delay(100);
+                        _ = Task.Run(async () => await SavePlayerPoints(playerSteamID, playerName, -1, timerTicks, 0, false, 0, 0, 0, mapName, true));
+                        await Task.Delay(10);
                     }
                 }
             }
