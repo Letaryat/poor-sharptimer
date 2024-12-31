@@ -21,7 +21,6 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Admin;
-using System.Net;
 
 namespace SharpTimer
 {
@@ -1336,7 +1335,7 @@ namespace SharpTimer
 
             if (command.ArgByIndex(1) == "")
             {
-                for (int i = 0; i < 11; i++) //runs 11 times for the 11 styles (i=0-10)
+                for (int i = 0; i < 13; i++) //runs 13 times for the 13 styles
                 {
                     PrintToChat(player, Localizer["styles_list", i, GetNamedStyle(i)]);
                 }
@@ -1360,6 +1359,7 @@ namespace SharpTimer
                     case 9:
                     case 10:
                     case 11:
+                    case 12:
                         setStyle(player, desiredStyleInt);
                         PrintToChat(player, Localizer["style_set", GetNamedStyle(desiredStyleInt)]);
                         break;
@@ -1434,6 +1434,10 @@ namespace SharpTimer
                     case "para":
                         setStyle(player, 11);
                         PrintToChat(player, Localizer["style_set", GetNamedStyle(11)]);
+                        break;
+                    case "tas":
+                        setStyle(player, 12);
+                        PrintToChat(player, Localizer["style_set", GetNamedStyle(12)]);
                         break;
                     default:
                         PrintToChat(player, Localizer["style_not_found", styleLowerCase]);
@@ -1791,9 +1795,6 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || cpEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_cp...");
 
-            if (CommandCooldown(player))
-                return;
-
             if (ReplayCheck(player))
                 return;
 
@@ -1809,7 +1810,7 @@ namespace SharpTimer
                 return;
             }
 
-            if (CanCheckpoint(player))
+            if (!CanCheckpoint(player))
                 return;
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
@@ -1855,9 +1856,6 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || cpEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_tp...");
 
-            if (CommandCooldown(player))
-                return;
-
             if (ReplayCheck(player))
                 return;
 
@@ -1869,7 +1867,7 @@ namespace SharpTimer
             if (ReplayCheck(player))
                 return;
 
-            if (CanCheckpoint(player))
+            if (!CanCheckpoint(player))
                 return;
 
             playerTimers[player!.Slot].TicksSinceLastCmd = 0;
@@ -1916,13 +1914,10 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || cpEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_prevcp...");
 
-            if (CommandCooldown(player))
-                return;
-
             if (ReplayCheck(player))
                 return;
 
-            if (CanCheckpoint(player))
+            if (!CanCheckpoint(player))
                 return;
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
@@ -1974,13 +1969,10 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || cpEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_nextcp...");
 
-            if (CommandCooldown(player))
-                return;
-
             if (ReplayCheck(player))
                 return;
 
-            if (CanCheckpoint(player))
+            if (!CanCheckpoint(player))
                 return;
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;

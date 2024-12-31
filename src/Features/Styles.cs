@@ -48,6 +48,9 @@ namespace SharpTimer
                     case 11:
                         SetParachute(player);
                         return;
+                    case 12:
+                        SetTAS(player);
+                        return;
                     default:
                         return;
                 }
@@ -128,6 +131,12 @@ namespace SharpTimer
             playerTimers[player.Slot].currentStyle = 11; // 11 = parachute
             playerTimers[player.Slot].changedStyle = true;
         }
+        
+        public void SetTAS(CCSPlayerController player)
+        {
+            playerTimers[player.Slot].currentStyle = 12; // 12 = TAS
+            playerTimers[player.Slot].changedStyle = true;
+        }
 
         public void SetVelocity(CCSPlayerController player, Vector currentVel, int desiredVel)
         {
@@ -174,6 +183,8 @@ namespace SharpTimer
                     return "Fast Forward";
                 case 11:
                     return "Parachute";
+                case 12:
+                    return "TAS";
                 default:
                     return "null";
             }
@@ -209,6 +220,8 @@ namespace SharpTimer
                         return 0.8;
                     case 11:
                         return 0.8;
+                    case 12:
+                        return 0.0;
                     default:
                         return 1;
                 }
@@ -239,6 +252,8 @@ namespace SharpTimer
                     return fastForwardPointModifier; // 1.3x for ff
                 case 11:
                     return parachutePointModifier; // 0.8x for parachute
+                case 12:
+                    return tasPointModifier; // 0.0x for TAS
                 default:
                     return 1;
             }

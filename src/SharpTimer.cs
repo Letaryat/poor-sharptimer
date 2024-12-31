@@ -16,13 +16,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
-using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
-using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
-using CounterStrikeSharp.API.Modules.UserMessages;
 using System.Runtime.InteropServices;
-using static SharpTimer.PlayerTimerInfo;
 
 namespace SharpTimer
 {
@@ -166,6 +162,21 @@ namespace SharpTimer
                 return HookResult.Continue;
             }, HookMode.Pre);
 
+            // Apply Infinite Ammo by https://github.com/zakriamansoor47
+            RegisterEventHandler<EventWeaponFire>((@event, info) =>
+            {
+                if (@event.Userid == null || !@event.Userid.IsValid) return HookResult.Continue;
+
+                var player = @event.Userid;
+
+                if (!applyInfiniteAmmo)
+                    return HookResult.Continue;
+                
+                ApplyInfiniteClip(player);
+                ApplyInfiniteReserve(player);
+                return HookResult.Continue;
+            });
+            
             RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);
 
             RegisterEventHandler<EventPlayerConnectFull>((@event, info) =>
@@ -356,6 +367,24 @@ namespace SharpTimer
             AddCommandListener("jointeam", OnCommandJoinTeam);
 
             SharpTimerConPrint("Plugin Loaded");
+        }
+        
+        private void ApplyInfiniteClip(CCSPlayerController player)
+        {
+            var activeWeaponHandle = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon;
+            if (activeWeaponHandle?.Value != null)
+            {
+                activeWeaponHandle.Value.Clip1 = 100;
+            }
+        }
+
+        private void ApplyInfiniteReserve(CCSPlayerController player)
+        {
+            var activeWeaponHandle = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon;
+            if (activeWeaponHandle?.Value != null)
+            {
+                activeWeaponHandle.Value.ReserveAmmo[0] = 100;
+            }
         }
 
         private HookResult Hook_StateTransition(DynamicHook h)

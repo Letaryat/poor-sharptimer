@@ -19,9 +19,6 @@ using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using System.Text.Json;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
-using CounterStrikeSharp.API.Modules.Entities;
-using static SharpTimer.PlayerReplays;
-using System.Text.Json.Serialization;
 
 namespace SharpTimer
 {

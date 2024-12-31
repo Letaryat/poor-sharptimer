@@ -345,11 +345,13 @@ namespace SharpTimer
         {
             if (cpOnlyWhenTimerStopped == true && playerTimers[player!.Slot].IsTimerBlocked == false)
             {
+                if (playerTimers[player.Slot].currentStyle == 12)
+                    return true;
                 PrintToChat(player, Localizer["cant_use_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]);
                 PlaySound(player, cpSoundError);
-                return true;
+                return false;
             }
-            return false;
+            return true;
         }
     }
 }

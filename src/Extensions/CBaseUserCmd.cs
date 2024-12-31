@@ -1,6 +1,4 @@
 using System.Runtime.CompilerServices;
-using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Modules.Utils;
 
 public class CBaseUserCmd
 {

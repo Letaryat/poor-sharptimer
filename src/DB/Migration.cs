@@ -1,10 +1,8 @@
-using CounterStrikeSharp.API;
 using MySqlConnector;
 using Npgsql;
 using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
-using System.Threading.Tasks;
 
 namespace SharpTimer;
 

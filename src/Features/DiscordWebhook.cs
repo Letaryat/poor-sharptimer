@@ -13,7 +13,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Diagnostics.Eventing.Reader;
 using System.Net;
 using System.Text;
 using System.Text.Json;

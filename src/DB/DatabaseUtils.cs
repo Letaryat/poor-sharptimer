@@ -20,14 +20,10 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Utils;
 using System.Data;
 using Npgsql;
 using System.Data.Common;
 using System.Data.SQLite;
-using System.Data.Entity.Migrations.Infrastructure;
-using System.Data.Entity.Core.Metadata.Edm;
-using CounterStrikeSharp.API.Modules.Cvars;
 using System.Text.RegularExpressions;
 
 namespace SharpTimer
@@ -1874,7 +1870,7 @@ namespace SharpTimer
                 double newPoints;
 
                 // First calculate basic map completion points based on tier
-                newPoints = CalculateCompletion();
+                newPoints = CalculateCompletion(forGlobal);
 
                 // now grab sortedrecords for getting total map completes and top10
                 var sortedRecords = new Dictionary<int, PlayerRecord>();
@@ -1891,7 +1887,7 @@ namespace SharpTimer
                 bool isTop10 = false;
                 if (!sortedRecords.Any())
                 {
-                    newPoints += CalculateTop10(maxPoints, rank);
+                    newPoints += CalculateTop10(maxPoints, rank, forGlobal);
                     SharpTimerDebug($"First map entry, player {playerName} is rank #1");
                     isTop10 = true;
                 }
@@ -1913,7 +1909,7 @@ namespace SharpTimer
                 // If not in top 10, calculate groups based on percentile
                 if (!isTop10)
                 {
-                    newPoints += CalculateGroups(maxPoints, await GetPlayerMapPercentile(steamId, playerName, mapname, bonusX, style, forGlobal, timerTicks));
+                    newPoints += CalculateGroups(maxPoints, await GetPlayerMapPercentile(steamId, playerName, mapname, bonusX, style, forGlobal, timerTicks), forGlobal);
                 }
 
                 // if for global points, zero out style and bonus points

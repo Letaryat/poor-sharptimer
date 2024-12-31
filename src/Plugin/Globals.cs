@@ -13,9 +13,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Runtime.Intrinsics.X86;
 using System.Text.Json;
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -28,7 +26,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1t";
+        public override string ModuleVersion => $"0.3.1u";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -77,6 +75,8 @@ namespace SharpTimer
         public int cpTriggerCount;
         private bool useCheckpointTriggers = false;
         public bool useCheckpointVerification = true;
+        
+        public bool applyInfiniteAmmo = true;
         public bool useAnticheat = false;
 
         private Dictionary<int, Vector?> bonusRespawnPoses = [];
@@ -246,6 +246,7 @@ namespace SharpTimer
         public double highgravPointModifier = 1.1;
         public double fastForwardPointModifier = 0.8;
         public double parachutePointModifier = 0.8;
+        public double tasPointModifier = 0.0;
 
         public bool jumpStatsEnabled = false;
         public float jumpStatsMinDist = 175;

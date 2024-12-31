@@ -23,7 +23,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
-using CounterStrikeSharp.API.Modules.Entities;
 using System.Runtime.InteropServices;
 
 namespace SharpTimer

@@ -6,34 +6,49 @@ namespace SharpTimer
         // Step 1
         // This function calculates basic map completion points
         // Start at 25 for T1, then 50, then 100, etc..
-        public int CalculateCompletion()
+        public int CalculateCompletion(bool forGlobal = false)
         {
             if (currentMapTier is not null)
             {
                 switch (currentMapTier)
                 {
                     case 1:
+                        if (forGlobal)
+                            return 25;
                         return baselineT1;
                     case 2:
+                        if (forGlobal)
+                            return 50;
                         return baselineT2;
                     case 3:
+                        if (forGlobal)
+                            return 100;
                         return baselineT3;
                     case 4:
+                        if (forGlobal)
+                            return 200;
                         return baselineT4;
                     case 5:
+                        if (forGlobal)
+                            return 400;
                         return baselineT5;
                     case 6:
+                        if (forGlobal)
+                            return 600;
                         return baselineT6;
                     case 7:
+                        if (forGlobal)
+                            return 800;
                         return baselineT7;
                     case 8:
+                        if (forGlobal)
+                            return 1000;
                         return baselineT8;
                     default:
                         return 25;
                 }
-            }else{
-                return 25;
             }
+            return 25;
         }
 
         // Step 2
@@ -92,31 +107,50 @@ namespace SharpTimer
 
         // Step 3
         // This function takes the WR points from above and distributes them among the top 10
-        public double CalculateTop10(double points, int position)
+        public double CalculateTop10(double points, int position, bool forGlobal = false)
         {
             switch(position)
             {
                 case 1:
+                    if (forGlobal)
+                        return points * 1;
                     return points * top10_1;
                 case 2:
+                    if (forGlobal)
+                        return points * 0.8;
                     return points * top10_2;
                 case 3:
+                    if (forGlobal)
+                        return points * 0.75;
                     return points * top10_3;
                 case 4:
+                    if (forGlobal)
+                        return points * 0.7;
                     return points * top10_4;
                 case 5:
+                    if (forGlobal)
+                        return points * 0.65;
                     return points * top10_5;
                 case 6:
+                    if (forGlobal)
+                        return points * 0.6;
                     return points * top10_6;
                 case 7:
+                    if (forGlobal)
+                        return points * 0.55;
                     return points * top10_7;
                 case 8:
+                    if (forGlobal)
+                        return points * 0.5;
                     return points * top10_8;
                 case 9:
+                    if (forGlobal)
+                        return points * 0.45;
                     return points * top10_9;
                 case 10:
+                    if (forGlobal)
+                        return points * 0.4;
                     return points * top10_10;
-
                 default:
                     return 0;
             }
@@ -125,8 +159,26 @@ namespace SharpTimer
         // Step 4
         // This function sorts players below top10, but above 50th percentile, into groups
         // These groups get less points than top 10, but still get points!
-        public double CalculateGroups(double points, double percentile)
+        public double CalculateGroups(double points, double percentile, bool forGlobal = false)
         {
+            if (forGlobal)
+            {
+                switch(percentile)
+                {
+                    case double p when p <= 3.125:
+                        return points * 0.25; // Group 1
+                    case double p when p <= 6.25:
+                        return (points * 0.25) / 1.5; // Group 2
+                    case double p when p <= 12.5:
+                        return ((points * 0.25) / 1.5) / 1.5; // Group 3
+                    case double p when p <= 25:
+                        return (((points * 0.25) / 1.5) / 1.5) / 1.5; // Group 4
+                    case double p when p <= 50:
+                        return (((((points * 0.25) / 1.5) / 1.5) / 1.5) / 1.5); // Group 5
+                    default:
+                        return 0;
+                }
+            }
             switch(percentile)
             {
                 case double p when p <= group1:
@@ -139,7 +191,6 @@ namespace SharpTimer
                     return (((points * 0.25) / 1.5) / 1.5) / 1.5; // Group 4
                 case double p when p <= group5:
                     return (((((points * 0.25) / 1.5) / 1.5) / 1.5) / 1.5); // Group 5
-                
                 default:
                     return 0;
             }
