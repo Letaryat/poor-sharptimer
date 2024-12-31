@@ -1814,6 +1814,9 @@ namespace SharpTimer
                 return;
 
             playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            
+            if(playerTimers[player.Slot].currentStyle == 12)
+                playerTimers[player.Slot].PrevTimerTicks.Add(playerTimers[player.Slot].TimerTicks);
 
             // Get the player's current position and rotation
             Vector currentPosition = player.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0);
@@ -1871,6 +1874,9 @@ namespace SharpTimer
                 return;
 
             playerTimers[player!.Slot].TicksSinceLastCmd = 0;
+            
+            if(playerTimers[player.Slot].currentStyle == 12)
+                playerTimers[player.Slot].TimerTicks = playerTimers[player.Slot].PrevTimerTicks[playerTimers[player.Slot].CheckpointIndex];
 
             // Check if the player has any checkpoints
             if (!playerCheckpoints.ContainsKey(player.Slot) || playerCheckpoints[player.Slot].Count == 0)
@@ -1943,8 +1949,10 @@ namespace SharpTimer
                 PlayerCheckpoint previousCheckpoint = checkpoints[index];
                 
 
-                // Update the player's checkpoint index
+                // Update the player's checkpoint index and timer ticks
                 playerTimers[player.Slot].CheckpointIndex = index;
+                if(playerTimers[player.Slot].currentStyle == 12)
+                    playerTimers[player.Slot].TimerTicks = playerTimers[player.Slot].PrevTimerTicks[playerTimers[player.Slot].CheckpointIndex];
 
                 // Convert position and rotation strings to Vector and QAngle
                 Vector position = ParseVector(previousCheckpoint.PositionString ?? "0 0 0");
@@ -1997,8 +2005,10 @@ namespace SharpTimer
 
                 PlayerCheckpoint nextCheckpoint = checkpoints[index];
 
-                // Update the player's checkpoint index
+                // Update the player's checkpoint index and timer ticks
                 playerTimers[player.Slot].CheckpointIndex = index;
+                if(playerTimers[player.Slot].currentStyle == 12)
+                    playerTimers[player.Slot].TimerTicks = playerTimers[player.Slot].PrevTimerTicks[playerTimers[player.Slot].CheckpointIndex];
 
                 // Convert position and rotation strings to Vector and QAngle
                 Vector position = ParseVector(nextCheckpoint.PositionString ?? "0 0 0");

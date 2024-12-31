@@ -116,6 +116,7 @@ namespace SharpTimer
         public bool IsNoclip { get; set; }
         public bool IsTimerBlocked { get; set; }
         public int TimerTicks { get; set; }
+        public List<int> PrevTimerTicks { get; set; } = new();
         public int StageTicks { get; set; }
         public bool IsBonusTimerRunning { get; set; }
         public int BonusTimerTicks { get; set; }
