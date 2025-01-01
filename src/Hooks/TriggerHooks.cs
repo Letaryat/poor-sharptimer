@@ -93,7 +93,7 @@ namespace SharpTimer
                     {
                         playerTimer.inStartzone = true;
                     }
-                    if (!playerTimers[playerSlot].IsTimerBlocked)
+                    if (!playerTimers[playerSlot].IsTimerBlocked && playerTimer!.currentStyle != 12) // if in TAS style, dont wipe checkpoints onstart (wipe them on !r)
                     {
                         playerCheckpoints.Remove(playerSlot);
                     }
