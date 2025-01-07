@@ -399,6 +399,10 @@
         "Tier": 1,
         "Type": "Hybrid"
     },
+    "surf_southpark": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
     "surf_summit": {
         "Tier": 1,
         "Type": "Linear"
