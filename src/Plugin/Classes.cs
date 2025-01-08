@@ -221,7 +221,6 @@ namespace SharpTimer
                 Y = angles.Y;
                 Z = angles.Z;
             }
-
         }
 
         public List<ViewAngle> ViewAngles { get; set; } = new List<ViewAngle>();
@@ -379,7 +378,7 @@ namespace SharpTimer
     public class Record
     {
         public string? map_name { get; set; }
-        public long steamid { get; set; }
+        public string steamid { get; set; }
         public string? player_name { get; set; }
         public int timer_ticks { get; set; }
         public string? formatted_time { get; set; }

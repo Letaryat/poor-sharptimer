@@ -229,9 +229,7 @@ namespace SharpTimer
                                                     "SoundsEnabled BOOL DEFAULT false",
                                                     "PlayerFov INT DEFAULT 0",
                                                     "IsVip BOOL DEFAULT false",
-                                                    "BigGifID VARCHAR(16) DEFAULT 'x'",
-                                                    "HideWeapon BOOL DEFAULT false",
-                                                    "HidePlayers BOOL DEFAULT false"
+                                                    "BigGifID VARCHAR(16) DEFAULT 'x'"
                                                 ];
                     break;
                 case DatabaseType.PostgreSQL:
@@ -256,9 +254,7 @@ namespace SharpTimer
                                                     @"""SoundsEnabled"" BOOL DEFAULT false",
                                                     @"""PlayerFov"" INT DEFAULT 0",
                                                     @"""IsVip"" BOOL DEFAULT false",
-                                                    @"""BigGifID"" VARCHAR(16) DEFAULT 'x'",
-                                                    @"""HideWeapon"" BOOL DEFAULT false",
-                                                    @"""HidePlayers"" BOOL DEFAULT false"
+                                                    @"""BigGifID"" VARCHAR(16) DEFAULT 'x'"
                                                 ];
                     break;
                 case DatabaseType.SQLite:
@@ -283,9 +279,7 @@ namespace SharpTimer
                                                     "SoundsEnabled INTEGER DEFAULT 1",
                                                     "PlayerFov INTEGER DEFAULT 0",
                                                     "IsVip INTEGER DEFAULT 0",
-                                                    "BigGifID TEXT DEFAULT 'x'",
-                                                    "HideWeapon INTEGER DEFAULT 0",
-                                                    "HidePlayers INTEGER DEFAULT 0"
+                                                    "BigGifID TEXT DEFAULT 'x'"
                                                 ];
                     break;
                 default:
@@ -544,9 +538,7 @@ namespace SharpTimer
                                             SoundsEnabled BOOL,
                                             PlayerFov INT,
                                             IsVip BOOL,
-                                            BigGifID VARCHAR(16),
-                                            HideWeapon BOOL,
-                                            HidePlayers BOOL,
+                                            BigGifID VARCHAR(16)
                                             PRIMARY KEY (SteamID)
                                         )";
                     command = new MySqlCommand(query, (MySqlConnection)connection);
@@ -565,8 +557,6 @@ namespace SharpTimer
                                             ""PlayerFov"" INT,
                                             ""IsVip"" BOOL,
                                             ""BigGifID"" VARCHAR(16),
-                                            ""HideWeapon"" BOOL,
-                                            ""HidePlayers"" BOOL,
                                             PRIMARY KEY (""SteamID"")
                                         )";
                     command = new NpgsqlCommand(query, (NpgsqlConnection)connection);
@@ -584,9 +574,7 @@ namespace SharpTimer
                                             SoundsEnabled INTEGER,
                                             PlayerFov INTEGER,
                                             IsVip INTEGER,
-                                            BigGifID TEXT,
-                                            HideWeapon INTEGER,
-                                            HidePlayers INTEGER)";
+                                            BigGifID TEXT)";
                     command = new SQLiteCommand(query, (SQLiteConnection)connection);
                     break;
                 default:
@@ -795,7 +783,7 @@ namespace SharpTimer
                                     {
                                         map_name = currentMapNamee,
                                         timer_ticks = timerTicks,
-                                        steamid = Convert.ToInt64(steamId),
+                                        steamid = steamId,
                                         player_name = playerName,
                                         formatted_time = FormatTime(timerTicks),
                                         unix_stamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
@@ -900,7 +888,7 @@ namespace SharpTimer
                                     {
                                         map_name = currentMapNamee,
                                         timer_ticks = timerTicks,
-                                        steamid = Convert.ToInt64(steamId),
+                                        steamid = steamId,
                                         player_name = playerName,
                                         formatted_time = FormatTime(timerTicks),
                                         unix_stamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),

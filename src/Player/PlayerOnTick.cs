@@ -63,6 +63,8 @@ namespace SharpTimer
                         Vector playerSpeed = player.PlayerPawn!.Value!.AbsVelocity;
                         var hasWeapons = player.PlayerPawn?.Value?.WeaponServices?.MyWeapons?.Count > 0;
                         
+                        if (playerTimer.MovementService!.OldJumpPressed == true) playerTimer.MovementService.OldJumpPressed = false;
+                        
                         if(connectedAFKPlayers.ContainsKey(player.Slot))
                         {
                             if(!playerSpeed.IsZero())
@@ -135,9 +137,7 @@ namespace SharpTimer
                                 playerTimer.GivenWeapon = true;
                             }
                         }
-
-                        if (playerTimer.MovementService!.OldJumpPressed == true) playerTimer.MovementService.OldJumpPressed = false;
-
+                        
                         if(playerTimer.currentStyle.Equals(4)) //check if 400vel
                         {
                             SetVelocity(player, player!.Pawn.Value!.AbsVelocity, 400);

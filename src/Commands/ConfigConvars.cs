@@ -106,14 +106,14 @@ namespace SharpTimer
         {
             string args = command.ArgString;
 
-            if (double.TryParse(args, out double bonusMultiplier) && bonusMultiplier > 0)
+            if (double.TryParse(args, out double multiplier) && multiplier is >= 0 and <= 1)
             {
-                globalPointsBonusMultiplier = bonusMultiplier;
-                SharpTimerConPrint($"SharpTimer bonus points multiplier set to {bonusMultiplier}");
+                globalPointsBonusMultiplier = multiplier;
+                SharpTimerConPrint($"SharpTimer bonus points multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid bonus points multipler. Please provide a positive integer.");
+                SharpTimerConPrint("Invalid bonus points multiplier. Please provide a positive integer.");
             }
         }
 
