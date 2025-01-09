@@ -1677,6 +1677,9 @@ namespace SharpTimer
 
                     using (selectCommand)
                     {
+                        if (import)
+                            selectCommand!.CommandTimeout = 120;
+                        
                         selectCommand!.AddParameterWithValue("@SteamID", steamId);
 
                         var row = await selectCommand!.ExecuteReaderAsync();
@@ -3011,22 +3014,18 @@ namespace SharpTimer
         {
             try
             {
+                Server.NextFrame(() => PrintToChatAll("Points import initialized"));
                 var sortedRecords = await GetAllSortedRecordsFromDatabase();
-
-                foreach (var record in sortedRecords)
+                
+                int batchSize = 10;
+                for (int i = 0; i < sortedRecords.Count; i += batchSize)
                 {
-                    string playerSteamID = record.SteamID!;
-                    string playerName = record.PlayerName!;
-                    int timerTicks = record.TimerTicks;
-                    string mapName = record.MapName!;
+                    var batch = sortedRecords.Skip(i).Take(batchSize);
+                    var tasks = batch.Select(record => SavePlayerPoints(record.SteamID!, record.PlayerName!, -1, record.TimerTicks, 0, false, 0, 0, 0, record.MapName!, true));
 
-                    if (enableDb && globalRanksEnabled == true)
-                    {
-                        _ = Task.Run(async () => await SavePlayerPoints(playerSteamID, playerName, -1, timerTicks, 0, false, 0, 0, 0, mapName, true));
-                        await Task.Delay(10);
-                    }
+                    await Task.WhenAll(tasks);
                 }
-                PrintToChatAll("Points import completed");
+                Server.NextFrame(() => PrintToChatAll("Points import completed"));
             }
             catch (Exception ex)
             {

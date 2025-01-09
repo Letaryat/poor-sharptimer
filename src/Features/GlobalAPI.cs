@@ -362,7 +362,7 @@ namespace SharpTimer
                                 {
                                     string playerName = playerRecord.GetProperty("player_name").GetString()!;
                                     int timerTicks = playerRecord.GetProperty("timer_ticks").GetInt32();
-                                    long steamId = playerRecord.GetProperty("steamid").GetInt64();
+                                    string steamId = playerRecord.GetProperty("steamid").GetString()!;
                                     int recordId = playerRecord.GetProperty("record_id").GetInt32();
                                     bool replayExists = playerRecord.GetProperty("replay").GetBoolean();
 
