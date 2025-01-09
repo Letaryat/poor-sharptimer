@@ -563,6 +563,7 @@ namespace SharpTimer
                 return;
 
             playerTimers[player.Slot].HideWeapon = !playerTimers[player.Slot].HideWeapon;
+            _ = Task.Run(async () => await SetPlayerStats(player, player.SteamID.ToString(), player.PlayerName, player.Slot));
         }
 
         [ConsoleCommand("css_fov", "Sets the player's FOV")]
@@ -1679,6 +1680,9 @@ namespace SharpTimer
 
             playerTimers[player!.Slot].TicksSinceLastCmd = 0;
             playerTimers[player!.Slot].HidePlayers = !playerTimers[player!.Slot].HidePlayers;
+            
+            _ = Task.Run(async () => await SetPlayerStats(player, player.SteamID.ToString(), player.PlayerName, player.Slot));
+            
             if (playerTimers[player!.Slot].HidePlayers)
                 PrintToChat(player, $"Hide: {ChatColors.Green}Enabled");
             else
