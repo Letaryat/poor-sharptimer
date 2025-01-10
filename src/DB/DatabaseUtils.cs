@@ -538,7 +538,7 @@ namespace SharpTimer
                                             SoundsEnabled BOOL,
                                             PlayerFov INT,
                                             IsVip BOOL,
-                                            BigGifID VARCHAR(16)
+                                            BigGifID VARCHAR(16),
                                             PRIMARY KEY (SteamID)
                                         )";
                     command = new MySqlCommand(query, (MySqlConnection)connection);
