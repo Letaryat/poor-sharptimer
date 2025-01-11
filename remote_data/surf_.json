@@ -3,6 +3,22 @@
         "Tier": 2,
         "Type": "Staged"
     },
+    "surf_flow_p": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_impact_tnn_p": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_aweles_inferno_fix_p": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_riva_p": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
     "surf_race": {
         "Tier": 1,
         "Type": "Staged"
@@ -378,10 +394,6 @@
     "surf_prime_time_r3vamp": {
         "Tier": 1,
         "Type": "Staged"
-    },
-    "surf_prisma": {
-        "Tier": 1,
-        "Type": "Hybrid"
     },
     "surf_rebel_resistance": {
         "Tier": 1,
