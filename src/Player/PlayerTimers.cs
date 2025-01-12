@@ -41,6 +41,9 @@ namespace SharpTimer
 
             playerCheckpoints.Remove(player!.Slot);
             playerTimers[player!.Slot].TimerTicks = 0;
+            playerTimers[player!.Slot].StageTicks = 0;
+            playerTimers[player.Slot].StageTimes!.Clear();
+            playerTimers[player.Slot].StageVelos!.Clear();
             playerTimers[player!.Slot].BonusStage = bonusX;
             playerTimers[player!.Slot].BonusTimerTicks = 0;
             playerTimers[player.Slot].TotalSync = 0;

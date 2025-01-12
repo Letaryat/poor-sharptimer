@@ -471,6 +471,7 @@ namespace SharpTimer
                     playerCheckpoints.Remove(player.Slot);
                 }
                 playerTimers[player.Slot].TimerTicks = 0;
+                playerTimers[player.Slot].StageTicks = 0;
                 playerTimers[player.Slot].BonusTimerTicks = 0;
                 playerTimers[player.Slot].IsTimerRunning = false;
                 playerTimers[player.Slot].IsBonusTimerRunning = false;

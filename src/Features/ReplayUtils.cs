@@ -120,7 +120,7 @@ namespace SharpTimer
                     OnRecordingStop(player);
                 }
 
-                if (playerReplays[player.Slot].CurrentPlaybackFrame >= totalFrames)
+                if (playerReplays[player.Slot].CurrentPlaybackFrame < 0 || playerReplays[player.Slot].CurrentPlaybackFrame >= totalFrames)
                 {
                     playerReplays[player.Slot].CurrentPlaybackFrame = 0;
                     Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;

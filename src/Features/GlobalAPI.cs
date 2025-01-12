@@ -49,15 +49,19 @@ namespace SharpTimer
 
         public async Task CacheWorldRecords()
         {
+            if (connectedPlayers.Count == 0)
+                return;
+            
             var sortedRecords = await GetSortedRecordsFromGlobal(10, 0, currentMapName!, 0);
-
             cache.CachedWorldRecords = sortedRecords;
         }
 
         public async Task CacheGlobalPoints()
         {
+            if (connectedPlayers.Count == 0)
+                return;
+            
             var sortedPoints = await GetTopPointsAsync();
-
             cache.CachedGlobalPoints = sortedPoints;
         }
 

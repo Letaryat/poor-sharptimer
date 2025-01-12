@@ -39,7 +39,7 @@ namespace SharpTimer
                     return HookResult.Continue;
                 }
 
-                if (!IsAllowedPlayer(player) || caller.Entity!.Name == null) return HookResult.Continue;
+                if (!IsAllowedPlayer(player) || caller.Entity!.Name == null || !connectedPlayers.TryGetValue(player.Slot, out var connected)) return HookResult.Continue;
 
                 var callerHandle = caller.Handle;
                 var playerSlot = player.Slot;

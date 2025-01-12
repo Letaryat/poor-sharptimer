@@ -83,10 +83,10 @@ namespace SharpTimer
                     if (player == null || player.IsBot || !player.IsValid || player.IsHLTV)
                         continue;
 
-                    if (!playerTimers[player.Slot].HidePlayers)
-                        continue;
-
                     if (!connectedPlayers.TryGetValue(player.Slot, out var connected))
+                        continue;
+                    
+                    if (!playerTimers[player.Slot].HidePlayers)
                         continue;
 
                     foreach (var target in Utilities.GetPlayers())
