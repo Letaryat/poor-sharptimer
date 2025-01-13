@@ -935,10 +935,10 @@ namespace SharpTimer
                         SharpTimerError("StripperCS2 detected for current map; disabling globalapi");
                     }
                     
-                    CacheWorldRecords();
+                    _ = Task.Run(async () => await CacheWorldRecords());
                     AddTimer(globalCacheInterval, async () => await CacheWorldRecords(), TimerFlags.REPEAT);
 
-                    CacheGlobalPoints();
+                    _ = Task.Run(async () => await CacheGlobalPoints());
                     AddTimer(globalCacheInterval, async () => await CacheGlobalPoints(), TimerFlags.REPEAT);
                 });
             }
@@ -953,6 +953,7 @@ namespace SharpTimer
             try
             {
                 currentMapName = mapName;
+                currentAddonID = GetAddonID();
                 totalBonuses = new int[11];
                 bonusRespawnPoses.Clear();
                 bonusRespawnAngs.Clear();

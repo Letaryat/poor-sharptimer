@@ -782,6 +782,7 @@ namespace SharpTimer
                                     new Record
                                     {
                                         map_name = currentMapNamee,
+                                        workshop_id = currentAddonID,
                                         timer_ticks = timerTicks,
                                         steamid = steamId,
                                         player_name = playerName,
@@ -887,6 +888,7 @@ namespace SharpTimer
                                     new Record
                                     {
                                         map_name = currentMapNamee,
+                                        workshop_id = currentAddonID,
                                         timer_ticks = timerTicks,
                                         steamid = steamId,
                                         player_name = playerName,

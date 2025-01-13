@@ -26,7 +26,7 @@ namespace SharpTimer
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1v";
+        public override string ModuleVersion => $"0.3.1w";
         public override string ModuleAuthor => "dea https://github.com/deabb/";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
@@ -275,6 +275,7 @@ namespace SharpTimer
         public string? PlayerStatsTable = "PlayerStats";
         public string? playerRecordsPath;
         public string? currentMapName;
+        public string? currentAddonID;
         public string? defaultServerHostname = ConVar.Find("hostname")?.StringValue;
 
         public bool discordWebhookEnabled = false;

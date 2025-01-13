@@ -70,7 +70,7 @@ namespace SharpTimer
                 AddTimer(randomf, () => CheckCvarsAndMaxVelo(), CounterStrikeSharp.API.Modules.Timers.TimerFlags.REPEAT);
 
             currentMapName = Server.MapName;
-
+            
             RegisterListener<Listeners.CheckTransmit>((CCheckTransmitInfoList infoList) =>
             {
                 IEnumerable<CCSPlayerController> players = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");

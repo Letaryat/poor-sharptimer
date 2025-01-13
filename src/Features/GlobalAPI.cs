@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -12,6 +13,10 @@ namespace SharpTimer
     {
         private readonly HttpClient client = new HttpClient();
         RecordCache cache = new RecordCache();
+        
+        [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
+        private delegate IntPtr GetAddonNameDelegate(IntPtr thisPtr);
+        
         private string apiUrl = "https://stglobalapi.azurewebsites.net/api";
 
         public async Task SubmitRecordAsync(object payload)
@@ -47,9 +52,23 @@ namespace SharpTimer
             }
         }
 
+        public string GetAddonID()
+        {
+            // https://github.com/alliedmodders/hl2sdk/blob/f3b44f206d38d1b71164e558cd4087d84607d50c/public/iserver.h#L84-L85
+            // GetAddonName
+            IntPtr networkGameServer = networkServerService.GetIGameServer().Handle;
+            IntPtr vtablePtr = Marshal.ReadIntPtr(networkGameServer);
+            IntPtr functionPtr = Marshal.ReadIntPtr(vtablePtr + (25 * IntPtr.Size));
+            var getAddonName = Marshal.GetDelegateForFunctionPointer<GetAddonNameDelegate>(functionPtr);
+            IntPtr result = getAddonName(networkGameServer);
+            return Marshal.PtrToStringAnsi(result)!.Split(',')[0]; // return the first id in csv
+        }
+
         public async Task CacheWorldRecords()
         {
-            if (connectedPlayers.Count == 0)
+            IEnumerable<CCSPlayerController> players = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
+
+            if (!players.Any())
                 return;
             
             var sortedRecords = await GetSortedRecordsFromGlobal(10, 0, currentMapName!, 0);
@@ -58,7 +77,9 @@ namespace SharpTimer
 
         public async Task CacheGlobalPoints()
         {
-            if (connectedPlayers.Count == 0)
+            IEnumerable<CCSPlayerController> players = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
+
+            if (!players.Any())
                 return;
             
             var sortedPoints = await GetTopPointsAsync();
@@ -276,6 +297,9 @@ namespace SharpTimer
         {
             try
             {
+                if (cache.CachedWorldRecords is null)
+                    _ = Task.Run(async () => await CacheWorldRecords());
+                
                 Server.NextFrame(() =>
                 {
                     PrintToChat(player, Localizer["current_wr", currentMapName!]);
@@ -298,6 +322,9 @@ namespace SharpTimer
         {
             try
             {
+                if (cache.CachedGlobalPoints is null)
+                    _ = Task.Run(async () => await CacheGlobalPoints());
+                
                 Server.NextFrame(() =>
                 {
                     PrintToChat(player, Localizer["top_10_points"]);
@@ -344,7 +371,6 @@ namespace SharpTimer
                     var sortedRecords = new Dictionary<int, PlayerRecord>();
                     string jsonPayload = JsonSerializer.Serialize(payload);
                     var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-                    SharpTimerDebug($"GetSortedRecordsFromGlobal payload: {jsonPayload}");
 
                     client.DefaultRequestHeaders.Clear();
                     client.DefaultRequestHeaders.Add("x-secret-key", apiKey);
@@ -354,7 +380,6 @@ namespace SharpTimer
                     if (response.IsSuccessStatusCode)
                     {
                         var json = await response.Content.ReadAsStringAsync();
-                        SharpTimerDebug($"GetSortedRecordsFromGlobal response: {json}");
                         using (var jsonDoc = JsonDocument.Parse(json))
                         {
                             var root = jsonDoc.RootElement;
@@ -385,7 +410,6 @@ namespace SharpTimer
                                                             .ToDictionary(record => record.Key, record => record.Value);
 
                                 SharpTimerDebug("Got sorted records from global");
-
                                 return sortedRecords;
                             }
                             else

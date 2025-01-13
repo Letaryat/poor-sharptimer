@@ -38,6 +38,12 @@ namespace SharpTimer
                     SharpTimerDebug("Player is null in trigger_multiple OnStartTouch hook.");
                     return HookResult.Continue;
                 }
+                if (player.IsBot)
+                {
+                    SharpTimerDebug("Player is bot in trigger_multiple OnStartTouch hook.");
+                    return HookResult.Continue;
+                }
+
 
                 if (!IsAllowedPlayer(player) || caller.Entity!.Name == null || !connectedPlayers.TryGetValue(player.Slot, out var connected)) return HookResult.Continue;
 
@@ -201,8 +207,13 @@ namespace SharpTimer
                     SharpTimerDebug("Player is null in trigger_multiple OnEndTouch hook.");
                     return HookResult.Continue;
                 }
+                if (player.IsBot)
+                {
+                    SharpTimerDebug("Player is bot in trigger_multiple OnEndTouch hook.");
+                    return HookResult.Continue;
+                }
 
-                if (!IsAllowedPlayer(player) || caller.Entity!.Name == null) return HookResult.Continue;
+                if (!IsAllowedPlayer(player) || caller.Entity!.Name == null || !connectedPlayers.TryGetValue(player.Slot, out var connected)) return HookResult.Continue;
 
                 var playerSlot = player.Slot;
                 var playerName = player.PlayerName;
