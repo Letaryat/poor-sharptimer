@@ -173,6 +173,12 @@ namespace SharpTimer
             else
                 Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.Green}Valid ST build"));
 
+            var validAddon = await CheckAddonAsync();
+            if (!validAddon)
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.LightRed}Map is not verified!"));
+            else
+                Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.Green}Map is verified"));
+            
             Server.NextFrame(() =>
             {
                 var (globalCheck, maxVel, maxWish) = CheckCvarsAndMaxVelo();
@@ -182,7 +188,7 @@ namespace SharpTimer
                     PrintToChat(player, $"[GC] {ChatColors.Green}Cvar Check Passed");
             });
 
-            if (!globalDisabled && validKey && validHash)
+            if (!globalDisabled && validKey && validHash && validAddon)
                 Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.Green}All checks passed!"));
             else
                 Server.NextFrame(() => PrintToChat(player, $"[GC] {ChatColors.LightRed}Some checks failed"));

@@ -64,6 +64,39 @@ namespace SharpTimer
             return Marshal.PtrToStringAnsi(result)!.Split(',')[0]; // return the first id in csv
         }
 
+        public async Task<bool> CheckAddonAsync()
+        {
+            if (apiKey == "")
+                return false;
+
+            try
+            {
+                var payload = new
+                {
+                    workshop_id = currentAddonID
+                };
+                string jsonPayload = JsonSerializer.Serialize(payload);
+                SharpTimerDebug($"CheckAddon payload: {jsonPayload}");
+                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add("x-secret-key", apiKey);
+
+                HttpResponseMessage response = await client.PostAsync($"{apiUrl}/CheckAddonID", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in CheckAddonAsync: {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task CacheWorldRecords()
         {
             IEnumerable<CCSPlayerController> players = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
