@@ -117,7 +117,7 @@
     },
     "surf_evo": {
         "Tier": 1,
-        "Type": "Hybrid"
+        "Type": "Staged"
     },
     "surf_atrium": {
         "Tier": 1,
