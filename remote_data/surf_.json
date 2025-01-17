@@ -11,6 +11,14 @@
         "Tier": 1,
         "Type": "Staged"
     },
+    "surf_calycate_cs2": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
+    "surf_rezity_p": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
     "surf_aweles_inferno_fix_p": {
         "Tier": 1,
         "Type": "Staged"
