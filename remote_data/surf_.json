@@ -419,8 +419,8 @@
         "Tier": 1,
         "Type": "Linear"
     },
-    "surf_sundown": {
-        "Tier": 1,
+    "surf_sundown_njv": {
+        "Tier": 2,
         "Type": "Linear"
     },
     "surf_tendies": {
