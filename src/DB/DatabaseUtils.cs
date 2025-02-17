@@ -1868,17 +1868,16 @@ namespace SharpTimer
                 // now grab sortedrecords for getting total map completes and top10
                 var sortedRecords = new Dictionary<int, PlayerRecord>();
                 if (forGlobal)
-                    sortedRecords = await GetSortedRecordsFromGlobal(0, bonusX, mapname, style);
+                    sortedRecords = await GetSortedRecordsFromGlobal(0, bonusX, mapname, style) ?? new Dictionary<int, PlayerRecord>();
                 else
-                    sortedRecords = await GetSortedRecordsFromDatabase(0, bonusX, mapname, style);
+                    sortedRecords = await GetSortedRecordsFromDatabase(0, bonusX, mapname, style) ?? new Dictionary<int, PlayerRecord>();
 
                 // Then calculate max points based on **map total** times finished
                 double maxPoints = await CalculateTier(sortedRecords.Count, mapname);
 
-
                 int rank = 1;
                 bool isTop10 = false;
-                if (!sortedRecords.Any())
+                if (sortedRecords.Count == 0)
                 {
                     newPoints += CalculateTop10(maxPoints, rank, forGlobal);
                     SharpTimerDebug($"First map entry, player {playerName} is rank #1");
