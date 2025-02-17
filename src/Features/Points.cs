@@ -8,47 +8,21 @@ namespace SharpTimer
         // Start at 25 for T1, then 50, then 100, etc..
         public int CalculateCompletion(bool forGlobal = false)
         {
-            if (currentMapTier is not null)
+            // If currentMapTier is null, default to 25.
+            int tier = currentMapTier ?? 0;
+
+            return tier switch
             {
-                switch (currentMapTier)
-                {
-                    case 1:
-                        if (forGlobal)
-                            return 25;
-                        return baselineT1;
-                    case 2:
-                        if (forGlobal)
-                            return 50;
-                        return baselineT2;
-                    case 3:
-                        if (forGlobal)
-                            return 100;
-                        return baselineT3;
-                    case 4:
-                        if (forGlobal)
-                            return 200;
-                        return baselineT4;
-                    case 5:
-                        if (forGlobal)
-                            return 400;
-                        return baselineT5;
-                    case 6:
-                        if (forGlobal)
-                            return 600;
-                        return baselineT6;
-                    case 7:
-                        if (forGlobal)
-                            return 800;
-                        return baselineT7;
-                    case 8:
-                        if (forGlobal)
-                            return 1000;
-                        return baselineT8;
-                    default:
-                        return 25;
-                }
-            }
-            return 25;
+                1 => forGlobal ? 25 : baselineT1,
+                2 => forGlobal ? 50 : baselineT2,
+                3 => forGlobal ? 100 : baselineT3,
+                4 => forGlobal ? 200 : baselineT4,
+                5 => forGlobal ? 400 : baselineT5,
+                6 => forGlobal ? 600 : baselineT6,
+                7 => forGlobal ? 800 : baselineT7,
+                8 => forGlobal ? 1000 : baselineT8,
+                _ => 25,
+            };
         }
 
         // Step 2
@@ -59,18 +33,19 @@ namespace SharpTimer
             // Define max WR points for each tier (fallback to t1)
             int maxWR;
             int? tier;
-            string _;
-
+            string? _;
+            
             if(disableRemoteData)
                 (tier, _) = await FindMapInfoFromLocal(GetMapInfoSource(), mapname);
+                
             else
                 (tier, _) = await FindMapInfoFromHTTP(GetMapInfoSource(), mapname);
                 
-            if (tier is not null)
+            if (tier != null)
             {
                 maxWR = maxRecordPointsBase * (int)tier;             // Get tier from remote_data by default
             }
-            else if (currentMapTier is not null)
+            else if (currentMapTier != null)
             {
                 maxWR = maxRecordPointsBase * (int)currentMapTier;  // If remote_data tier doesnt exist, check local data
                 tier = currentMapTier;
@@ -81,79 +56,38 @@ namespace SharpTimer
                 tier = 1;                                           // If nothing exists, tier = 1
             }
 
-            switch (tier)
+            return tier switch
             {
-                case 1:
-                    return Math.Max(maxWR, 58.5 + (1.75 * completions) / 6);
-                case 2:
-                    return Math.Max(maxWR, 82.15 + (2.8 * completions) / 5);
-                case 3:
-                    return Math.Max(maxWR, 117 + (3.5 * completions) / 4);
-                case 4:
-                    return Math.Max(maxWR, 164.25 + (5.74 * completions) / 4);
-                case 5:
-                    return Math.Max(maxWR, 234 + (7 * completions) / 4);
-                case 6:
-                    return Math.Max(maxWR, 328 + (14 * completions) / 4);
-                case 7:
-                    return Math.Max(maxWR, 420 + (21 * completions) / 4);
-                case 8:
-                    return Math.Max(maxWR, 560 + (30 * completions) / 4);
-
-                default:
-                    return 0;
-            }
+                1 => Math.Max(maxWR, 58.5 + (1.75 * completions) / 6),
+                2 => Math.Max(maxWR, 82.15 + (2.8 * completions) / 5),
+                3 => Math.Max(maxWR, 117 + (3.5 * completions) / 4),
+                4 => Math.Max(maxWR, 164.25 + (5.74 * completions) / 4),
+                5 => Math.Max(maxWR, 234 + (7 * completions) / 4),
+                6 => Math.Max(maxWR, 328 + (14 * completions) / 4),
+                7 => Math.Max(maxWR, 420 + (21 * completions) / 4),
+                8 => Math.Max(maxWR, 560 + (30 * completions) / 4),
+                _ => 0,
+            };
         }
 
         // Step 3
         // This function takes the WR points from above and distributes them among the top 10
         public double CalculateTop10(double points, int position, bool forGlobal = false)
         {
-            switch(position)
+            return position switch
             {
-                case 1:
-                    if (forGlobal)
-                        return points * 1;
-                    return points * top10_1;
-                case 2:
-                    if (forGlobal)
-                        return points * 0.8;
-                    return points * top10_2;
-                case 3:
-                    if (forGlobal)
-                        return points * 0.75;
-                    return points * top10_3;
-                case 4:
-                    if (forGlobal)
-                        return points * 0.7;
-                    return points * top10_4;
-                case 5:
-                    if (forGlobal)
-                        return points * 0.65;
-                    return points * top10_5;
-                case 6:
-                    if (forGlobal)
-                        return points * 0.6;
-                    return points * top10_6;
-                case 7:
-                    if (forGlobal)
-                        return points * 0.55;
-                    return points * top10_7;
-                case 8:
-                    if (forGlobal)
-                        return points * 0.5;
-                    return points * top10_8;
-                case 9:
-                    if (forGlobal)
-                        return points * 0.45;
-                    return points * top10_9;
-                case 10:
-                    if (forGlobal)
-                        return points * 0.4;
-                    return points * top10_10;
-                default:
-                    return 0;
-            }
+                1  => points * (forGlobal ? 1.0   : top10_1),
+                2  => points * (forGlobal ? 0.8   : top10_2),
+                3  => points * (forGlobal ? 0.75  : top10_3),
+                4  => points * (forGlobal ? 0.7   : top10_4),
+                5  => points * (forGlobal ? 0.65  : top10_5),
+                6  => points * (forGlobal ? 0.6   : top10_6),
+                7  => points * (forGlobal ? 0.55  : top10_7),
+                8  => points * (forGlobal ? 0.5   : top10_8),
+                9  => points * (forGlobal ? 0.45  : top10_9),
+                10 => points * (forGlobal ? 0.4   : top10_10),
+                _ => 0,
+            };
         }
 
         // Step 4
@@ -161,39 +95,36 @@ namespace SharpTimer
         // These groups get less points than top 10, but still get points!
         public double CalculateGroups(double points, double percentile, bool forGlobal = false)
         {
+            double baseMultiplier = points * 0.25;
+            double divisor = 1.5;
+            
+            double threshold1, threshold2, threshold3, threshold4, threshold5;
             if (forGlobal)
             {
-                switch(percentile)
-                {
-                    case double p when p <= 3.125:
-                        return points * 0.25; // Group 1
-                    case double p when p <= 6.25:
-                        return (points * 0.25) / 1.5; // Group 2
-                    case double p when p <= 12.5:
-                        return ((points * 0.25) / 1.5) / 1.5; // Group 3
-                    case double p when p <= 25:
-                        return (((points * 0.25) / 1.5) / 1.5) / 1.5; // Group 4
-                    case double p when p <= 50:
-                        return (((((points * 0.25) / 1.5) / 1.5) / 1.5) / 1.5); // Group 5
-                    default:
-                        return 0;
-                }
+                threshold1 = 3.125;
+                threshold2 = 6.25;
+                threshold3 = 12.5;
+                threshold4 = 25;
+                threshold5 = 50;
             }
-            switch(percentile)
+            else
             {
-                case double p when p <= group1:
-                    return points * 0.25; // Group 1
-                case double p when p <= group2:
-                    return (points * 0.25) / 1.5; // Group 2
-                case double p when p <= group3:
-                    return ((points * 0.25) / 1.5) / 1.5; // Group 3
-                case double p when p <= group4:
-                    return (((points * 0.25) / 1.5) / 1.5) / 1.5; // Group 4
-                case double p when p <= group5:
-                    return (((((points * 0.25) / 1.5) / 1.5) / 1.5) / 1.5); // Group 5
-                default:
-                    return 0;
+                threshold1 = group1;
+                threshold2 = group2;
+                threshold3 = group3;
+                threshold4 = group4;
+                threshold5 = group5;
             }
+
+            return percentile switch
+            {
+                double p when p <= threshold1 => baseMultiplier,
+                double p when p <= threshold2 => baseMultiplier / divisor,
+                double p when p <= threshold3 => baseMultiplier / (divisor * divisor),
+                double p when p <= threshold4 => baseMultiplier / (divisor * divisor * divisor),
+                double p when p <= threshold5 => baseMultiplier / (divisor * divisor * divisor * divisor),
+                _ => 0,
+            };
         }
     }
 }
