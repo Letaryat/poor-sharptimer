@@ -7,6 +7,10 @@
         "Tier": 2,
         "Type": "Linear"
     },
+    "surf_calycate2_cs2": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
     "surf_quark_p": {
         "Tier": 1,
         "Type": "Staged"
