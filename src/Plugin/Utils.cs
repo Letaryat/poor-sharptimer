@@ -134,7 +134,7 @@ namespace SharpTimer
                 var customAdMessageFilePath = Path.Join(gameDir + "/csgo/cfg/SharpTimer/admessages.txt");
                 if (File.Exists(customAdMessageFilePath))
                 {
-                    string[] customAdMessages = File.ReadAllLines(customAdMessageFilePath);
+                    string[] customAdMessages = File.ReadAllLines(customAdMessageFilePath, System.Text.Encoding.UTF8);
                     var nonEmptyCustomAds = customAdMessages.Where(ad => !string.IsNullOrEmpty(ad) && !ad.TrimStart().StartsWith("//")).ToList();
 
                     allAdMessages.AddRange(nonEmptyCustomAds);
@@ -934,6 +934,12 @@ namespace SharpTimer
                         globalDisabled = true;
                         SharpTimerError("StripperCS2 detected for current map; disabling globalapi");
                     }
+
+                    if (currentMapOverrideDisableTelehop!.Length > 0)
+                    {
+                        globalDisabled = true;
+                        SharpTimerError("OverrideDisableTelehop detected for current map; disabling globalapi");
+                    }
                     
                     _ = Task.Run(async () => await CacheWorldRecords());
                     AddTimer(globalCacheInterval, async () => await CacheWorldRecords(), TimerFlags.REPEAT);
@@ -998,7 +1004,6 @@ namespace SharpTimer
                     else if (file.Contains($"{currentMapName}_bonus3"))
                     {
                         totalBonuses[3] = 3;
-                        SharpTimerDebug($"Found bonus 3 in {currentMapName}");
                         bonusdataFileNames[3] = $"/SharpTimer/MapData/{currentMapName}_bonus3.json";
                         bonusdataPaths[3] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[3]);
                     }

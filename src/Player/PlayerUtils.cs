@@ -551,7 +551,7 @@ namespace SharpTimer
                 }
 
                 if (enableDb || bonusX != 0)
-                    PrintToChatAll($"Rank: [{primaryChatColor}{ranking}{ChatColors.White}] " + (timesFinished != 0 && enableDb ? $"Times Finished: [{primaryChatColor}{timesFinished}{ChatColors.White}]" : ""));
+                    PrintToChatAll(Localizer["map_finish_rank", ranking, timesFinished]);
 
                 PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
                 if (enableStyles) PrintToChatAll(Localizer["timer_style", GetNamedStyle(style)]);
@@ -604,7 +604,6 @@ namespace SharpTimer
         {
             try
             {
-
                 if (string.IsNullOrEmpty(tag))
                     return;
 
@@ -614,8 +613,8 @@ namespace SharpTimer
                 string originalPlayerName = player.PlayerName;
 
                 string stripedClanTag = RemovePlayerTags(player.Clan ?? "");
-
-                player.Clan = $"{stripedClanTag}{(playerTimers[player.Slot].IsVip ? $"{customVIPTag}" : "")}{tag}";
+                
+                player.Clan = $" {stripedClanTag}{(playerTimers[player.Slot].IsVip ? $"{customVIPTag}" : "")}{tag}";
 
                 player.PlayerName = originalPlayerName + " ";
 
