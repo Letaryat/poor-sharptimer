@@ -166,13 +166,14 @@ namespace SharpTimer
                             string password = root.TryGetProperty("Password", out var passwordProperty) ? passwordProperty.GetString()! : "root";
                             int port = root.TryGetProperty("Port", out var portProperty) ? portProperty.GetInt32()! : 3306;
                             string tableprefix = root.TryGetProperty("TablePrefix", out var tableprefixProperty) ? tableprefixProperty.GetString()! : "";
+                            string sslMode = root.TryGetProperty("SslMode", out var sslModeProperty) ? sslModeProperty.GetString()! : "Prefered";
 
                             PlayerStatsTable = $"{(tableprefix != "" ? $"PlayerStats_{tableprefix}" : "PlayerStats")}";
 
                             if (dbType.Equals(DatabaseType.MySQL))
                             {
                                 int timeout = root.TryGetProperty("Timeout", out var timeoutProperty) ? timeoutProperty.GetInt32()! : 30;
-                                return $"Server={host};Database={database};User ID={username};Password={password};Port={port};CharSet=utf8mb4;Connection Timeout={timeout};";
+                                return $"Server={host};Database={database};User ID={username};Password={password};Port={port};CharSet=utf8mb4;Connection Timeout={timeout};SslMode={sslMode}";
                             }
                             else if (dbType.Equals(DatabaseType.PostgreSQL))
                             {
