@@ -166,7 +166,7 @@ namespace SharpTimer
                             string password = root.TryGetProperty("Password", out var passwordProperty) ? passwordProperty.GetString()! : "root";
                             int port = root.TryGetProperty("Port", out var portProperty) ? portProperty.GetInt32()! : 3306;
                             string tableprefix = root.TryGetProperty("TablePrefix", out var tableprefixProperty) ? tableprefixProperty.GetString()! : "";
-                            string sslMode = root.TryGetProperty("SslMode", out var sslModeProperty) ? sslModeProperty.GetString()! : "Prefered";
+                            string sslMode = root.TryGetProperty("SslMode", out var sslModeProperty) ? sslModeProperty.GetString()! : "Preferred";
 
                             PlayerStatsTable = $"{(tableprefix != "" ? $"PlayerStats_{tableprefix}" : "PlayerStats")}";
 
