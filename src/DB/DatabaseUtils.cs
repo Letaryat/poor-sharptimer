@@ -668,7 +668,7 @@ namespace SharpTimer
                             dBFormattedTime = formattedTime;
                             playerPoints = timerTicks;
                             beatPB = true;
-                            if (enableReplays == true && enableDb) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
+                            if (enableReplays && !onlySRReplay) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
                         }
                         else
                         {
@@ -762,6 +762,7 @@ namespace SharpTimer
                             if (enableDb && IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
                             if (globalRanksEnabled == true) await SavePlayerPoints(steamId, playerName, playerSlot, timerTicks, dBtimerTicks, beatPB, bonusX, style, dBtimesFinished);
                             if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, dBtimesFinished, style, prevSR)));
+                            if (enableReplays && onlySRReplay && prevSR > timerTicks) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
                     
                             Server.NextFrame(async () =>
                             {
@@ -827,7 +828,7 @@ namespace SharpTimer
                     else
                     {
                         Server.NextFrame(() => SharpTimerDebug($"No player record yet"));
-                        if (enableReplays == true) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
+                        if (enableReplays && !onlySRReplay) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
                         await row.CloseAsync();
 
                         string? upsertQuery;
@@ -871,6 +872,7 @@ namespace SharpTimer
                             Server.NextFrame(() => SharpTimerDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
                             if (IsAllowedPlayer(player)) await RankCommandHandler(player, steamId, playerSlot, playerName, true, style);
                             if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, bonusX, 1, style, prevSR)));
+                            if (enableReplays && onlySRReplay && prevSR > timerTicks) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[playerSlot].currentStyle));
                             
                             Server.NextFrame(async () =>
                             {

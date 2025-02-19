@@ -554,6 +554,15 @@ namespace SharpTimer
 
             enableReplays = bool.TryParse(args, out bool enableReplaysValue) ? enableReplaysValue : args != "0" && enableReplays;
         }
+        
+        [ConsoleCommand("sharptimer_replay_only_sr", "Only saves SR replay if true. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerReplaySRConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            onlySRReplay = bool.TryParse(args, out bool value) ? value : args != "0" && onlySRReplay;
+        }
 
         [ConsoleCommand("sharptimer_replay_max_length", "The maximum length for a Replay to be saved in seconds. Anything longer will be discarded Default value: 300")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
