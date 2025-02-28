@@ -70,45 +70,47 @@ namespace SharpTimer
                 AddTimer(randomf, () => CheckCvarsAndMaxVelo(), CounterStrikeSharp.API.Modules.Timers.TimerFlags.REPEAT);
 
             currentMapName = Server.MapName;
-            
-            RegisterListener<Listeners.CheckTransmit>((CCheckTransmitInfoList infoList) =>
+
+            RegisterListener<Listeners.CheckTransmit>((CCheckTransmitInfoList infoList) => 
             {
                 IEnumerable<CCSPlayerController> players = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
 
                 if (!players.Any())
                     return;
 
-                foreach ((CCheckTransmitInfo info, CCSPlayerController? player) in infoList)
+                foreach ((CCheckTransmitInfo info, CCSPlayerController? player) in infoList) 
                 {
                     if (player == null || player.IsBot || !player.IsValid || player.IsHLTV)
                         continue;
 
-                    if (!connectedPlayers.TryGetValue(player.Slot, out var connected))
-                        continue;
-                    
-                    if (!playerTimers[player.Slot].HidePlayers)
+                    if (!connectedPlayers.TryGetValue(player.Slot, out var connected) || connected == null)
                         continue;
 
-                    foreach (var target in Utilities.GetPlayers())
+                    if (!playerTimers.TryGetValue(player.Slot, out var timer) || timer == null || !timer.HidePlayers)
+                        continue;
+
+                    foreach (var target in Utilities.GetPlayers()) 
                     {
                         if (target == null || target.IsHLTV || target.IsBot || !target.IsValid)
                             continue;
 
-                        var pawn = target.Pawn.Value!;
+                        var pawn = target.Pawn?.Value;
                         if (pawn is null)
                             continue;
 
-                        if (player.Pawn.Value?.As<CCSPlayerPawnBase>().PlayerState == CSPlayerState.STATE_OBSERVER_MODE)
+                        var playerPawn = player.Pawn.Value?.As<CCSPlayerPawnBase>().PlayerState;
+                        if (playerPawn == null || playerPawn == CSPlayerState.STATE_OBSERVER_MODE)
                             continue;
 
                         if (pawn == player.Pawn.Value)
                             continue;
 
-                        if ((LifeState_t)pawn.LifeState != LifeState_t.LIFE_ALIVE)
+                        if ((LifeState_t)pawn.LifeState != LifeState_t.LIFE_ALIVE) 
                         {
                             info.TransmitEntities.Remove(pawn);
                             continue;
                         }
+
                         info.TransmitEntities.Remove(pawn);
                     }
                 }
