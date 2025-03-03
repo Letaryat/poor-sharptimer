@@ -15,9 +15,10 @@ public partial class SharpTimer {
   }
 
   private void assignScoreboard(CCSPlayerController player) {
-    if (player.Team <= CsTeam.Spectator || player.ActionTrackingServices == null
-      || player.IsBot)
-      return;
+    if (player.Team <= CsTeam.Spectator || player.IsBot) return;
+    var matchStats = player.ActionTrackingServices?.MatchStats;
+    if (matchStats == null) return;
+
     var slot = player.Slot;
 
     if (!playerTimers.TryGetValue(slot, out var timer)) return;
@@ -26,24 +27,30 @@ public partial class SharpTimer {
       || timer.IsAddingBonusStartZone || timer.IsAddingBonusEndZone)
       return;
 
-    if (timer is { IsTimerRunning: false, IsBonusTimerRunning: false }) return;
-
     var ticks = timer.TimerTicks;
     var span  = TimeSpan.FromSeconds(ticks / 64.0);
 
     var seconds = span.Seconds;
     var minutes = span.Minutes;
 
-    player.ActionTrackingServices.MatchStats.Assists = seconds;
-    player.ActionTrackingServices.MatchStats.Deaths  = minutes;
+    matchStats.Assists = seconds;
+    matchStats.Deaths  = minutes;
 
     if (!cachedPlacements.TryGetValue(slot, out var placement))
       fetchPlayerPlacement(slot, player.SteamID.ToString());
     else
       player.Score = -placement;
 
+    if (stageTriggerCount == 1) { // Linear map, show checkpoints
+      matchStats.Kills = timer.CurrentMapCheckpoint;
+    } else {
+      matchStats.Kills = timer.IsBonusTimerRunning ?
+        -timer.BonusStage :
+        timer.CurrentMapStage;
+    }
+
     Utilities.SetStateChanged(player, "CCSPlayerController",
-      "m_pActionTrackingService");
+      "m_pActionTrackingServices");
   }
 
   private void fetchPlayerPlacement(int slot, string steamId) {
