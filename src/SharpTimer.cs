@@ -19,6 +19,7 @@ using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using System.Runtime.InteropServices;
+using CounterStrikeSharp.API.Modules.Timers;
 
 namespace SharpTimer
 {
@@ -363,6 +364,8 @@ namespace SharpTimer
             {
                 DamageHook();
             });
+
+            AddTimer(1.0f, AssignPlayerScoreboards, TimerFlags.REPEAT);
 
             AddCommandListener("say", OnPlayerChat);
             AddCommandListener("say_team", OnPlayerChat);
