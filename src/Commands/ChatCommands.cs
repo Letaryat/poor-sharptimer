@@ -870,6 +870,7 @@ namespace SharpTimer
                     playerTimers[playerSlot].CachedPB = $"{(pbTicks != 0 ? $" {FormatTime(pbTicks)}" : "")}";
                     playerTimers[playerSlot].CachedRank = ranking;
                     playerTimers[playerSlot].CachedMapPlacement = mapPlacement;
+                    cachedPlacements.Remove(playerSlot);
 
                     if (displayScoreboardTags) AddScoreboardTagToPlayer(player!, ranking);
                 });
