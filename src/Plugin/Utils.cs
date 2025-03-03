@@ -1127,7 +1127,7 @@ namespace SharpTimer
                     SharpTimerError($"Ranks json was null");
                 }
 
-                SharpTimerConPrint($"Trying to find Map data json for map: {currentMapName}!");
+                SharpTimerDebug($"Trying to find Map data json for map: {currentMapName}!");
                 //Bonus fake zone check
                 foreach (int bonus in totalBonuses)
                 {
@@ -1145,14 +1145,14 @@ namespace SharpTimer
                                 useTriggers = false;
                                 if (FindEndTriggerPos() != null)
                                     useTriggersAndFakeZones = true;
-                                SharpTimerConPrint($"useTriggers: {useTriggers}!");
+                                SharpTimerDebug($"useTriggers: {useTriggers}!");
                                 currentBonusStartC1[bonus] = ParseVector(mapInfo.BonusStartC1);
                                 currentBonusStartC2[bonus] = ParseVector(mapInfo.BonusStartC2);
                                 currentBonusEndC1[bonus] = ParseVector(mapInfo.BonusEndC1);
                                 currentBonusEndC2[bonus] = ParseVector(mapInfo.BonusEndC2);
                                 currentBonusEndPos[bonus] = CalculateMiddleVector(currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
                                 bonusRespawnPoses[bonus] = ParseVector(mapInfo.BonusRespawnPos);
-                                SharpTimerConPrint($"Found Fake Bonus {bonus} Trigger Corners: START {currentBonusStartC1[bonus]}, {currentBonusStartC2[bonus]} | END {currentBonusEndC1[bonus]}, {currentBonusEndC2[bonus]}");
+                                SharpTimerDebug($"Found Fake Bonus {bonus} Trigger Corners: START {currentBonusStartC1[bonus]}, {currentBonusStartC2[bonus]} | END {currentBonusEndC1[bonus]}, {currentBonusEndC2[bonus]}");
 
                                 // Disable global for lackluster maps
                                 globalDisabled = true;
@@ -1170,18 +1170,18 @@ namespace SharpTimer
                 if (jsonDocument != null)
                 {
                     var mapInfo = JsonSerializer.Deserialize<MapInfo>(jsonDocument.RootElement.GetRawText());
-                    SharpTimerConPrint($"Map data json found for map: {currentMapName}!");
+                    SharpTimerDebug($"Map data json found for map: {currentMapName}!");
 
                     if (!string.IsNullOrEmpty(mapInfo!.MapStartC1) && !string.IsNullOrEmpty(mapInfo.MapStartC2) && !string.IsNullOrEmpty(mapInfo.MapEndC1) && !string.IsNullOrEmpty(mapInfo.MapEndC2))
                     {
                         useTriggers = false;
-                        SharpTimerConPrint($"useTriggers: {useTriggers}!");
+                        SharpTimerDebug($"useTriggers: {useTriggers}!");
                         currentMapStartC1 = ParseVector(mapInfo.MapStartC1);
                         currentMapStartC2 = ParseVector(mapInfo.MapStartC2);
                         currentMapEndC1 = ParseVector(mapInfo.MapEndC1);
                         currentMapEndC2 = ParseVector(mapInfo.MapEndC2);
                         currentEndPos = CalculateMiddleVector(currentMapEndC1, currentMapEndC2);
-                        SharpTimerConPrint($"Found Fake Trigger Corners: START {currentMapStartC1}, {currentMapStartC2} | END {currentMapEndC1}, {currentMapEndC2}");
+                        SharpTimerDebug($"Found Fake Trigger Corners: START {currentMapStartC1}, {currentMapStartC2} | END {currentMapEndC1}, {currentMapEndC2}");
 
                         // Disable global for lackluster maps
                         globalDisabled = true;
@@ -1192,27 +1192,27 @@ namespace SharpTimer
                         currentMapStartTrigger = mapInfo.MapStartTrigger;
                         currentMapEndTrigger = mapInfo.MapEndTrigger;
                         useTriggers = true;
-                        SharpTimerConPrint($"Found Trigger Names: START {currentMapStartTrigger} | END {currentMapEndTrigger}");
+                        SharpTimerDebug($"Found Trigger Names: START {currentMapStartTrigger} | END {currentMapEndTrigger}");
                     }
 
                     if (!string.IsNullOrEmpty(mapInfo.RespawnPos))
                     {
                         currentRespawnPos = ParseVector(mapInfo.RespawnPos);
-                        SharpTimerConPrint($"Found RespawnPos: {currentRespawnPos}");
+                        SharpTimerDebug($"Found RespawnPos: {currentRespawnPos}");
                     }
                     else
                     {
                         (currentRespawnPos, currentRespawnAng) = FindStartTriggerPos();
                         currentEndPos = FindEndTriggerPos();
                         FindBonusStartTriggerPos();
-                        SharpTimerConPrint($"RespawnPos not found, trying to hook trigger pos instead");
+                        SharpTimerDebug($"RespawnPos not found, trying to hook trigger pos instead");
                         if (currentRespawnPos == null)
                         {
-                            SharpTimerConPrint($"Hooking Trigger RespawnPos Failed!");
+                            SharpTimerError($"Hooking Trigger RespawnPos Failed!");
                         }
                         else
                         {
-                            SharpTimerConPrint($"Hooking Trigger RespawnPos Success! {currentRespawnPos}");
+                            SharpTimerDebug($"Hooking Trigger RespawnPos Success! {currentRespawnPos}");
                         }
                     }
 
@@ -1225,7 +1225,7 @@ namespace SharpTimer
                                 .Select(trigger => trigger.Trim())
                                 .ToArray();
 
-                            SharpTimerConPrint($"Overriding OverrideDisableTelehop...");
+                            SharpTimerDebug($"Overriding OverrideDisableTelehop...");
                         }
                         catch (FormatException)
                         {
@@ -1241,7 +1241,7 @@ namespace SharpTimer
                     {
                         try
                         {
-                            SharpTimerConPrint($"Overriding MaxSpeedLimit...");
+                            SharpTimerDebug($"Overriding MaxSpeedLimit...");
                             currentMapOverrideMaxSpeedLimit = mapInfo.OverrideMaxSpeedLimit
                                 .Split(',')
                                 .Select(trigger => trigger.Trim())
@@ -1249,7 +1249,7 @@ namespace SharpTimer
 
                             foreach (var trigger in currentMapOverrideMaxSpeedLimit)
                             {
-                                SharpTimerConPrint($"OverrideMaxSpeedLimit for trigger: {trigger}");
+                                SharpTimerDebug($"OverrideMaxSpeedLimit for trigger: {trigger}");
                             }
 
                         }
@@ -1268,7 +1268,7 @@ namespace SharpTimer
                         try
                         {
                             currentMapOverrideStageRequirement = bool.Parse(mapInfo.OverrideStageRequirement);
-                            SharpTimerConPrint($"Overriding StageRequirement...");
+                            SharpTimerDebug($"Overriding StageRequirement...");
                         }
                         catch (FormatException)
                         {
@@ -1285,7 +1285,7 @@ namespace SharpTimer
                         try
                         {
                             globalPointsMultiplier = float.Parse(mapInfo.GlobalPointsMultiplier);
-                            SharpTimerConPrint($"Set global points multiplier to x{globalPointsMultiplier}");
+                            SharpTimerDebug($"Set global points multiplier to x{globalPointsMultiplier}");
                         }
                         catch (FormatException)
                         {
@@ -1300,7 +1300,7 @@ namespace SharpTimer
                             try
                             {
                                 currentMapTier = int.Parse(mapInfo.MapTier);
-                                SharpTimerConPrint($"Overriding MapTier to {currentMapTier}");
+                                SharpTimerDebug($"Overriding MapTier to {currentMapTier}");
                             }
                             catch (FormatException)
                             {
@@ -1316,7 +1316,7 @@ namespace SharpTimer
                             try
                             {
                                 currentMapType = mapInfo.MapType;
-                                SharpTimerConPrint($"Overriding MapType to {currentMapType}");
+                                SharpTimerDebug($"Overriding MapType to {currentMapType}");
                             }
                             catch (FormatException)
                             {
@@ -1352,7 +1352,7 @@ namespace SharpTimer
                 else
                 {
                     SharpTimerConPrint($"Map data json not found for map: {currentMapName}!");
-                    SharpTimerConPrint($"Trying to hook Triggers supported by default!");
+                    SharpTimerDebug($"Trying to hook Triggers supported by default!");
 
                     KillServerCommandEnts();
 
@@ -1364,9 +1364,9 @@ namespace SharpTimer
                     FindBonusCheckpointTriggers();
 
                     if (currentRespawnPos == null)
-                        SharpTimerConPrint($"Hooking Trigger RespawnPos Failed!");
+                        SharpTimerError($"Hooking Trigger RespawnPos Failed!");
                     else
-                        SharpTimerConPrint($"Hooking Trigger RespawnPos Success! {currentRespawnPos}");
+                        SharpTimerDebug($"Hooking Trigger RespawnPos Success! {currentRespawnPos}");
 
                     if (useTriggers == false && currentMapStartC1 != null && currentMapStartC2 != null && currentMapEndC1 != null && currentMapEndC2 != null && useTriggersAndFakeZones == false)
                     {
@@ -1386,7 +1386,7 @@ namespace SharpTimer
                     useTriggers = true;
                 }
 
-                SharpTimerConPrint($"useTriggers: {useTriggers}!");
+                SharpTimerDebug($"useTriggers: {useTriggers}!");
             }
             catch (Exception ex)
             {

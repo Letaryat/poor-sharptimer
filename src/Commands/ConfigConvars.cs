@@ -96,11 +96,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int minPoints) && minPoints > 0)
             {
                 minGlobalPointsForRank = minPoints;
-                SharpTimerConPrint($"SharpTimer min points for rank set to {minPoints} points.");
+                SharpTimerDebug($"SharpTimer min points for rank set to {minPoints} points.");
             }
             else
             {
-                SharpTimerConPrint("Invalid min points for rank value. Please provide a positive integer.");
+                SharpTimerError("Invalid min points for rank value. Please provide a positive integer.");
             }
         }
 
@@ -113,11 +113,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 globalPointsBonusMultiplier = multiplier;
-                SharpTimerConPrint($"SharpTimer bonus points multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer bonus points multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid bonus points multiplier. Please provide a positive integer.");
+                SharpTimerError("Invalid bonus points multiplier. Please provide a positive integer.");
             }
         }
 
@@ -130,11 +130,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int baseline) && baseline > 0)
             {
                 baselineT1 = baseline;
-                SharpTimerConPrint($"SharpTimer baseline T1 points set to {baseline}");
+                SharpTimerDebug($"SharpTimer baseline T1 points set to {baseline}");
             }
             else
             {
-                SharpTimerConPrint("Invalid baseline T1 points. Please provide a positive integer.");
+                SharpTimerError("Invalid baseline T1 points. Please provide a positive integer.");
             }
         }
 
@@ -147,11 +147,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int baseline) && baseline > 0)
             {
                 baselineT2 = baseline;
-                SharpTimerConPrint($"SharpTimer baseline T2 points set to {baseline}");
+                SharpTimerDebug($"SharpTimer baseline T2 points set to {baseline}");
             }
             else
             {
-                SharpTimerConPrint("Invalid baseline T2 points. Please provide a positive integer.");
+                SharpTimerError("Invalid baseline T2 points. Please provide a positive integer.");
             }
         }
 
@@ -164,11 +164,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int baseline) && baseline > 0)
             {
                 baselineT3 = baseline;
-                SharpTimerConPrint($"SharpTimer baseline T3 points set to {baseline}");
+                SharpTimerDebug($"SharpTimer baseline T3 points set to {baseline}");
             }
             else
             {
-                SharpTimerConPrint("Invalid baseline T3 points. Please provide a positive integer.");
+                SharpTimerError("Invalid baseline T3 points. Please provide a positive integer.");
             }
         }
 
@@ -181,11 +181,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int baseline) && baseline > 0)
             {
                 baselineT4 = baseline;
-                SharpTimerConPrint($"SharpTimer baseline T4 points set to {baseline}");
+                SharpTimerDebug($"SharpTimer baseline T4 points set to {baseline}");
             }
             else
             {
-                SharpTimerConPrint("Invalid baseline T4 points. Please provide a positive integer.");
+                SharpTimerError("Invalid baseline T4 points. Please provide a positive integer.");
             }
         }
 
@@ -198,11 +198,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int baseline) && baseline > 0)
             {
                 baselineT5 = baseline;
-                SharpTimerConPrint($"SharpTimer baseline T5 points set to {baseline}");
+                SharpTimerDebug($"SharpTimer baseline T5 points set to {baseline}");
             }
             else
             {
-                SharpTimerConPrint("Invalid baseline T5 points. Please provide a positive integer.");
+                SharpTimerError("Invalid baseline T5 points. Please provide a positive integer.");
             }
         }
 
@@ -215,11 +215,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int baseline) && baseline > 0)
             {
                 baselineT6 = baseline;
-                SharpTimerConPrint($"SharpTimer baseline T6 points set to {baseline}");
+                SharpTimerDebug($"SharpTimer baseline T6 points set to {baseline}");
             }
             else
             {
-                SharpTimerConPrint("Invalid baseline T6 points. Please provide a positive integer.");
+                SharpTimerError("Invalid baseline T6 points. Please provide a positive integer.");
             }
         }
 
@@ -232,11 +232,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int baseline) && baseline > 0)
             {
                 baselineT7 = baseline;
-                SharpTimerConPrint($"SharpTimer baseline T7 points set to {baseline}");
+                SharpTimerDebug($"SharpTimer baseline T7 points set to {baseline}");
             }
             else
             {
-                SharpTimerConPrint("Invalid baseline T7 points. Please provide a positive integer.");
+                SharpTimerError("Invalid baseline T7 points. Please provide a positive integer.");
             }
         }
 
@@ -249,11 +249,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int baseline) && baseline > 0)
             {
                 baselineT8 = baseline;
-                SharpTimerConPrint($"SharpTimer baseline T8 points set to {baseline}");
+                SharpTimerDebug($"SharpTimer baseline T8 points set to {baseline}");
             }
             else
             {
-                SharpTimerConPrint("Invalid baseline T8 points. Please provide a positive integer.");
+                SharpTimerError("Invalid baseline T8 points. Please provide a positive integer.");
             }
         }
 
@@ -266,11 +266,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int baseline) && baseline > 0)
             {
                 maxRecordPointsBase = baseline;
-                SharpTimerConPrint($"SharpTimer max record points set to {baseline}");
+                SharpTimerDebug($"SharpTimer max record points set to {baseline}");
             }
             else
             {
-                SharpTimerConPrint("Invalid max record points. Please provide a positive integer.");
+                SharpTimerError("Invalid max record points. Please provide a positive integer.");
             }
         }
 
@@ -283,11 +283,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int completions) && completions >= 0)
             {
                 globalPointsMaxCompletions = completions;
-                SharpTimerConPrint($"SharpTimer max completions set to {completions}");
+                SharpTimerDebug($"SharpTimer max completions set to {completions}");
             }
             else
             {
-                SharpTimerConPrint("Invalid max completions. Please provide a positive integer.");
+                SharpTimerError("Invalid max completions. Please provide a positive integer.");
             }
         }
 
@@ -300,11 +300,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 top10_1 = multiplier;
-                SharpTimerConPrint($"SharpTimer top10_1 multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer top10_1 multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid top10_1 multiplier. Please provide a positive double.");
+                SharpTimerError("Invalid top10_1 multiplier. Please provide a positive double.");
             }
         }
 
@@ -317,11 +317,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 top10_2 = multiplier;
-                SharpTimerConPrint($"SharpTimer top10_2 multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer top10_2 multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid top10_2 multiplier. Please provide a positive double.");
+                SharpTimerError("Invalid top10_2 multiplier. Please provide a positive double.");
             }
         }
 
@@ -334,11 +334,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 top10_3 = multiplier;
-                SharpTimerConPrint($"SharpTimer top10_3 multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer top10_3 multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid top10_3 multiplier. Please provide a positive double.");
+                SharpTimerError("Invalid top10_3 multiplier. Please provide a positive double.");
             }
         }
 
@@ -351,11 +351,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 top10_4 = multiplier;
-                SharpTimerConPrint($"SharpTimer top10_4 multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer top10_4 multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid top10_4 multiplier. Please provide a positive double.");
+                SharpTimerError("Invalid top10_4 multiplier. Please provide a positive double.");
             }
         }
 
@@ -368,11 +368,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 top10_5 = multiplier;
-                SharpTimerConPrint($"SharpTimer top10_5 multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer top10_5 multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid top10_5 multiplier. Please provide a positive double.");
+                SharpTimerError("Invalid top10_5 multiplier. Please provide a positive double.");
             }
         }
 
@@ -385,11 +385,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 top10_6 = multiplier;
-                SharpTimerConPrint($"SharpTimer top10_6 multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer top10_6 multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid top10_6 multiplier. Please provide a positive double.");
+                SharpTimerError("Invalid top10_6 multiplier. Please provide a positive double.");
             }
         }
 
@@ -402,11 +402,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 top10_7 = multiplier;
-                SharpTimerConPrint($"SharpTimer top10_7 multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer top10_7 multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid top10_7 multiplier. Please provide a positive double.");
+                SharpTimerError("Invalid top10_7 multiplier. Please provide a positive double.");
             }
         }
 
@@ -419,11 +419,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 top10_8 = multiplier;
-                SharpTimerConPrint($"SharpTimer top10_8 multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer top10_8 multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid top10_8 multiplier. Please provide a positive double.");
+                SharpTimerError("Invalid top10_8 multiplier. Please provide a positive double.");
             }
         }
 
@@ -436,11 +436,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 top10_9 = multiplier;
-                SharpTimerConPrint($"SharpTimer top10_9 multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer top10_9 multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid top10_9 multiplier. Please provide a positive double.");
+                SharpTimerError("Invalid top10_9 multiplier. Please provide a positive double.");
             }
         }
 
@@ -453,11 +453,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double multiplier) && multiplier is >= 0 and <= 1)
             {
                 top10_10 = multiplier;
-                SharpTimerConPrint($"SharpTimer top10_10 multiplier set to {multiplier}");
+                SharpTimerDebug($"SharpTimer top10_10 multiplier set to {multiplier}");
             }
             else
             {
-                SharpTimerConPrint("Invalid top10_10 multiplier. Please provide a positive double.");
+                SharpTimerError("Invalid top10_10 multiplier. Please provide a positive double.");
             }
         }
 
@@ -470,11 +470,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double percentile) && percentile is >= 0 and <= 100)
             {
                 group1 = percentile;
-                SharpTimerConPrint($"SharpTimer group #1 percentile set to {percentile}");
+                SharpTimerDebug($"SharpTimer group #1 percentile set to {percentile}");
             }
             else
             {
-                SharpTimerConPrint("Invalid group #1 percentile. Please provide a positive double.");
+                SharpTimerError("Invalid group #1 percentile. Please provide a positive double.");
             }
         }
 
@@ -487,11 +487,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double percentile) && percentile is >= 0 and <= 100)
             {
                 group2 = percentile;
-                SharpTimerConPrint($"SharpTimer group #2 percentile set to {percentile}");
+                SharpTimerDebug($"SharpTimer group #2 percentile set to {percentile}");
             }
             else
             {
-                SharpTimerConPrint("Invalid group #2 percentile. Please provide a positive double.");
+                SharpTimerError("Invalid group #2 percentile. Please provide a positive double.");
             }
         }
 
@@ -504,11 +504,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double percentile) && percentile is >= 0 and <= 100)
             {
                 group3 = percentile;
-                SharpTimerConPrint($"SharpTimer group #3 percentile set to {percentile}");
+                SharpTimerDebug($"SharpTimer group #3 percentile set to {percentile}");
             }
             else
             {
-                SharpTimerConPrint("Invalid group #3 percentile. Please provide a positive double.");
+                SharpTimerError("Invalid group #3 percentile. Please provide a positive double.");
             }
         }
 
@@ -521,11 +521,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double percentile) && percentile is >= 0 and <= 100)
             {
                 group4 = percentile;
-                SharpTimerConPrint($"SharpTimer group #4 percentile set to {percentile}");
+                SharpTimerDebug($"SharpTimer group #4 percentile set to {percentile}");
             }
             else
             {
-                SharpTimerConPrint("Invalid group #4 percentile. Please provide a positive double.");
+                SharpTimerError("Invalid group #4 percentile. Please provide a positive double.");
             }
         }
 
@@ -538,11 +538,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double percentile) && percentile is >= 0 and <= 100)
             {
                 group5 = percentile;
-                SharpTimerConPrint($"SharpTimer group #5 percentile set to {percentile}");
+                SharpTimerDebug($"SharpTimer group #5 percentile set to {percentile}");
             }
             else
             {
-                SharpTimerConPrint("Invalid group #5 percentile. Please provide a positive double.");
+                SharpTimerError("Invalid group #5 percentile. Please provide a positive double.");
             }
         }
 
@@ -573,11 +573,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int mxLength) && mxLength > 0)
             {
                 maxReplayFrames = (int)(mxLength * 64);
-                SharpTimerConPrint($"SharpTimer max replay length set to {mxLength} seconds.");
+                SharpTimerDebug($"SharpTimer max replay length set to {mxLength} seconds.");
             }
             else
             {
-                SharpTimerConPrint("Invalid max replay length value. Please provide a positive int.");
+                SharpTimerError("Invalid max replay length value. Please provide a positive int.");
             }
         }
 
@@ -638,11 +638,11 @@ namespace SharpTimer
             if (float.TryParse(args, NumberStyles.Any, culture, out float dist) && dist > 0)
             {
                 jumpStatsMinDist = dist;
-                SharpTimerConPrint($"SharpTimer JumpStats min distance set to {dist} units.");
+                SharpTimerDebug($"SharpTimer JumpStats min distance set to {dist} units.");
             }
             else
             {
-                SharpTimerConPrint("Invalid JumpStats min distance value. Please provide a positive float.");
+                SharpTimerError("Invalid JumpStats min distance value. Please provide a positive float.");
             }
         }
 
@@ -655,11 +655,11 @@ namespace SharpTimer
             if (float.TryParse(args, NumberStyles.Any, culture, out float dist) && dist > 0)
             {
                 jumpStatsMaxVert = dist;
-                SharpTimerConPrint($"SharpTimer JumpStats max vert distance set to {dist} units.");
+                SharpTimerDebug($"SharpTimer JumpStats max vert distance set to {dist} units.");
             }
             else
             {
-                SharpTimerConPrint("Invalid JumpStats max vert distance value. Please provide a positive float.");
+                SharpTimerError("Invalid JumpStats max vert distance value. Please provide a positive float.");
             }
         }
 
@@ -681,11 +681,11 @@ namespace SharpTimer
             if (float.TryParse(args, NumberStyles.Any, culture, out float value) && value > 0)
             {
                 movementUnlockerCapValue = value;
-                if (movementUnlockerCapEnabled) SharpTimerConPrint($"SharpTimer JumpStats Movement Unlocker cap value set to {value} units.");
+                if (movementUnlockerCapEnabled) SharpTimerDebug($"SharpTimer JumpStats Movement Unlocker cap value set to {value} units.");
             }
             else
             {
-                SharpTimerConPrint("Invalid JumpStats Movement Unlocker cap value. Please provide a positive float.");
+                SharpTimerError("Invalid JumpStats Movement Unlocker cap value. Please provide a positive float.");
             }
         }
 
@@ -698,11 +698,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int value) && value > 0)
             {
                 globalCacheInterval = value;
-                SharpTimerConPrint($"SharpTimer global cache refresh interval set to {value} seconds.");
+                SharpTimerDebug($"SharpTimer global cache refresh interval set to {value} seconds.");
             }
             else
             {
-                SharpTimerConPrint("Invalid global ache refresh interval value. Please provide a positive float.");
+                SharpTimerError("Invalid global ache refresh interval value. Please provide a positive float.");
             }
         }
 
@@ -750,11 +750,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int secs) && secs >= 0)
             {
                 afkSeconds = secs;
-                SharpTimerConPrint($"SharpTimer afk period: {secs}s");
+                SharpTimerDebug($"SharpTimer afk period: {secs}s");
             }
             else
             {
-                SharpTimerConPrint("Invalid afk period. Please provide a positive integer.");
+                SharpTimerError("Invalid afk period. Please provide a positive integer.");
             }
         }
 
@@ -767,11 +767,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int tickrate) && tickrate >= 0 && tickrate <= 64)
             {
                 hudTickrate = tickrate;
-                SharpTimerConPrint($"SharpTimer hud updates per second: {tickrate}");
+                SharpTimerDebug($"SharpTimer hud updates per second: {tickrate}");
             }
             else
             {
-                SharpTimerConPrint("Invalid HUD updates per second. Please provide a positive integer below 64.");
+                SharpTimerError("Invalid HUD updates per second. Please provide a positive integer below 64.");
             }
         }
 
@@ -1009,11 +1009,11 @@ namespace SharpTimer
             if (float.TryParse(args, NumberStyles.Any, culture, out float cooldown) && cooldown > 0)
             {
                 cmdCooldown = (int)(cooldown * 64);
-                SharpTimerConPrint($"SharpTimer command cooldown set to {cooldown} seconds.");
+                SharpTimerDebug($"SharpTimer command cooldown set to {cooldown} seconds.");
             }
             else
             {
-                SharpTimerConPrint("Invalid command cooldown value. Please provide a positive float.");
+                SharpTimerError("Invalid command cooldown value. Please provide a positive float.");
             }
         }
 
@@ -1026,11 +1026,11 @@ namespace SharpTimer
             if (float.TryParse(args, NumberStyles.Any, culture, out float time) && time > 0)
             {
                 bhopBlockTime = (int)(time * 64);
-                SharpTimerConPrint($"SharpTimer max bhop block time set to {time} seconds.");
+                SharpTimerDebug($"SharpTimer max bhop block time set to {time} seconds.");
             }
             else
             {
-                SharpTimerConPrint("Invalid max bhop block time value. Please provide a positive float.");
+                SharpTimerError("Invalid max bhop block time value. Please provide a positive float.");
             }
         }
 
@@ -1164,11 +1164,11 @@ namespace SharpTimer
             {
                 maxStartingSpeed = speed;
                 Server.ExecuteCommand($"sv_maxspeed {maxStartingSpeed}");
-                SharpTimerConPrint($"SharpTimer max trigger speed set to {speed}.");
+                SharpTimerDebug($"SharpTimer max trigger speed set to {speed}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid max trigger speed value. Please provide a positive integer.");
+                SharpTimerError("Invalid max trigger speed value. Please provide a positive integer.");
             }
         }
 
@@ -1181,11 +1181,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int speed) && speed > 0)
             {
                 maxBonusStartingSpeed = speed;
-                SharpTimerConPrint($"SharpTimer max bonus trigger speed set to {speed}.");
+                SharpTimerDebug($"SharpTimer max bonus trigger speed set to {speed}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid max bonus trigger speed value. Please provide a positive integer.");
+                SharpTimerError("Invalid max bonus trigger speed value. Please provide a positive integer.");
             }
         }
 
@@ -1207,11 +1207,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int speed) && speed > 0)
             {
                 forcedPlayerSpeed = speed;
-                SharpTimerConPrint($"SharpTimer forced player speed set to {speed}.");
+                SharpTimerDebug($"SharpTimer forced player speed set to {speed}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid forced player speed value. Please provide a positive integer.");
+                SharpTimerError("Invalid forced player speed value. Please provide a positive integer.");
             }
         }
 
@@ -1224,11 +1224,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int bhopTicks) && bhopTicks > 0)
             {
                 bhopBlockTime = bhopTicks;
-                SharpTimerConPrint($"SharpTimer forced bhop_block ticks to {bhopTicks}.");
+                SharpTimerDebug($"SharpTimer forced bhop_block ticks to {bhopTicks}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid bhop_block ticks value. Please provide a positive integer.");
+                SharpTimerError("Invalid bhop_block ticks value. Please provide a positive integer.");
             }
         }
 
@@ -1296,11 +1296,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int interval) && interval > 0)
             {
                 adServerRecordTimer = interval;
-                SharpTimerConPrint($"SharpTimer sr ad interval set to {interval} seconds.");
+                SharpTimerDebug($"SharpTimer sr ad interval set to {interval} seconds.");
             }
             else
             {
-                SharpTimerConPrint("Invalid sr ad interval value. Please provide a positive integer.");
+                SharpTimerError("Invalid sr ad interval value. Please provide a positive integer.");
             }
         }
 
@@ -1322,11 +1322,11 @@ namespace SharpTimer
             if (int.TryParse(args, out int interval) && interval > 0)
             {
                 adMessagesTimer = interval;
-                SharpTimerConPrint($"SharpTimer messages ad interval set to {interval} seconds.");
+                SharpTimerDebug($"SharpTimer messages ad interval set to {interval} seconds.");
             }
             else
             {
-                SharpTimerConPrint("Invalid messages ad interval value. Please provide a positive integer.");
+                SharpTimerError("Invalid messages ad interval value. Please provide a positive integer.");
             }
         }
         /* ad messages */
@@ -1394,11 +1394,11 @@ namespace SharpTimer
             if (float.TryParse(args, NumberStyles.Any, culture, out float height) && height > 0)
             {
                 fakeTriggerHeight = height;
-                SharpTimerConPrint($"SharpTimer fake trigger height set to {height} units.");
+                SharpTimerDebug($"SharpTimer fake trigger height set to {height} units.");
             }
             else
             {
-                SharpTimerConPrint("Invalid fake trigger height value. Please provide a positive integer.");
+                SharpTimerError("Invalid fake trigger height value. Please provide a positive integer.");
             }
         }
 
@@ -1562,11 +1562,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 parachutePointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer parachute point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer parachute point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid parachute point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid parachute point modifier. Please provide a positive integer.");
             }
         }
         
@@ -1579,11 +1579,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 tasPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer TAS point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer TAS point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid TAS point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid TAS point modifier. Please provide a positive integer.");
             }
         }
 
@@ -1596,11 +1596,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 lowgravPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer low grav point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer low grav point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid low grav point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid low grav point modifier. Please provide a positive integer.");
             }
         }
         [ConsoleCommand("sharptimer_style_multiplier_sideways", "Point modifier for sidways. Default value: 1.3")]
@@ -1612,11 +1612,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 sidewaysPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer sideways point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer sideways point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid sideways point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid sideways point modifier. Please provide a positive integer.");
             }
         }
 
@@ -1629,11 +1629,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 onlywPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer onlyw point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer onlyw point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid onlyw point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid onlyw point modifier. Please provide a positive integer.");
             }
         }
 
@@ -1646,11 +1646,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 onlyaPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer onlya point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer onlya point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid onlya point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid onlya point modifier. Please provide a positive integer.");
             }
         }
 
@@ -1663,11 +1663,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 onlysPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer onlys point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer onlys point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid onlys point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid onlys point modifier. Please provide a positive integer.");
             }
         }
 
@@ -1680,11 +1680,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 onlydPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer onlyd point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer onlyd point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid onlyd point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid onlyd point modifier. Please provide a positive integer.");
             }
         }
 
@@ -1697,11 +1697,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 velPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer 400vel point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer 400vel point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid 400vel point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid 400vel point modifier. Please provide a positive integer.");
             }
         }
 
@@ -1714,11 +1714,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 highgravPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer highgrav point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer highgrav point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid highgrav point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid highgrav point modifier. Please provide a positive integer.");
             }
         }
 
@@ -1731,11 +1731,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 halfSidewaysPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer halfsideways point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer halfsideways point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid halfsideways point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid halfsideways point modifier. Please provide a positive integer.");
             }
         }
 
@@ -1748,11 +1748,11 @@ namespace SharpTimer
             if (double.TryParse(args, NumberStyles.Any, culture, out double pointModifier) && pointModifier is >= 0 and <= 2)
             {
                 fastForwardPointModifier = pointModifier;
-                SharpTimerConPrint($"SharpTimer fastforward point modifier set to {pointModifier}.");
+                SharpTimerDebug($"SharpTimer fastforward point modifier set to {pointModifier}.");
             }
             else
             {
-                SharpTimerConPrint("Invalid fastforward point modifier. Please provide a positive integer.");
+                SharpTimerError("Invalid fastforward point modifier. Please provide a positive integer.");
             }
         }
 
