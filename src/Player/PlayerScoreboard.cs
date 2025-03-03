@@ -41,7 +41,7 @@ public partial class SharpTimer {
     else
       player.Score = -placement;
 
-    if (stageTriggerCount == 1) { // Linear map, show checkpoints
+    if (stageTriggerCount <= 1) { // Linear map, show checkpoints
       matchStats.Kills = timer.CurrentMapCheckpoint;
     } else {
       matchStats.Kills = timer.IsBonusTimerRunning ?
