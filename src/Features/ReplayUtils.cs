@@ -240,7 +240,7 @@ namespace SharpTimer
                         .Select((frame, index) => new IndexedReplayFrames { Index = index, Frame = frame })
                         .ToList();
 
-                    using Stream stream = new FileStream(replayFilePath, FileMode.Create);
+                    using Stream stream = new FileStream(playerReplaysPath, FileMode.Create);
                     BinaryWriter writer = new BinaryWriter(stream);
                     
                     writer.Write(REPLAY_VERSION);
@@ -563,7 +563,8 @@ namespace SharpTimer
 
             if ((srSteamID == "null" || srPlayerName == "null" || srTime == "null") && topSteamID != "x") return false;
 
-            string fileName = $"{(topSteamID == "x" ? $"{srSteamID}" : $"{topSteamID}")}_replay.json";
+            string ext = useBinaryReplays ? "dat" : "json";
+            string fileName = $"{(topSteamID == "x" ? $"{srSteamID}" : $"{topSteamID}")}_replay.{ext}";
             string playerReplaysPath;
             if (style != 0) playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", (bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}"), GetNamedStyle(style), fileName);
             else playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", (bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}"), fileName);
