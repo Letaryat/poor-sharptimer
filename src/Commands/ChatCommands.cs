@@ -306,8 +306,12 @@ namespace SharpTimer
 
             if (wr)
                 await ReadReplayFromGlobal(player, wrID, style, bonusX);
-            else
-                await ReadReplayFromJson(player, !self ? srSteamID : pbSteamID, playerSlot, bonusX, style);
+            else {
+                if (useBinaryReplays)
+                    await ReadReplayFromBinary(player, !self ? srSteamID : pbSteamID, playerSlot, bonusX, style);
+                else
+                    await ReadReplayFromJson(player, !self ? srSteamID : pbSteamID, playerSlot, bonusX, style);
+            }
 
             if (playerReplays[playerSlot].replayFrames.Count == 0) return;
 

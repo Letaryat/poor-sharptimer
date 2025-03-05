@@ -200,7 +200,12 @@ namespace SharpTimer
                             File.WriteAllText(mapRecordsPath, updatedJson);
 
                             if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && (!enableDb) && playerTimers[player.Slot].currentStyle == 0) _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot));
-                            if (enableReplays == true && !enableDb) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
+                            if (enableReplays == true && !enableDb) {
+                                if (useBinaryReplays)
+                                    _ = Task.Run(async () => await DumpReplayToBinary(player!, steamId, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
+                                else
+                                    _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
+                            }
                         }
                         else
                         {

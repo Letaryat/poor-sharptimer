@@ -31,6 +31,9 @@ namespace SharpTimer
         private int movementServices;
         private int movementPtr;
         private readonly CSPlayerState[] _oldPlayerState = new CSPlayerState[65];
+
+        public const int REPLAY_VERSION = 1;
+        
         public override void Load(bool hotReload)
         {
             SharpTimerConPrint("Loading Plugin...");
