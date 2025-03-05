@@ -213,7 +213,6 @@ namespace SharpTimer
 
         public async Task DumpReplayToBinary(CCSPlayerController player, string steamID, int playerSlot, int bonusX = 0, int style = 0)
         {
-            _ = DumpReplayToJson(player, steamID, playerSlot, bonusX, style);
             await Task.Run(() =>
             {
                 if (!IsAllowedPlayer(player))
@@ -224,15 +223,9 @@ namespace SharpTimer
 
                 string fileName = $"{steamID}_replay.dat";
                 string playerReplaysDirectory;
-<<<<<<< Updated upstream
                 if (style != 0) playerReplaysDirectory = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", bonusX == 0 ? $"{currentMapName}" : $"{currentMapName}_bonus{bonusX}", GetNamedStyle(style));
                 else playerReplaysDirectory = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData", bonusX == 0 ? $"{currentMapName}" : $"{currentMapName}_bonus{bonusX}");
                 string playerReplaysPath = Path.Join(playerReplaysDirectory, fileName);
-=======
-                if(style != 0) playerReplaysDirectory = Path.Join(this.playerReplaysPath, bonusX == 0 ? $"{currentMapName}" : $"{currentMapName}_bonus{bonusX}", GetNamedStyle(style));
-                else playerReplaysDirectory = Path.Join(this.playerReplaysPath, bonusX == 0 ? $"{currentMapName}" : $"{currentMapName}_bonus{bonusX}");
-                string replayFilePath = Path.Join(playerReplaysDirectory, fileName);
->>>>>>> Stashed changes
 
                 try
                 {
