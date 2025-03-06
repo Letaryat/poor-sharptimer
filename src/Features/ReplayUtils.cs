@@ -571,8 +571,13 @@ namespace SharpTimer
 
             try
             {
-                if (File.Exists(playerReplaysPath))
-                {
+                if (File.Exists(playerReplaysPath)) {
+                    if (useBinaryReplays) {
+                        var reader = new BinaryReader(File.Open(playerReplaysPath, FileMode.Open));
+                        var version = reader.ReadInt32();
+                        
+                        return version == REPLAY_VERSION;
+                    }
                     var jsonString = await File.ReadAllTextAsync(playerReplaysPath);
                     if (!jsonString.Contains("PositionString"))
                     {
