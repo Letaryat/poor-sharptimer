@@ -111,7 +111,7 @@
   
     // Error
   "error_savingtime": "Erreur de sauvegarde du temps : Le temps du joueur est de 0 ticks",
-  "error_stagenotmatchfinalone": "Erreur de sauvegarde du temps : Le niveau actuel du joueur ne correspond pas au dernier niveau {0}",
+  "error_stagenotmatchfinalone": "Erreur de sauvegarde du temps : Le niveau actuel du joueur ne correspond pas au dernier niveau",
   "error_checkpointnotmatchfinalone": "Erreur de sauvegarde du temps : Le point de contrôle actuel du joueur ne correspond pas au dernier point de contrôle {0}",
 
   // help console Localizer

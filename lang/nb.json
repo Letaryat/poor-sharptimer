@@ -135,7 +135,7 @@
 	
 	  // Error
   "error_savingtime": "Feil ved lagring av tid: Spillerens tid er 0 ticks",
-  "error_stagenotmatchfinalone": "Feil ved lagring av tid: Spillerens nåværende nivå stemmer ikke overens med siste nivå {0}",
+  "error_stagenotmatchfinalone": "Feil ved lagring av tid: Spillerens nåværende nivå stemmer ikke overens med siste nivå",
   "error_checkpointnotmatchfinalone": "Feil ved lagring av tid: Spillerens nåværende sjekkpunkt stemmer ikke overens med siste sjekkpunkt {0}",
 
   // help console Localizer
