@@ -830,8 +830,8 @@ namespace SharpTimer
                 string ranking, rankIcon, mapPlacement, serverPoints = "", serverPlacement = "";
                 bool useGlobalRanks = enableDb && globalRanksEnabled;
 
-                ranking = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, false, 0, style);
-                rankIcon = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName, true) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, true, false, 0, style);
+                ranking      = useGlobalRanks ? await GetPlayerServerPlacement(steamId, playerName) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, false, 0, style);
+                rankIcon     = useGlobalRanks ? await GetPlayerServerPlacement(steamId, playerName, true) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, true, false, 0, style);
                 mapPlacement = await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, true, 0, style);
 
                 foreach (var bonusRespawnPose in bonusRespawnPoses)
@@ -857,8 +857,8 @@ namespace SharpTimer
 
                 if (useGlobalRanks)
                 {
-                    serverPoints = await GetPlayerServerPlacement(player, steamId, playerName, false, false, true);
-                    serverPlacement = await GetPlayerServerPlacement(player, steamId, playerName, false, true, false);
+                    serverPoints    = await GetPlayerServerPlacement(steamId, playerName, false, false, true);
+                    serverPlacement = await GetPlayerServerPlacement(steamId, playerName, false, true, false);
                 }
 
                 int pbTicks = enableDb ? await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, 0, style) : await GetPreviousPlayerRecord(steamId, 0);
@@ -870,6 +870,7 @@ namespace SharpTimer
                     playerTimers[playerSlot].CachedPB = $"{(pbTicks != 0 ? $" {FormatTime(pbTicks)}" : "")}";
                     playerTimers[playerSlot].CachedRank = ranking;
                     playerTimers[playerSlot].CachedMapPlacement = mapPlacement;
+                    cachedPlacements.Remove(playerSlot);
 
                     if (displayScoreboardTags) AddScoreboardTagToPlayer(player!, ranking);
                 });

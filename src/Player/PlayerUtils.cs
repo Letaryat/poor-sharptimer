@@ -411,14 +411,11 @@ namespace SharpTimer
             }
         }
 
-        public async Task<string> GetPlayerServerPlacement(CCSPlayerController? player, string steamId, string playerName, bool getRankImg = false, bool getPlacementOnly = false, bool getPointsOnly = false)
+        public async Task<string> GetPlayerServerPlacement(string steamId, string playerName, bool getRankImg = false, bool getPlacementOnly = false, bool getPointsOnly = false)
         {
             try
             {
-                if (!IsAllowedClient(player))
-                    return "";
-
-                int savedPlayerPoints = enableDb ? await GetPlayerPointsFromDatabase(player, steamId, playerName) : 0;
+                int savedPlayerPoints = enableDb ? await GetPlayerPointsFromDatabase(steamId, playerName) : 0;
 
                 if (getPointsOnly)
                     return savedPlayerPoints.ToString();
@@ -438,6 +435,29 @@ namespace SharpTimer
             {
                 SharpTimerError($"Error in GetPlayerServerPlacement: {ex}");
                 return UnrankedTitle;
+            }
+        }
+        
+        public async Task<(int, int)> GetPlayerServerRank(string steamId, string? playerName = null)
+        {
+            try
+            {
+                int savedPlayerPoints = enableDb ? await GetPlayerPointsFromDatabase(steamId, playerName) : 0;
+
+                if (savedPlayerPoints == 0 || savedPlayerPoints <= minGlobalPointsForRank)
+                    return (0, 0);
+
+                Dictionary<string, PlayerPoints> sortedPoints = enableDb ? await GetSortedPointsFromDatabase() : [];
+
+                int placement = sortedPoints.Count(kv => kv.Value.GlobalPoints > savedPlayerPoints) + 1;
+                int totalPlayers = sortedPoints.Count;
+
+                return (placement, totalPlayers);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error in GetPlayerServerRank: {ex}");
+                return (0, 0);
             }
         }
 
