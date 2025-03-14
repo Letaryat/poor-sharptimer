@@ -193,6 +193,7 @@ namespace SharpTimer
         public bool startzoneJumping = true;
         public bool spawnOnRespawnPos = false;
         public bool enableNoclip = false;
+        public bool enableRsOnLinear = false;
 
         public bool enableStyles = true;
         public bool enableStylePoints = true;
