@@ -42,9 +42,8 @@ namespace SharpTimer
             gameDir = Server.GameDirectory;
             SharpTimerDebug($"Set gameDir to {gameDir}");
 
-            string recordsFileName = $"SharpTimer/PlayerRecords/";
-            playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
-
+            const string recordsFileName = "SharpTimer/PlayerRecords/";
+            playerRecordsPath = Path.Join(gameDir, "csgo", "cfg", recordsFileName);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) isLinux = true;
             else isLinux = false;
