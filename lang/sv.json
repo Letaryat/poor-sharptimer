@@ -108,6 +108,8 @@
   "connected_message": "Spelare {red}{0} {default}ansluten för den {1} gången!",
   "connected_message_first": "Spleare {red}{0} {default}ansluten för första gången!",
   "disconnect_message": "Spelare {red}{0} {default}lämnade!",
+  "afk_message": "{red}You are about to be moved to AFK!",
+  "start_speed": "Startfart:",
   
     // Error
   "error_savingtime": "Chyba pri ukladaní času: Čas hráča je 0 tics",
