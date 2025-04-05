@@ -1565,6 +1565,10 @@ namespace SharpTimer
 
             if (stageTriggerCount == 0)
             {
+                if (enableRsOnLinear) {
+                    player.ExecuteClientCommandFromServer("css_r");
+                    return;
+                }
                 PrintToChat(player, Localizer["map_no_stages"]);
                 return;
             }
