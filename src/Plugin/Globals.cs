@@ -282,6 +282,7 @@ namespace SharpTimer
         public string? currentMapName;
         public string? currentAddonID;
         public string? defaultServerHostname = ConVar.Find("hostname")?.StringValue;
+        public string? playerReplaysPath;
 
         public bool discordWebhookEnabled = false;
         public string discordWebhookBotName = "SharpTimer";

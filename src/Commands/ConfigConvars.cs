@@ -1810,5 +1810,20 @@ namespace SharpTimer
 
             remoteSurfDataSource = $"{args}";
         }
+        
+        [ConsoleCommand("sharptimer_replay_data_directory", "Directory for replay data. Prepended with game dir. Default value: csgo/cfg/SharpTimer/PlayerReplayData")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerReplayDataDirectory(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+            
+            if (string.IsNullOrEmpty(args))
+            {
+                playerReplaysPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData");
+                return;
+            }
+            
+            playerReplaysPath = Path.Join([gameDir, ..args.Split('/')]);
+        }
     }
 }
