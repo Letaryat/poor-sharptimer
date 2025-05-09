@@ -21,7 +21,7 @@
   "new_pb_record_bonus": "{lime}{0} {white}uzstādīja jaunu Bonusa {1} PB!",
   "map_finish": "{lime}{0} {white}pabeidza karti!",
   "map_finish_bonus": "{lime}{0} {white}pabeidza Bonusu {1}!",
-  "map_finish_rank": "Rangs: [{lime}{0}{default}] Pabeigtie mēģinājumi: [{lime}{1}{default}]",
+  "map_finish_rank": "Ranks: [{lime}{0}{default}] Pabeigtie mēģinājumi: [{lime}{1}{default}]",
   "top10_records": "Top 10 {0} rezultāti {1}:",
   "top10_records_bonus": "Top 10 {0} rezultāti Bonusā {1} kartē {2}:",
 
