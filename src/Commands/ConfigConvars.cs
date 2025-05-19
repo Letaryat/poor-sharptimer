@@ -1006,7 +1006,7 @@ namespace SharpTimer
 
             if (float.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out float cooldown) && cooldown > 0)
             {
-                cmdCooldown = (int)(cooldown * 64);
+                cmdCooldown = cooldown;
                 SharpTimerDebug($"SharpTimer command cooldown set to {cooldown} seconds.");
             }
             else

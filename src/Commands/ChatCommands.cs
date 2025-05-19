@@ -66,9 +66,10 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void ReplaySelfCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player) || enableReplays == false) return;
+            if (player == null || !IsAllowedPlayer(player) || enableReplays == false)
+                return;
 
-            var playerSlot = player!.Slot;
+            var playerSlot = player.Slot;
             var steamID = player.SteamID.ToString();
             var playerName = player.PlayerName;
 
@@ -418,22 +419,20 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void HUDSwitchCommand(CCSPlayerController? player, CommandInfo command)
         {
+            var playerName = player!.PlayerName;
+            var playerSlot = player.Slot;
+            var steamID = player.SteamID.ToString();
+
             if (!IsAllowedPlayer(player))
             {
                 if (!IsAllowedSpectator(player))
                     return;
             }
 
-            var playerName = player!.PlayerName;
-            var playerSlot = player.Slot;
-            var steamID = player.SteamID.ToString();
-
             SharpTimerDebug($"{playerName} calling css_hud...");
 
-            if (CommandCooldown(player))
-                return;
-
-            playerTimers[playerSlot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             playerTimers[playerSlot].HideTimerHud = !playerTimers[playerSlot].HideTimerHud;
 
@@ -454,22 +453,20 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void KeysSwitchCommand(CCSPlayerController? player, CommandInfo command)
         {
+            var playerName = player!.PlayerName;
+            var playerSlot = player.Slot;
+            var steamID = player.SteamID.ToString();
+
             if (!IsAllowedPlayer(player))
             {
                 if (!IsAllowedSpectator(player))
                     return;
             }
 
-            var playerName = player!.PlayerName;
-            var playerSlot = player.Slot;
-            var steamID = player.SteamID.ToString();
-
             SharpTimerDebug($"{playerName} calling css_keys...");
 
-            if (CommandCooldown(player))
-                return;
-                
-            playerTimers[playerSlot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             playerTimers[playerSlot].HideKeys = playerTimers[playerSlot].HideKeys ? false : true;
 
@@ -491,22 +488,22 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void SoundsSwitchCommand(CCSPlayerController? player, CommandInfo command)
         {
+            if (player == null) return;
+
             if (!IsAllowedPlayer(player))
             {
                 if (!IsAllowedSpectator(player))
                     return;
             }
 
-            var playerName = player!.PlayerName;
+            var playerName = player.PlayerName;
             var playerSlot = player.Slot;
             var steamID = player.SteamID.ToString();
 
             SharpTimerDebug($"{playerName} calling css_sounds...");
 
-            if (CommandCooldown(player))
-                return;
-
-            playerTimers[playerSlot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             playerTimers[playerSlot].SoundsEnabled = playerTimers[playerSlot].SoundsEnabled ? false : true;
 
@@ -527,7 +524,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void JSSwitchCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player) || jumpStatsEnabled == false)
+            if (player == null || !IsAllowedPlayer(player) || jumpStatsEnabled == false)
             {
                 if (!IsAllowedSpectator(player))
                     return;
@@ -539,10 +536,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_jumpstats...");
 
-            if (CommandCooldown(player))
-                return;
-
-            playerTimers[playerSlot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             playerTimers[playerSlot].HideJumpStats = playerTimers[playerSlot].HideJumpStats ? false : true;
 
@@ -616,10 +611,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_top...");
 
-            if (CommandCooldown(player))
-                return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             var mapName = command.ArgByIndex(1);
 
@@ -638,10 +631,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_points...");
 
-            if (CommandCooldown(player))
-                return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             _ = Task.Run(async () => await PrintTop10PlayerPoints(player));
         }
@@ -658,10 +649,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_wr...");
 
-            if (CommandCooldown(player))
-                return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             PrintWorldRecord(player);
             
@@ -677,10 +666,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_gpoints...");
 
-            if (CommandCooldown(player))
-                return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             PrintGlobalPoints(player);
             
@@ -696,10 +683,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_grank...");
 
-            if (CommandCooldown(player))
-                return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             _ = Task.Run(async () => await PrintGlobalRankAsync(player));
 
@@ -716,10 +701,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_topbonus...");
 
-            if (CommandCooldown(player))
-                return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             if (!int.TryParse(command.ArgString, out int bonusX))
             {
@@ -809,8 +792,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_rank...");
 
-            if (CommandCooldown(player))
-                return;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, false, playerTimers[playerSlot].currentStyle));
         }
@@ -917,8 +900,8 @@ namespace SharpTimer
 
             SharpTimerDebug($"{playerName} calling css_sr...");
 
-            if (CommandCooldown(player))
-                return;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             _ = Task.Run(async () => await SRCommandHandler(player, playerName));
         }
@@ -959,15 +942,14 @@ namespace SharpTimer
             try
             {
                 if (!IsAllowedPlayer(player) || respawnEnabled == false) return;
+
                 SharpTimerDebug($"{player!.PlayerName} calling css_rb...");
 
-                if (CommandCooldown(player))
-                    return;
+                if (CommandCooldown(player)) return;
+                else CommandAddCooldown(player);
 
                 if (ReplayCheck(player))
                     return;
-
-                playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
                 //defaults to !b 1 without any args
                 if (command.ArgString == null || command.ArgString == "")
@@ -1057,9 +1039,6 @@ namespace SharpTimer
 
             SharpTimerDebug($"{player!.PlayerName} calling css_startpos...");
 
-            if (CommandCooldown(player))
-                return;
-
             if (ReplayCheck(player))
                 return;
 
@@ -1116,15 +1095,14 @@ namespace SharpTimer
             try
             {
                 if (!IsAllowedPlayer(player) || respawnEnabled == false) return;
+
                 SharpTimerDebug($"{player!.PlayerName} calling css_stage...");
 
-                if (CommandCooldown(player))
-                    return;
+                if (CommandCooldown(player)) return;
+                else CommandAddCooldown(player);
 
                 if (ReplayCheck(player))
                     return;
-
-                playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
                 QuietStopTimer(player);
 
@@ -1187,8 +1165,8 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player) || respawnEnabled == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_r...");
 
-            if (CommandCooldown(player))
-                return;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             if (playerTimers[player.Slot].IsReplaying)
             {
@@ -1208,11 +1186,7 @@ namespace SharpTimer
                 if (stageTriggers.Count != 0) playerTimers[player.Slot].StageVelos!.Clear(); //remove previous stage times if the map has stages
                 RespawnPlayer(player);
             }
-            else
-            {
-                playerTimers[player.Slot].TicksSinceLastCmd = 0;
-                RespawnPlayer(player);
-            }
+            else RespawnPlayer(player);
         }
 
         [ConsoleCommand("css_end", "Teleports you to end")]
@@ -1220,15 +1194,12 @@ namespace SharpTimer
         public void EndPlayerCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsAllowedPlayer(player) || respawnEndEnabled == false) return;
+
             SharpTimerDebug($"{player!.PlayerName} calling css_end...");
 
-            if (CommandCooldown(player))
-                return;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
-            if (ReplayCheck(player))
-                return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
             playerTimers[player.Slot].IsTimerRunning = false;
             playerTimers[player.Slot].TimerTicks = 0;
             playerTimers[player.Slot].IsBonusTimerRunning = false;
@@ -1245,13 +1216,12 @@ namespace SharpTimer
             if (enableNoclip == false) return;
             SharpTimerDebug($"{player!.PlayerName} calling css_noclip...");
 
-            if (ReplayCheck(player))
-                return;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             if (IsTimerBlocked(player))
                 return;
 
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
             playerTimers[player.Slot].IsTimerRunning = false;
             playerTimers[player.Slot].TimerTicks = 0;
             playerTimers[player.Slot].IsBonusTimerRunning = false;
@@ -1281,10 +1251,9 @@ namespace SharpTimer
         {
             SharpTimerDebug($"{player!.PlayerName} calling css_adminnoclip...");
 
-            if (ReplayCheck(player))
-                return;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
             playerTimers[player.Slot].IsTimerRunning = false;
             playerTimers[player.Slot].TimerTicks = 0;
             playerTimers[player.Slot].IsBonusTimerRunning = false;
@@ -1336,7 +1305,9 @@ namespace SharpTimer
 
             SharpTimerDebug($"{player!.PlayerName} calling css_style...");
 
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
+
             playerTimers[player.Slot].IsTimerRunning = false;
             playerTimers[player.Slot].TimerTicks = 0;
             playerTimers[player.Slot].IsBonusTimerRunning = false;
@@ -1461,7 +1432,11 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void RanksCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player)) return;
+            if (player == null || !IsAllowedPlayer(player))
+                return;
+
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             if (!rankEnabled)
             {
@@ -1556,10 +1531,11 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void RestartCurrentStageCmd(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player)) return;
-
-            if (CommandCooldown(player))
+            if (player == null || !IsAllowedPlayer(player))
                 return;
+
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             SharpTimerDebug($"{player!.PlayerName} calling css_rs...");
 
@@ -1584,8 +1560,6 @@ namespace SharpTimer
 
             try
             {
-                playerTimers[player.Slot].TicksSinceLastCmd = 0;
-
                 if (stageTriggerPoses.TryGetValue(currStage, out Vector? stagePos) && stagePos != null)
                 {
                     if (jumpStatsEnabled) InvalidateJS(player.Slot);
@@ -1607,16 +1581,16 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void ForceStopTimer(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player)) return;
-            SharpTimerDebug($"{player!.PlayerName} calling css_timer...");
-
-            if (CommandCooldown(player))
+            if (player == null || !IsAllowedPlayer(player))
                 return;
+
+            SharpTimerDebug($"{player.PlayerName} calling css_timer...");
+
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             if (ReplayCheck(player))
                 return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
             // Remove checkpoints for the current player
             playerCheckpoints.Remove(player.Slot);
@@ -1641,10 +1615,8 @@ namespace SharpTimer
             SharpTimerDebug($"{player.PlayerName} css_timer to {playerTimers[player.Slot].IsTimerBlocked}");
         }
 
-        public void QuietStopTimer(CCSPlayerController? player)
+        public void QuietStopTimer(CCSPlayerController player)
         {
-            playerTimers[player!.Slot].TicksSinceLastCmd = 0;
-
             // Remove checkpoints for the current player
             playerCheckpoints.Remove(player.Slot);
 
@@ -1664,7 +1636,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
         public void STVerCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player))
+            if (player == null || !IsAllowedPlayer(player))
             {
                 SharpTimerConPrint($"This server is running SharpTimer v{ModuleVersion}");
                 SharpTimerConPrint($"OS: {RuntimeInformation.OSDescription}");
@@ -1672,10 +1644,8 @@ namespace SharpTimer
                 return;
             }
 
-            if (CommandCooldown(player))
-                return;
-
-            playerTimers[player!.Slot].TicksSinceLastCmd = 0;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             PrintToChat(player, Localizer["info_version", ModuleVersion]);
             PrintToChat(player, Localizer["info_os", RuntimeInformation.OSDescription]);
@@ -1686,17 +1656,17 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
         public void HideCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player))
+            if (player == null || !IsAllowedPlayer(player))
                 return;
 
-            if (CommandCooldown(player))
-                return;
-            
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
+
             var playerName = player!.PlayerName;
             var playerSlot = player.Slot;
             var steamID = player.SteamID.ToString();
 
-            playerTimers[player!.Slot].TicksSinceLastCmd = 0;
+
             playerTimers[player!.Slot].HidePlayers = !playerTimers[player!.Slot].HidePlayers;
             
             _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, playerSlot));
@@ -1749,19 +1719,19 @@ namespace SharpTimer
         [CommandHelper(minArgs: 1, usage: "[name]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void GoToPlayer(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player) || goToEnabled == false) return;
+            if (player == null || !IsAllowedPlayer(player) || goToEnabled == false)
+                return;
+
             SharpTimerDebug($"{player!.PlayerName} calling css_goto...");
 
-            if (CommandCooldown(player))
-                return;
+            if (CommandCooldown(player)) return;
+            else CommandAddCooldown(player);
 
             if (ReplayCheck(player))
                 return;
 
             if (IsTimerBlocked(player))
                 return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
             var name = command.GetArg(1);
             bool isPlayerFound = false;
@@ -1834,8 +1804,6 @@ namespace SharpTimer
 
             if (!CanCheckpoint(player))
                 return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
             
             if(playerTimers[player.Slot].currentStyle == 12)
                 playerTimers[player.Slot].PrevTimerTicks.Add(playerTimers[player.Slot].TimerTicks);
@@ -1878,7 +1846,9 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void TpPlayerCPCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player) || cpEnabled == false) return;
+            if (player == null || !IsAllowedPlayer(player) || cpEnabled == false)
+                return;
+
             SharpTimerDebug($"{player!.PlayerName} calling css_tp...");
 
             if (ReplayCheck(player))
@@ -1887,15 +1857,13 @@ namespace SharpTimer
             TpPlayerCP(player, command);
         }
 
-        public void TpPlayerCP(CCSPlayerController? player, CommandInfo command)
+        public void TpPlayerCP(CCSPlayerController player, CommandInfo command)
         {
             if (ReplayCheck(player))
                 return;
 
             if (!CanCheckpoint(player))
                 return;
-
-            playerTimers[player!.Slot].TicksSinceLastCmd = 0;
             
             if(playerTimers[player.Slot].currentStyle == 12)
                 playerTimers[player.Slot].TimerTicks = playerTimers[player.Slot].PrevTimerTicks[playerTimers[player.Slot].CheckpointIndex];
@@ -1947,8 +1915,6 @@ namespace SharpTimer
 
             if (!CanCheckpoint(player))
                 return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
             if (!playerCheckpoints.TryGetValue(player.Slot, out List<PlayerCheckpoint>? checkpoints) || checkpoints.Count == 0)
             {
@@ -2004,8 +1970,6 @@ namespace SharpTimer
 
             if (!CanCheckpoint(player))
                 return;
-
-            playerTimers[player.Slot].TicksSinceLastCmd = 0;
 
             if (!playerCheckpoints.TryGetValue(player.Slot, out List<PlayerCheckpoint>? checkpoints) || checkpoints.Count == 0)
             {

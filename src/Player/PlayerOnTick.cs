@@ -50,7 +50,6 @@ namespace SharpTimer
                         if (!IsAllowedPlayer(player))
                         {
                             InvalidateTimer(player);
-                            playerTimer.TicksSinceLastCmd++;
                             continue;
                         }
 
@@ -271,8 +270,8 @@ namespace SharpTimer
                             }
                         }
 
-                        if (playerTimer.TicksSinceLastCmd < cmdCooldown) playerTimer.TicksSinceLastCmd++;
-                        if (playerTimer.TicksSinceLastRankUpdate < 511) playerTimer.TicksSinceLastRankUpdate++;
+                        if (playerTimer.TicksSinceLastRankUpdate < 511)
+                            playerTimer.TicksSinceLastRankUpdate++;
 
                         if (currentTick % (64 / hudTickrate) != 0) continue;
 

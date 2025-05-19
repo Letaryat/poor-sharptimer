@@ -230,7 +230,7 @@ namespace SharpTimer
         public bool removeCrouchFatigueEnabled = true;
         public bool goToEnabled = false;
         public bool fovChangerEnabled = true;
-        public int cmdCooldown = 64;
+        public float cmdCooldown = 0.5f;
         public float fakeTriggerHeight = 50;
         public bool Box3DZones = false;
         public bool forcePlayerSpeedEnabled = false;

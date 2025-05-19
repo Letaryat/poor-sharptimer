@@ -175,7 +175,7 @@ namespace SharpTimer
         public bool HideJumpStats { get; set; }
         public int PlayerFov { get; set; }
         public int TimesConnected { get; set; }
-        public int TicksSinceLastCmd { get; set; }
+        public DateTime CmdCooldown { get; set; }
         public int TicksSinceLastRankUpdate { get; set; }
 
         //super special stuff for testers
