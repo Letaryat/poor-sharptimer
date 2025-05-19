@@ -27,6 +27,7 @@ namespace SharpTimer
             try
             {     
                 int currentTick = Server.TickCount;  
+
                 foreach (CCSPlayerController player in connectedPlayers.Values)
                 {
                     if (player == null || !player.IsValid) continue;
@@ -58,34 +59,32 @@ namespace SharpTimer
                         bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
                         bool isTimerBlocked = playerTimer.IsTimerBlocked;
                         int timerTicks = playerTimer.TimerTicks;
+
                         PlayerButtons? playerButtons = player.Buttons;
                         Vector playerSpeed = player.PlayerPawn!.Value!.AbsVelocity;
                         var hasWeapons = player.PlayerPawn?.Value?.WeaponServices?.MyWeapons?.Count > 0;
                         
-                        if(connectedAFKPlayers.ContainsKey(player.Slot))
+                        if (connectedAFKPlayers.ContainsKey(player.Slot))
                         {
-                            if(!playerSpeed.IsZero())
+                            if (!playerSpeed.IsZero())
                             {
                                 connectedAFKPlayers.Remove(player.Slot);
                                 playerTimer.AFKWarned = false;
                                 playerTimer.AFKTicks = 0;
                             }
-                            else
-                            {
-                                continue;
-                            }
+                            else continue;
                         }
 
-                        if(playerTimer.AFKTicks >= afkSeconds*48 && !playerTimer.AFKWarned && afkWarning)
+                        if (playerTimer.AFKTicks >= afkSeconds*48 && !playerTimer.AFKWarned && afkWarning)
                         {
                             player.PrintToChat($"{Localizer["prefix"]} {Localizer["afk_message"]}");
                             playerTimer.AFKWarned = true;
                         }
                             
-                        if(playerTimer.AFKTicks >= afkSeconds*64)
+                        if (playerTimer.AFKTicks >= afkSeconds*64)
                             connectedAFKPlayers[player.Slot] = connectedPlayers[player.Slot];
 
-                        if(playerSpeed.IsZero())
+                        if (playerSpeed.IsZero())
                             playerTimer.AFKTicks++;
                         else
                             playerTimer.AFKTicks = 0;
@@ -93,9 +92,7 @@ namespace SharpTimer
                         if (!startzoneJumping && playerTimers[player.Slot].inStartzone)
                         {
                             if((playerButtons & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.OldJumpPressed)
-                            {
                                 player!.Pawn.Value!.AbsVelocity.Z = 0f;
-                            }
                         }
 
                         if (isTimerRunning)
@@ -104,9 +101,7 @@ namespace SharpTimer
                             if (useStageTriggers) playerTimer.StageTicks++;
                         }
                         else if (isBonusTimerRunning)
-                        {
                             playerTimer.BonusTimerTicks++;
-                        }
 
                         if (playerTimer.HideWeapon)
                         {
@@ -135,42 +130,40 @@ namespace SharpTimer
                             }
                         }
                         
-                        if(playerTimer.currentStyle.Equals(4)) //check if 400vel
+                        if (playerTimer.currentStyle.Equals(4)) //check if 400vel
                         {
                             SetVelocity(player, player!.Pawn.Value!.AbsVelocity, 400);
                         }
 
-                        if(playerTimer.currentStyle.Equals(10) && !player.PlayerPawn!.Value.GroundEntity.IsValid) //check if ff
-                        {
-                            if (currentTick % 2 != 0) IncreaseVelocity(player);
-                        }
+                        if (playerTimer.currentStyle.Equals(10) && !player.PlayerPawn!.Value.GroundEntity.IsValid && currentTick % 2 != 0) //check if ff
+                            IncreaseVelocity(player);
 
                         if (isOnBhopBlock)
                         {
                             playerTimer.TicksOnBhopBlock++;
+
                             if (playerTimer.TicksOnBhopBlock > bhopBlockTime)
-                            {
                                 RespawnPlayer(player);
-                            }
                         }
 
                         if (useTriggers == false && isTimerBlocked == false)
-                        {
                             CheckPlayerCoords(player, playerSpeed);
-                        }
+ 
                         if (useTriggers == true && isTimerBlocked == false && useTriggersAndFakeZones == true)
-                        {
                             CheckPlayerCoords(player, playerSpeed);
-                        }
 
-                        if (jumpStatsEnabled == true) OnJumpStatTick(player, playerSpeed, player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!, player.PlayerPawn?.Value.EyeAngles!, playerButtons);
-                        if (StrafeHudEnabled == true) OnSyncTick(player, playerButtons, player.PlayerPawn?.Value.EyeAngles!);
-                        if(StrafeHudEnabled == true && playerTimers[player.Slot].inStartzone && playerTimer.Rotation.Count > 0) 
+                        if (jumpStatsEnabled == true)
+                            OnJumpStatTick(player, playerSpeed, player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin!, player.PlayerPawn?.Value.EyeAngles!, playerButtons);
+
+                        if (StrafeHudEnabled == true)
+                            OnSyncTick(player, playerButtons, player.PlayerPawn?.Value.EyeAngles!);
+
+                        //reset sync in startzone
+                        if (StrafeHudEnabled == true && playerTimers[player.Slot].inStartzone && playerTimer.Rotation.Count > 0) 
                         { 
                             playerTimer.Sync = 100.00f;
                             playerTimer.Rotation.Clear();
-                        }//reset sync in startzone
-
+                        }
 
                         if (forcePlayerSpeedEnabled == true)
                         {
@@ -235,52 +228,50 @@ namespace SharpTimer
                         if (removeCrouchFatigueEnabled == true)
                         {
                             if (playerTimer.MovementService != null && playerTimer.MovementService.DuckSpeed != 7.0f)
-                            {
                                 playerTimer.MovementService.DuckSpeed = 7.0f;
-                            }
                         }
 
                         if (((PlayerFlags)player.Pawn.Value.Flags & PlayerFlags.FL_ONGROUND) != PlayerFlags.FL_ONGROUND)
                         {
                             playerTimer.TicksInAir++;
+
                             if (playerTimer.TicksInAir == 1)
-                            {
                                 playerTimer.PreSpeed = $"{playerSpeed.X} {playerSpeed.Y} {playerSpeed.Z}";
-                            }
                         }
-                        else
-                        {
-                            playerTimer.TicksInAir = 0;
-                        }
+                        else playerTimer.TicksInAir = 0;
 
                         if (enableReplays)
                         {
                             if (!playerTimer.IsReplaying && (timerTicks > 0 || playerTimer.BonusTimerTicks > 0) && playerTimer.IsRecordingReplay && !isTimerBlocked)
-                            {
                                 ReplayUpdate(player, timerTicks);
-                            }
 
                             if (playerTimer.IsReplaying && !playerTimer.IsRecordingReplay && isTimerBlocked)
-                            {
                                 ReplayPlay(player);
-                            }
-                            else
+
+                            else if
+                                (!isTimerBlocked &&
+                                (player.PlayerPawn!.Value.MoveType.HasFlag(MoveType_t.MOVETYPE_OBSERVER) ||
+                                player.PlayerPawn.Value.ActualMoveType.HasFlag(MoveType_t.MOVETYPE_OBSERVER)))
                             {
-                                if (!isTimerBlocked && (player.PlayerPawn!.Value.MoveType.HasFlag(MoveType_t.MOVETYPE_OBSERVER) || player.PlayerPawn.Value.ActualMoveType.HasFlag(MoveType_t.MOVETYPE_OBSERVER))) SetMoveType(player, MoveType_t.MOVETYPE_WALK);
+                                SetMoveType(player, MoveType_t.MOVETYPE_WALK);
                             }
                         }
 
                         if (playerTimer.TicksSinceLastRankUpdate < 511)
                             playerTimer.TicksSinceLastRankUpdate++;
 
-                        if (currentTick % (64 / hudTickrate) != 0) continue;
+                        if (currentTick % (64 / hudTickrate) != 0)
+                            continue;
 
                         bool keyEnabled = !playerTimer.HideKeys && keysOverlayEnabled;
                         bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;
 
-                        string formattedPlayerVel = Math.Round(use2DSpeed ? playerSpeed.Length2D()
-                                                                            : playerSpeed.Length())
-                                                                            .ToString("0000");
+                        string formattedPlayerVel =
+                            Math.Round(use2DSpeed
+                                ? playerSpeed.Length2D()
+                                : playerSpeed.Length())
+                                .ToString("0000");
+
                         int playerVel = int.Parse(formattedPlayerVel);
                         
                         string secondaryHUDcolorDynamic = "LimeGreen";
@@ -313,14 +304,12 @@ namespace SharpTimer
                         string syncLine = $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> <font class='fontSize-l horizontal-center color='{secondaryHUDcolor}'>{playerTimer.Sync:F2}%</font> <br>";//2f
 
                         string infoLine = "";
+
                         if (playerTimer.CurrentZoneInfo.InBonusStartZone)
-                        {
                             infoLine = GetBonusInfoLine(playerTimer);
-                        }
+
                         else
-                        {
                             infoLine = GetMainMapInfoLine(playerTimer);
-                        }
 
                         string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-light-mono' color='{tertiaryHUDcolor}'>{((playerButtons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                                 $"{((playerButtons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
@@ -340,9 +329,7 @@ namespace SharpTimer
                                             ((playerTimer.IsReplaying && playerTimer.VipReplayGif != "x") ? playerTimer.VipReplayGif : "");
 
                         if (hudEnabled || keyEnabled)
-                        {
                             player.PrintToCenterHtml(hudContent);
-                        }
                         
                         playerTimer.MovementService!.OldJumpPressed = false;
                     }
@@ -357,18 +344,18 @@ namespace SharpTimer
         private string GetMainMapInfoLine(PlayerTimerInfo playerTimer)
         {
            return !playerTimer.IsReplaying
-                        ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
 
-                          $"{playerTimer.CachedPB} " +
-                          $"({playerTimer.CachedMapPlacement})" +
-                          $"{(RankIconsEnabled ? $" |</font> <img src='{playerTimer.RankHUDIcon}'><font class='fontSize-s stratum-bold-italic' color='gray'>" : "")}" +
-                          $"{(enableStyles ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")}" +
-                          $"{((MapTierHudEnabled && currentMapTier != null) ? $" | Tier: {currentMapTier}" : "")}" +
-                          $"{((MapTypeHudEnabled && currentMapType != null) ? $" | {currentMapType}" : "")}" +
-                          $"{((MapNameHudEnabled && currentMapType == null && currentMapTier == null) ? $" | {currentMapName}" : "")}" +
-                          $"</font>"
+                    $"{playerTimer.CachedPB} " +
+                    $"({playerTimer.CachedMapPlacement})" +
+                    $"{(RankIconsEnabled ? $" |</font> <img src='{playerTimer.RankHUDIcon}'><font class='fontSize-s stratum-bold-italic' color='gray'>" : "")}" +
+                    $"{(enableStyles ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")}" +
+                    $"{((MapTierHudEnabled && currentMapTier != null) ? $" | Tier: {currentMapTier}" : "")}" +
+                    $"{((MapTypeHudEnabled && currentMapType != null) ? $" | {currentMapType}" : "")}" +
+                    $"{((MapNameHudEnabled && currentMapType == null && currentMapTier == null) ? $" | {currentMapName}" : "")}" +
+                    $"</font>"
 
-                        : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
+                : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
         }
 
         private string GetBonusInfoLine(PlayerTimerInfo playerTimer)
@@ -380,13 +367,13 @@ namespace SharpTimer
                 var cachedBonusInfo = playerTimer.CachedBonusInfo.FirstOrDefault(x => x.Key == currentBonusNumber);
 
                 return !playerTimer.IsReplaying
-                        ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
-                          $"{(cachedBonusInfo.Value != null ? $"{FormatTime(cachedBonusInfo.Value.PbTicks)}" : "Unranked")}" +
-                          $"{(cachedBonusInfo.Value != null ? $" ({cachedBonusInfo.Value.Placement})" : "")}</font>" +
-                          $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
-                          $"{(enableStyles ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")}" +
-                          $" | Bonus #{currentBonusNumber} </font>"
-                        : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
+                    ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                        $"{(cachedBonusInfo.Value != null ? $"{FormatTime(cachedBonusInfo.Value.PbTicks)}" : "Unranked")}" +
+                        $"{(cachedBonusInfo.Value != null ? $" ({cachedBonusInfo.Value.Placement})" : "")}</font>" +
+                        $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
+                        $"{(enableStyles ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")}" +
+                        $" | Bonus #{currentBonusNumber} </font>"
+                    : $" <font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.ReplayHUDString}</font>";
             }
             else
             {
@@ -396,7 +383,9 @@ namespace SharpTimer
 
         public void SpectatorOnTick(CCSPlayerController player)
         {
-            if (!IsAllowedSpectator(player)) return;
+            if (!IsAllowedSpectator(player))
+                return;
+
             try
             {
                 var target = specTargets[player.Pawn.Value!.ObserverServices!.ObserverTarget.Index];
@@ -457,9 +446,7 @@ namespace SharpTimer
                                         ((playerTimer.IsReplaying && playerTimer.VipReplayGif != "x") ? playerTimer.VipReplayGif : "");
 
                     if (hudEnabled || keyEnabled)
-                    {
                         player.PrintToCenterHtml(hudContent);
-                    }
                 }
             }
             catch (Exception ex)
