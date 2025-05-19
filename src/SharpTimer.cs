@@ -226,6 +226,7 @@ namespace SharpTimer
                             catch (Exception ex)
                             {
                                 // playerTimers for requested player does not exist
+                                SharpTimerError(ex.Message);
                             }
                         });
                     }

@@ -642,7 +642,7 @@ namespace SharpTimer
         {
             if (position < 1 || position > sortedRecords.Count)
             {
-                return null;
+                return null!;
             }
 
             var recordsList = sortedRecords.Values.ToList();
@@ -653,7 +653,7 @@ namespace SharpTimer
                     return recordsList[i];
                 }
             }
-            return null; 
+            return null!; 
         }
 
         public async Task<(string, string, string)> GetMapRecordSteamID(int bonusX = 0, int top10 = 0)
@@ -924,7 +924,7 @@ namespace SharpTimer
                         }
                         using (var connection = OpenConnection())
                         {
-                            CheckTablesAsync();
+                            _ = CheckTablesAsync();
                             ExecuteMigrations(connection);
                         }
                         sqlCheck = true;

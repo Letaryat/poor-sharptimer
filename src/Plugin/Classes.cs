@@ -379,7 +379,7 @@ namespace SharpTimer
     {
         public string? map_name { get; set; }
         public string? workshop_id { get; set; }
-        public string steamid { get; set; }
+        public string? steamid { get; set; }
         public string? player_name { get; set; }
         public int timer_ticks { get; set; }
         public string? formatted_time { get; set; }

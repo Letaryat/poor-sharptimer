@@ -122,7 +122,7 @@ namespace SharpTimer
         public async Task<List<PlayerPoints>> GetTopPointsAsync(int limit = 10)
         {
             if (apiKey == "")
-                return null;
+                return null!;
 
             try
             {
@@ -161,19 +161,19 @@ namespace SharpTimer
                             }
                             return player_points;
                         }
-                        return null;
+                        return null!;
                     }
                 }
                 else
                 {
                     SharpTimerError($"Failed to get top points. Status code: {response.StatusCode}; Message: {response.Content}");
-                    return null;
+                    return null!;
                 }
             }
             catch (Exception ex)
             {
                 SharpTimerError($"Error in GetRecordIDAsync: {ex.Message}");
-                return null;
+                return null!;
             }
         }
 
@@ -378,10 +378,10 @@ namespace SharpTimer
         public async Task<Dictionary<int, PlayerRecord>> GetSortedRecordsFromGlobal(int limit = 0, int bonusX = 0, string mapName = "", int style = 0)
         {
             if (apiKey == "")
-                return null;
+                return null!;
 
             if (globalDisabled)
-                return null;
+                return null!;
             
             SharpTimerDebug($"Trying GetSortedRecordsFromGlobal {(bonusX != 0 ? $"bonus {bonusX}" : "")}");
             using (var connection = await OpenConnectionAsync())
@@ -587,6 +587,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
+                SharpTimerError(ex.Message);
                 return false;
             }
         }
@@ -623,6 +624,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
+                 SharpTimerError(ex.Message);
                 return false;
             }
         }

@@ -476,6 +476,7 @@ namespace SharpTimer
             catch(Exception ex)
             {
                 // Suppress trigger_teleport null reference exceptions (the player has likely disconnected)
+                SharpTimerError(ex.Message);
             }
         }
 

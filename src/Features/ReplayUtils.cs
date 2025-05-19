@@ -210,7 +210,7 @@ namespace SharpTimer
             });
         }
 
-        public async Task<string> GetReplayJson(CCSPlayerController player, int playerSlot)
+        public string GetReplayJson(CCSPlayerController player, int playerSlot)
         {
             if (!IsAllowedPlayer(player))
             {

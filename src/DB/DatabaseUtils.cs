@@ -815,7 +815,7 @@ namespace SharpTimer
                                             map_name = currentMapNamee,
                                             style = style,
                                             hash = GetHash(),
-                                            replay_data = await GetReplayJson(player!, player!.Slot)
+                                            replay_data = GetReplayJson(player!, player!.Slot)
                                         };
 
                                         await SubmitReplayAsync(replay_payload);
@@ -921,7 +921,7 @@ namespace SharpTimer
                                             map_name = currentMapNamee,
                                             style = style,
                                             hash = GetHash(),
-                                            replay_data = await GetReplayJson(player!, player!.Slot)
+                                            replay_data = GetReplayJson(player!, player!.Slot)
                                         };
 
                                         await SubmitReplayAsync(replay_payload);
@@ -1403,13 +1403,13 @@ namespace SharpTimer
                 // get player columns
                 int timesConnected = 0;
                 int lastConnected = 0;
-                bool hideTimerHud = false;
+                /*bool hideTimerHud = false;
                 bool hideKeys = false;
                 bool hideJS = false;
                 bool hideWeapon = false;
                 bool hidePlayers = false;
                 bool soundsEnabled = true;
-                int playerFov = 0;
+                int playerFov = 0;*/
                 bool isVip = false;
                 string bigGif = "x";
                 int playerPoints = 0;
@@ -1645,11 +1645,11 @@ namespace SharpTimer
                 // get player columns
                 int timesConnected = 0;
                 int lastConnected = 0;
-                bool hideTimerHud = false;
+                /*bool hideTimerHud = false;
                 bool hideKeys = false;
                 bool hideJS = false;
                 bool soundsEnabled = true;
-                int playerFov = 0;
+                int playerFov = 0;*/
                 bool isVip = false;
                 string bigGif = "x";
                 int playerPoints = 0;

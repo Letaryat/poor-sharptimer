@@ -313,6 +313,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
+                SharpTimerError(ex.Message);
                 return HookResult.Continue;
             }
         }
@@ -361,6 +362,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
+                SharpTimerError(ex.Message);
                 return HookResult.Continue;
             }
         }
