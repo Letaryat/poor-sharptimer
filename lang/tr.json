@@ -141,7 +141,7 @@
   
     //Hata
     "error_savingtime": "Zaman kaydedilirken hata: Oyuncu zamanı 0 tick",
-    "error_stagenotmatchfinalone": "Zaman kaydedilirken hata: Oyuncunun geçerli stage'i son stage ile uyuşmuyor{0}",
+    "error_stagenotmatchfinalone": "Zaman kaydedilirken hata: Oyuncunun geçerli stage'i son stage ile uyuşmuyor",
     "error_checkpointnotmatchfinalone": "Zaman kaydedilirken hata: Oyuncunun geçerli kontrol noktası son kontrol noktası ile uyuşmuyor{0}",
     
     //Yardım konsolu Yerelleştirici

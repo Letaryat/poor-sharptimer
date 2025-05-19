@@ -104,7 +104,7 @@
 	
 	  // Error
   "error_savingtime": "Napaka pri shranjevanju časa: Čas igralca je 0 tics",
-  "error_stagenotmatchfinalone": "Napaka pri shranjevanju časa: Trenutna stopnja igralca se ne ujema z zadnjo {0}",
+  "error_stagenotmatchfinalone": "Napaka pri shranjevanju časa: Trenutna stopnja igralca se ne ujema z zadnjo",
   "error_checkpointnotmatchfinalone": "Napaka pri shranjevanju časa: Trenutna kontrolna točka igralca se ne ujema z zadnjo {0}",
 
   // help console Localizer

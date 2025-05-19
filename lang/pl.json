@@ -111,7 +111,7 @@
   
     // Error
   "error_savingtime": "Błąd zapisywania czasu: Czas gracza wynosi 0 ticks",
-  "error_stagenotmatchfinalone": "Błąd zapisywania czasu: Aktualny etap gracza nie pasuje do ostatniego {0}",
+  "error_stagenotmatchfinalone": "Błąd zapisywania czasu: Aktualny etap gracza nie pasuje do ostatniego",
   "error_checkpointnotmatchfinalone": "Błąd zapisywania czasu: Aktualny punkt kontrolny gracza nie pasuje do ostatniego {0}",
 
   // help console Localizer

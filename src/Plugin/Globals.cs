@@ -13,6 +13,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using System.Globalization;
 using System.Text.Json;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -45,8 +46,10 @@ namespace SharpTimer
         public static JsonSerializerOptions jsonSerializerOptions = new()
         {
             WriteIndented = true,
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
+        public static CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
 
         public string primaryHUDcolor = "green";
         public string secondaryHUDcolor = "orange";
@@ -190,6 +193,7 @@ namespace SharpTimer
         public bool startzoneJumping = true;
         public bool spawnOnRespawnPos = false;
         public bool enableNoclip = false;
+        public bool enableRsOnLinear = false;
 
         public bool enableStyles = true;
         public bool enableStylePoints = true;

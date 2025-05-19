@@ -111,7 +111,7 @@
   
     // Error
   "error_savingtime": "Chyba pri ukladaní času: Čas hráča je 0 tics",
-  "error_stagenotmatchfinalone": "Chyba pri ukladaní času: Aktuálna fáza hráča sa nezhoduje s konečnou {0}",
+  "error_stagenotmatchfinalone": "Chyba pri ukladaní času: Aktuálna fáza hráča sa nezhoduje s konečnou",
   "error_checkpointnotmatchfinalone": "Chyba pri ukladaní času: Aktuálna kontrolná bodka hráča sa nezhoduje s konečnou {0}",
 
   // help console Localizer

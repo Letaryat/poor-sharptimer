@@ -19,6 +19,7 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using System.Drawing;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
@@ -511,9 +512,9 @@ namespace SharpTimer
             var values = vectorString.Split(separator);
 
             if (values.Length == 3 &&
-                float.TryParse(values[0], out float x) &&
-                float.TryParse(values[1], out float y) &&
-                float.TryParse(values[2], out float z))
+                float.TryParse(values[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float x) &&
+                float.TryParse(values[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float y) &&
+                float.TryParse(values[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
             {
                 return new Vector(x, y, z);
             }
@@ -533,9 +534,9 @@ namespace SharpTimer
             var values = qAngleString.Split(separator);
 
             if (values.Length == 3 &&
-                float.TryParse(values[0], out float pitch) &&
-                float.TryParse(values[1], out float yaw) &&
-                float.TryParse(values[2], out float roll))
+                float.TryParse(values[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float pitch) &&
+                float.TryParse(values[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float yaw) &&
+                float.TryParse(values[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float roll))
             {
                 return new QAngle(pitch, yaw, roll);
             }
@@ -1137,7 +1138,7 @@ namespace SharpTimer
                         using JsonDocument? bonusJsonDocument = LoadJsonOnMainThread(bonusdataPaths[bonus]);
                         if (bonusJsonDocument != null)
                         {
-                            var mapInfo = JsonSerializer.Deserialize<MapInfo>(bonusJsonDocument.RootElement.GetRawText());
+                            var mapInfo = JsonSerializer.Deserialize<MapInfo>(bonusJsonDocument.RootElement.GetRawText(), jsonSerializerOptions);
                             SharpTimerDebug($"Map data json found for map: {currentMapName}, bonus {bonus}!");
 
                             if (!string.IsNullOrEmpty(mapInfo!.BonusStartC1) && !string.IsNullOrEmpty(mapInfo.BonusStartC2) && !string.IsNullOrEmpty(mapInfo.BonusEndC1) && !string.IsNullOrEmpty(mapInfo.BonusEndC2) && !string.IsNullOrEmpty(mapInfo.BonusRespawnPos))

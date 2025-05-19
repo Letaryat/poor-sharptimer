@@ -104,7 +104,7 @@
 	
 	// Error
 	"error_savingtime": "Virhe tallentaessa aikaa: Pelaajan aika on 0 tikkiä",
-	"error_stagenotmatchfinalone": "Virhe tallentaessa aikaa: Pelaajan nykyinen vaihe ei vastaa viimeistä vaihetta {0}",
+	"error_stagenotmatchfinalone": "Virhe tallentaessa aikaa: Pelaajan nykyinen vaihe ei vastaa viimeistä vaihetta",
 	"error_checkpointnotmatchfinalone": "Virhe tallentaessa aikaa: Pelaajan nykyinen tarkistuskohta ei vastaa viimeistä tarkistuspistettä {0}",
 
 	// help console Localizer
