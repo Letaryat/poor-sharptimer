@@ -1,5 +1,5 @@
 > [!NOTE]
-> The original creator of SharpTimer is dea_bb, who discontinued support for the project after version 0.2.6. This fork is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
+> The original creator of SharpTimer is [Dea](https://github.com/girlglock), who discontinued support for the project after version 0.2.6. This fork is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
 
 
 
@@ -100,9 +100,9 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 [**Flashing HUD Fix** *(optional but recommended)*](https://github.com/M-archand/CS2FlashingHtmlHudFix)
 
-[**SharpTimer-WallLists** *(optional)*](https://github.com/M-archand/SharpTimer-WallLists)
+[**SharpTimer-WallLists** *(optional)*](https://github.com/SharpTimer/WallLists)
 
-[**SharpTimer-Trails** *(optional)*](https://github.com/M-archand/SharpTimer-Trails)
+[**SharpTimer-Trails** *(optional)*](https://github.com/SharpTimer/Trails)
 
 
 ## Install
@@ -164,15 +164,15 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
     - [x] Jump Bug
     - [ ] Edge Bug
     - [ ] Ladder Jump
-- [ ] Silly Stuff
+- [X] Silly Stuff
   - [x] Color customization
   - [x] Special Tester Gifs
   - [x] Custom Player Gifs
   - [x] Dioscord Webhook
-  - [ ] Strafe Sync Bar on HUD
+  - [X] Strafe Sync Bar on HUD
 
 
 ## Authors:
-[DEA_BB](https://twitter.com/dea_bb)
+[Deana](https://twitter.com/girlglock)
 [Letaryat](https://github.com/Letaryat)
 [rcnoob](https://github.com/rcnoob)
