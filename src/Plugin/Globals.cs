@@ -273,6 +273,7 @@ namespace SharpTimer
         public string srSound = "sounds/ui/panorama/round_report_round_won_01.vsnd";
         public bool srSoundAll = true;
         public bool stageSoundAll = true;
+        public bool soundeventsEnabled = false;
 
         public string? gameDir;
         public string? mySQLpath;

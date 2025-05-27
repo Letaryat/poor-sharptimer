@@ -532,8 +532,7 @@ namespace SharpTimer
                     else
                     {
                         PrintToChatAll(Localizer["new_server_record", playerName]);
-                        if (srSoundAll) SendCommandToEveryone($"play {srSound}");
-                        else PlaySound(player, srSound);
+                        PlaySound(player, srSound, srSoundAll ? true : false);
                     }
                     if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
                 }
@@ -593,8 +592,7 @@ namespace SharpTimer
                         timeDifference = $"[{FormatTimeDifference(newticks, prevSR)}{ChatColors.White}] ";
                     }
                     PrintToChatAll(Localizer["new_stage_server_record", playerName]);
-                    if (stageSoundAll) SendCommandToEveryone($"play {srSound}");
-                    else PlaySound(player, srSound);
+                    PlaySound(player, srSound, stageSoundAll ? true : false);
                     PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
                     //TODO: Discord webhook stage sr
                     //if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
@@ -710,17 +708,6 @@ namespace SharpTimer
             }
         }
 
-        public void SendCommandToEveryone(string command)
-        {
-            Utilities.GetPlayers().ForEach(player =>
-            {
-                if (player is { IsValid: true, IsBot: false } && playerTimers[player.Slot].SoundsEnabled)
-                {
-                    player.ExecuteClientCommand(command);
-                }
-            });
-        }
-
         public static (int, int) GetPlayerTeamCount()
         {
             int ct_count = 0;
@@ -740,10 +727,31 @@ namespace SharpTimer
             return (ct_count, t_count);
         }
 
-        public void PlaySound(CCSPlayerController? player, string Sound)
+        public void PlaySound(CCSPlayerController? player, string sound, bool allPlayers = false)
         {
-            if (playerTimers[player!.Slot].SoundsEnabled != false && IsPlayerOrSpectator(player))
-                player.ExecuteClientCommand($"play {Sound}");
+            if (allPlayers)
+            {
+                foreach (var target in connectedPlayers.Values)
+                {
+                    if (playerTimers[target!.Slot].SoundsEnabled && IsPlayerOrSpectator(target))
+                    {
+                        if (soundeventsEnabled)
+                            target.EmitSound(sound, new(target));
+
+                        else target.ExecuteClientCommand($"play {sound}");
+                    }
+                }
+            }
+            else
+            {
+                if (playerTimers[player!.Slot].SoundsEnabled && IsPlayerOrSpectator(player))
+                {
+                    if (soundeventsEnabled)
+                        player.EmitSound(sound, new(player));
+
+                    else player.ExecuteClientCommand($"play {sound}");
+                }
+            }
         }
 
         public void PrintToChat(CCSPlayerController player, string message)

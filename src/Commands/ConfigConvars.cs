@@ -1437,6 +1437,15 @@ namespace SharpTimer
             soundsEnabledByDefault = bool.TryParse(args, out bool soundsEnabledByDefaultValue) ? soundsEnabledByDefaultValue : args != "0" && soundsEnabledByDefault;
         }
 
+        [ConsoleCommand("sharptimer_enable_soundevents", "Whether to enable soundevents. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSoundEventsEnable(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            soundeventsEnabled = bool.TryParse(args, out bool soundeventsEnabledValue) ? soundeventsEnabledValue : args != "0" && soundeventsEnabledValue;
+        }
+
         [ConsoleCommand("sharptimer_sound_timer", "Defines Timer sound. Default value: sounds/ui/counter_beep.vsnd")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerSoundTimer(CCSPlayerController? player, CommandInfo command)
