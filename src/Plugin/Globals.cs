@@ -20,6 +20,7 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
+using TagsApi;
 
 namespace SharpTimer
 {
@@ -27,7 +28,7 @@ namespace SharpTimer
     {
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
-        public static SharpTimer Instance = new();
+        public ITagApi? TagApi { get; set; }
 
         public IRunCommand? RunCommand;
         private static readonly MemoryFunctionVoid<CCSPlayerPawn, CSPlayerState> StateTransition = new(GameData.GetSignature("StateTransition"));
@@ -44,8 +45,8 @@ namespace SharpTimer
         private Dictionary<uint, CCSPlayerController> specTargets = [];
         private EntityCache? entityCache;
         public Dictionary<int, PlayerRecord>? SortedCachedRecords = [];
-        private static readonly HttpClient httpClient = new();
-        public static JsonSerializerOptions jsonSerializerOptions = new()
+        public readonly HttpClient httpClient = new();
+        public JsonSerializerOptions jsonSerializerOptions = new()
         {
             WriteIndented = true,
             PropertyNameCaseInsensitive = true,

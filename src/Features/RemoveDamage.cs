@@ -24,9 +24,16 @@ namespace SharpTimer
 {
     public class RemoveDamage
     {
-        private static readonly SharpTimer Plugin = SharpTimer.Instance;
+        private readonly SharpTimer Plugin;
+        private readonly Utils Utils;
 
-        public static void Hook()
+        public RemoveDamage(SharpTimer plugin)
+        {
+            Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
+            Utils = plugin.Utils ?? throw new ArgumentNullException(nameof(plugin.Utils));
+        }
+
+        public void Hook()
         {
             Utils.LogDebug("Hook RemoveDamage");
 
@@ -52,7 +59,7 @@ namespace SharpTimer
             }
         }
 
-        public static void Unhook()
+        public void Unhook()
         {
             Utils.LogDebug("Unhook RemoveDamage");
 
@@ -76,7 +83,7 @@ namespace SharpTimer
             }
         }
 
-        private static HookResult OnTakeDamage(DynamicHook hook)
+        private HookResult OnTakeDamage(DynamicHook hook)
         {
             var ent = hook.GetParam<CEntityInstance>(0);
             var info = hook.GetParam<CTakeDamageInfo>(1);
@@ -92,7 +99,7 @@ namespace SharpTimer
                 return HookResult.Continue;
         }
 
-        private static HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
+        private HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
         {
             if (Plugin.disableDamage == true)
             {

@@ -20,39 +20,30 @@ using CounterStrikeSharp.API.Modules.Utils;
 using System.Drawing;
 using System.Globalization;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 
 namespace SharpTimer
 {
     public class Utils
     {
-        private static readonly SharpTimer Plugin = SharpTimer.Instance;
-        private static IStringLocalizer Localizer = Plugin.Localizer;
+        private readonly SharpTimer Plugin;
+        private readonly ILogger Logger;
+        private readonly IStringLocalizer Localizer;
 
-        private static string? gameDir = Plugin.gameDir;
-        private static string? currentMapName = Plugin.currentMapName;
-        private static int? currentMapTier = Plugin.currentMapTier;
-        private static string? currentMapType = Plugin.currentMapType;
-
-        private static float fakeTriggerHeight = Plugin.fakeTriggerHeight;
-        private static bool Box3DZones = Plugin.Box3DZones;
-        private static bool enableReplays = Plugin.enableReplays;
+        public Utils(SharpTimer plugin)
+        {
+            Plugin = plugin ?? throw new ArgumentNullException(nameof(plugin));
+            Logger = plugin.Logger ?? throw new ArgumentNullException(nameof(plugin.Logger));
+            Localizer = plugin.Localizer ?? throw new ArgumentNullException(nameof(plugin.Localizer));
+        }
 
         private delegate nint CNetworkSystemUpdatePublicIp(nint a1);
-        private static CNetworkSystemUpdatePublicIp? _networkSystemUpdatePublicIp;
-        private static readonly HttpClient httpClient = new();
-        public static JsonSerializerOptions jsonSerializerOptions = new()
-        {
-            WriteIndented = true,
-            PropertyNameCaseInsensitive = true,
-            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        };
+        private CNetworkSystemUpdatePublicIp? _networkSystemUpdatePublicIp;
 
-        public static async Task<(bool IsLatest, string LatestVersion)> IsLatestVersion()
+        public async Task<(bool IsLatest, string LatestVersion)> IsLatestVersion()
         {
             try
             {
@@ -60,12 +51,12 @@ namespace SharpTimer
                 var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
                 request.Headers.Add("User-Agent", "request");
 
-                HttpResponseMessage response = await httpClient.SendAsync(request);
+                HttpResponseMessage response = await Plugin.httpClient.SendAsync(request);
 
                 if (response.IsSuccessStatusCode)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    var options = jsonSerializerOptions;
+                    var options = Plugin.jsonSerializerOptions;
                     var releaseInfo = JsonSerializer.Deserialize<Dictionary<string, object>>(json, options);
 
                     string latestVersion = releaseInfo!["name"].ToString()!;
@@ -85,7 +76,7 @@ namespace SharpTimer
             }
         }
 
-        public static async void CheckForUpdate()
+        public async void CheckForUpdate()
         {
             try
             {
@@ -110,7 +101,7 @@ namespace SharpTimer
             }
         }
 
-        public static string ReplaceVars(string message)
+        public string ReplaceVars(string message)
         {
             var replacements = new Dictionary<string, string>
             {
@@ -150,22 +141,23 @@ namespace SharpTimer
             return message;
         }
 
-        public static void LogDebug(string msg)
+        public void LogDebug(string msg)
         {
-            if (Plugin.enableDebug == true) Plugin.Logger.LogDebug($"\u001b[33m[LogDebug] \u001b[37m{msg}");
+            if (Plugin.enableDebug == true)
+                Plugin.Logger.LogInformation($"\u001b[33m[LogDebug] \u001b[37m{msg}");
         }
 
-        public static void LogError(string msg)
+        public void LogError(string msg)
         {
             Plugin.Logger.LogError($"\u001b[31m[LogError] \u001b[37m{msg}");
         }
 
-        public static void ConPrint(string msg)
+        public void ConPrint(string msg)
         {
             Plugin.Logger.LogInformation($"\u001b[36m[SharpTimer] \u001b[37m{msg}");
         }
 
-        public static string FormatTime(int ticks)
+        public string FormatTime(int ticks)
         {
             TimeSpan timeSpan = TimeSpan.FromSeconds(ticks / 64.0);
 
@@ -180,7 +172,7 @@ namespace SharpTimer
             return $"{totalMinutes:D1}:{timeSpan.Seconds:D2}.{milliseconds}";
         }
 
-        public static string FormatTimeDifference(int currentTicks, int previousTicks, bool noColor = false)
+        public string FormatTimeDifference(int currentTicks, int previousTicks, bool noColor = false)
         {
             int differenceTicks = previousTicks - currentTicks;
             string sign = (differenceTicks > 0) ? "-" : "+";
@@ -200,7 +192,7 @@ namespace SharpTimer
             return $"{(noColor ? "" : $"{signColor}")}{sign}{totalDifferenceMinutes:D1}:{secondsWithMilliseconds}";
         }
 
-        public static string FormatSpeedDifferenceFromString(string currentSpeed, string previousSpeed, bool noColor = false)
+        public string FormatSpeedDifferenceFromString(string currentSpeed, string previousSpeed, bool noColor = false)
         {
             if (int.TryParse(currentSpeed, out int currentSpeedInt) && int.TryParse(previousSpeed, out int previousSpeedInt))
             {
@@ -216,7 +208,7 @@ namespace SharpTimer
             }
         }
 
-        public static string ParseColorToSymbol(string input)
+        public string ParseColorToSymbol(string input)
         {
             Dictionary<string, string> colorNameSymbolMap = new(StringComparer.OrdinalIgnoreCase)
              {
@@ -248,7 +240,7 @@ namespace SharpTimer
             return "\u0010";
         }
 
-        static bool IsHexColorCode(string input)
+        private bool IsHexColorCode(string input)
         {
             if (input.StartsWith("#") && (input.Length == 7 || input.Length == 9))
             {
@@ -270,7 +262,7 @@ namespace SharpTimer
             return false;
         }
 
-        static string ParseHexToSymbol(string hexColorCode)
+        private string ParseHexToSymbol(string hexColorCode)
         {
             Color color = ColorTranslator.FromHtml(hexColorCode);
 
@@ -307,7 +299,7 @@ namespace SharpTimer
             return "";
         }
 
-        static string FindClosestColor(Color targetColor, IEnumerable<string> colorHexCodes)
+        private string FindClosestColor(Color targetColor, IEnumerable<string> colorHexCodes)
         {
             double minDistance = double.MaxValue;
             string? closestColor = null;
@@ -327,7 +319,7 @@ namespace SharpTimer
             return closestColor!;
         }
 
-        static double ColorDistance(Color color1, Color color2)
+        private double ColorDistance(Color color1, Color color2)
         {
             int rDiff = color1.R - color2.R;
             int gDiff = color1.G - color2.G;
@@ -336,7 +328,7 @@ namespace SharpTimer
             return Math.Sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
         }
 
-        public static void DrawLaserBetween(Vector startPos, Vector endPos, string _color = "")
+        public void DrawLaserBetween(Vector startPos, Vector endPos, string _color = "")
         {
             string beamColor;
             if (Plugin.beamColorOverride == true)
@@ -376,15 +368,15 @@ namespace SharpTimer
             LogDebug($"Beam Spawned at S:{startPos} E:{beam.EndPos}");
         }
 
-        public static void DrawWireframe3D(Vector corner1, Vector corner8, string _color)
+        public void DrawWireframe3D(Vector corner1, Vector corner8, string _color)
         {
             Vector corner2 = new(corner1.X, corner8.Y, corner1.Z);
             Vector corner3 = new(corner8.X, corner8.Y, corner1.Z);
             Vector corner4 = new(corner8.X, corner1.Y, corner1.Z);
 
-            Vector corner5 = new(corner8.X, corner1.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
-            Vector corner6 = new(corner1.X, corner1.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
-            Vector corner7 = new(corner1.X, corner8.Y, corner8.Z + (Box3DZones ? fakeTriggerHeight : 0));
+            Vector corner5 = new(corner8.X, corner1.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            Vector corner6 = new(corner1.X, corner1.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            Vector corner7 = new(corner1.X, corner8.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
             if (Plugin.Box3DZones) corner8 = new(corner8.X, corner8.Y, corner8.Z + Plugin.fakeTriggerHeight);
 
             //top square
@@ -406,7 +398,7 @@ namespace SharpTimer
             DrawLaserBetween(corner4, corner5, _color);
         }
 
-        public static bool IsVectorInsideBox(Vector playerVector, Vector corner1, Vector corner2)
+        public bool IsVectorInsideBox(Vector playerVector, Vector corner1, Vector corner2)
         {
             float minX = Math.Min(corner1.X, corner2.X);
             float minY = Math.Min(corner1.Y, corner2.Y);
@@ -414,14 +406,14 @@ namespace SharpTimer
 
             float maxX = Math.Max(corner1.X, corner2.X);
             float maxY = Math.Max(corner1.Y, corner2.Y);
-            float maxZ = Math.Max(corner1.Z, corner2.Z + fakeTriggerHeight);
+            float maxZ = Math.Max(corner1.Z, corner2.Z + Plugin.fakeTriggerHeight);
 
             return playerVector.X >= minX && playerVector.X <= maxX &&
                    playerVector.Y >= minY && playerVector.Y <= maxY &&
                    playerVector.Z >= minZ && playerVector.Z <= maxZ;
         }
 
-        public static Vector CalculateMiddleVector(Vector corner1, Vector corner2)
+        public Vector CalculateMiddleVector(Vector corner1, Vector corner2)
         {
             if (corner1 == null || corner2 == null)
             {
@@ -434,7 +426,7 @@ namespace SharpTimer
             return new Vector(middleX, middleY, middleZ);
         }
 
-        public static Vector ParseVector(string vectorString)
+        public Vector ParseVector(string vectorString)
         {
             if (string.IsNullOrWhiteSpace(vectorString))
             {
@@ -456,7 +448,7 @@ namespace SharpTimer
             return new Vector(0, 0, 0);
         }
 
-        public static QAngle ParseQAngle(string qAngleString)
+        public QAngle ParseQAngle(string qAngleString)
         {
             if (string.IsNullOrWhiteSpace(qAngleString))
             {
@@ -478,7 +470,7 @@ namespace SharpTimer
             return new QAngle(0, 0, 0);
         }
 
-        public static double Distance(Vector vector1, Vector vector2)
+        public double Distance(Vector vector1, Vector vector2)
         {
             if (vector1 == null || vector2 == null)
             {
@@ -492,7 +484,7 @@ namespace SharpTimer
             return Math.Sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
         }
 
-        public static double Distance2D(Vector vector1, Vector vector2)
+        public double Distance2D(Vector vector1, Vector vector2)
         {
             if (vector1 == null || vector2 == null)
             {
@@ -505,7 +497,7 @@ namespace SharpTimer
             return Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
         }
 
-        private static Vector Normalize(Vector vector)
+        private Vector Normalize(Vector vector)
         {
             float magnitude = (float)Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z);
 
@@ -519,7 +511,7 @@ namespace SharpTimer
             }
         }
 
-        public static bool IsVectorHigherThan(Vector vector1, Vector vector2)
+        public bool IsVectorHigherThan(Vector vector1, Vector vector2)
         {
             if (vector1 == null || vector2 == null)
             {
@@ -533,7 +525,7 @@ namespace SharpTimer
         {
             string? currentMapNamee;
             if (string.IsNullOrEmpty(mapName))
-                currentMapNamee = bonusX == 0 ? $"{currentMapName!}.json" : $"{currentMapName}_bonus{bonusX}.json";
+                currentMapNamee = bonusX == 0 ? $"{Plugin.currentMapName!}.json" : $"{Plugin.currentMapName}_bonus{bonusX}.json";
             else
                 currentMapNamee = mapName;
 
@@ -572,7 +564,7 @@ namespace SharpTimer
             return sortedRecords;
         }
 
-        public static PlayerRecord GetRecordByPosition(Dictionary<string, PlayerRecord> sortedRecords, int position)
+        public PlayerRecord GetRecordByPosition(Dictionary<string, PlayerRecord> sortedRecords, int position)
         {
             if (position < 1 || position > sortedRecords.Count)
             {
@@ -590,15 +582,15 @@ namespace SharpTimer
             return null!; 
         }
 
-        public static async Task<(int? Tier, string? Type)> FindMapInfoFromHTTP(string url, string mapname = "")
+        public async Task<(int? Tier, string? Type)> FindMapInfoFromHTTP(string url, string mapname = "")
         {
             try
             {
                 if (mapname == "")
-                    mapname = currentMapName!;
-                LogDebug($"Trying to fetch remote_data for {currentMapName} from {url}");
+                    mapname = Plugin.currentMapName!;
+                LogDebug($"Trying to fetch remote_data for {Plugin.currentMapName} from {url}");
 
-                var response = await httpClient.GetStringAsync(url);
+                var response = await Plugin.httpClient.GetStringAsync(url);
 
                 using (var jsonDocument = JsonDocument.Parse(response))
                 {
@@ -627,18 +619,18 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                LogError($"Error Getting Remote Data for {currentMapName}: {ex.Message}");
+                LogError($"Error Getting Remote Data for {Plugin.currentMapName}: {ex.Message}");
                 return (null, null);
             }
         }
 
-        public static async Task<(int? Tier, string? Type)> FindMapInfoFromLocal(string path, string mapname = "")
+        public async Task<(int? Tier, string? Type)> FindMapInfoFromLocal(string path, string mapname = "")
         {
             try
             {
                 if (mapname == "")
-                    mapname = currentMapName!;
-                LogDebug($"Trying to fetch local_data for {currentMapName} from {path}");
+                    mapname = Plugin.currentMapName!;
+                LogDebug($"Trying to fetch local_data for {Plugin.currentMapName} from {path}");
 
                 using (var jsonDocument = await LoadJson(path))
                 {
@@ -668,12 +660,12 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                LogError($"Error Getting local_data for {currentMapName}: {ex.Message}");
+                LogError($"Error Getting local_data for {Plugin.currentMapName}: {ex.Message}");
                 return (null, null);
             }
         }
 
-        public static async Task GetMapInfo()
+        public async Task GetMapInfo()
         {
             string mapInfoSource = GetMapInfoSource();
             int? mapTier;
@@ -683,11 +675,11 @@ namespace SharpTimer
                 (mapTier, mapType) = await FindMapInfoFromLocal(mapInfoSource);
             else
                 (mapTier, mapType) = await FindMapInfoFromHTTP(mapInfoSource);
-                
-            currentMapTier = mapTier;
-            currentMapType = mapType;
-            string tierString = currentMapTier != null ? $" | Tier: {currentMapTier}" : "";
-            string typeString = currentMapType != null ? $" | {currentMapType}" : "";
+
+            Plugin.currentMapTier = mapTier;
+            Plugin.currentMapType = mapType;
+            string tierString = Plugin.currentMapTier != null ? $" | Tier: {Plugin.currentMapTier}" : "";
+            string typeString = Plugin.currentMapType != null ? $" | {Plugin.currentMapType}" : "";
 
             if (Plugin.autosetHostname == true)
             {
@@ -699,17 +691,17 @@ namespace SharpTimer
             }
         }
 
-        public static string GetMapInfoSource()
+        public string GetMapInfoSource()
         {
             if (Plugin.disableRemoteData)
             {
-                return currentMapName switch
+                return Plugin.currentMapName switch
                 {
-                    var name when name!.StartsWith("kz_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "kz_.json")!,
-                    var name when name!.StartsWith("bhop_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "bhop_.json")!,
-                    var name when name!.StartsWith("surf_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json"),
+                    var name when name!.StartsWith("kz_") => Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "kz_.json")!,
+                    var name when name!.StartsWith("bhop_") => Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "bhop_.json")!,
+                    var name when name!.StartsWith("surf_") => Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json"),
                     _ => null
-                } ?? Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json");
+                } ?? Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json");
             }
             return Plugin.currentMapName switch
             {
@@ -720,7 +712,7 @@ namespace SharpTimer
             } ?? Plugin.remoteSurfDataSource!;
         }
 
-        public static void KillServerCommandEnts()
+        public void KillServerCommandEnts()
         {
             if (Plugin.killServerCommands == true)
             {
@@ -735,7 +727,7 @@ namespace SharpTimer
             }
         }
 
-        public static async Task<JsonDocument?> LoadJson(string path)
+        public async Task<JsonDocument?> LoadJson(string path)
         {
             return await Task.Run(() =>
             {
@@ -755,7 +747,7 @@ namespace SharpTimer
             });
         }
 
-        public static JsonDocument? LoadJsonOnMainThread(string path)
+        public JsonDocument? LoadJsonOnMainThread(string path)
         {
             if (File.Exists(path))
             {
@@ -773,32 +765,7 @@ namespace SharpTimer
             return null;
         }
 
-        public static string RemovePlayerTags(string input)
-        {
-            string originalTag = input;
-
-            List<string> playerTagsToRemove = [$"{Plugin.customVIPTag}", $"{Plugin.UnrankedTitle}"];
-
-            foreach (var rank in Plugin.rankDataList)
-                playerTagsToRemove.Add(rank.Title);
-
-            if (!string.IsNullOrEmpty(input))
-            {
-                foreach (var strToRemove in playerTagsToRemove)
-                {
-                    if (input.Contains(strToRemove))
-                    {
-                        input = Regex.Replace(input, Regex.Escape(strToRemove), string.Empty, RegexOptions.IgnoreCase).Trim();
-                    }
-                }
-            }
-
-            LogDebug($"Removing tags... I: {originalTag} O: {input}");
-
-            return input;
-        }
-
-        public static string FormatOrdinal(int number)
+        public string FormatOrdinal(int number)
         {
             if (number % 100 >= 11 && number % 100 <= 13)
             {
@@ -814,7 +781,7 @@ namespace SharpTimer
             };
         }
 
-        public static int GetNumberBeforeSlash(string input)
+        public int GetNumberBeforeSlash(string input)
         {
             string[] parts = input.Split('/');
 
@@ -828,11 +795,11 @@ namespace SharpTimer
             }
         }
 
-        public static string GetClosestMapCFGMatch()
+        public string GetClosestMapCFGMatch()
         {
             try
             {
-                if (gameDir == null)
+                if (Plugin.gameDir == null)
                 {
                     LogError("gameDir is not initialized.");
                     return "null";
@@ -841,7 +808,7 @@ namespace SharpTimer
                 string[] configFiles;
                 try
                 {
-                    configFiles = Directory.GetFiles(Path.Combine(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "MapExecs"), "*.cfg");
+                    configFiles = Directory.GetFiles(Path.Combine(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "MapExecs"), "*.cfg");
                 }
                 catch (Exception ex)
                 {
@@ -889,14 +856,14 @@ namespace SharpTimer
             }
         }
 
-        public static bool IsApproximatelyEqual(float actual, float expected, float tolerance = 0.01f)
+        public bool IsApproximatelyEqual(float actual, float expected, float tolerance = 0.01f)
         {
             return Math.Abs(actual - expected) < tolerance;
         }
 
         // https://github.com/daffyyyy/CS2-SimpleAdmin/blob/main/CS2-SimpleAdmin/Helper.cs#L457C5-L481C6
         // remember, dont reinvent the wheel
-        public static string GetServerIp()
+        public string GetServerIp()
         {
             var networkSystem = NativeAPI.GetValveInterface(0, "NetworkSystemVersion001");
 
@@ -922,7 +889,7 @@ namespace SharpTimer
             }
         }
 
-        public static (string, string) GetHostnameAndIp()
+        public (string, string) GetHostnameAndIp()
         {
             string ip = $"{GetServerIp()}:{ConVar.Find("hostport")!.GetPrimitiveValue<int>()}";
             string hostname = ConVar.Find("hostname")!.StringValue;
@@ -930,12 +897,12 @@ namespace SharpTimer
             return (hostname, ip);
         }
 
-        public static void PrintToChat(CCSPlayerController player, string message)
+        public void PrintToChat(CCSPlayerController player, string message)
         {
             player.PrintToChat($" {Localizer["prefix"]} {message}");
         }
 
-        public static void PrintToChatAll(string message)
+        public void PrintToChatAll(string message)
         {
             Server.PrintToChatAll($" {Localizer["prefix"]} {message}");
         }

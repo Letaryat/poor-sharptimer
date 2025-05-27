@@ -20,7 +20,6 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.UserMessages;
-using CounterStrikeSharp.API.Modules.Utils;
 using System.Runtime.InteropServices;
 
 namespace SharpTimer;
@@ -32,91 +31,13 @@ public partial class SharpTimer : BasePlugin
     public override string ModuleAuthor => "dea & sharptimer community";
     public override string ModuleDescription => "A CS2 Timer Plugin";
 
+    public Utils Utils = null!;
+    public RemoveDamage RemoveDamage = null!;
+
     public override void Load(bool hotReload)
     {
-        Utils.ConPrint("Loading Plugin...");
-
-        LoadGlobals();
-
-        if (isLinux)
-            RunCommand?.Hook(OnRunCommand, HookMode.Pre);
-
-        StateTransition.Hook(Hook_StateTransition, HookMode.Post);
-
-        RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);
-        RegisterListener<Listeners.OnTick>(PlayerOnTick);
-        RegisterListener<Listeners.CheckTransmit>(CheckTransmit);
-
-        RegisterEventHandler<EventPlayerConnectFull>(EventPlayerConnectFull);
-        RegisterEventHandler<EventPlayerTeam>(EventPlayerTeam);
-        RegisterEventHandler<EventRoundStart>(EventRoundStart);
-        RegisterEventHandler<EventRoundEnd>(EventRoundEnd);
-        RegisterEventHandler<EventPlayerSpawn>(EventPlayerSpawn);
-        RegisterEventHandler<EventPlayerDisconnect>(EventPlayerDisconnect);
-        RegisterEventHandler<EventWeaponFire>(EventWeaponFire);
-
-        AddCommandListener("say", OnPlayerChat, HookMode.Pre);
-        AddCommandListener("say_team", OnPlayerChat, HookMode.Pre);
-        AddCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
-
-        HookUserMessage(452, OnUserMessage_RemoveSound, HookMode.Pre);
-        HookUserMessage(369, OnUserMessage_RemoveSound, HookMode.Pre);
-        HookUserMessage(208, OnUserMessage_RemoveSound, HookMode.Pre);
-
-        HookEntityOutput("trigger_multiple", "OnStartTouch", TriggerMultiple_OnStartTouch, HookMode.Pre);
-        HookEntityOutput("trigger_multiple", "OnEndTouch", TriggerMultiple_OnEndTouch, HookMode.Pre);
-
-        HookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTeleport_OnStartTouch, HookMode.Pre);
-        HookEntityOutput("trigger_teleport", "OnEndTouch", TriggerTeleport_OnEndTouch, HookMode.Pre);
-
-        RemoveDamage.Hook();
-
-        Utils.ConPrint("Plugin Loaded");
-    }
-
-    public override void Unload(bool hotReload)
-    {
-        Utils.ConPrint("Unloading Plugin...");
-
-        if (isLinux)
-            RunCommand?.Unhook(OnRunCommand, HookMode.Pre);
-
-        StateTransition.Unhook(Hook_StateTransition, HookMode.Post);
-
-        RemoveListener<Listeners.OnMapStart>(OnMapStartHandler);
-        RemoveListener<Listeners.OnTick>(PlayerOnTick);
-
-        DeregisterEventHandler<EventPlayerConnectFull>(EventPlayerConnectFull);
-        DeregisterEventHandler<EventPlayerTeam>(EventPlayerTeam);
-        DeregisterEventHandler<EventRoundStart>(EventRoundStart);
-        DeregisterEventHandler<EventRoundEnd>(EventRoundEnd);
-        DeregisterEventHandler<EventPlayerSpawn>(EventPlayerSpawn);
-        DeregisterEventHandler<EventPlayerDisconnect>(EventPlayerDisconnect);
-        DeregisterEventHandler<EventWeaponFire>(EventWeaponFire);
-
-        RemoveCommandListener("say", OnPlayerChat, HookMode.Pre);
-        RemoveCommandListener("say_team", OnPlayerChat, HookMode.Pre);
-        RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
-
-        UnhookUserMessage(452, OnUserMessage_RemoveSound, HookMode.Pre);
-        UnhookUserMessage(369, OnUserMessage_RemoveSound, HookMode.Pre);
-        UnhookUserMessage(208, OnUserMessage_RemoveSound, HookMode.Pre);
-
-        UnhookEntityOutput("trigger_multiple", "OnStartTouch", TriggerMultiple_OnStartTouch, HookMode.Pre);
-        UnhookEntityOutput("trigger_multiple", "OnEndTouch", TriggerMultiple_OnEndTouch, HookMode.Pre);
-
-        UnhookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTeleport_OnStartTouch, HookMode.Pre);
-        UnhookEntityOutput("trigger_teleport", "OnEndTouch", TriggerTeleport_OnEndTouch, HookMode.Pre);
-
-        RemoveDamage.Unhook();
-
-        Utils.ConPrint("Plugin Unloaded");
-    }
-
-    private void LoadGlobals()
-    {
-        Instance = this;
-        isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? true : false;
+        Utils = new Utils(this);
+        RemoveDamage = new RemoveDamage(this);
 
         Utils.CheckForUpdate();
 
@@ -135,9 +56,70 @@ public partial class SharpTimer : BasePlugin
         string recordsFileName = $"SharpTimer/PlayerRecords/";
         playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
 
+        isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? true : false;
+
         movementServices = isLinux ? 0 : 3;
         movementPtr = isLinux ? 1 : 2;
         RunCommand = isLinux ? new RunCommandLinux() : new RunCommandWindows();
+
+        if (isLinux) RunCommand?.Hook(OnRunCommand, HookMode.Pre);
+        StateTransition.Hook(Hook_StateTransition, HookMode.Post);
+        RemoveDamage?.Hook();
+
+        RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);
+        RegisterListener<Listeners.OnTick>(PlayerOnTick);
+        RegisterListener<Listeners.CheckTransmit>(CheckTransmit);
+
+        RegisterEventHandler<EventPlayerConnectFull>(EventPlayerConnectFull);
+        RegisterEventHandler<EventPlayerTeam>(EventPlayerTeam);
+        RegisterEventHandler<EventRoundStart>(EventRoundStart);
+        RegisterEventHandler<EventRoundEnd>(EventRoundEnd);
+        RegisterEventHandler<EventPlayerSpawn>(EventPlayerSpawn);
+        RegisterEventHandler<EventPlayerDisconnect>(EventPlayerDisconnect);
+        RegisterEventHandler<EventWeaponFire>(EventWeaponFire);
+
+        AddCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
+
+        HookUserMessage(452, OnUserMessage_RemoveSound, HookMode.Pre);
+        HookUserMessage(369, OnUserMessage_RemoveSound, HookMode.Pre);
+        HookUserMessage(208, OnUserMessage_RemoveSound, HookMode.Pre);
+
+        HookEntityOutput("trigger_multiple", "OnStartTouch", TriggerMultiple_OnStartTouch, HookMode.Pre);
+        HookEntityOutput("trigger_multiple", "OnEndTouch", TriggerMultiple_OnEndTouch, HookMode.Pre);
+
+        HookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTeleport_OnStartTouch, HookMode.Pre);
+        HookEntityOutput("trigger_teleport", "OnEndTouch", TriggerTeleport_OnEndTouch, HookMode.Pre);
+    }
+
+    public override void Unload(bool hotReload)
+    {
+        if (isLinux) RunCommand?.Unhook(OnRunCommand, HookMode.Pre);
+        StateTransition.Unhook(Hook_StateTransition, HookMode.Post);
+        RemoveDamage?.Unhook();
+
+        RemoveListener<Listeners.OnMapStart>(OnMapStartHandler);
+        RemoveListener<Listeners.OnTick>(PlayerOnTick);
+        RemoveListener<Listeners.CheckTransmit>(CheckTransmit);
+
+        DeregisterEventHandler<EventPlayerConnectFull>(EventPlayerConnectFull);
+        DeregisterEventHandler<EventPlayerTeam>(EventPlayerTeam);
+        DeregisterEventHandler<EventRoundStart>(EventRoundStart);
+        DeregisterEventHandler<EventRoundEnd>(EventRoundEnd);
+        DeregisterEventHandler<EventPlayerSpawn>(EventPlayerSpawn);
+        DeregisterEventHandler<EventPlayerDisconnect>(EventPlayerDisconnect);
+        DeregisterEventHandler<EventWeaponFire>(EventWeaponFire);
+
+        RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
+
+        UnhookUserMessage(452, OnUserMessage_RemoveSound, HookMode.Pre);
+        UnhookUserMessage(369, OnUserMessage_RemoveSound, HookMode.Pre);
+        UnhookUserMessage(208, OnUserMessage_RemoveSound, HookMode.Pre);
+
+        UnhookEntityOutput("trigger_multiple", "OnStartTouch", TriggerMultiple_OnStartTouch, HookMode.Pre);
+        UnhookEntityOutput("trigger_multiple", "OnEndTouch", TriggerMultiple_OnEndTouch, HookMode.Pre);
+
+        UnhookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTeleport_OnStartTouch, HookMode.Pre);
+        UnhookEntityOutput("trigger_teleport", "OnEndTouch", TriggerTeleport_OnEndTouch, HookMode.Pre);
     }
 
     private HookResult OnRunCommand(DynamicHook h)
@@ -421,45 +403,6 @@ public partial class SharpTimer : BasePlugin
         }
 
         return HookResult.Continue;
-    }
-
-    private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo message)
-    {
-        if (displayChatTags == false)
-            return HookResult.Continue;
-
-        string msg;
-
-        if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(message.GetArg(1)))
-            return HookResult.Handled;
-        else
-            msg = message.GetArg(1);
-
-        playerTimers[player.Slot].AFKTicks = 0;
-
-        if (msg.Length > 0 && (msg[0] == '!' || msg[0] == '/' || msg[0] == '.'))
-            return HookResult.Continue;
-        else
-        {
-            string rankColor = GetRankColorForChat(player);
-
-            if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? value))
-            {
-                string deadText = player.PawnIsAlive ? "" : $"{ChatColors.Grey}*DEAD* ";
-                string vipText = (value.IsVip ? $"{ChatColors.Magenta}{customVIPTag} " : "");
-                if (player.Team == CsTeam.Terrorist)
-                    Utils.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.Terrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
-                if (player.Team == CsTeam.CounterTerrorist)
-                    Utils.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.CounterTerrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
-                if (player.Team == CsTeam.Spectator)
-                    Utils.PrintToChatAll($" {ChatColors.Grey}*SPEC* {ChatColors.ForTeam(CsTeam.Spectator)}{player.PlayerName} {ChatColors.Default}: {msg}");
-                if (player.Team == CsTeam.None)
-                    Utils.PrintToChatAll($" {ChatColors.ForTeam(CsTeam.None)}{player.PlayerName} {ChatColors.Default}: {msg}");
-            }
-
-            return HookResult.Handled;
-        }
-
     }
 
     private HookResult OnCommandJoinTeam(CCSPlayerController? player, CommandInfo commandInfo)

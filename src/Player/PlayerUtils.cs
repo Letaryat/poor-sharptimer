@@ -21,6 +21,7 @@ using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using TagsApi;
 
 namespace SharpTimer
 {
@@ -682,41 +683,36 @@ namespace SharpTimer
             });
         }
 
-        public void AddScoreboardTagToPlayer(CCSPlayerController player, string tag)
+        public void AddRankTagToPlayer(CCSPlayerController player, string rank)
         {
             try
             {
-                if (string.IsNullOrEmpty(tag))
+                if (string.IsNullOrEmpty(rank))
                     return;
 
-                if (player == null || !player.IsValid)
+                if (TagApi == null)
+                    TagApi = ITagApi.Capability.Get();
+
+                if (TagApi == null)
+                {
+                    Utils.LogError("(SetClanTagAPI) Failed load TagApi");
                     return;
+                }
 
-                string originalPlayerName = player.PlayerName;
+                string clanTag = $"{rank} {(playerTimers[player.Slot].IsVip ? $"{customVIPTag}" : "")}";
 
-                string stripedClanTag = Utils.RemovePlayerTags(player.Clan ?? "");
-                
-                player.Clan = $" {stripedClanTag}{(playerTimers[player.Slot].IsVip ? $"{customVIPTag}" : "")}{tag}";
+                string rankColor = GetRankColorForChat(player);
+                string chatTag = $"{rankColor}{rank} ";
 
-                player.PlayerName = originalPlayerName + " ";
+                TagApi.ResetAttribute(player, Tags.TagType.ScoreTag);
+                TagApi.ResetAttribute(player, Tags.TagType.ChatTag);
 
-                AddTimer(0.1f, () =>
-                {
-                    if (player.IsValid)
-                    {
-                        Utilities.SetStateChanged(player, "CCSPlayerController", "m_szClan");
-                        Utilities.SetStateChanged(player, "CBasePlayerController", "m_iszPlayerName");
-                    }
-                });
+                Server.NextFrame(() => {
+                    string oldClanTag = TagApi.GetAttribute(player, Tags.TagType.ScoreTag) ?? "";
+                    TagApi.SetAttribute(player, Tags.TagType.ScoreTag, oldClanTag + clanTag);
 
-                AddTimer(0.2f, () =>
-                {
-                    if (player.IsValid) player.PlayerName = originalPlayerName;
-                });
-
-                AddTimer(0.3f, () =>
-                {
-                    if (player.IsValid) Utilities.SetStateChanged(player, "CBasePlayerController", "m_iszPlayerName");
+                    string oldChatTag = TagApi.GetAttribute(player, Tags.TagType.ChatTag) ?? "";
+                    TagApi.SetAttribute(player, Tags.TagType.ChatTag, oldChatTag + chatTag);
                 });
 
                 Utils.LogDebug($"Set Scoreboard Tag for {player.Clan} {player.PlayerName}");

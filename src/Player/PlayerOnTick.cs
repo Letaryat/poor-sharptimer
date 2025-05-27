@@ -200,11 +200,14 @@ namespace SharpTimer
                         {
                             if (playerTimer.TicksSinceLastRankUpdate > 511 && playerTimer.CachedRank != null && (player.Clan != null || !player.Clan!.Contains($"[{playerTimer.CachedRank}]")))
                             {
-                                AddScoreboardTagToPlayer(player, playerTimer.CachedRank);
+                                AddRankTagToPlayer(player, playerTimer.CachedRank);
                                 playerTimer.TicksSinceLastRankUpdate = 0;
                                 Utils.LogDebug($"Setting Scoreboard Tag for {player.PlayerName} from TimerOnTick");
                             }
                         }
+
+                        if (playerTimer.TicksSinceLastRankUpdate < 511)
+                            playerTimer.TicksSinceLastRankUpdate++;
 
                         if (playerTimer.IsSpecTargetCached == false || specTargets.ContainsKey(player.Pawn!.Value!.EntityHandle.Index) == false)
                         {
@@ -253,9 +256,6 @@ namespace SharpTimer
                                 SetMoveType(player, MoveType_t.MOVETYPE_WALK);
                             }
                         }
-
-                        if (playerTimer.TicksSinceLastRankUpdate < 511)
-                            playerTimer.TicksSinceLastRankUpdate++;
 
                         if (currentTick % (64 / hudTickrate) != 0)
                             continue;
