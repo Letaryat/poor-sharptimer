@@ -1,0 +1,136 @@
+{
+  "prefix": "{lime}SharpTimer ●{white}",
+
+  //timer
+  "timer_time": "Laiks: [{lime}{0}{default}] {1}",
+  "timer_style": "Stils: [{lime}{0}{default}]",
+  "stop_using_timer": "Vispirms apstādini taimeri ar {lime}!timer{default}!",
+  "timer_enabled": "Taimeris: {green}Ieslēgts",
+  "timer_disabled": "Taimeris: {red}Izslēgts",
+  "timer_cancelled": "Timer cancelled due to illegal skip attempt",
+  "timer_reset": "You got reset due to illegal skip attempt",
+
+  //records
+  "no_records_available": "Nav pieejamu rezultātu kartē {0}",
+  "no_records_available_bonus": "Nav pieejamu rezultātu Bonusā {0} kartē {1}",
+  "records_map": "#{0}: {lime}{1} {default}- {2} {lime}{3}",
+  "new_server_record": "{lime}{0} {white}uzstādīja jaunu SR!",
+  "new_stage_server_record": "{lime}{0} {white}uzstādīja jaunu posma rekordu!",
+  "new_server_record_bonus": "{lime}{0} {white}uzstādīja jaunu Bonusa {1} SR!",
+  "new_pb_record": "{lime}{0} {white}uzstādīja jaunu kartes PB!",
+  "new_pb_record_bonus": "{lime}{0} {white}uzstādīja jaunu Bonusa {1} PB!",
+  "map_finish": "{lime}{0} {white}pabeidza karti!",
+  "map_finish_bonus": "{lime}{0} {white}pabeidza Bonusu {1}!",
+  "map_finish_rank": "Ranks: [{lime}{0}{default}] Pabeigtie mēģinājumi: [{lime}{1}{default}]",
+  "top10_records": "Top 10 {0} rezultāti {1}:",
+  "top10_records_bonus": "Top 10 {0} rezultāti Bonusā {1} kartē {2}:",
+
+  //stages
+  "invalid_bonus_stage": "Lūdzu ievadi derīgu Bonusa posmu, piem.: {lime}!topbonus 1",
+  "invalid_bonus_rb": "Lūdzu ievadi derīgu Bonusa posmu, piem.: {lime}!rb <indekss>",
+  "stages_unavalible": "Posmi nav pieejami",
+  "stages_unavalible_respawnpos": "{lightred}Nav RespawnStagePos ar indeksu {0} šai kartei!",
+  "stages_enter_valid": "Lūdzu ievadi derīgu posmu, piem.: {lime}!stage <indekss>",
+  "map_no_stages": "{lightred}Šai kartei nav posmu!",
+
+  //rank
+  "current_rank": "Tavs pašreizējais ranks ir {0}{1}{lime}",
+  "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
+  "current_pb": "Tavs pašreizējais PB kartē {lime}{0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
+  "current_bonus_pb": "Tavs pašreizējais PB kartē {lime}Bonusa {0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
+  "current_sr": "Pašreizējais servera rekords kartē {lime}{0}{white}:",
+  "current_sr_player": "{lime}{0} {white}- {lime}{1}",
+  "reached_max_free": "Tu esi sasniedzis maksimālo bezmaksas punktu limitu: {lime}{0}{default}!",
+  "gained_points": "{lime}{0} {default}ieguva {green}+{1} {default}punktus {grey}({2})",
+  "top_10_points": "Top 10 spēlētāji ar visvairāk punktiem:",
+  "top_10_points_list": "#{0}: {lime}{1} {default}: {lime}{2} {default}punkti",
+
+  //replay
+  "no_replay": "No Replay playing currently",
+  "end_your_replay": "Beidz savu Replay vispirms ar {lime}!stopreplay",
+  "available_replay_cmds": "Pieejamās Replay komandas: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
+  "no_sr_replay": "Nav servera rekorda ko parādīt!",
+  "replaying_server_top": "Replaying the Server Top {0}, raksti {lime}!stop vai {lime}!stopreplay {default}lai izietu no Replay",
+  "replaying_pb": "Replaying your PB, raksti {lime}!stop vai {lime}!stopreplay {default}lai izietu no Replay",
+  "ending_replay": "Repaly apturēts!",
+  "replay_corrupt": "Pieprasītais Replay šķiet bojāts",
+  "replay_dont_exist": "Pieprasītais Replay neeksistē",
+
+  //settings
+  "hud_shown": "HUD ir tagad: {green}Redzams",
+  "hud_hidden": "HUD ir tagad: {red}Paslēpts",
+  "keys_shown": "Taustiņi tagad ir: {green}Redzami",
+  "keys_hidden": "Taustiņi tagad ir: {red}Paslēpti",
+  "jumpstats_shown": "Lēkšanas statistika tagad ir: {green}Redzama",
+  "jumpstats_hidden": "Lēkšanas statistika tagad ir: {red}Paslēpta",
+  "sounds_on": "Skaņas tagad ir: {green}IESLĒGTAS",
+  "sounds_off": "Skaņas tagad ir: {red}IZSLĒGTAS",
+
+  //zones
+  "no_respawnpos": "{lightred}Šai kartei nav RespawnPos!",
+  "no_respawnpos_bonus": "{lightred}Šai kartei nav RespawnBonusPos!",
+  "no_respawnpos_bonus_index": "{lightred}Nav RespawnBonusPos ar indeksu {0} šai kartei!",
+  "no_endpos": "{lightred}Šai kartei nav EndPos!",
+  "map_using_manual_zones": "Šī karte izmanto manuālās zonas",
+  "saved_custom_respawnpos": "Saglabāts pielāgots sākuma zonas RespawnPos!",
+  "not_inside_startzone": "Tu neesi sākuma zonā!",
+
+  //styles
+  "styles_list": "Stils {0}. {lime}{1}",
+  "style_example": "piemērs: {lime}/style 1 vai lowgravity",
+  "style_set": "Stils iestatīts uz: {lime}{0}",
+  "style_not_found": "Stils {0} neeksistē",
+  "styles_disabled": "Stili šobrīd ir izslēgti uz šī servera",
+  "styles_not_supported": "Stili šobrīd nav atbalstīti lokālajos rezultātos :(",
+
+  //checkpoints
+  "checkpoint_set": "{0} iestatīts! {lime}#{1}",
+  "no_checkpoint_set": "Nav iestatīts neviens {0}!",
+  "cant_use_checkpoint": "{lightred}Nevar izmantot {0} kamēr taimeris ir ieslēgts, izmanto {default}!timer",
+  "cant_use_checkpoint_in_air": "{lightred}Nevar iestatīt {0} esot gaisā",
+  "used_checkpoint": "Teleportēts uz nākamo {0}",
+  "used_recent_checkpoint": "Teleportēts uz nesenāko {0}",
+  "used_previous_checkpoint": "Teleportēts uz iepriekšējo {0}",
+
+  "goto_player": "Teleportējos pie {lime}{0}",
+  "goto_player_not_found": "{lightred}Spēlētājs nav atrasts! Ja vārds satur atstarpes, mēģini {lime}!goto 'vārds uzvārds'",
+
+  //jumpstats
+  "js_msg1": "{lime}JS: {grey} {0}: {1}{2}{grey} | Pre: {lime}{3}{grey} | Max: {lime}{4}{grey} | Strafes: {lime}{5}",
+  "js_msg2": "{grey}Augstums: {lime}{0}{grey} | Platums: {lime}{1}{grey} | WT: {lime}{2}{grey} | Sinhronizācija: {lime}{3}%",
+  
+  //ad messages
+  "ad_see_all_commands": "{primary}Raksti !sthelp{default} lai redzētu visas komandas!",
+  "ad_replay_pb": "Raksti {primary}!replaypb{default} lai skatītos savu labāko skrējienu!",
+  "ad_replay_sr": "Raksti {primary}!replay vai {primary}!replaysr{default} lai skatītos SR atkārtojumu uz {primary}{current_map}{default}!",
+  "ad_replay_top": "Raksti {primary}!replaytop <1-10>{default} lai skatītos top skrējienu uz {primary}{current_map}{default}!",
+  "ad_replay_bonus": "Raksti {primary}!replaybonus <1-10> <bonusa #> (vai !replayb){default} lai skatītos top skrējienu uz bonusa posma{default}!",
+  "ad_replay_bonus_pb": "Raksti {primary}!replaybonuspb <bonusa #> (vai !replaybpb){default} lai skatītos savu labāko bonusa skrējienu{default}!",
+  "ad_points": "Raksti {primary}!points{default} lai redzētu top 10 spēlētājus ar visvairāk punktiem!",
+  "ad_respawn": "Raksti {primary}!r{default} lai respawnotos sākumā!",
+  "ad_start_pos": "Raksti {primary}!setresp (vai !startpos){default} lai saglabātu pielāgotu respawn punktu sākuma zonā!",
+  "ad_top": "Raksti {primary}!top{default} lai redzētu top 10 spēlētājus kartē {primary}{current_map}{default}!",
+  "ad_rank": "Raksti {primary}!rank{default} lai redzētu savu PB un ranku!",
+  "ad_save_loc": "Raksti {primary}!saveloc{default} lai saglabātu jaunu lokāciju!",
+  "ad_cp": "Raksti {primary}!cp{default} lai iestatītu jaunu kontrolpunktu!",
+  "ad_load_loc": "Raksti {primary}!loadloc{default} lai ielādētu pēdējo lokāciju!",
+  "ad_tp": "Raksti {primary}!tp{default} lai teleportētos uz pēdējo kontrolpunktu!",
+  "ad_goto": "Raksti {primary}!goto <vārds>{default} lai teleportētos pie spēlētāja!",
+  "ad_fov": "Raksti {primary}!fov <0-140>{default} lai mainītu skatījuma leņķi!",
+  "ad_sounds": "Raksti {primary}!sounds{default} lai pārslēgtu taimera skaņas!",
+  "ad_hud": "Raksti {primary}!hud{default} lai pārslēgtu HUD!",
+  "ad_keys": "Raksti {primary}!keys{default} lai pārslēgtu HUD taustiņus!",
+  "ad_styles": "Raksti {primary}!styles{default} lai redzētu visus pieejamos stilus!",
+  "ad_jumpstats": "Raksti {primaryChatColor}!jumpstats{default} lai pārslēgtu JumpStats!",
+
+  //other
+  "command_cooldown": "Command is on cooldown. Chill...",
+  "error_occured": "{lightred}Radās kļūda.",
+  "info_version": "Šis serveris darbojas ar SharpTimer v{0}",
+  "info_os": "OS: {0}",
+  "info_runtime": "Runtime: {0}",
+  "connect_message": "Spēlētājs {red}{0} {default}pievienojās!",
+  "connected_message": "Spēlētājs {red}{0} {default}pievienojās {1}. reizi!",
+  "connected_message_first": "Spēlētājs {red}{0} {default}pievienojās pirmo reizi!",
+  "disconnect_message": "Spēlētājs {red}{0} {default}pameta serveri!"
+}
