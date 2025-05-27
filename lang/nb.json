@@ -132,6 +132,8 @@
     "connected_message": "Spiller {red}{0} {default}koblet til for den {1} gang!",
     "connected_message_first": "Spiller {red}{0} {default}koblet til for første gang!",
     "disconnect_message": "Spiller {red}{0} {default}frakoblet!",
+    "afk_message": "{red}Du er i ferd med å bli flyttet til AFK!",
+    "start_speed": "Startfart:",
 	
 	  // Error
   "error_savingtime": "Feil ved lagring av tid: Spillerens tid er 0 ticks",

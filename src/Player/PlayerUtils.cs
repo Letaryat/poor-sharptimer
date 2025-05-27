@@ -175,6 +175,25 @@ namespace SharpTimer
             }
         }
 
+        private string GetCurrentPlayerSpeed(CCSPlayerController player)
+        {
+            return Math.Round(
+                use2DSpeed ?
+                    Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value!.AbsVelocity.X +
+                            player.PlayerPawn.Value!.AbsVelocity.Y * player.PlayerPawn.Value!.AbsVelocity.Y)
+                : Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value!.AbsVelocity.X +
+                            player.PlayerPawn.Value!.AbsVelocity.Y * player.PlayerPawn.Value!.AbsVelocity.Y +
+                            player.PlayerPawn.Value!.AbsVelocity.Z * player.PlayerPawn.Value!.AbsVelocity.Z)
+            ).ToString("0000");
+        }
+
+        public void PrintStartSpeed(CCSPlayerController player)
+        {
+            int startSpeed = int.Parse(GetCurrentPlayerSpeed(player));
+            int printSpeed = (maxStartingSpeedEnabled && startSpeed > maxStartingSpeed) ? maxStartingSpeed : startSpeed;
+            player.PrintToChat($"{Localizer["prefix"]} {Localizer["start_speed"]} {ChatColors.Olive}{printSpeed}");
+        }
+
         private void RemovePlayerCollision(CCSPlayerController? player)
         {
             try
