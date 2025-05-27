@@ -25,7 +25,7 @@ namespace SharpTimer
             {
                 if (activator == null || caller == null)
                 {
-                    SharpTimerDebug("Null reference detected in trigger_multiple OnStartTouch hook.");
+                    Utils.LogDebug("Null reference detected in trigger_multiple OnStartTouch hook.");
                     return HookResult.Continue;
                 }
 
@@ -35,12 +35,12 @@ namespace SharpTimer
 
                 if (player == null)
                 {
-                    SharpTimerDebug("Player is null in trigger_multiple OnStartTouch hook.");
+                    Utils.LogDebug("Player is null in trigger_multiple OnStartTouch hook.");
                     return HookResult.Continue;
                 }
                 if (player.IsBot)
                 {
-                    SharpTimerDebug("Player is bot in trigger_multiple OnStartTouch hook.");
+                    Utils.LogDebug("Player is bot in trigger_multiple OnStartTouch hook.");
                     return HookResult.Continue;
                 }
 
@@ -89,7 +89,7 @@ namespace SharpTimer
                 {
                     OnTimerStop(player);
                     if (enableReplays) OnRecordingStop(player);
-                    SharpTimerDebug($"Player {playerName} entered EndZone");
+                    Utils.LogDebug($"Player {playerName} entered EndZone");
                     return HookResult.Continue;
                 }
 
@@ -98,10 +98,6 @@ namespace SharpTimer
                     if(playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
                     {
                         playerTimer.inStartzone = true;
-                    }
-                    if (!playerTimers[playerSlot].IsTimerBlocked && playerTimer!.currentStyle != 12) // if in TAS style, dont wipe checkpoints onstart (wipe them on !r)
-                    {
-                        playerCheckpoints.Remove(playerSlot);
                     }
 
                     InvalidateTimer(player, callerHandle);
@@ -120,7 +116,7 @@ namespace SharpTimer
                         CurrentBonusNumber = 0
                     };
 
-                    SharpTimerDebug($"Player {playerName} entered StartZone");
+                    Utils.LogDebug($"Player {playerName} entered StartZone");
 
                     return HookResult.Continue;
                 }
@@ -131,7 +127,7 @@ namespace SharpTimer
                 {
                     OnBonusTimerStop(player, endBonusX);
                     if (enableReplays) OnRecordingStop(player);
-                    SharpTimerDebug($"Player {playerName} entered Bonus{endBonusX} EndZone");
+                    Utils.LogDebug($"Player {playerName} entered Bonus{endBonusX} EndZone");
                     return HookResult.Continue;
                 }
 
@@ -140,11 +136,6 @@ namespace SharpTimer
 
                 if (validStartBonus || validStartFakeBonus)
                 {
-                    if (!playerTimers[playerSlot].IsTimerBlocked)
-                    {
-                        playerCheckpoints.Remove(playerSlot);
-                    }
-
                     InvalidateTimer(player, callerHandle);
 
                     if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxBonusStartingSpeed) ||
@@ -161,28 +152,28 @@ namespace SharpTimer
                         CurrentBonusNumber = (startBonusX != 0 ? startBonusX : fakeBonusX)
                     };
 
-                    SharpTimerDebug($"Player {playerName} entered Bonus {(startBonusX != 0 ? startBonusX : fakeBonusX)} StartZone");
+                    Utils.LogDebug($"Player {playerName} entered Bonus {(startBonusX != 0 ? startBonusX : fakeBonusX)} StartZone");
                     return HookResult.Continue;
                 }
 
                 if (IsValidStopTriggerName(callerName))
                 {
                     InvalidateTimer(player, callerHandle);
-                    PrintToChat(player, Localizer["timer_cancelled"]);
+                    Utils.PrintToChat(player, Localizer["timer_cancelled"]);
                 }
 
                 if (IsValidResetTriggerName(callerName))
                 {
                     InvalidateTimer(player, callerHandle);
                     RespawnPlayer(player);
-                    PrintToChat(player, Localizer["timer_reset"]);
+                    Utils.PrintToChat(player, Localizer["timer_reset"]);
                 }
 
                 return HookResult.Continue;
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in trigger_multiple OnStartTouch hook: {ex.Message}");
+                Utils.LogError($"Exception in trigger_multiple OnStartTouch hook: {ex.Message}");
                 return HookResult.Continue;
             }
         }
@@ -194,7 +185,7 @@ namespace SharpTimer
             {
                 if (activator == null || caller == null)
                 {
-                    SharpTimerDebug("Null reference detected in trigger_multiple OnEndTouch hook.");
+                    Utils.LogDebug("Null reference detected in trigger_multiple OnEndTouch hook.");
                     return HookResult.Continue;
                 }
 
@@ -204,12 +195,12 @@ namespace SharpTimer
 
                 if (player == null)
                 {
-                    SharpTimerDebug("Player is null in trigger_multiple OnEndTouch hook.");
+                    Utils.LogDebug("Player is null in trigger_multiple OnEndTouch hook.");
                     return HookResult.Continue;
                 }
                 if (player.IsBot)
                 {
-                    SharpTimerDebug("Player is bot in trigger_multiple OnEndTouch hook.");
+                    Utils.LogDebug("Player is bot in trigger_multiple OnEndTouch hook.");
                     return HookResult.Continue;
                 }
 
@@ -244,7 +235,7 @@ namespace SharpTimer
                         adjustVelocity(player, maxStartingSpeed, false);
                     }
 
-                    SharpTimerDebug($"Player {playerName} left StartZone");
+                    Utils.LogDebug($"Player {playerName} left StartZone");
 
                     return HookResult.Continue;
                 }
@@ -264,7 +255,7 @@ namespace SharpTimer
                         adjustVelocity(player, maxBonusStartingSpeed, false);
                     }
 
-                    SharpTimerDebug($"Player {playerName} left BonusStartZone {StartBonusX}");
+                    Utils.LogDebug($"Player {playerName} left BonusStartZone {StartBonusX}");
 
                     return HookResult.Continue;
                 }
@@ -272,7 +263,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in trigger_multiple OnEndTouch hook: {ex.Message}");
+                Utils.LogError($"Exception in trigger_multiple OnEndTouch hook: {ex.Message}");
                 return HookResult.Continue;
             }
         }
@@ -284,13 +275,13 @@ namespace SharpTimer
             {
                 if (activator == null || caller == null)
                 {
-                    SharpTimerDebug("Null reference detected in trigger_teleport hook.");
+                    Utils.LogDebug("Null reference detected in trigger_teleport hook.");
                     return HookResult.Continue;
                 }
 
                 if (activator.DesignerName != "player")
                 {
-                    SharpTimerDebug("activator.DesignerName != player in trigger_teleport hook.");
+                    Utils.LogDebug("activator.DesignerName != player in trigger_teleport hook.");
                     return HookResult.Continue;
                 }
 
@@ -303,17 +294,15 @@ namespace SharpTimer
 
                 if (!IsAllowedPlayer(player))
                 {
-                    SharpTimerDebug("Player not allowed in trigger_teleport hook.");
+                    Utils.LogDebug("Player not allowed in trigger_teleport hook.");
                     return HookResult.Continue;
                 }
-
-                if (jumpStatsEnabled) InvalidateJS(player.Slot);
 
                 return HookResult.Continue;
             }
             catch (Exception ex)
             {
-                SharpTimerError(ex.Message);
+                Utils.LogError(ex.Message);
                 return HookResult.Continue;
             }
         }
@@ -324,7 +313,7 @@ namespace SharpTimer
             {
                 if (activator == null || caller == null)
                 {
-                    SharpTimerDebug("Null reference detected in trigger_teleport hook.");
+                    Utils.LogDebug("Null reference detected in trigger_teleport hook.");
                     return HookResult.Continue;
                 }
 
@@ -337,7 +326,7 @@ namespace SharpTimer
 
                 if (player == null || player.IsBot || player.IsHLTV || !player.IsValid)
                 {
-                    SharpTimerDebug("Player is null in trigger_teleport hook.");
+                    Utils.LogDebug("Player is null in trigger_teleport hook.");
                     return HookResult.Continue;
                 }
 
@@ -362,7 +351,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError(ex.Message);
+                Utils.LogError(ex.Message);
                 return HookResult.Continue;
             }
         }

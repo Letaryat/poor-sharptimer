@@ -80,12 +80,12 @@ namespace SharpTimer
                     playerTimer.YawSpikeFlagged = true;
                     StartStopRecord(player, "Unusually frequent m_yaw accel spikes (Strafe optimizer)");
                     Server.NextFrame(async () => await DiscordACMessage(player, "Unusually frequent m_yaw accel spikes (Strafe optimizer)"));
-                    SharpTimerConPrint($"::::BEGIN:::: Yaw Accel Spike % of Total");
+                    Utils.ConPrint($"::::BEGIN:::: Yaw Accel Spike % of Total");
                     foreach (var percent in playerTimer.YawAccelPercents)
                     {
-                        SharpTimerConPrint($"Spike %: {percent}");
+                        Utils.ConPrint($"Spike %: {percent}");
                     }
-                    SharpTimerConPrint($"::::END:::: Yaw Accel Spike % of Total");
+                    Utils.ConPrint($"::::END:::: Yaw Accel Spike % of Total");
                 }
             }
 
@@ -175,8 +175,8 @@ namespace SharpTimer
 
                 var name = player.PlayerName.Replace(" ", "-").Replace("\\", "-").Replace("/", "-");
                 var file = $"{currentMapName}_{name}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
-                SharpTimerConPrint($"[AC] Unusal input detected, demo will be available at demos/{file} in 60 seconds");
-                SharpTimerConPrint($"[AC] Reason: {reason}");
+                Utils.ConPrint($"[AC] Unusal input detected, demo will be available at demos/{file} in 60 seconds");
+                Utils.ConPrint($"[AC] Reason: {reason}");
                 Server.ExecuteCommand($"tv_record demos/{file}");
                 AddTimer(60.0f, () => Server.ExecuteCommand("tv_stoprecord"));
             });
@@ -198,8 +198,9 @@ namespace SharpTimer
             }
             Server.NextFrame(() =>
             {
-                SharpTimerConPrint($"Flagged players: {flaggedPlayers}");
-                if (player is not null) player!.PrintToChat($"Flagged players: {flaggedPlayers}");
+                Utils.ConPrint($"Flagged players: {flaggedPlayers}");
+                if (player is not null)
+                    Utils.PrintToChat(player, $"Flagged players: {flaggedPlayers}");
             });
         }
     }

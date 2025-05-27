@@ -28,18 +28,17 @@ namespace SharpTimer
 
             if (bonusX != 0)
             {
-                if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Starting Bonus Timer for {player!.PlayerName}");
+                if (useTriggers || useTriggersAndFakeZones) Utils.LogDebug($"Starting Bonus Timer for {player!.PlayerName}");
                 playerTimers[player!.Slot].IsTimerRunning = false;
                 playerTimers[player!.Slot].IsBonusTimerRunning = true;
             }
             else
             {
-                if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Starting Timer for {player!.PlayerName}");
+                if (useTriggers || useTriggersAndFakeZones) Utils.LogDebug($"Starting Timer for {player!.PlayerName}");
                 playerTimers[player!.Slot].IsTimerRunning = true;
                 playerTimers[player!.Slot].IsBonusTimerRunning = false;
             }
 
-            playerCheckpoints.Remove(player!.Slot);
             playerTimers[player!.Slot].TimerTicks = 0;
             playerTimers[player!.Slot].StageTicks = 0;
             playerTimers[player.Slot].StageTimes!.Clear();
@@ -66,7 +65,7 @@ namespace SharpTimer
 
             if(currentTicks == 0)
             {
-                PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_savingtime"]}");
+                Utils.PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_savingtime"]}");
                 playerTimer.IsTimerRunning = false;
                 playerTimer.IsRecordingReplay = false;
                 return;
@@ -76,8 +75,8 @@ namespace SharpTimer
             {
                 if (playerTimer.CurrentMapStage != stageTriggerCount && currentMapOverrideStageRequirement == true)
                 {
-                    PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_stagenotmatchfinalone"]}({stageTriggerCount})");
-                    SharpTimerDebug($"Player current stage: {playerTimers[playerSlot].CurrentMapStage}; Final checkpoint: {stageTriggerCount}");
+                    Utils.PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_stagenotmatchfinalone"]}({stageTriggerCount})");
+                    Utils.LogDebug($"Player current stage: {playerTimers[playerSlot].CurrentMapStage}; Final checkpoint: {stageTriggerCount}");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -85,8 +84,8 @@ namespace SharpTimer
 
                 if (playerTimer.CurrentMapCheckpoint != cpTriggerCount && useCheckpointVerification)
                 {
-                    PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_checkpointnotmatchfinalone"]}({cpTriggerCount})");
-                    SharpTimerDebug($"Player current checkpoint: {playerTimers[playerSlot].CurrentMapCheckpoint}; Final checkpoint: {cpTriggerCount}");
+                    Utils.PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_checkpointnotmatchfinalone"]}({cpTriggerCount})");
+                    Utils.LogDebug($"Player current checkpoint: {playerTimers[playerSlot].CurrentMapCheckpoint}; Final checkpoint: {cpTriggerCount}");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -97,8 +96,8 @@ namespace SharpTimer
             {
                 if (playerTimer.CurrentMapStage != stageTriggerCount && currentMapOverrideStageRequirement == false)
                 {
-                    PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_stagenotmatchfinalone"]} ({playerTimer.CurrentMapStage}/{stageTriggerCount})");
-                    SharpTimerDebug($"Player {player.PlayerName} ({player.SteamID}) tried to finish a map with a current stage of {playerTimer.CurrentMapStage}, but this map has {stageTriggerCount} stages. It is recommended that you review {Server.MapName} for exploits.");
+                    Utils.PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_stagenotmatchfinalone"]} ({playerTimer.CurrentMapStage}/{stageTriggerCount})");
+                    Utils.LogDebug($"Player {player.PlayerName} ({player.SteamID}) tried to finish a map with a current stage of {playerTimer.CurrentMapStage}, but this map has {stageTriggerCount} stages. It is recommended that you review {Server.MapName} for exploits.");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
@@ -109,15 +108,15 @@ namespace SharpTimer
             {
                 if (playerTimer.CurrentMapCheckpoint != cpTriggerCount && useCheckpointVerification)
                 {
-                    PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_checkpointnotmatchfinalone"]}({cpTriggerCount})");
-                    SharpTimerDebug($"Player current checkpoint: {playerTimers[playerSlot].CurrentMapCheckpoint}; Final checkpoint: {cpTriggerCount}");
+                    Utils.PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_checkpointnotmatchfinalone"]}({cpTriggerCount})");
+                    Utils.LogDebug($"Player current checkpoint: {playerTimers[playerSlot].CurrentMapCheckpoint}; Final checkpoint: {cpTriggerCount}");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
                     return;
                 }
             }
 
-            if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Stopping Timer for {playerName}");
+            if (useTriggers || useTriggersAndFakeZones) Utils.LogDebug($"Stopping Timer for {playerName}");
 
             if (!ignoreJSON) SavePlayerTime(player, currentTicks);
             if (enableDb) _ = Task.Run(async () => await SavePlayerTimeToDatabase(player, currentTicks, steamID, playerName, playerSlot, 0, playerTimer.currentStyle));
@@ -139,13 +138,13 @@ namespace SharpTimer
             var playerTimer = playerTimers[playerSlot];
             var steamID = player.SteamID.ToString();
 
-            if (useTriggers || useTriggersAndFakeZones) SharpTimerDebug($"Stopping Bonus Timer for {playerName}");
+            if (useTriggers || useTriggersAndFakeZones) Utils.LogDebug($"Stopping Bonus Timer for {playerName}");
 
             int currentTicks = playerTimers[player.Slot].BonusTimerTicks;
 
             if(currentTicks == 0)
             {
-                PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player time is 0 ticks");
+                Utils.PrintToChat(player, $"{ChatColors.LightRed}Error Saving Time: Player time is 0 ticks");
                 playerTimer.IsTimerRunning = false;
                 playerTimer.IsRecordingReplay = false;
                 return;
@@ -166,14 +165,14 @@ namespace SharpTimer
             var steamId = player.SteamID.ToString();
             if ((bonusX == 0 && playerTimers[playerSlot].IsTimerRunning == false) || (bonusX != 0 && playerTimers[playerSlot].IsBonusTimerRunning == false)) return;
 
-            SharpTimerDebug($"Saving player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} of {timerTicks} ticks for {playerName} to json");
+            Utils.LogDebug($"Saving player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} of {timerTicks} ticks for {playerName} to json");
             string mapRecordsPath = Path.Combine(playerRecordsPath!, bonusX == 0 ? $"{currentMapName}.json" : $"{currentMapName}_bonus{bonusX}.json");
 
             Task.Run(async () =>
             {
                 try
                 {
-                    using (JsonDocument? jsonDocument = await LoadJson(mapRecordsPath)!)
+                    using (JsonDocument? jsonDocument = await Utils.LoadJson(mapRecordsPath)!)
                     {
                         Dictionary<string, PlayerRecord> records;
 
@@ -212,7 +211,7 @@ namespace SharpTimer
                 }
                 catch (Exception ex)
                 {
-                    SharpTimerError($"Error in SavePlayerTime: {ex.Message}");
+                    Utils.LogError($"Error in SavePlayerTime: {ex.Message}");
                 }
             });
         }
@@ -226,13 +225,13 @@ namespace SharpTimer
                     return;
                 }
 
-                SharpTimerDebug($"Player {playerName} has a stage trigger with handle {triggerHandle}");
+                Utils.LogDebug($"Player {playerName} has a stage trigger with handle {triggerHandle}");
 
                 if (stageTriggers.TryGetValue(triggerHandle, out int stageTrigger))
                 {
                     //var playerTimerTicks = playerTimers[playerSlot].TimerTicks; // store so its in sync with player
                     var playerStageTicks = playerTimers[playerSlot].StageTicks;
-                    var formattedStageTicks = FormatTime(playerStageTicks);
+                    var formattedStageTicks = Utils.FormatTime(playerStageTicks);
                     var prevStage = stageTrigger - 1;
 
                     string currentSpeed = Math.Round(use2DSpeed ? Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value.AbsVelocity.X + player.PlayerPawn.Value.AbsVelocity.Y * player.PlayerPawn.Value.AbsVelocity.Y)
@@ -258,15 +257,15 @@ namespace SharpTimer
 
                             if (previousStageTime != 0)
                             {
-                                PrintToChat(player, $"Entering Stage: {stageTrigger}");
-                                PrintToChat(player, $"Time: {ChatColors.White}[{primaryChatColor}{formattedStageTicks}{ChatColors.White}] " +
-                                                               $" [{FormatTimeDifference(playerStageTicks, previousStageTime)}{ChatColors.White}]" +
-                                                               $" {(previousStageTime != srStageTime ? $"[SR {FormatTimeDifference(playerStageTicks, srStageTime)}{ChatColors.White}]" : "")}");
+                                Utils.PrintToChat(player, $"Entering Stage: {stageTrigger}");
+                                Utils.PrintToChat(player, $"Time: {ChatColors.White}[{primaryChatColor}{formattedStageTicks}{ChatColors.White}] " +
+                                                               $" [{Utils.FormatTimeDifference(playerStageTicks, previousStageTime)}{ChatColors.White}]" +
+                                                               $" {(previousStageTime != srStageTime ? $"[SR {Utils.FormatTimeDifference(playerStageTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                 if (float.TryParse(currentSpeed, out float speed) && speed >= 100) //workaround for staged maps with not telehops
-                                    PrintToChat(player, $"Speed: {ChatColors.White}[{primaryChatColor}{currentSpeed}u/s{ChatColors.White}]" +
-                                                                   $" [{FormatSpeedDifferenceFromString(currentSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
-                                                                   $" {(previousStageSpeed != srStageSpeed ? $"[SR {FormatSpeedDifferenceFromString(currentSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
+                                    Utils.PrintToChat(player, $"Speed: {ChatColors.White}[{primaryChatColor}{currentSpeed}u/s{ChatColors.White}]" +
+                                                                   $" [{Utils.FormatSpeedDifferenceFromString(currentSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
+                                                                   $" {(previousStageSpeed != srStageSpeed ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                             }
 
                             if (playerTimer.StageVelos != null && playerTimer.StageTimes != null && playerTimer.IsTimerRunning == true && IsAllowedPlayer(player))
@@ -275,12 +274,12 @@ namespace SharpTimer
                                 {
                                     playerTimer.StageTimes[stageTrigger] = playerStageTicks;
                                     playerTimer.StageVelos[stageTrigger] = $"{currentSpeed}";
-                                    SharpTimerDebug($"Player {playerName} Entering stage {stageTrigger} Time {playerTimer.StageTimes[stageTrigger]}");
+                                    Utils.LogDebug($"Player {playerName} Entering stage {stageTrigger} Time {playerTimer.StageTimes[stageTrigger]}");
                                 }
                                 catch (Exception ex)
                                 {
-                                    SharpTimerError($"Error updating StageTimes dictionary: {ex.Message}");
-                                    SharpTimerDebug($"Player {playerName} dictionary keys: {string.Join(", ", playerTimer.StageTimes.Keys)}");
+                                    Utils.LogError($"Error updating StageTimes dictionary: {ex.Message}");
+                                    Utils.LogDebug($"Player {playerName} dictionary keys: {string.Join(", ", playerTimer.StageTimes.Keys)}");
                                 }
                             }
 
@@ -294,7 +293,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in HandlePlayerStageTimes: {ex.Message}");
+                Utils.LogError($"Error in HandlePlayerStageTimes: {ex.Message}");
             }
         }
 
@@ -315,7 +314,7 @@ namespace SharpTimer
                         return;
                     }
 
-                    SharpTimerDebug($"Player {playerName} has a checkpoint trigger with handle {triggerHandle}");
+                    Utils.LogDebug($"Player {playerName} has a checkpoint trigger with handle {triggerHandle}");
 
                     playerTimers[playerSlot].CurrentMapCheckpoint++;
 
@@ -349,22 +348,22 @@ namespace SharpTimer
 
                             if (previousStageTime != 0)
                             {
-                                player.PrintToChat($" {Localizer["prefix"]} Checkpoint: {playerTimer.CurrentMapCheckpoint}");
-                                player.PrintToChat($" {Localizer["prefix"]} Time: {ChatColors.White}[{primaryChatColor}{FormatTime(playerTimerTicks)}{ChatColors.White}] " +
-                                                               $" [{FormatTimeDifference(playerTimerTicks, previousStageTime)}{ChatColors.White}]" +
-                                                               $" {(previousStageTime != srStageTime ? $"[SR {FormatTimeDifference(playerTimerTicks, srStageTime)}{ChatColors.White}]" : "")}");
+                                Utils.PrintToChat(player, $" {Localizer["prefix"]} Checkpoint: {playerTimer.CurrentMapCheckpoint}");
+                                Utils.PrintToChat(player, $" {Localizer["prefix"]} Time: {ChatColors.White}[{primaryChatColor}{Utils.FormatTime(playerTimerTicks)}{ChatColors.White}] " +
+                                                               $" [{Utils.FormatTimeDifference(playerTimerTicks, previousStageTime)}{ChatColors.White}]" +
+                                                               $" {(previousStageTime != srStageTime ? $"[SR {Utils.FormatTimeDifference(playerTimerTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                 if (float.TryParse(currentStageSpeed, out float speed) && speed >= 100) //workaround for staged maps with not telehops
-                                    player.PrintToChat($" {Localizer["prefix"]} Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
-                                                                   $" [{FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
-                                                                   $" {(previousStageSpeed != srStageSpeed ? $"[SR {FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
+                                    Utils.PrintToChat(player, $" {Localizer["prefix"]} Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
+                                                                   $" [{Utils.FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
+                                                                   $" {(previousStageSpeed != srStageSpeed ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                             }
 
                             if (playerTimer.StageVelos != null && playerTimer.StageTimes != null && playerTimer.IsTimerRunning == true && IsAllowedPlayer(player) && playerTimer.currentStyle == 0)
                             {
                                 if (!playerTimer.StageTimes.ContainsKey(cpTrigger))
                                 {
-                                    SharpTimerDebug($"Player {playerName} cleared StageTimes before (cpTrigger)");
+                                    Utils.LogDebug($"Player {playerName} cleared StageTimes before (cpTrigger)");
                                     playerTimer.StageTimes.Add(cpTrigger, playerTimerTicks);
                                     playerTimer.StageVelos.Add(cpTrigger, $"{currentStageSpeed}");
                                 }
@@ -374,12 +373,12 @@ namespace SharpTimer
                                     {
                                         playerTimer.StageTimes[cpTrigger] = playerTimerTicks;
                                         playerTimer.StageVelos[cpTrigger] = $"{currentStageSpeed}";
-                                        SharpTimerDebug($"Player {playerName} Entering checkpoint {cpTrigger} Time {playerTimer.StageTimes[cpTrigger]}");
+                                        Utils.LogDebug($"Player {playerName} Entering checkpoint {cpTrigger} Time {playerTimer.StageTimes[cpTrigger]}");
                                     }
                                     catch (Exception ex)
                                     {
-                                        SharpTimerError($"Error updating StageTimes dictionary: {ex.Message}");
-                                        SharpTimerDebug($"Player {playerName} dictionary keys: {string.Join(", ", playerTimer.StageTimes.Keys)}");
+                                        Utils.LogError($"Error updating StageTimes dictionary: {ex.Message}");
+                                        Utils.LogDebug($"Player {playerName} dictionary keys: {string.Join(", ", playerTimer.StageTimes.Keys)}");
                                     }
                                 }
                             }
@@ -389,7 +388,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in HandlePlayerCheckpointTimes: {ex.Message}");
+                Utils.LogError($"Error in HandlePlayerCheckpointTimes: {ex.Message}");
             }
         }
 
@@ -410,7 +409,7 @@ namespace SharpTimer
                         return;
                     }
 
-                    SharpTimerDebug($"Player {playerName} has a checkpoint trigger with handle {triggerHandle}");
+                    Utils.LogDebug($"Player {playerName} has a checkpoint trigger with handle {triggerHandle}");
 
                     var playerTimerTicks = playerTimers[playerSlot].TimerTicks; // store so its in sync with player
 
@@ -442,22 +441,22 @@ namespace SharpTimer
 
                             if (previousStageTime != 0)
                             {
-                                player.PrintToChat($" {Localizer["prefix"]} Bonus Checkpoint: {bonusCheckpointTrigger}");
-                                player.PrintToChat($" {Localizer["prefix"]} Time: {ChatColors.White}[{primaryChatColor}{FormatTime(playerTimerTicks)}{ChatColors.White}] " +
-                                                               $" [{FormatTimeDifference(playerTimerTicks, previousStageTime)}{ChatColors.White}]" +
-                                                               $" {(previousStageTime != srStageTime ? $"[SR {FormatTimeDifference(playerTimerTicks, srStageTime)}{ChatColors.White}]" : "")}");
+                                Utils.PrintToChat(player, $" {Localizer["prefix"]} Bonus Checkpoint: {bonusCheckpointTrigger}");
+                                Utils.PrintToChat(player, $" {Localizer["prefix"]} Time: {ChatColors.White}[{primaryChatColor}{Utils.FormatTime(playerTimerTicks)}{ChatColors.White}] " +
+                                                               $" [{Utils.FormatTimeDifference(playerTimerTicks, previousStageTime)}{ChatColors.White}]" +
+                                                               $" {(previousStageTime != srStageTime ? $"[SR {Utils.FormatTimeDifference(playerTimerTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                 if (float.TryParse(currentStageSpeed, out float speed) && speed >= 100) //workaround for staged maps with not telehops
-                                    player.PrintToChat($" {Localizer["prefix"]} Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
-                                                                   $" [{FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
-                                                                   $" {(previousStageSpeed != srStageSpeed ? $"[SR {FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
+                                    Utils.PrintToChat(player, $" {Localizer["prefix"]} Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
+                                                                   $" [{Utils.FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
+                                                                   $" {(previousStageSpeed != srStageSpeed ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                             }
 
                             if (playerTimer.StageVelos != null && playerTimer.StageTimes != null && playerTimer.IsTimerRunning == true && IsAllowedPlayer(player))
                             {
                                 if (!playerTimer.StageTimes.ContainsKey(bonusCheckpointTrigger))
                                 {
-                                    SharpTimerDebug($"Player {playerName} cleared StageTimes before (cpTrigger)");
+                                    Utils.LogDebug($"Player {playerName} cleared StageTimes before (cpTrigger)");
                                     playerTimer.StageTimes.Add(bonusCheckpointTrigger, playerTimerTicks);
                                     playerTimer.StageVelos.Add(bonusCheckpointTrigger, $"{currentStageSpeed}");
                                 }
@@ -467,12 +466,12 @@ namespace SharpTimer
                                     {
                                         playerTimer.StageTimes[bonusCheckpointTrigger] = playerTimerTicks;
                                         playerTimer.StageVelos[bonusCheckpointTrigger] = $"{currentStageSpeed}";
-                                        SharpTimerDebug($"Player {playerName} Entering checkpoint {bonusCheckpointTrigger} Time {playerTimer.StageTimes[bonusCheckpointTrigger]}");
+                                        Utils.LogDebug($"Player {playerName} Entering checkpoint {bonusCheckpointTrigger} Time {playerTimer.StageTimes[bonusCheckpointTrigger]}");
                                     }
                                     catch (Exception ex)
                                     {
-                                        SharpTimerError($"Error updating StageTimes dictionary: {ex.Message}");
-                                        SharpTimerDebug($"Player {playerName} dictionary keys: {string.Join(", ", playerTimer.StageTimes.Keys)}");
+                                        Utils.LogError($"Error updating StageTimes dictionary: {ex.Message}");
+                                        Utils.LogDebug($"Player {playerName} dictionary keys: {string.Join(", ", playerTimer.StageTimes.Keys)}");
                                     }
                                 }
                             }
@@ -483,7 +482,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in HandlePlayerBonusCheckpointTimes: {ex.Message}");
+                Utils.LogError($"Error in HandlePlayerBonusCheckpointTimes: {ex.Message}");
             }
         }
 
@@ -497,7 +496,7 @@ namespace SharpTimer
 
             try
             {
-                using (JsonDocument? jsonDocument = await LoadJson(playerStageRecordsPath)!)
+                using (JsonDocument? jsonDocument = await Utils.LoadJson(playerStageRecordsPath)!)
                 {
                     if (jsonDocument != null)
                     {
@@ -525,7 +524,7 @@ namespace SharpTimer
                         }
                         else
                         {
-                            SharpTimerError($"Error in DumpPlayerStageTimesToJson: playerTimers does not have the requested playerSlot");
+                            Utils.LogError($"Error in DumpPlayerStageTimesToJson: playerTimers does not have the requested playerSlot");
                         }
 
                         string updatedJson = JsonSerializer.Serialize(playerData, jsonSerializerOptions);
@@ -545,7 +544,7 @@ namespace SharpTimer
                         }
                         else
                         {
-                            SharpTimerError($"Error in DumpPlayerStageTimesToJson: playerTimers does not have the requested playerSlot");
+                            Utils.LogError($"Error in DumpPlayerStageTimesToJson: playerTimers does not have the requested playerSlot");
                         }
 
                         string updatedJson = JsonSerializer.Serialize(playerData, jsonSerializerOptions);
@@ -555,7 +554,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in DumpPlayerStageTimesToJson: {ex.Message}");
+                Utils.LogError($"Error in DumpPlayerStageTimesToJson: {ex.Message}");
             }
         }
     }

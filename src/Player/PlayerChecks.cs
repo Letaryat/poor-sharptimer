@@ -28,12 +28,11 @@ namespace SharpTimer
 
             int slot = player.Slot;
             bool isConnected = connectedPlayers.ContainsKey(slot) && playerTimers.ContainsKey(slot);
-            bool isConnectedJS = !jumpStatsEnabled || playerJumpStats.ContainsKey(slot);
 
             bool isAlive = player.Alive();
             bool isTeamValid = player.TeamCT() || player.TeamT();
 
-            return isConnected && isConnectedJS && isAlive && isTeamValid;
+            return isConnected && isAlive && isTeamValid;
         }
 
         private bool IsAllowedSpectator(CCSPlayerController? player)
@@ -86,13 +85,13 @@ namespace SharpTimer
                     }
                     else
                     {
-                        SharpTimerError($"Error in IsPlayerATester: player not on server anymore");
+                        Utils.LogError($"Error in IsPlayerATester: player not on server anymore");
                     }
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in IsPlayerATester: {ex.Message}");
+                Utils.LogError($"Error in IsPlayerATester: {ex.Message}");
             }
         }
 
@@ -114,7 +113,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in GetTesterBigGif: {ex.Message}");
+                Utils.LogError($"Error in GetTesterBigGif: {ex.Message}");
                 return "";
             }
         }
@@ -137,7 +136,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in GetTesterSmolGif: {ex.Message}");
+                Utils.LogError($"Error in GetTesterSmolGif: {ex.Message}");
                 return "";
             }
         }
@@ -158,7 +157,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in IsSteamIDaTester: {ex.Message}");
+                Utils.LogError($"Error in IsSteamIDaTester: {ex.Message}");
                 return false;
             }
         }
@@ -184,8 +183,8 @@ namespace SharpTimer
                 }
                 if (!useTriggersAndFakeZones)
                 {
-                    isInsideStartBox = IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
-                    isInsideEndBox = IsVectorInsideBox(playerPos, currentMapEndC1, currentMapEndC2);
+                    isInsideStartBox = Utils.IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
+                    isInsideEndBox = Utils.IsVectorInsideBox(playerPos, currentMapEndC1, currentMapEndC2);
                 }
                 bool[] isInsideBonusStartBox = new bool[11];
                 bool[] isInsideBonusEndBox = new bool[11];
@@ -202,13 +201,13 @@ namespace SharpTimer
                             currentBonusEndC1 == null || currentBonusEndC1.Length <= bonus ||
                             currentBonusEndC2 == null || currentBonusEndC2.Length <= bonus)
                         {
-                            SharpTimerError($"Invalid bonus coordinates for bonus {bonus}");
+                            Utils.LogError($"Invalid bonus coordinates for bonus {bonus}");
 
                         }
                         else
                         {
-                            isInsideBonusStartBox[bonus] = IsVectorInsideBox(playerPos, currentBonusStartC1[bonus], currentBonusStartC2[bonus]);
-                            isInsideBonusEndBox[bonus] = IsVectorInsideBox(playerPos, currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
+                            isInsideBonusStartBox[bonus] = Utils.IsVectorInsideBox(playerPos, currentBonusStartC1[bonus], currentBonusStartC2[bonus]);
+                            isInsideBonusEndBox[bonus] = Utils.IsVectorInsideBox(playerPos, currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
                         }
                     }
                 }
@@ -258,7 +257,7 @@ namespace SharpTimer
                             currentBonusEndC1 == null || currentBonusEndC1.Length <= bonus ||
                             currentBonusEndC2 == null || currentBonusEndC2.Length <= bonus)
                         {
-                            SharpTimerError($"Invalid bonus coordinates for bonus {bonus}");
+                            Utils.LogError($"Invalid bonus coordinates for bonus {bonus}");
 
                         }
                         else
@@ -300,7 +299,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in CheckPlayerCoords: {ex.Message}");
+                Utils.LogError($"Error in CheckPlayerCoords: {ex.Message}");
             }
         }
 
@@ -311,7 +310,7 @@ namespace SharpTimer
                 double secondsRemaining = (data.CmdCooldown - DateTime.Now).TotalSeconds;
                 if (secondsRemaining > 0)
                 {
-                    PrintToChat(player, Localizer["command_cooldown", secondsRemaining]);
+                    Utils.PrintToChat(player, Localizer["command_cooldown", secondsRemaining]);
                     return true;
                 }
             }
@@ -327,7 +326,7 @@ namespace SharpTimer
         {
             if (!playerTimers[player!.Slot].IsTimerBlocked)
             {
-                PrintToChat(player, Localizer["stop_using_timer"]);
+                Utils.PrintToChat(player, Localizer["stop_using_timer"]);
                 return true;
             }
             return false;
@@ -337,7 +336,7 @@ namespace SharpTimer
         {
             if (playerTimers[player!.Slot].IsReplaying)
             {
-                PrintToChat(player, Localizer["end_your_replay"]);
+                Utils.PrintToChat(player, Localizer["end_your_replay"]);
                 return true;
             }
             return false;
@@ -349,7 +348,7 @@ namespace SharpTimer
             {
                 if (playerTimers[player.Slot].currentStyle == 12)
                     return true;
-                PrintToChat(player, Localizer["cant_use_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]);
+                Utils.PrintToChat(player, Localizer["cant_use_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]);
                 PlaySound(player, cpSoundError);
                 return false;
             }

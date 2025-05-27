@@ -22,56 +22,66 @@ using CounterStrikeSharp.API.Modules.Utils;
 
 namespace SharpTimer
 {
-    public partial class SharpTimer
+    public class RemoveDamage
     {
-        public void DamageHook()
+        private static readonly SharpTimer Plugin = SharpTimer.Instance;
+
+        public static void Hook()
         {
+            Utils.LogDebug("Hook RemoveDamage");
+
             try
             {
-                SharpTimerDebug("Init Damage hook...");
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                if (Plugin.isLinux)
                 {
-                    SharpTimerDebug("Trying to register Linux Damage hook...");
-                    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(this.OnTakeDamage, HookMode.Pre);
+                    Utils.LogDebug("Trying to register Linux Damage hook...");
+                    VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(OnTakeDamage, HookMode.Pre);
                 }
                 else
                 {
-                    SharpTimerDebug("Trying to register Windows Damage hook...");
-                    RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt, HookMode.Pre);
+                    Utils.LogDebug("Trying to register Windows Damage hook...");
+                    Plugin.RegisterEventHandler<EventPlayerHurt>(OnPlayerHurt, HookMode.Pre);
                 }
             }
             catch (Exception ex)
             {
                 if (ex.Message == "Invalid function pointer")
-                    SharpTimerError($"Error in DamageHook: Conflict between cs2fixes and SharpTimer");
+                    Utils.LogError($"Error in DamageHook: Conflict between cs2fixes and SharpTimer");
                 else
-                    SharpTimerError($"Error in DamageHook: {ex.Message}");
+                    Utils.LogError($"Error in DamageHook: {ex.Message}");
             }
         }
 
-        public void DamageUnHook()
+        public static void Unhook()
         {
+            Utils.LogDebug("Unhook RemoveDamage");
+
             try
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(OnTakeDamage, HookMode.Pre);
                 }
+                else
+                {
+                    Plugin.DeregisterEventHandler<EventPlayerHurt>(OnPlayerHurt, HookMode.Pre);
+                }
             }
             catch (Exception ex)
             {
                 if (ex.Message == "Invalid function pointer")
-                    SharpTimerError($"Error in DamageUnHook: Conflict between cs2fixes and SharpTimer");
+                    Utils.LogError($"Error in DamageUnHook: Conflict between cs2fixes and SharpTimer");
                 else
-                    SharpTimerError($"Error in DamageUnHook: {ex.Message}");
+                    Utils.LogError($"Error in DamageUnHook: {ex.Message}");
             }
         }
 
-        HookResult OnTakeDamage(DynamicHook h)
+        private static HookResult OnTakeDamage(DynamicHook hook)
         {
-            var ent = h.GetParam<CEntityInstance>(0);
-            var info = h.GetParam<CTakeDamageInfo>(1);
-            if(disableDamage) h.GetParam<CTakeDamageInfo>(1).Damage = 0;
+            var ent = hook.GetParam<CEntityInstance>(0);
+            var info = hook.GetParam<CTakeDamageInfo>(1);
+
+            if (Plugin.disableDamage) hook.GetParam<CTakeDamageInfo>(1).Damage = 0;
 
             if (!ent.IsValid || !info.Attacker.IsValid)
                 return HookResult.Continue;
@@ -82,9 +92,9 @@ namespace SharpTimer
                 return HookResult.Continue;
         }
 
-        HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
+        private static HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
         {
-            if (disableDamage == true)
+            if (Plugin.disableDamage == true)
             {
                 var player = @event.Userid;
 
@@ -101,7 +111,7 @@ namespace SharpTimer
 
                 Server.NextFrame(() =>
                 {
-                    if (IsAllowedPlayer(player)) AdjustPlayerVelocity(player, playerSpeed.Length(), true);
+                    if (Plugin.IsAllowedPlayer(player)) Plugin.AdjustPlayerVelocity(player, playerSpeed.Length(), true);
                 });
             }
 

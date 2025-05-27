@@ -17,6 +17,7 @@ using System.Globalization;
 using System.Text.Json;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
+using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 
@@ -26,8 +27,16 @@ namespace SharpTimer
     {
         public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
 
+        public static SharpTimer Instance = new();
+
+        public IRunCommand? RunCommand;
+        private static readonly MemoryFunctionVoid<CCSPlayerPawn, CSPlayerState> StateTransition = new(GameData.GetSignature("StateTransition"));
+        private readonly INetworkServerService networkServerService = new();
+        private int movementServices;
+        private int movementPtr;
+        private readonly CSPlayerState[] _oldPlayerState = new CSPlayerState[65];
+
         public Dictionary<int, PlayerTimerInfo> playerTimers = [];
-        private Dictionary<int, PlayerJumpStats> playerJumpStats = [];
         private Dictionary<int, PlayerReplays> playerReplays = [];
         private Dictionary<int, List<PlayerCheckpoint>> playerCheckpoints = [];
         public Dictionary<int, CCSPlayerController> connectedPlayers = [];
@@ -36,7 +45,6 @@ namespace SharpTimer
         private EntityCache? entityCache;
         public Dictionary<int, PlayerRecord>? SortedCachedRecords = [];
         private static readonly HttpClient httpClient = new();
-
         public static JsonSerializerOptions jsonSerializerOptions = new()
         {
             WriteIndented = true,
@@ -245,12 +253,6 @@ namespace SharpTimer
         public double fastForwardPointModifier = 0.8;
         public double parachutePointModifier = 0.8;
         public double tasPointModifier = 0.0;
-
-        public bool jumpStatsEnabled = false;
-        public float jumpStatsMinDist = 175;
-        public float jumpStatsMaxVert = 32;
-        public bool movementUnlockerCapEnabled = true;
-        public float movementUnlockerCapValue = 250;
 
         public bool execCustomMapCFG = false;
 

@@ -17,8 +17,6 @@ using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
-using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Utils;
 
 namespace SharpTimer
 {
@@ -30,19 +28,19 @@ namespace SharpTimer
             {
                 if (player == null)
                 {
-                    SharpTimerError("Player object is null.");
+                    Utils.LogError("Player object is null.");
                     return;
                 }
 
                 if (player.PlayerPawn == null)
                 {
-                    SharpTimerError("PlayerPawn is null.");
+                    Utils.LogError("PlayerPawn is null.");
                     return;
                 }
 
                 if (player.PlayerPawn.Value!.MovementServices == null)
                 {
-                    SharpTimerError("MovementServices is null.");
+                    Utils.LogError("MovementServices is null.");
                     return;
                 }
 
@@ -53,7 +51,7 @@ namespace SharpTimer
                 {
                     connectedPlayers[playerSlot] = new CCSPlayerController(player.Handle);
                     playerTimers[playerSlot] = new PlayerTimerInfo();
-                    playerJumpStats[playerSlot] = new PlayerJumpStats();
+
                     if (enableReplays) playerReplays[playerSlot] = new PlayerReplays();
                     playerTimers[playerSlot].MovementService = new CCSPlayer_MovementServices(player.PlayerPawn.Value.MovementServices!.Handle);
                     playerTimers[playerSlot].StageTimes = new Dictionary<int, int>();
@@ -74,12 +72,12 @@ namespace SharpTimer
                         if (cmdJoinMsgEnabled == true) PrintAllEnabledCommands(player);
                     }
 
-                    if (connectMsgEnabled == true && !enableDb) PrintToChatAll(Localizer["connect_message", player.PlayerName]);
+                    if (connectMsgEnabled == true && !enableDb) Utils.PrintToChatAll(Localizer["connect_message", player.PlayerName]);
 
-                    SharpTimerDebug($"Added player {player.PlayerName} with UserID {player.UserId} to connectedPlayers");
-                    SharpTimerDebug($"Total players connected: {connectedPlayers.Count}");
-                    SharpTimerDebug($"Total playerTimers: {playerTimers.Count}");
-                    SharpTimerDebug($"Total playerReplays: {playerReplays.Count}");
+                    Utils.LogDebug($"Added player {player.PlayerName} with UserID {player.UserId} to connectedPlayers");
+                    Utils.LogDebug($"Total players connected: {connectedPlayers.Count}");
+                    Utils.LogDebug($"Total playerTimers: {playerTimers.Count}");
+                    Utils.LogDebug($"Total playerReplays: {playerReplays.Count}");
 
                     if (removeLegsEnabled == true)
                     {
@@ -102,7 +100,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in OnPlayerConnect: {ex.Message}");
+                Utils.LogError($"Error in OnPlayerConnect: {ex.Message}");
             }
         }
 
@@ -134,21 +132,21 @@ namespace SharpTimer
                         playerReplays.Remove(player.Slot);
                     }
 
-                    SharpTimerDebug($"Removed player {connectedPlayer.PlayerName} with UserID {connectedPlayer.UserId} from connectedPlayers.");
-                    SharpTimerDebug($"Removed specTarget index {player.Pawn.Value.EntityHandle.Index} from specTargets.");
-                    SharpTimerDebug($"Total players connected: {connectedPlayers.Count}");
-                    SharpTimerDebug($"Total playerTimers: {playerTimers.Count}");
-                    SharpTimerDebug($"Total specTargets: {specTargets.Count}");
+                    Utils.LogDebug($"Removed player {connectedPlayer.PlayerName} with UserID {connectedPlayer.UserId} from connectedPlayers.");
+                    Utils.LogDebug($"Removed specTarget index {player.Pawn.Value.EntityHandle.Index} from specTargets.");
+                    Utils.LogDebug($"Total players connected: {connectedPlayers.Count}");
+                    Utils.LogDebug($"Total playerTimers: {playerTimers.Count}");
+                    Utils.LogDebug($"Total specTargets: {specTargets.Count}");
 
                     if (connectMsgEnabled == true && isForBot == false)
                     {
-                        PrintToChatAll(Localizer["disconnect_message", connectedPlayer.PlayerName]);
+                        Utils.PrintToChatAll(Localizer["disconnect_message", connectedPlayer.PlayerName]);
                     }
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in OnPlayerDisconnect (probably replay bot related lolxd): {ex.Message}");
+                Utils.LogError($"Error in OnPlayerDisconnect (probably replay bot related lolxd): {ex.Message}");
             }
         }
     }

@@ -36,10 +36,10 @@ namespace SharpTimer
             string? _;
             
             if(disableRemoteData)
-                (tier, _) = await FindMapInfoFromLocal(GetMapInfoSource(), mapname);
+                (tier, _) = await Utils.FindMapInfoFromLocal(Utils.GetMapInfoSource(), mapname);
                 
             else
-                (tier, _) = await FindMapInfoFromHTTP(GetMapInfoSource(), mapname);
+                (tier, _) = await Utils.FindMapInfoFromHTTP(Utils.GetMapInfoSource(), mapname);
                 
             if (tier != null)
             {

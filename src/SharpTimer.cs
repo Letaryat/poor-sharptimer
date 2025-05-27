@@ -32,41 +32,11 @@ public partial class SharpTimer : BasePlugin
     public override string ModuleAuthor => "dea & sharptimer community";
     public override string ModuleDescription => "A CS2 Timer Plugin";
 
-    public static SharpTimer Instance = new();
-
-    public IRunCommand? RunCommand;
-    private static readonly MemoryFunctionVoid<CCSPlayerPawn, CSPlayerState> StateTransition = new(GameData.GetSignature("StateTransition"));
-    private readonly INetworkServerService networkServerService = new();
-    private int movementServices;
-    private int movementPtr;
-    private readonly CSPlayerState[] _oldPlayerState = new CSPlayerState[65];
-
     public override void Load(bool hotReload)
     {
-        Instance = this;
-        isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? true : false;
+        Utils.ConPrint("Loading Plugin...");
 
-        SharpTimerConPrint("Loading Plugin...");
-        CheckForUpdate();
-
-        defaultServerHostname = ConVar.Find("hostname")!.StringValue;
-        Server.ExecuteCommand($"execifexists SharpTimer/config.cfg");
-
-        gameDir = Server.GameDirectory;
-        SharpTimerDebug($"Set gameDir to {gameDir}");
-
-        float randomf = new Random().Next(5, 31);
-        if (apiKey != "")
-            AddTimer(randomf, () => CheckCvarsAndMaxVelo(), TimerFlags.REPEAT);
-
-        currentMapName = Server.MapName;
-
-        string recordsFileName = $"SharpTimer/PlayerRecords/";
-        playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
-
-        movementServices = isLinux ? 0 : 3;
-        movementPtr = isLinux ? 1 : 2;
-        RunCommand = isLinux ? new RunCommandLinux() : new RunCommandWindows();
+        LoadGlobals();
 
         if (isLinux)
             RunCommand?.Hook(OnRunCommand, HookMode.Pre);
@@ -83,8 +53,6 @@ public partial class SharpTimer : BasePlugin
         RegisterEventHandler<EventRoundEnd>(EventRoundEnd);
         RegisterEventHandler<EventPlayerSpawn>(EventPlayerSpawn);
         RegisterEventHandler<EventPlayerDisconnect>(EventPlayerDisconnect);
-        RegisterEventHandler<EventPlayerJump>(EventPlayerJump);
-        RegisterEventHandler<EventPlayerSound>(EventPlayerSound);
         RegisterEventHandler<EventWeaponFire>(EventWeaponFire);
 
         AddCommandListener("say", OnPlayerChat, HookMode.Pre);
@@ -101,13 +69,15 @@ public partial class SharpTimer : BasePlugin
         HookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTeleport_OnStartTouch, HookMode.Pre);
         HookEntityOutput("trigger_teleport", "OnEndTouch", TriggerTeleport_OnEndTouch, HookMode.Pre);
 
-        AddTimer(1.0f, DamageHook);
+        RemoveDamage.Hook();
 
-        SharpTimerConPrint("Plugin Loaded");
+        Utils.ConPrint("Plugin Loaded");
     }
 
     public override void Unload(bool hotReload)
     {
+        Utils.ConPrint("Unloading Plugin...");
+
         if (isLinux)
             RunCommand?.Unhook(OnRunCommand, HookMode.Pre);
 
@@ -122,8 +92,6 @@ public partial class SharpTimer : BasePlugin
         DeregisterEventHandler<EventRoundEnd>(EventRoundEnd);
         DeregisterEventHandler<EventPlayerSpawn>(EventPlayerSpawn);
         DeregisterEventHandler<EventPlayerDisconnect>(EventPlayerDisconnect);
-        DeregisterEventHandler<EventPlayerJump>(EventPlayerJump);
-        DeregisterEventHandler<EventPlayerSound>(EventPlayerSound);
         DeregisterEventHandler<EventWeaponFire>(EventWeaponFire);
 
         RemoveCommandListener("say", OnPlayerChat, HookMode.Pre);
@@ -140,9 +108,36 @@ public partial class SharpTimer : BasePlugin
         UnhookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTeleport_OnStartTouch, HookMode.Pre);
         UnhookEntityOutput("trigger_teleport", "OnEndTouch", TriggerTeleport_OnEndTouch, HookMode.Pre);
 
-        DamageUnHook();
+        RemoveDamage.Unhook();
 
-        SharpTimerConPrint("Plugin Unloaded");
+        Utils.ConPrint("Plugin Unloaded");
+    }
+
+    private void LoadGlobals()
+    {
+        Instance = this;
+        isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? true : false;
+
+        Utils.CheckForUpdate();
+
+        defaultServerHostname = ConVar.Find("hostname")!.StringValue;
+        Server.ExecuteCommand($"execifexists SharpTimer/config.cfg");
+
+        gameDir = Server.GameDirectory;
+        Utils.LogDebug($"Set gameDir to {gameDir}");
+
+        float randomf = new Random().Next(5, 31);
+        if (apiKey != "")
+            AddTimer(randomf, () => CheckCvarsAndMaxVelo(), TimerFlags.REPEAT);
+
+        currentMapName = Server.MapName;
+
+        string recordsFileName = $"SharpTimer/PlayerRecords/";
+        playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
+
+        movementServices = isLinux ? 0 : 3;
+        movementPtr = isLinux ? 1 : 2;
+        RunCommand = isLinux ? new RunCommandLinux() : new RunCommandWindows();
     }
 
     private HookResult OnRunCommand(DynamicHook h)
@@ -341,7 +336,7 @@ public partial class SharpTimer : BasePlugin
             catch (Exception ex)
             {
                 // playerTimers for requested player does not exist
-                SharpTimerError("(EventPlayerTeam) " + ex.Message);
+                Utils.LogError("(EventPlayerTeam) " + ex.Message);
             }
         });
 
@@ -352,7 +347,7 @@ public partial class SharpTimer : BasePlugin
     {
         var mapName = Server.MapName;
         LoadMapData(mapName);
-        SharpTimerDebug($"Loading MapData on RoundStart...");
+        Utils.LogDebug($"Loading MapData on RoundStart...");
         return HookResult.Continue;
     }
 
@@ -385,7 +380,7 @@ public partial class SharpTimer : BasePlugin
         {
             if (enableDb && playerTimers.ContainsKey(player.Slot) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
             {
-                SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
+                Utils.LogDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
                 SetFov(player, playerTimers[player.Slot].PlayerFov, true);
             }
         });
@@ -405,30 +400,6 @@ public partial class SharpTimer : BasePlugin
             return HookResult.Continue;
 
         OnPlayerDisconnect(player);
-
-        return HookResult.Continue;
-    }
-
-    private HookResult EventPlayerJump(EventPlayerJump @event, GameEventInfo @eventInfo)
-    {
-        var player = @event.Userid;
-        if (player == null || player.NotValid())
-            return HookResult.Continue;
-
-        if (jumpStatsEnabled == true)
-            OnJumpStatJumped(player);
-
-        return HookResult.Continue;
-    }
-
-    private HookResult EventPlayerSound(EventPlayerSound @event, GameEventInfo @eventInfo)
-    {
-        var player = @event.Userid;
-        if (player == null || player.NotValid())
-            return HookResult.Continue;
-
-        if (jumpStatsEnabled == true && @event.Step == true)
-            OnJumpStatSound(player);
 
         return HookResult.Continue;
     }
@@ -477,13 +448,13 @@ public partial class SharpTimer : BasePlugin
                 string deadText = player.PawnIsAlive ? "" : $"{ChatColors.Grey}*DEAD* ";
                 string vipText = (value.IsVip ? $"{ChatColors.Magenta}{customVIPTag} " : "");
                 if (player.Team == CsTeam.Terrorist)
-                    Server.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.Terrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                    Utils.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.Terrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
                 if (player.Team == CsTeam.CounterTerrorist)
-                    Server.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.CounterTerrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                    Utils.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.CounterTerrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
                 if (player.Team == CsTeam.Spectator)
-                    Server.PrintToChatAll($" {ChatColors.Grey}*SPEC* {ChatColors.ForTeam(CsTeam.Spectator)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                    Utils.PrintToChatAll($" {ChatColors.Grey}*SPEC* {ChatColors.ForTeam(CsTeam.Spectator)}{player.PlayerName} {ChatColors.Default}: {msg}");
                 if (player.Team == CsTeam.None)
-                    Server.PrintToChatAll($" {ChatColors.ForTeam(CsTeam.None)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                    Utils.PrintToChatAll($" {ChatColors.ForTeam(CsTeam.None)}{player.PlayerName} {ChatColors.Default}: {msg}");
             }
 
             return HookResult.Handled;

@@ -53,7 +53,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in ReplayUpdate: {ex.Message}");
+                Utils.LogError($"Error in ReplayUpdate: {ex.Message}");
             }
         }
 
@@ -105,7 +105,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in ReplayPlayback: {ex.Message}");
+                Utils.LogError($"Error in ReplayPlayback: {ex.Message}");
             }
         }
 
@@ -127,14 +127,13 @@ namespace SharpTimer
                     adjustVelocity(player, 0, false);
                 }
 
-                if (jumpStatsEnabled) InvalidateJS(player.Slot);
                 ReplayPlayback(player, playerReplays[player.Slot].CurrentPlaybackFrame);
 
                 playerReplays[player.Slot].CurrentPlaybackFrame++;
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in ReplayPlay: {ex.Message}");
+                Utils.LogError($"Error in ReplayPlay: {ex.Message}");
             }
         }
 
@@ -152,7 +151,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in OnRecordingStart: {ex.Message}");
+                Utils.LogError($"Error in OnRecordingStart: {ex.Message}");
             }
         }
 
@@ -165,7 +164,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in OnRecordingStop: {ex.Message}");
+                Utils.LogError($"Error in OnRecordingStop: {ex.Message}");
             }
         }
 
@@ -175,7 +174,7 @@ namespace SharpTimer
             {
                 if (!IsAllowedPlayer(player))
                 {
-                    SharpTimerError($"Error in DumpReplayToJson: Player not allowed or not on server anymore");
+                    Utils.LogError($"Error in DumpReplayToJson: Player not allowed or not on server anymore");
                     return;
                 }
 
@@ -205,7 +204,7 @@ namespace SharpTimer
                 }
                 catch (Exception ex)
                 {
-                    SharpTimerError($"Error during serialization: {ex.Message}");
+                    Utils.LogError($"Error during serialization: {ex.Message}");
                 }
             });
         }
@@ -214,7 +213,7 @@ namespace SharpTimer
         {
             if (!IsAllowedPlayer(player))
             {
-                SharpTimerError($"Error in GetReplayJson: Player not allowed or not on server anymore");
+                Utils.LogError($"Error in GetReplayJson: Player not allowed or not on server anymore");
                 return "";
             }
 
@@ -230,7 +229,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error during serialization: {ex.Message}");
+                Utils.LogError($"Error during serialization: {ex.Message}");
                 return "";
             }
         }
@@ -269,18 +268,18 @@ namespace SharpTimer
                     }
                     else
                     {
-                        Server.NextFrame(() => { PrintToChat(player, $"Unsupported replay format"); });
+                        Server.NextFrame(() => { Utils.PrintToChat(player, $"Unsupported replay format"); });
                     }
                 }
                 else
                 {
-                    SharpTimerError($"File does not exist: {playerReplaysPath}");
-                    Server.NextFrame(() => PrintToChat(player, Localizer["replay_dont_exist"]));
+                    Utils.LogError($"File does not exist: {playerReplaysPath}");
+                    Server.NextFrame(() => Utils.PrintToChat(player, Localizer["replay_dont_exist"]));
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error during deserialization: {ex.Message}");
+                Utils.LogError($"Error during deserialization: {ex.Message}");
             }
         }
 
@@ -318,7 +317,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error during deserialization: {ex.Message}");
+                Utils.LogError($"Error during deserialization: {ex.Message}");
             }
         }
 
@@ -326,7 +325,7 @@ namespace SharpTimer
         {
             if (!await CheckSRReplay())
             {
-                SharpTimerDebug("Replay check failed, not spawning bot.");
+                Utils.LogDebug("Replay check failed, not spawning bot.");
                 return;
             }
 
@@ -338,7 +337,7 @@ namespace SharpTimer
                     Server.ExecuteCommand("bot_quota 1");
                     Server.ExecuteCommand("bot_add_ct");
 
-                    SharpTimerDebug("Searching for replay bot...");
+                    Utils.LogDebug("Searching for replay bot...");
 
                     AddTimer(1.0f, () =>
                     {
@@ -347,7 +346,7 @@ namespace SharpTimer
                         if (bot != null)
                         {
                             replayBotController = bot;
-                            SharpTimerDebug($"Found replay bot: {bot.PlayerName}");
+                            Utils.LogDebug($"Found replay bot: {bot.PlayerName}");
 
                             var botPawn = bot.PlayerPawn.Value;
                             if (botPawn == null) return;
@@ -361,18 +360,18 @@ namespace SharpTimer
                             bot!.Pawn.Value!.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
                             Utilities.SetStateChanged(bot, "CCollisionProperty", "m_CollisionGroup");
                             Utilities.SetStateChanged(bot, "CCollisionProperty", "m_collisionAttribute");
-                            SharpTimerDebug($"Configured replay bot collision and weapons for {bot.PlayerName}");
+                            Utils.LogDebug($"Configured replay bot collision and weapons for {bot.PlayerName}");
 
                             // start bot replay
                             OnPlayerConnect(bot, true);
                             ChangePlayerName(bot, replayBotName);
                             playerTimers[bot.Slot].IsTimerBlocked = true;
                             _ = Task.Run(async () => await ReplayHandler(bot, bot.Slot));
-                            SharpTimerDebug($"Starting replay for {bot.PlayerName}");
+                            Utils.LogDebug($"Starting replay for {bot.PlayerName}");
                         }
                         else
                         {
-                            SharpTimerError($"Failed to spawn replay bot");
+                            Utils.LogError($"Failed to spawn replay bot");
                             return;
                         }
 
@@ -382,7 +381,7 @@ namespace SharpTimer
                         {
                             OnPlayerDisconnect(kicked, true);
                             Server.ExecuteCommand($"kickid {kicked.UserId}");
-                            SharpTimerDebug($"Kicking unused bot on spawn... {kicked.PlayerName}");
+                            Utils.LogDebug($"Kicking unused bot on spawn... {kicked.PlayerName}");
                         }
                     });
                 }
@@ -392,7 +391,7 @@ namespace SharpTimer
                     OnPlayerDisconnect(bot, true);
                     Server.ExecuteCommand($"kickid {bot.UserId}");
                     replayBotController = null;
-                    SharpTimerDebug($"Respawning bot, probably new record...");
+                    Utils.LogDebug($"Respawning bot, probably new record...");
                     _ = Task.Run(async () => await SpawnReplayBot());
                 }
             });
