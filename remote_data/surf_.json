@@ -3,6 +3,62 @@
         "Tier": 2,
         "Type": "Staged"
     },
+    "surf_lavaflow": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_horizon_njv": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
+    "surf_decked": {
+        "Tier": 2,
+        "Type": "Staged"
+    },
+    "surf_platinum": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_wew": {
+        "Tier": 1,
+        "Type": "Linear"
+    },
+    "surf_diamond_beta1": {
+        "Tier": 5,
+        "Type": "Staged"
+    },
+    "surf_scorch": {
+        "Tier": 2,
+        "Type": "Linear"
+    },
+    "surf_autism": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_bluewall": {
+        "Tier": 3,
+        "Type": "Staged"
+    },
+    "surf_minecraft_2016_final": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_glow": {
+        "Tier": 5,
+        "Type": "Linear"
+    },
+    "surf_sinsane_ksf": {
+        "Tier": 6,
+        "Type": "Linear"
+    },
+    "surf_hearth": {
+        "Tier": 1,
+        "Type": "Staged"
+    },
+    "surf_unitflex": {
+        "Tier": 8,
+        "Type": "Staged"
+    },
     "surf_physics": {
         "Tier": 2,
         "Type": "Linear"
