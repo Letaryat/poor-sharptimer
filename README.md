@@ -1,9 +1,18 @@
+<a name="readme-top"></a>
+<div align="center">
+	
+![GitHub Repo stars](https://img.shields.io/github/stars/Letaryat/poor-sharptimer?style=for-the-badge)
+![GitHub all releases](https://img.shields.io/github/downloads/Letaryat/poor-sharptimer/total?style=for-the-badge)
+</div>
+
 > [!NOTE]
 > The original creator of SharpTimer is [Dea](https://github.com/girlglock), who discontinued support for the project after version 0.2.6. This fork is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
 
 
 
-[**Discord**](https://discord.com/invite/SmQXeyMcny)
+## **Join Our Discord For Support**
+
+<a href="https://discord.com/invite/SmQXeyMcny"><img src="https://discord.com/api/guilds/1196646791450472488/widget.png?style=banner2"></a>
 
 <div align="center">
   <img src="https://files.catbox.moe/qvawnf.png" alt="" style="margin: 0;">
@@ -79,6 +88,8 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
    <img src="https://i.imgur.com/lXwXNN7.png"><br>
    <img src="https://i.imgur.com/nyn76Q4.png">
 </details>
+
+<p align="right">(<a href="#readme-top"> back to top </a>)</p>
 
 ## Dependencies
 
@@ -171,8 +182,9 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
   - [x] Dioscord Webhook
   - [X] Strafe Sync Bar on HUD
 
-
 ## Authors:
 [Deana](https://twitter.com/girlglock)
 [Letaryat](https://github.com/Letaryat)
 [rcnoob](https://github.com/rcnoob)
+
+<p align="right">(<a href="#readme-top"> back to top </a>)</p>
