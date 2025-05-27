@@ -80,6 +80,7 @@ namespace SharpTimer
         public bool useCheckpointVerification = true;
         
         public bool applyInfiniteAmmo = true;
+        public bool printStartSpeedEnabled = true;
         public bool useAnticheat = false;
 
         private Dictionary<int, Vector?> bonusRespawnPoses = [];
@@ -193,6 +194,7 @@ namespace SharpTimer
         public bool startzoneJumping = true;
         public bool spawnOnRespawnPos = false;
         public bool enableNoclip = false;
+        public bool enableRsOnLinear = false;
 
         public bool enableStyles = true;
         public bool enableStylePoints = true;

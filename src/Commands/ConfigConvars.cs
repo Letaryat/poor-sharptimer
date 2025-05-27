@@ -896,6 +896,15 @@ namespace SharpTimer
             applyInfiniteAmmo = bool.TryParse(args, out bool value) ? value : args != "0" && applyInfiniteAmmo;
         }
 
+        [ConsoleCommand("sharptimer_print_start_speed", "Whether the start speed should be printed to chat when the player leaves the start zone. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerPrintStartSpeed(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            printStartSpeedEnabled = bool.TryParse(args, out bool value) ? value : args != "0" && printStartSpeedEnabled;
+        }
+
         [ConsoleCommand("sharptimer_use2Dspeed_enabled", "Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimer2dSpeedConvar(CCSPlayerController? player, CommandInfo command)
@@ -1525,6 +1534,15 @@ namespace SharpTimer
             string args = command.ArgString;
 
             enableNoclip = bool.TryParse(args, out bool enableNoclipValue) ? enableNoclipValue : args != "0" && enableNoclip;
+        }
+        
+        [ConsoleCommand("sharptimer_rs_enabled_onlinear", "Whether !rs will reset players on linear maps. Default value : false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerResetLinearMapsConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            enableRsOnLinear = bool.TryParse(args, out bool enableRsOnLinearValue) ? enableRsOnLinearValue : args != "0" && enableRsOnLinear;
         }
 
         [ConsoleCommand("sharptimer_styles_enabled", "Enable or disable styles. Default value: true")]

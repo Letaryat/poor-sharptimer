@@ -1378,6 +1378,7 @@ namespace SharpTimer
                         PrintToChat(player, Localizer["style_not_found", desiredStyleInt]);
                         break;
                 }
+                RespawnPlayer(player);
             }
             else
             {
@@ -1454,6 +1455,7 @@ namespace SharpTimer
                         PrintToChat(player, Localizer["style_not_found", styleLowerCase]);
                         break;
                 }
+                RespawnPlayer(player);
             }
         }
 
@@ -1565,6 +1567,10 @@ namespace SharpTimer
 
             if (stageTriggerCount == 0)
             {
+                if (enableRsOnLinear) {
+                    player.ExecuteClientCommandFromServer("css_r");
+                    return;
+                }
                 PrintToChat(player, Localizer["map_no_stages"]);
                 return;
             }

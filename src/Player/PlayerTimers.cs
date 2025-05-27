@@ -51,6 +51,8 @@ namespace SharpTimer
             playerTimers[player.Slot].Sync = 0;
 
             playerTimers[player!.Slot].IsRecordingReplay = true;
+
+            if (printStartSpeedEnabled) PrintStartSpeed(player);
         }
 
         public void OnTimerStop(CCSPlayerController? player)

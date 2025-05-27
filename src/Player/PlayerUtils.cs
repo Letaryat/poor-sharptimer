@@ -187,6 +187,13 @@ namespace SharpTimer
             ).ToString("0000");
         }
 
+        public void PrintStartSpeed(CCSPlayerController player)
+        {
+            int startSpeed = int.Parse(GetCurrentPlayerSpeed(player));
+            int printSpeed = (maxStartingSpeedEnabled && startSpeed > maxStartingSpeed) ? maxStartingSpeed : startSpeed;
+            player.PrintToChat($"{Localizer["prefix"]} {Localizer["start_speed"]} {ChatColors.Olive}{printSpeed}");
+        }
+      
         private void RemovePlayerCollision(CCSPlayerController? player)
         {
             try
