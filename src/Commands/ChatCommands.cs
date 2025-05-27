@@ -154,7 +154,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
         public async void GlobalCheckCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player))
+            if (player == null || !IsAllowedPlayer(player))
                 return;
 
             if (apiKey == "")
@@ -392,7 +392,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void HelpCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedClient(player) || !helpEnabled)
+            if (!IsPlayerOrSpectator(player) || !helpEnabled)
                 return;
 
             PrintAllEnabledCommands(player!);
@@ -424,11 +424,8 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void HUDSwitchCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player))
-            {
-                if (!IsAllowedSpectator(player))
-                    return;
-            }
+            if (!IsPlayerOrSpectator(player))
+                return;
 
             var slot = player!.Slot;
             var playerName = player.PlayerName;
@@ -456,11 +453,8 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void KeysSwitchCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player))
-            {
-                if (!IsAllowedSpectator(player))
-                    return;
-            }
+            if (!IsPlayerOrSpectator(player))
+                return;
 
             var slot = player!.Slot;
             var playerName = player.PlayerName;
@@ -488,11 +482,8 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void SoundsSwitchCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player))
-            {
-                if (!IsAllowedSpectator(player))
-                    return;
-            }
+            if (!IsPlayerOrSpectator(player))
+                return;
 
             var slot = player!.Slot;
             var playerName = player.PlayerName;
@@ -520,11 +511,8 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void JSSwitchCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player) || jumpStatsEnabled == false)
-            {
-                if (!IsAllowedSpectator(player))
-                    return;
-            }
+            if (!IsPlayerOrSpectator(player) || jumpStatsEnabled == false)
+                return;
 
             var slot = player!.Slot;
             var playerName = player.PlayerName;
@@ -553,7 +541,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void ToggleWeaponCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player) || player?.Team == CsTeam.Spectator)
+            if (!IsPlayerOrSpectator(player))
                 return;
 
             var slot = player!.Slot;
@@ -568,7 +556,8 @@ namespace SharpTimer
         [CommandHelper(minArgs: 1, usage: "[fov]")]
         public void FovCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player) || fovChangerEnabled == false) return;
+            if (!IsAllowedPlayer(player) || fovChangerEnabled == false)
+                return;
 
             if (!Int32.TryParse(command.GetArg(1), out var desiredFov)) return;
 
@@ -595,7 +584,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void PrintTopRecords(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedClient(player) || topEnabled == false)
+            if (!IsPlayerOrSpectator(player) || topEnabled == false)
                 return;
 
             SharpTimerDebug($"{player!.PlayerName} calling css_top...");
@@ -613,7 +602,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void PrintTopPoints(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedClient(player) || globalRanksEnabled == false)
+            if (!IsPlayerOrSpectator(player) || globalRanksEnabled == false)
                 return;
 
             SharpTimerDebug($"{player!.PlayerName} calling css_points...");
@@ -628,7 +617,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void PrintWR(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedClient(player))
+            if (!IsPlayerOrSpectator(player))
                 return;
 
             SharpTimerDebug($"{player!.PlayerName} calling css_wr...");
@@ -643,7 +632,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void PrintTopGlobalPoints(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedClient(player))
+            if (!IsPlayerOrSpectator(player))
                 return;
 
             SharpTimerDebug($"{player!.PlayerName} calling css_gpoints...");
@@ -652,14 +641,13 @@ namespace SharpTimer
             else CommandAddCooldown(player);
 
             PrintGlobalPoints(player);
-            
         }
 
         [ConsoleCommand("css_grank", "Prints personal global rank")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void PrintPlayerGlobalPoints(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedClient(player))
+            if (!IsPlayerOrSpectator(player))
                 return;
 
             SharpTimerDebug($"{player!.PlayerName} calling css_grank...");
@@ -668,7 +656,6 @@ namespace SharpTimer
             else CommandAddCooldown(player);
 
             _ = Task.Run(async () => await PrintGlobalRankAsync(player));
-
         }
 
         [ConsoleCommand("css_topbonus", "Prints top players of this map bonus")]
@@ -676,7 +663,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void PrintTopBonusRecords(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedClient(player) || topEnabled == false)
+            if (!IsPlayerOrSpectator(player) || topEnabled == false)
                 return;
 
             SharpTimerDebug($"{player!.PlayerName} calling css_topbonus...");
@@ -696,7 +683,7 @@ namespace SharpTimer
         }
         public async Task PrintTopRecordsHandler(CCSPlayerController? player, string playerName, int bonusX = 0, string mapName = "", int style = 0)
         {
-            if (!IsAllowedClient(player) || topEnabled == false)
+            if (!IsPlayerOrSpectator(player) || topEnabled == false)
                 return;
 
             SharpTimerDebug($"Handling !top for {playerName}");
@@ -713,12 +700,12 @@ namespace SharpTimer
             {
                 Server.NextFrame(() =>
                 {
-                    if (IsAllowedClient(player))
+                    if (IsPlayerOrSpectator(player))
                     {
                         if (bonusX != 0)
-                            PrintToChat(player, Localizer["no_records_available_bonus", bonusX, currentMapNamee]);
+                            PrintToChat(player!, Localizer["no_records_available_bonus", bonusX, currentMapNamee]);
                         else
-                            PrintToChat(player, Localizer["no_records_available", currentMapNamee]);
+                            PrintToChat(player!, Localizer["no_records_available", currentMapNamee]);
                     }
                 });
                 return;
@@ -749,7 +736,7 @@ namespace SharpTimer
 
             Server.NextFrame(() =>
             {
-                if (IsAllowedClient(player))
+                if (IsPlayerOrSpectator(player))
                 {
                     foreach (var statement in printStatements)
                         player!.PrintToChat(statement);
@@ -761,7 +748,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void RankCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedClient(player) || rankEnabled == false)
+            if (!IsPlayerOrSpectator(player) || rankEnabled == false)
                 return;
 
             var slot = player!.Slot;
@@ -780,7 +767,7 @@ namespace SharpTimer
         {
             try
             {
-                if (!IsAllowedClient(player))
+                if (!IsPlayerOrSpectator(player))
                 {
                     SharpTimerError($"Error in RankCommandHandler: Player not allowed or not on server anymore");
                     return;
@@ -826,7 +813,7 @@ namespace SharpTimer
 
                 Server.NextFrame(() =>
                 {
-                    if (!IsAllowedClient(player)) return;
+                    if (!IsPlayerOrSpectator(player)) return;
                     playerTimers[slot].RankHUDIcon = $"{(!string.IsNullOrEmpty(rankIcon) ? $" {rankIcon}" : "")}";
                     playerTimers[slot].CachedPB = $"{(pbTicks != 0 ? $" {FormatTime(pbTicks)}" : "")}";
                     playerTimers[slot].CachedRank = ranking;
@@ -839,7 +826,7 @@ namespace SharpTimer
                 {
                     Server.NextFrame(() =>
                     {
-                        if (!IsAllowedClient(player))
+                        if (!IsPlayerOrSpectator(player))
                             return;
 
                         string rankMessage = Localizer["current_rank", GetRankColorForChat(player!), ranking];
@@ -847,15 +834,15 @@ namespace SharpTimer
                         if (useGlobalRanks)
                             rankMessage += Localizer["current_rank_points", serverPoints, serverPlacement];
 
-                        PrintToChat(player, rankMessage);
+                        PrintToChat(player!, rankMessage);
 
                         if (pbTicks != 0)
-                            PrintToChat(player, Localizer["current_pb", currentMapName!, FormatTime(pbTicks), mapPlacement]);
+                            PrintToChat(player!, Localizer["current_pb", currentMapName!, FormatTime(pbTicks), mapPlacement]);
                         
                         if (playerTimers[slot].CachedBonusInfo.Any())
                         {
                             foreach (var bonusPb in playerTimers[slot].CachedBonusInfo.OrderBy(x => x.Key))
-                                PrintToChat(player, $"{Localizer["current_bonus_pb", bonusPb.Key!, FormatTime(bonusPb.Value.PbTicks), bonusPb.Value.Placement!]}");
+                                PrintToChat(player!, $"{Localizer["current_bonus_pb", bonusPb.Key!, FormatTime(bonusPb.Value.PbTicks), bonusPb.Value.Placement!]}");
                         }
                     });
                 }
@@ -870,7 +857,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void SRCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedClient(player) || rankEnabled == false)
+            if (!IsPlayerOrSpectator(player) || rankEnabled == false)
                 return;
 
             var playerName = player!.PlayerName;
@@ -885,7 +872,9 @@ namespace SharpTimer
 
         public async Task SRCommandHandler(CCSPlayerController? player, string _playerName)
         {
-            if (!IsAllowedClient(player) || rankEnabled == false) return;
+            if (!IsPlayerOrSpectator(player) || rankEnabled == false)
+                return;
+
             SharpTimerDebug($"Handling !sr for {_playerName}...");
             
             var sortedRecords = await GetSortedRecordsFromDatabase();
@@ -895,8 +884,7 @@ namespace SharpTimer
 
             Server.NextFrame(() =>
             {
-                if (!IsAllowedClient(player)) return;
-                PrintToChat(player, Localizer["current_sr", currentMapName!]);
+                PrintToChat(player!, Localizer["current_sr", currentMapName!]);
             });
 
             foreach (var kvp in sortedRecords.Take(1))
@@ -905,8 +893,7 @@ namespace SharpTimer
                 int timerTicks = kvp.Value.TimerTicks;
                 Server.NextFrame(() =>
                 {
-                    if (!IsAllowedClient(player)) return;
-                    PrintToChat(player, Localizer["current_sr_player", playerName!, FormatTime(timerTicks)]);
+                    PrintToChat(player!, Localizer["current_sr_player", playerName!, FormatTime(timerTicks)]);
                 });
             }
         }
@@ -1413,7 +1400,7 @@ namespace SharpTimer
 
             if (!rankEnabled)
             {
-                PrintToChat(player, "This server has not enabled ranks");
+                PrintToChat(player!, "This server has not enabled ranks");
                 return;
             }
 
@@ -1424,7 +1411,7 @@ namespace SharpTimer
                     .Select(rank => ReplaceVars($"{rank.Color}{rank.Title.Replace("[", "").Replace("]", "")}"))
             );
 
-            PrintToChat(player, $"{rankList}");
+            PrintToChat(player!, $"{rankList}");
         }
 
         public void RespawnPlayer(CCSPlayerController player, bool toEnd = false)
@@ -1608,7 +1595,7 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
         public void STVerCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (player == null || !IsAllowedPlayer(player))
+            if (player == null || !IsPlayerOrSpectator(player))
             {
                 SharpTimerConPrint($"This server is running SharpTimer v{ModuleVersion}");
                 SharpTimerConPrint($"OS: {RuntimeInformation.OSDescription}");

@@ -23,47 +23,40 @@ namespace SharpTimer
     {
         public bool IsAllowedPlayer(CCSPlayerController? player)
         {
-            if (player == null || !player.IsValid || player.Pawn == null || !player.PlayerPawn.IsValid || !player.PawnIsAlive || playerTimers[player.Slot].IsNoclip)
-            {
+            if (player == null || !player.Valid() || playerTimers[player.Slot].IsNoclip)
                 return false;
-            }
 
-            int playerSlot = player.Slot;
+            int slot = player.Slot;
+            bool isConnected = connectedPlayers.ContainsKey(slot) && playerTimers.ContainsKey(slot);
+            bool isConnectedJS = !jumpStatsEnabled || playerJumpStats.ContainsKey(slot);
 
-            CsTeam teamNum = (CsTeam)player.TeamNum;
+            bool isAlive = player.Alive();
+            bool isTeamValid = player.TeamCT() || player.TeamT();
 
-            bool isAlive = player.PawnIsAlive;
-            bool isTeamValid = teamNum == CsTeam.CounterTerrorist || teamNum == CsTeam.Terrorist;
-
-            bool isTeamSpectatorOrNone = teamNum != CsTeam.Spectator && teamNum != CsTeam.None;
-            bool isConnected = connectedPlayers.ContainsKey(playerSlot) && playerTimers.ContainsKey(playerSlot);
-            bool isConnectedJS = !jumpStatsEnabled || playerJumpStats.ContainsKey(playerSlot);
-
-            return isTeamValid && isTeamSpectatorOrNone && isConnected && isConnectedJS && isAlive;
+            return isConnected && isConnectedJS && isAlive && isTeamValid;
         }
 
         private bool IsAllowedSpectator(CCSPlayerController? player)
         {
-            if (player == null || !player.IsValid || player.IsBot)
-            {
+            if (player == null || !player.Valid())
                 return false;
-            }
 
-            CsTeam teamNum = (CsTeam)player.TeamNum;
-            bool isTeamValid = teamNum == CsTeam.Spectator;
-            bool isConnected = connectedPlayers.ContainsKey(player.Slot) && playerTimers.ContainsKey(player.Slot);
+            bool isTeamValid = player.TeamSpec();
+
+            int slot = player.Slot;
+            bool isConnected = connectedPlayers.ContainsKey(slot) && playerTimers.ContainsKey(slot);
             bool isObservingValid = player.Pawn?.Value!.ObserverServices?.ObserverTarget != null &&
                                      specTargets.ContainsKey(player.Pawn.Value.ObserverServices.ObserverTarget.Index);
 
             return isTeamValid && isConnected && isObservingValid;
         }
 
-        public bool IsAllowedClient(CCSPlayerController? player)
+        public bool IsPlayerOrSpectator(CCSPlayerController? player)
         {
-            if (player == null || !player.IsValid || player.Pawn == null || !player.PlayerPawn.IsValid)
+            if (player == null || !player.Valid())
                 return false;
 
-            return true;
+            return IsAllowedPlayer(player) || IsAllowedSpectator(player);
         }
 
         async Task IsPlayerATester(string steamId64, int playerSlot)

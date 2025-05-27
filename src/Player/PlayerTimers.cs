@@ -131,7 +131,8 @@ namespace SharpTimer
 
         public void OnBonusTimerStop(CCSPlayerController? player, int bonusX)
         {
-            if (!IsAllowedPlayer(player) || playerTimers[player!.Slot].IsBonusTimerRunning == false) return;
+            if (!IsAllowedPlayer(player) || playerTimers[player!.Slot].IsBonusTimerRunning == false)
+                return;
 
             var playerName = player.PlayerName;
             var playerSlot = player.Slot;
@@ -488,7 +489,8 @@ namespace SharpTimer
 
         public async Task DumpPlayerStageTimesToJson(CCSPlayerController? player, string playerId, int playerSlot)
         {
-            if (!IsAllowedPlayer(player)) return;
+            if (!IsAllowedPlayer(player))
+                return;
 
             string fileName = $"{currentMapName!.ToLower()}_stage_times.json";
             string playerStageRecordsPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerStageData", fileName);

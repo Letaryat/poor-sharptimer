@@ -222,7 +222,7 @@ namespace SharpTimer
             }
         }
 
-        public async Task<(int, int, int)> GetGlobalRank(CCSPlayerController? player)
+        public async Task<(int, int, int)> GetGlobalRank(CCSPlayerController player)
         {
             if (apiKey == "")
                 return (0, 0, 0);
@@ -280,7 +280,7 @@ namespace SharpTimer
             return (0, 0, 0);
         }
 
-        public async Task PrintGlobalRankAsync(CCSPlayerController? player)
+        public async Task PrintGlobalRankAsync(CCSPlayerController player)
         {
             if (apiKey == "")
                 return;

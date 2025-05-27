@@ -15,8 +15,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace SharpTimer
@@ -272,8 +274,8 @@ namespace SharpTimer
 
         public string GetPlayerPlacement(CCSPlayerController? player)
         {
-            if (!IsAllowedPlayer(player) || !playerTimers[player!.Slot].IsTimerRunning) return "";
-
+            if (!IsAllowedPlayer(player) || !playerTimers[player!.Slot].IsTimerRunning)
+                return "";
 
             int currentPlayerTime = playerTimers[player.Slot].TimerTicks;
 
@@ -306,7 +308,7 @@ namespace SharpTimer
         {
             try
             {
-                if (!IsAllowedClient(player))
+                if (!IsPlayerOrSpectator(player))
                     return "";
 
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
@@ -386,7 +388,7 @@ namespace SharpTimer
         {
             try
             {
-                if (!IsAllowedClient(player))
+                if (!IsPlayerOrSpectator(player))
                     return "";
 
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
@@ -415,7 +417,7 @@ namespace SharpTimer
         {
             try
             {
-                if (!IsAllowedClient(player))
+                if (!IsPlayerOrSpectator(player))
                     return "";
 
                 int savedPlayerPoints = enableDb ? await GetPlayerPointsFromDatabase(player, steamId, playerName) : 0;
@@ -740,11 +742,11 @@ namespace SharpTimer
 
         public void PlaySound(CCSPlayerController? player, string Sound)
         {
-            if (playerTimers[player!.Slot].SoundsEnabled != false && IsAllowedPlayer(player))
+            if (playerTimers[player!.Slot].SoundsEnabled != false && IsPlayerOrSpectator(player))
                 player.ExecuteClientCommand($"play {Sound}");
         }
 
-        public void PrintToChat(CCSPlayerController? player, string message)
+        public void PrintToChat(CCSPlayerController player, string message)
         {
             player?.PrintToChat($" {Localizer["prefix"]} {message}");
         }
@@ -752,6 +754,65 @@ namespace SharpTimer
         public void PrintToChatAll(string message)
         {
             Server.PrintToChatAll($" {Localizer["prefix"]} {message}");
+        }
+    }
+
+    public static class EntityExtends
+    {
+        public static bool Valid(this CCSPlayerController? player)
+        {
+            return player == null || player.IsValid || player.PlayerPawn.Value != null || player.PlayerPawn.IsValid || !player.IsBot || !player.IsHLTV || player.SteamID > 0;
+        }
+
+        public static bool Alive([NotNullWhen(true)] this CCSPlayerController player)
+        {
+            return player.PawnIsAlive && player.PlayerPawn.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE;
+        }
+
+        public static CCSPlayerPawn? PlayerPawn([NotNullWhen(true)] this CCSPlayerController player)
+        {
+            CCSPlayerPawn? playerPawn = player.PlayerPawn.Value;
+
+            return playerPawn;
+        }
+
+        public static CBasePlayerPawn? Pawn([NotNullWhen(true)] this CCSPlayerController player)
+        {
+            CBasePlayerPawn? pawn = player.Pawn.Value;
+
+            return pawn;
+        }
+
+        public static bool TeamT([NotNullWhen(true)] this CCSPlayerController player)
+        {
+            return player.Team == CsTeam.Terrorist;
+        }
+        public static bool TeamCT([NotNullWhen(true)] this CCSPlayerController player)
+        {
+            return player.Team == CsTeam.CounterTerrorist;
+        }
+        public static bool TeamSpec([NotNullWhen(true)] this CCSPlayerController player)
+        {
+            return player.Team == CsTeam.Spectator;
+        }
+        public static bool TeamNone([NotNullWhen(true)] this CCSPlayerController player)
+        {
+            return player.Team == CsTeam.None;
+        }
+
+        public static bool isAdmin([NotNullWhen(true)] this CCSPlayerController player)
+        {
+            if (AdminManager.PlayerHasPermissions(player, "@css/ban"))
+                return true;
+
+            return false;
+        }
+        public static bool isVIP([NotNullWhen(true)] this CCSPlayerController player)
+        {
+            if (AdminManager.PlayerHasPermissions(player, "@css/reservation"))
+                return true;
+
+            return false;
         }
     }
 }

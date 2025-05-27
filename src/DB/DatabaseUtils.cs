@@ -1185,7 +1185,9 @@ namespace SharpTimer
             SharpTimerDebug($"Trying to save player {(bonusX != 0 ? $"bonus {bonusX} stage {stage} time" : $"stage {stage} time")} to database for {playerName} {timerTicks}");
             try
             {
-                if (!IsAllowedPlayer(player)) return;
+                if (player == null || !IsAllowedPlayer(player))
+                    return;
+
                 //if ((bonusX == 0 && !playerTimers[playerSlot].IsTimerRunning) || (bonusX != 0 && !playerTimers[playerSlot].IsBonusTimerRunning)) return;
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
 
@@ -2038,7 +2040,7 @@ namespace SharpTimer
                             {
                                 Server.NextFrame(() =>
                                 {
-                                    if (IsAllowedClient(player)) PrintToChat(player, Localizer["top_10_points"]);
+                                    if (IsPlayerOrSpectator(player)) PrintToChat(player, Localizer["top_10_points"]);
                                 });
 
                                 int rank = 0;
@@ -2053,7 +2055,7 @@ namespace SharpTimer
                                         int currentRank = ++rank;
                                         Server.NextFrame(() =>
                                         {
-                                            if (IsAllowedClient(player)) PrintToChat(player, Localizer["top_10_points_list", currentRank, playerName, points]);
+                                            if (IsPlayerOrSpectator(player)) PrintToChat(player, Localizer["top_10_points_list", currentRank, playerName, points]);
                                         });
                                     }
                                 }
@@ -2518,7 +2520,7 @@ namespace SharpTimer
             SharpTimerDebug($"Trying to get Previous {(bonusX != 0 ? $"bonus {bonusX} stage {stage} time" : $"stage {stage} time")} from database for {playerName}");
             try
             {
-                if (!IsAllowedClient(player))
+                if (!IsPlayerOrSpectator(player))
                 {
                     return 0;
                 }
@@ -2584,7 +2586,7 @@ namespace SharpTimer
 
             try
             {
-                if (!IsAllowedClient(player))
+                if (!IsPlayerOrSpectator(player))
                 {
                     return playerPoints;
                 }
