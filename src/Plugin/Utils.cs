@@ -1071,6 +1071,17 @@ namespace SharpTimer
                 if (adServerRecordEnabled == true) ADtimerServerRecord();
                 if (adMessagesEnabled == true) ADtimerMessages();
 
+                if (enableReplays && enableSRreplayBot)
+                {
+                    replayBotController = null;
+                    Server.ExecuteCommand("bot_quota_mode fill");
+                    Server.ExecuteCommand("bot_quota 1");
+                    Server.ExecuteCommand("bot_chatter off");
+                    Server.ExecuteCommand("bot_controllable 0");
+                    Server.ExecuteCommand("bot_join_after_player 0");
+                    Server.ExecuteCommand("bot_kick");
+                }
+
                 entityCache = new EntityCache();
                 UpdateEntityCache();
 
@@ -1436,7 +1447,6 @@ namespace SharpTimer
             currentMapOverrideStageRequirement = false;
 
             globalPointsMultiplier = 1.0f;
-            startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = false;
         }
 
         public async Task<JsonDocument?> LoadJson(string path)

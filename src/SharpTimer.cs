@@ -18,6 +18,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
 
 namespace SharpTimer
@@ -167,9 +168,9 @@ namespace SharpTimer
             // Apply Infinite Ammo by https://github.com/zakriamansoor47
             RegisterEventHandler<EventWeaponFire>((@event, info) =>
             {
-                if (@event.Userid == null || !@event.Userid.IsValid) return HookResult.Continue;
-
                 var player = @event.Userid;
+                if (player == null || player.NotValid())
+                    return HookResult.Continue;
 
                 if (!applyInfiniteAmmo)
                     return HookResult.Continue;
@@ -183,55 +184,36 @@ namespace SharpTimer
 
             RegisterEventHandler<EventPlayerConnectFull>((@event, info) =>
             {
-                if (@event.Userid!.IsValid)
-                {
-                    var player = @event.Userid;
+                var player = @event.Userid;
+                if (player == null || player.NotValid())
+                    return HookResult.Continue;
 
-                    if (player.IsValid && !player.IsBot)
-                    {
-                        OnPlayerConnect(player);
-                        _oldPlayerState[player.Index] = CSPlayerState.STATE_WELCOME;
-                    }
-                }
+                OnPlayerConnect(player);
+                _oldPlayerState[player.Index] = CSPlayerState.STATE_WELCOME;
+
                 return HookResult.Continue;
             });
 
             RegisterEventHandler<EventPlayerTeam>((@event, info) =>
             {
-                if (@event.Userid!.IsValid)
-                {
-                    if (@event.Userid == null) return HookResult.Continue;
-                    var player = @event.Userid;
+                var player = @event.Userid;
+                if (player == null) return HookResult.Continue;
 
-                    if (player.IsValid && player.IsBot)
+                Server.NextFrame(() =>
+                {
+                    InvalidateTimer(player);
+                    try
                     {
-                        if (startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile)
-                        {
-                            AddTimer(4.0f, () =>
-                            {
-                                Server.ExecuteCommand($"kickid {player.Slot}");
-                                SharpTimerDebug($"Kicking unused bot on spawn...");
-                            });
-                        }
+                        if (playerTimers.TryGetValue(player.Slot, out var data) && data.IsReplaying)
+                            StopReplay(player);
                     }
-                    else if (player.IsValid && !player.IsBot)
+                    catch (Exception ex)
                     {
-                        Server.NextFrame(() =>
-                        {
-                            InvalidateTimer(player);
-                            try
-                            {
-                                if (playerTimers.TryGetValue(player.Slot, out var data) && data.IsReplaying)
-                                    StopReplay(player);
-                            }
-                            catch (Exception ex)
-                            {
-                                // playerTimers for requested player does not exist
-                                SharpTimerError("(EventPlayerTeam) " + ex.Message);
-                            }
-                        });
+                        // playerTimers for requested player does not exist
+                        SharpTimerError("(EventPlayerTeam) " + ex.Message);
                     }
-                }
+                });
+
                 return HookResult.Continue;
             }, HookMode.Pre);
 
@@ -254,15 +236,16 @@ namespace SharpTimer
 
             RegisterEventHandler<EventPlayerSpawn>((@event, info) =>
             {
-                var player = @event.Userid!;
-
-                if (player.IsBot || !player.IsValid || player == null)
+                var player = @event.Userid;
+                if (player == null || player.NotValid())
                     return HookResult.Continue;
 
-                if (player.IsValid && !player.IsBot)
+                //just.. dont ask.
+                AddTimer(0f, () =>
                 {
-                    OnPlayerSpawn(player);
-                }
+                    if (spawnOnRespawnPos == true && currentRespawnPos != null)
+                        player!.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
+                });
 
                 if (enableStyles && playerTimers.ContainsKey(player.Slot))
                     setStyle(player, playerTimers[player.Slot].currentStyle);
@@ -278,60 +261,44 @@ namespace SharpTimer
 
                 Server.NextFrame(() => InvalidateTimer(player));
 
+                if (enableReplays && enableSRreplayBot && replayBotController == null)
+                    _ = Task.Run(async () => await SpawnReplayBot());
+
                 return HookResult.Continue;
             }, HookMode.Pre);
 
             RegisterEventHandler<EventPlayerDisconnect>((@event, info) =>
             {
-                if (@event.Userid!.IsValid)
-                {
-                    var player = @event.Userid;
+                var player = @event.Userid;
+                if (player == null || player.NotValid())
+                    return HookResult.Continue;
 
-                    if (player.IsBot || !player.IsValid)
-                    {
-                        return HookResult.Continue;
-                    }
-                    else
-                    {
-                        OnPlayerDisconnect(player);
-                    }
-                }
+                OnPlayerDisconnect(player);
+
                 return HookResult.Continue;
             });
 
             RegisterEventHandler<EventPlayerJump>((@event, info) =>
             {
-                if (@event.Userid!.IsValid)
-                {
-                    var player = @event.Userid;
+                var player = @event.Userid;
+                if (player == null || player.NotValid())
+                    return HookResult.Continue;
 
-                    if (player.IsBot || !player.IsValid)
-                    {
-                        return HookResult.Continue;
-                    }
-                    else
-                    {
-                        if (jumpStatsEnabled == true) OnJumpStatJumped(player);
-                    }
-                }
+                if (jumpStatsEnabled == true)
+                    OnJumpStatJumped(player);
+ 
                 return HookResult.Continue;
             });
 
             RegisterEventHandler<EventPlayerSound>((@event, info) =>
             {
-                if (@event.Userid!.IsValid)
-                {
-                    var player = @event.Userid;
+                var player = @event.Userid;
+                if (player == null || player.NotValid())
+                    return HookResult.Continue;
 
-                    if (player.IsBot || !player.IsValid)
-                    {
-                        return HookResult.Continue;
-                    }
-                    else
-                    {
-                        if (jumpStatsEnabled == true && @event.Step == true) OnJumpStatSound(player);
-                    }
-                }
+                if (jumpStatsEnabled == true && @event.Step == true)
+                    OnJumpStatSound(player);
+
                 return HookResult.Continue;
             });
 

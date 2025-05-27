@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API.Modules.Commands.Targeting;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using System.Diagnostics.CodeAnalysis;
@@ -557,9 +558,7 @@ namespace SharpTimer
                 PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
                 if (enableStyles) PrintToChatAll(Localizer["timer_style", GetNamedStyle(style)]);
                 if (enableReplays == true && enableSRreplayBot == true && newSR && (oldticks > newticks || oldticks == 0))
-                {
-                    _ = Task.Run(async () => await SpawnReplayBot());
-                }
+                    _ = Task.Run(async () => await SpawnReplayBot(true));
             });
         }
         public async Task PrintStageTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int stage, int bonusX = 0, int prevSR = 0)
@@ -733,7 +732,7 @@ namespace SharpTimer
             {
                 foreach (var target in connectedPlayers.Values)
                 {
-                    if (playerTimers[target!.Slot].SoundsEnabled && IsPlayerOrSpectator(target))
+                    if (playerTimers[target!.Slot].SoundsEnabled && IsPlayerOrSpectator(target) && !target.IsBot)
                     {
                         if (soundeventsEnabled)
                             target.EmitSound(sound, new(target));
@@ -744,7 +743,7 @@ namespace SharpTimer
             }
             else
             {
-                if (playerTimers[player!.Slot].SoundsEnabled && IsPlayerOrSpectator(player))
+                if (playerTimers[player!.Slot].SoundsEnabled && IsPlayerOrSpectator(player) && !player.IsBot)
                 {
                     if (soundeventsEnabled)
                         player.EmitSound(sound, new(player));
@@ -767,14 +766,9 @@ namespace SharpTimer
 
     public static class EntityExtends
     {
-        public static bool Valid(this CCSPlayerController? player)
+        public static bool NotValid(this CCSPlayerController? player)
         {
-            return player == null || player.IsValid || player.PlayerPawn.Value != null || player.PlayerPawn.IsValid || !player.IsBot || !player.IsHLTV || player.SteamID > 0;
-        }
-
-        public static bool Alive([NotNullWhen(true)] this CCSPlayerController player)
-        {
-            return player.PawnIsAlive && player.PlayerPawn.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE;
+            return player == null || !player.IsValid || player.PlayerPawn.Value == null || !player.PlayerPawn.IsValid || player.IsBot || player.IsHLTV;
         }
 
         public static CCSPlayerPawn? PlayerPawn([NotNullWhen(true)] this CCSPlayerController player)

@@ -26,7 +26,7 @@ namespace SharpTimer
         {
             try
             {     
-                int currentTick = Server.TickCount;  
+                int currentTick = Server.TickCount;
 
                 foreach (CCSPlayerController player in connectedPlayers.Values)
                 {

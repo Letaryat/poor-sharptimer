@@ -37,7 +37,6 @@ namespace SharpTimer
         private Dictionary<int, List<PlayerCheckpoint>> playerCheckpoints = [];
         public Dictionary<int, CCSPlayerController> connectedPlayers = [];
         public Dictionary<int, CCSPlayerController> connectedAFKPlayers = [];
-        private Dictionary<int, CCSPlayerController> connectedReplayBots = [];
         private Dictionary<uint, CCSPlayerController> specTargets = [];
         private EntityCache? entityCache;
         public Dictionary<int, PlayerRecord>? SortedCachedRecords = [];
@@ -123,8 +122,7 @@ namespace SharpTimer
         public bool enableReplays = false;
         public bool onlySRReplay = false;
         public bool enableSRreplayBot = false;
-        public bool startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = false;
-        public bool foundReplayBot = false;
+        public CCSPlayerController? replayBotController;
         public string replayBotName = "";
         public int maxReplayFrames = 19200;
         public string apiKey = "";

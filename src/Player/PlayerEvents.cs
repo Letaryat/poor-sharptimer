@@ -19,7 +19,6 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
-using CounterStrikeSharp.API.Modules.Cvars;
 
 namespace SharpTimer
 {
@@ -48,7 +47,6 @@ namespace SharpTimer
                 }
 
                 int playerSlot = player.Slot;
-                string steamID = player.SteamID.ToString();
                 string playerName = player.PlayerName;
 
                 try
@@ -69,13 +67,14 @@ namespace SharpTimer
                     playerTimers[playerSlot].SetRespawnAng = null;
                     playerTimers[playerSlot].SoundsEnabled = soundsEnabledByDefault;
 
-                    if (isForBot == false) _ = Task.Run(async () => await IsPlayerATester(steamID, playerSlot));
-
-                    //PlayerSettings
-                    if (enableDb) _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, playerSlot, true));
+                    if (isForBot == false)
+                    {
+                        _ = Task.Run(async () => await IsPlayerATester(player.SteamID.ToString(), playerSlot));
+                        if (enableDb) _ = Task.Run(async () => await GetPlayerStats(player, player.SteamID.ToString(), playerName, playerSlot, true));
+                        if (cmdJoinMsgEnabled == true) PrintAllEnabledCommands(player);
+                    }
 
                     if (connectMsgEnabled == true && !enableDb) PrintToChatAll(Localizer["connect_message", player.PlayerName]);
-                    if (cmdJoinMsgEnabled == true && isForBot == false) PrintAllEnabledCommands(player);
 
                     SharpTimerDebug($"Added player {player.PlayerName} with UserID {player.UserId} to connectedPlayers");
                     SharpTimerDebug($"Total players connected: {connectedPlayers.Count}");
@@ -107,45 +106,15 @@ namespace SharpTimer
             }
         }
 
-        private void OnPlayerSpawn(CCSPlayerController? player)
-        {
-            //just.. dont ask.
-            AddTimer(0f, () =>
-            {
-                if (spawnOnRespawnPos == true && currentRespawnPos != null)
-                    player!.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
-            });
-
-            if (enableReplays && enableSRreplayBot && connectedReplayBots.Count == 0)
-                    {
-                        AddTimer(5.0f, () =>
-                        {
-                            if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0 && ConVar.Find("mp_humanteam")!.StringValue == "ct")
-                                _ = Task.Run(async () => await SpawnReplayBot());
-                            else
-                            {
-                                SharpTimerError("Couldnt Spawn Replay bot! Please make sure you have the following in your custom_exec.cfg\n"
-                                    + "mp_force_pick_time 1\n"
-                                    + "mp_humanteam ct\n");
-                            }
-                        });
-                    }
-        }
-
         private void OnPlayerDisconnect(CCSPlayerController? player, bool isForBot = false)
         {
             if (player == null) return;
 
             try
             {
-                if (isForBot == true && connectedReplayBots.TryGetValue(player.Slot, out var connectedReplayBot))
-                {
-                    connectedReplayBots.Remove(player.Slot);
-                    SharpTimerDebug($"Removed bot {connectedReplayBot.PlayerName} with UserID {connectedReplayBot.UserId} from connectedReplayBots.");
-                }
                 if (connectedPlayers.TryGetValue(player.Slot, out var connectedPlayer))
                 {
-                    
+
                     connectedPlayers.Remove(player.Slot);
 
                     //schizo removing data from memory
@@ -155,13 +124,6 @@ namespace SharpTimer
                     //schizo removing data from memory
                     playerCheckpoints[player.Slot] = new List<PlayerCheckpoint>();
                     playerCheckpoints.Remove(player.Slot);
-
-                    //schizo removing replay bots after last dc
-                    AddTimer(5.0f, () =>
-                    {
-                        if(Utilities.GetPlayers().Count == 0)
-                            connectedReplayBots = [];
-                    });
 
                     specTargets.Remove(player.Pawn.Value!.EntityHandle.Index);
 

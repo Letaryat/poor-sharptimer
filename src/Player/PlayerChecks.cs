@@ -23,14 +23,14 @@ namespace SharpTimer
     {
         public bool IsAllowedPlayer(CCSPlayerController? player)
         {
-            if (player == null || !player.Valid() || playerTimers[player.Slot].IsNoclip)
+            if (player == null || playerTimers[player.Slot].IsNoclip)
                 return false;
 
             int slot = player.Slot;
             bool isConnected = connectedPlayers.ContainsKey(slot) && playerTimers.ContainsKey(slot);
             bool isConnectedJS = !jumpStatsEnabled || playerJumpStats.ContainsKey(slot);
 
-            bool isAlive = player.Alive();
+            bool isAlive = player.PawnIsAlive;
             bool isTeamValid = player.TeamCT() || player.TeamT();
 
             return isConnected && isConnectedJS && isAlive && isTeamValid;
@@ -38,7 +38,7 @@ namespace SharpTimer
 
         private bool IsAllowedSpectator(CCSPlayerController? player)
         {
-            if (player == null || !player.Valid())
+            if (player == null)
                 return false;
 
             bool isTeamValid = player.TeamSpec();
@@ -53,7 +53,7 @@ namespace SharpTimer
 
         public bool IsPlayerOrSpectator(CCSPlayerController? player)
         {
-            if (player == null || !player.Valid())
+            if (player == null)
                 return false;
 
             return IsAllowedPlayer(player) || IsAllowedSpectator(player);
