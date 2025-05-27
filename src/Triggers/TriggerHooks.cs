@@ -19,7 +19,7 @@ namespace SharpTimer
 {
     public partial class SharpTimer
     {
-        public HookResult TriggerMultipleOnStartTouch(CEntityInstance activator, CEntityInstance caller)
+        public HookResult TriggerMultiple_OnStartTouch(CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay)
         {
             try
             {
@@ -187,7 +187,7 @@ namespace SharpTimer
             }
         }
 
-        public HookResult TriggerMultipleOnEndTouch(CEntityInstance activator, CEntityInstance caller)
+        public HookResult TriggerMultiple_OnEndTouch(CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay)
         {
 
             try
@@ -277,7 +277,7 @@ namespace SharpTimer
             }
         }
 
-        public HookResult TriggerTeleportOnStartTouch(CEntityInstance activator, CEntityInstance caller)
+        public HookResult TriggerTeleport_OnStartTouch(CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay)
         {
 
             try
@@ -318,7 +318,7 @@ namespace SharpTimer
             }
         }
 
-        public HookResult TriggerTeleportOnEndTouch(CEntityInstance activator, CEntityInstance caller)
+        public HookResult TriggerTeleport_OnEndTouch(CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay)
         {
             try
             {

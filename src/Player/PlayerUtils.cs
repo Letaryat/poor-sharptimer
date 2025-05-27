@@ -493,13 +493,6 @@ namespace SharpTimer
             }
         }
 
-        private HookResult OnCommandJoinTeam(CCSPlayerController? player, CounterStrikeSharp.API.Modules.Commands.CommandInfo commandInfo)
-        {
-            if (player == null || !player.IsValid) return HookResult.Handled;
-            InvalidateTimer(player);
-            return HookResult.Continue;
-        }
-
         public async Task PrintMapTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int bonusX = 0, int timesFinished = 0, int style = 0, int prevSR = 0)
         {
             if (!IsAllowedPlayer(player))

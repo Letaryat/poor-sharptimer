@@ -151,44 +151,5 @@ namespace SharpTimer
                 SharpTimerError($"Error in OnPlayerDisconnect (probably replay bot related lolxd): {ex.Message}");
             }
         }
-
-        private HookResult OnPlayerChat(CCSPlayerController? player, CommandInfo message)
-        {
-            if (displayChatTags == false)
-                return HookResult.Continue;
-
-            string msg;
-
-            if (player == null || !player.IsValid || player.IsBot || string.IsNullOrEmpty(message.GetArg(1)))
-                return HookResult.Handled;
-            else
-                msg = message.GetArg(1);
-
-            playerTimers[player.Slot].AFKTicks = 0;
-
-            if (msg.Length > 0 && (msg[0] == '!' || msg[0] == '/' || msg[0] == '.'))
-                return HookResult.Continue;
-            else
-            {
-                string rankColor = GetRankColorForChat(player);
-
-                if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? value))
-                {
-                    string deadText = player.PawnIsAlive ? "" : $"{ChatColors.Grey}*DEAD* ";
-                    string vipText = (value.IsVip ? $"{ChatColors.Magenta}{customVIPTag} " : "");
-                    if (player.Team == CsTeam.Terrorist)
-                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.Terrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
-                    if (player.Team == CsTeam.CounterTerrorist)
-                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.CounterTerrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
-                    if (player.Team == CsTeam.Spectator)
-                        Server.PrintToChatAll($" {ChatColors.Grey}*SPEC* {ChatColors.ForTeam(CsTeam.Spectator)}{player.PlayerName} {ChatColors.Default}: {msg}");
-                    if (player.Team == CsTeam.None)
-                        Server.PrintToChatAll($" {ChatColors.ForTeam(CsTeam.None)}{player.PlayerName} {ChatColors.Default}: {msg}");
-                }
-
-                return HookResult.Handled;
-            }
-
-        }
     }
 }
