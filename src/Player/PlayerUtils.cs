@@ -655,6 +655,9 @@ namespace SharpTimer
             player.PlayerName = name;
             Utilities.SetStateChanged(player, "CBasePlayerController", "m_iszPlayerName");
 
+            var fakeEvent = new EventNextlevelChanged(false);
+            fakeEvent.FireEvent(false);
+
             SharpTimerDebug($"Changed PlayerName to {player.PlayerName}");
         }
 
@@ -732,7 +735,9 @@ namespace SharpTimer
             {
                 foreach (var target in connectedPlayers.Values)
                 {
-                    if (playerTimers[target!.Slot].SoundsEnabled && IsPlayerOrSpectator(target) && !target.IsBot)
+                    if (target.IsBot) continue;
+
+                    if (playerTimers[target!.Slot].SoundsEnabled)
                     {
                         if (soundeventsEnabled)
                             target.EmitSound(sound, new(target));
@@ -743,7 +748,7 @@ namespace SharpTimer
             }
             else
             {
-                if (playerTimers[player!.Slot].SoundsEnabled && IsPlayerOrSpectator(player) && !player.IsBot)
+                if (playerTimers[player!.Slot].SoundsEnabled && !player.IsBot)
                 {
                     if (soundeventsEnabled)
                         player.EmitSound(sound, new(player));
@@ -783,6 +788,11 @@ namespace SharpTimer
             CBasePlayerPawn? pawn = player.Pawn.Value;
 
             return pawn;
+        }
+
+        public static bool Alive([NotNullWhen(true)] this CCSPlayerController player)
+        {
+            return player.PawnIsAlive && player.PlayerPawn.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE;
         }
 
         public static bool TeamT([NotNullWhen(true)] this CCSPlayerController player)

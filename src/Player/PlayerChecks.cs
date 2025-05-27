@@ -30,7 +30,7 @@ namespace SharpTimer
             bool isConnected = connectedPlayers.ContainsKey(slot) && playerTimers.ContainsKey(slot);
             bool isConnectedJS = !jumpStatsEnabled || playerJumpStats.ContainsKey(slot);
 
-            bool isAlive = player.PawnIsAlive;
+            bool isAlive = player.Alive();
             bool isTeamValid = player.TeamCT() || player.TeamT();
 
             return isConnected && isConnectedJS && isAlive && isTeamValid;
