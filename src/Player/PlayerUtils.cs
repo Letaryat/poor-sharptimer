@@ -193,7 +193,7 @@ namespace SharpTimer
             int printSpeed = (maxStartingSpeedEnabled && startSpeed > maxStartingSpeed) ? maxStartingSpeed : startSpeed;
             player.PrintToChat($"{Localizer["prefix"]} {Localizer["start_speed"]} {ChatColors.Olive}{printSpeed}");
         }
-
+      
         private void RemovePlayerCollision(CCSPlayerController? player)
         {
             try
