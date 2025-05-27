@@ -1209,11 +1209,12 @@ namespace SharpTimer
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void NoclipCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player) || enableNoclip == false)
+            if (player == null || !player.PawnIsAlive || (enableNoclip == false && !AdminManager.PlayerHasPermissions(player, "@css/cheats")))
                 return;
 
             var slot = player!.Slot;
             var playerName = player.PlayerName;
+            var pawn = player.Pawn.Value!;
 
             SharpTimerDebug($"{playerName} calling css_noclip...");
 
@@ -1228,60 +1229,21 @@ namespace SharpTimer
             playerTimers[slot].IsBonusTimerRunning = false;
             playerTimers[slot].BonusTimerTicks = 0;
 
-            if (player.Pawn.Value!.MoveType == MoveType_t.MOVETYPE_NOCLIP)
+            if (playerTimers[slot].IsNoclip)
             {
-                player.Pawn.Value.MoveType = MoveType_t.MOVETYPE_WALK;
-                Schema.SetSchemaValue(player.Pawn.Value.Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
-                Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_MoveType");
+                pawn.MoveType = MoveType_t.MOVETYPE_WALK;
+                Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
+                Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
                 playerTimers[slot].IsNoclip = false;
             }
             else
             {
-                player.Pawn.Value.MoveType = MoveType_t.MOVETYPE_NOCLIP;
-                Schema.SetSchemaValue(player.Pawn.Value.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
-                Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_MoveType");
+                pawn.MoveType = MoveType_t.MOVETYPE_NOCLIP;
+                Schema.SetSchemaValue(pawn.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
+                Utilities.SetStateChanged(pawn, "CBaseEntity", "m_MoveType");
                 playerTimers[slot].IsNoclip = true;
             }
         }
-
-        [ConsoleCommand("css_adminnoclip", "Admin Noclip")]
-        [ConsoleCommand("css_adminnc", "Admin Noclip")]
-        [RequiresPermissions("@css/cheats")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void AdminNoclipCommand(CCSPlayerController? player, CommandInfo command)
-        {
-            if (!IsAllowedPlayer(player))
-                return;
-
-            var slot = player!.Slot;
-            var playerName = player.PlayerName;
-
-            SharpTimerDebug($"{playerName} calling css_adminnoclip...");
-
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
-
-            playerTimers[slot].IsTimerRunning = false;
-            playerTimers[slot].TimerTicks = 0;
-            playerTimers[slot].IsBonusTimerRunning = false;
-            playerTimers[slot].BonusTimerTicks = 0;
-            playerTimers[slot].IsTimerBlocked = false;
-
-            if (player!.Pawn.Value!.MoveType == MoveType_t.MOVETYPE_NOCLIP)
-            {
-                player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_WALK;
-                Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 2); // walk
-                Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
-            }
-            else
-            {
-                QuietStopTimer(player);
-                player!.Pawn.Value!.MoveType = MoveType_t.MOVETYPE_NOCLIP;
-                Schema.SetSchemaValue(player!.Pawn.Value!.Handle, "CBaseEntity", "m_nActualMoveType", 8); // noclip
-                Utilities.SetStateChanged(player!.Pawn.Value!, "CBaseEntity", "m_MoveType");
-            }
-        }
-
 
         [ConsoleCommand("css_styles", "Styles command")]
         [ConsoleCommand("css_style", "Styles command")]
