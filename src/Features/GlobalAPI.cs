@@ -365,8 +365,12 @@ namespace SharpTimer
                 Server.NextFrame(() =>
                 {
                     Utils.PrintToChat(player, Localizer["top_10_points"]);
+
+                    if (cache.CachedGlobalPoints == null || cache.CachedGlobalPoints.Count <= 0)
+                        return;
+
                     int position = 1;
-                    foreach (var p in cache.CachedGlobalPoints!)
+                    foreach (var p in cache.CachedGlobalPoints)
                     {
                         Utils.PrintToChat(player, $"{Localizer["top_10_points_list", position, p.PlayerName!, p.GlobalPoints]}");
                         position++;
