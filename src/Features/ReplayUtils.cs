@@ -18,7 +18,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using System.Text.Json;
-using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
+using FixVectorLeak;
 
 namespace SharpTimer
 {
@@ -31,9 +31,9 @@ namespace SharpTimer
                 if (!IsAllowedPlayer(player)) return;
 
                 // Get the player's current position and rotation
-                ReplayVector currentPosition = ReplayVector.GetVectorish(player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0));
-                ReplayVector currentSpeed = ReplayVector.GetVectorish(player.PlayerPawn.Value!.AbsVelocity ?? new Vector(0, 0, 0));
-                ReplayQAngle currentRotation = ReplayQAngle.GetQAngleish(player.PlayerPawn.Value.EyeAngles ?? new QAngle(0, 0, 0));
+                ReplayVector_t currentPosition = ReplayVector_t.GetVector_tish(player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.ToVector_t() ?? new Vector_t(0, 0, 0));
+                ReplayVector_t currentSpeed = ReplayVector_t.GetVector_tish(player.PlayerPawn.Value!.AbsVelocity.ToVector_t());
+                ReplayQAngle_t currentRotation = ReplayQAngle_t.GetQAngle_tish(player.PlayerPawn.Value.EyeAngles.ToQAngle_t());
 
                 var buttons = player.Buttons;
                 var flags = player.Pawn.Value.Flags;
@@ -88,7 +88,7 @@ namespace SharpTimer
                         value.MovementService!.DuckAmount = 0;
                     }
 
-                    player.PlayerPawn.Value!.Teleport(ReplayVector.ToVector(replayFrame.Position!), ReplayQAngle.ToQAngle(replayFrame.Rotation!), ReplayVector.ToVector(replayFrame.Speed!));
+                    player.PlayerPawn.Value!.Teleport(ReplayVector_t.ToVector_t(replayFrame.Position!), ReplayQAngle_t.ToQAngle_t(replayFrame.Rotation!), ReplayVector_t.ToVector_t(replayFrame.Speed!));
 
                     var replayButtons = $"{((replayFrame.Buttons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                         $"{((replayFrame.Buttons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +

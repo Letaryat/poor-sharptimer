@@ -20,10 +20,10 @@ using CounterStrikeSharp.API.Modules.Utils;
 using System.Drawing;
 using System.Globalization;
 using System.Text.Json;
-using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
+using FixVectorLeak;
 
 namespace SharpTimer
 {
@@ -328,7 +328,7 @@ namespace SharpTimer
             return Math.Sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
         }
 
-        public void DrawLaserBetween(Vector startPos, Vector endPos, string _color = "")
+        public void DrawLaserBetween(Vector_t startPos, Vector_t endPos, string _color = "")
         {
             string beamColor;
             if (Plugin.beamColorOverride == true)
@@ -358,7 +358,7 @@ namespace SharpTimer
 
             beam.Width = 1.5f;
 
-            beam.Teleport(startPos, new QAngle(0, 0, 0), new Vector(0, 0, 0));
+            beam.Teleport(startPos, new QAngle_t(0, 0, 0), new Vector_t(0, 0, 0));
 
             beam.EndPos.X = endPos.X;
             beam.EndPos.Y = endPos.Y;
@@ -368,15 +368,15 @@ namespace SharpTimer
             LogDebug($"Beam Spawned at S:{startPos} E:{beam.EndPos}");
         }
 
-        public void DrawWireframe3D(Vector corner1, Vector corner8, string _color)
+        public void DrawWireframe3D(Vector_t corner1, Vector_t corner8, string _color)
         {
-            Vector corner2 = new(corner1.X, corner8.Y, corner1.Z);
-            Vector corner3 = new(corner8.X, corner8.Y, corner1.Z);
-            Vector corner4 = new(corner8.X, corner1.Y, corner1.Z);
+            Vector_t corner2 = new(corner1.X, corner8.Y, corner1.Z);
+            Vector_t corner3 = new(corner8.X, corner8.Y, corner1.Z);
+            Vector_t corner4 = new(corner8.X, corner1.Y, corner1.Z);
 
-            Vector corner5 = new(corner8.X, corner1.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
-            Vector corner6 = new(corner1.X, corner1.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
-            Vector corner7 = new(corner1.X, corner8.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            Vector_t corner5 = new(corner8.X, corner1.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            Vector_t corner6 = new(corner1.X, corner1.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            Vector_t corner7 = new(corner1.X, corner8.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
             if (Plugin.Box3DZones) corner8 = new(corner8.X, corner8.Y, corner8.Z + Plugin.fakeTriggerHeight);
 
             //top square
@@ -398,127 +398,115 @@ namespace SharpTimer
             DrawLaserBetween(corner4, corner5, _color);
         }
 
-        public bool IsVectorInsideBox(Vector playerVector, Vector corner1, Vector corner2)
+        public bool IsVector_tInsideBox(Vector_t? playerVector_t, Vector_t? corner1, Vector_t? corner2)
         {
-            float minX = Math.Min(corner1.X, corner2.X);
-            float minY = Math.Min(corner1.Y, corner2.Y);
-            float minZ = Math.Min(corner1.Z, corner2.Z);
+            var c1 = corner1!.Value;
+            var c2 = corner2!.Value;
 
-            float maxX = Math.Max(corner1.X, corner2.X);
-            float maxY = Math.Max(corner1.Y, corner2.Y);
-            float maxZ = Math.Max(corner1.Z, corner2.Z + Plugin.fakeTriggerHeight);
+            float minX = Math.Min(c1.X, c2.X);
+            float minY = Math.Min(c1.Y, c2.Y);
+            float minZ = Math.Min(c1.Z, c2.Z);
 
-            return playerVector.X >= minX && playerVector.X <= maxX &&
-                   playerVector.Y >= minY && playerVector.Y <= maxY &&
-                   playerVector.Z >= minZ && playerVector.Z <= maxZ;
+            float maxX = Math.Max(c1.X, c2.X);
+            float maxY = Math.Max(c1.Y, c2.Y);
+            float maxZ = Math.Max(c1.Z, c2.Z + Plugin.fakeTriggerHeight);
+
+            return playerVector_t!.Value.X >= minX && playerVector_t!.Value.X <= maxX &&
+                   playerVector_t.Value.Y >= minY && playerVector_t.Value.Y <= maxY &&
+                   playerVector_t.Value.Z >= minZ && playerVector_t.Value.Z <= maxZ;
         }
 
-        public Vector CalculateMiddleVector(Vector corner1, Vector corner2)
+        public Vector_t CalculateMiddleVector_t(Vector_t corner1, Vector_t corner2)
         {
-            if (corner1 == null || corner2 == null)
-            {
-                return new Vector(0, 0, 0);
-            }
-
             float middleX = (corner1.X + corner2.X) / 2;
             float middleY = (corner1.Y + corner2.Y) / 2;
             float middleZ = (corner1.Z + corner2.Z) / 2;
-            return new Vector(middleX, middleY, middleZ);
+            return new Vector_t(middleX, middleY, middleZ);
         }
 
-        public Vector ParseVector(string vectorString)
+        public Vector_t ParseVector_t(string Vector_tString)
         {
-            if (string.IsNullOrWhiteSpace(vectorString))
+            if (string.IsNullOrWhiteSpace(Vector_tString))
             {
-                return new Vector(0, 0, 0);
+                return new Vector_t(0, 0, 0);
             }
 
             const char separator = ' ';
 
-            var values = vectorString.Split(separator);
+            var values = Vector_tString.Split(separator);
 
             if (values.Length == 3 &&
                 float.TryParse(values[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float x) &&
                 float.TryParse(values[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float y) &&
                 float.TryParse(values[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
             {
-                return new Vector(x, y, z);
+                return new Vector_t(x, y, z);
             }
 
-            return new Vector(0, 0, 0);
+            return new Vector_t(0, 0, 0);
         }
 
-        public QAngle ParseQAngle(string qAngleString)
+        public QAngle_t ParseQAngle_t(string QAngle_tString)
         {
-            if (string.IsNullOrWhiteSpace(qAngleString))
+            if (string.IsNullOrWhiteSpace(QAngle_tString))
             {
-                return new QAngle(0, 0, 0);
+                return new QAngle_t(0, 0, 0);
             }
 
             const char separator = ' ';
 
-            var values = qAngleString.Split(separator);
+            var values = QAngle_tString.Split(separator);
 
             if (values.Length == 3 &&
                 float.TryParse(values[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float pitch) &&
                 float.TryParse(values[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float yaw) &&
                 float.TryParse(values[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float roll))
             {
-                return new QAngle(pitch, yaw, roll);
+                return new QAngle_t(pitch, yaw, roll);
             }
 
-            return new QAngle(0, 0, 0);
+            return new QAngle_t(0, 0, 0);
         }
 
-        public double Distance(Vector vector1, Vector vector2)
+        public double Distance(Vector_t Vector_t1, Vector_t Vector_t2)
         {
-            if (vector1 == null || vector2 == null)
-            {
-                return 0;
-            }
-
-            double deltaX = vector1.X - vector2.X;
-            double deltaY = vector1.Y - vector2.Y;
-            double deltaZ = vector1.Z - vector2.Z;
+            double deltaX = Vector_t1.X - Vector_t2.X;
+            double deltaY = Vector_t1.Y - Vector_t2.Y;
+            double deltaZ = Vector_t1.Z - Vector_t2.Z;
 
             return Math.Sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
         }
 
-        public double Distance2D(Vector vector1, Vector vector2)
+        public double Distance2D(Vector_t Vector_t1, Vector_t Vector_t2)
         {
-            if (vector1 == null || vector2 == null)
-            {
-                return 0;
-            }
-
-            double deltaX = vector1.X - vector2.X;
-            double deltaY = vector1.Y - vector2.Y;
+            double deltaX = Vector_t1.X - Vector_t2.X;
+            double deltaY = Vector_t1.Y - Vector_t2.Y;
 
             return Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
         }
 
-        private Vector Normalize(Vector vector)
+        private Vector_t Normalize(Vector_t Vector_t)
         {
-            float magnitude = (float)Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z);
+            float magnitude = (float)Math.Sqrt(Vector_t.X * Vector_t.X + Vector_t.Y * Vector_t.Y + Vector_t.Z * Vector_t.Z);
 
             if (magnitude > 0)
             {
-                return new Vector(vector.X / magnitude, vector.Y / magnitude, vector.Z / magnitude);
+                return new Vector_t(Vector_t.X / magnitude, Vector_t.Y / magnitude, Vector_t.Z / magnitude);
             }
             else
             {
-                return vector;
+                return Vector_t;
             }
         }
 
-        public bool IsVectorHigherThan(Vector vector1, Vector vector2)
+        public bool IsVector_tHigherThan(Vector_t? Vector_t1, Vector_t? Vector_t2)
         {
-            if (vector1 == null || vector2 == null)
+            if (Vector_t1 == null || Vector_t2 == null)
             {
                 return false;
             }
 
-            return vector1.Z >= vector2.Z;
+            return Vector_t1.Value.Z >= Vector_t2.Value.Z;
         }
 
         public async Task<Dictionary<string, PlayerRecord>> GetSortedRecords(int bonusX = 0, string mapName = "")

@@ -19,6 +19,7 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands.Targeting;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using FixVectorLeak;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using TagsApi;
@@ -520,7 +521,7 @@ namespace SharpTimer
                 }
 
                 // Add the current eye angle to the rotation history
-                QAngle newEyeAngle = new QAngle(eyeangle.X, eyeangle.Y, eyeangle.Z);
+                QAngle_t newEyeAngle = new QAngle_t(eyeangle.X, eyeangle.Y, eyeangle.Z);
                 playerTimer.Rotation.Add(newEyeAngle);
 
                 // Cap rotation history at 1000 entries

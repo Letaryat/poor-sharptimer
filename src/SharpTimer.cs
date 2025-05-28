@@ -20,7 +20,9 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.UserMessages;
+using FixVectorLeak;
 using System.Runtime.InteropServices;
+using static SharpTimer.PlayerTimerInfo;
 
 namespace SharpTimer;
 
@@ -146,7 +148,8 @@ public partial class SharpTimer : BasePlugin
                 if (useAnticheat)
                 {
                     ParseInputs(player, baseCmd.GetSideMove(), moveLeft, moveRight);
-                    ParseStrafes(player, userCmd.GetViewAngles()!);
+                    QAngle_t viewAngle = userCmd.GetViewAngles()!.Value;
+                    ParseStrafes(player, new (viewAngle.X, viewAngle.Y, viewAngle.Z));
                 }
                     
                 // Style Stuff
@@ -352,7 +355,7 @@ public partial class SharpTimer : BasePlugin
         AddTimer(0f, () =>
         {
             if (spawnOnRespawnPos == true && currentRespawnPos != null)
-                player!.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
+                player!.PlayerPawn.Value!.Teleport(currentRespawnPos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t());
         });
 
         if (enableStyles && playerTimers.ContainsKey(player.Slot))

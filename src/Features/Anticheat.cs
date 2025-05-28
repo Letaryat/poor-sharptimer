@@ -4,7 +4,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Utils;
+using FixVectorLeak;
 using static SharpTimer.PlayerTimerInfo;
 
 namespace SharpTimer
@@ -16,7 +16,7 @@ namespace SharpTimer
 
         // Strafe optimization detection
         // Store the last 200 viewangles of the player; viewangles are gathered (at fastest) each tick. 200ticks is around 4 strafes
-        public void ParseStrafes(CCSPlayerController? player, QAngle viewangles)
+        public void ParseStrafes(CCSPlayerController? player, QAngle_t viewangles)
         {
             var playerTimer = playerTimers[player!.Slot];
 

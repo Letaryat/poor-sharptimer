@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System.Text.Json;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
+using FixVectorLeak;
 
 namespace SharpTimer
 {
@@ -162,7 +163,7 @@ namespace SharpTimer
             }
         }
 
-        private void CheckPlayerCoords(CCSPlayerController? player, Vector playerSpeed)
+        private void CheckPlayerCoords(CCSPlayerController? player, Vector_t playerSpeed)
         {
             try
             {
@@ -171,20 +172,20 @@ namespace SharpTimer
                     return;
                 }
 
-                Vector incorrectVector = new(0, 0, 0);
-                Vector? playerPos = player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin;
+                Vector_t incorrectVector_t = new(0, 0, 0);
+                Vector_t? playerPos = player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin.ToVector_t();
                 bool isInsideStartBox = false;
                 bool isInsideEndBox = false;
 
-                if (playerPos == null || currentMapStartC1 == incorrectVector || currentMapStartC2 == incorrectVector ||
-                    currentMapEndC1 == incorrectVector || currentMapEndC2 == incorrectVector)
+                if (playerPos == null || currentMapStartC1.Equals(incorrectVector_t) || currentMapStartC2.Equals(incorrectVector_t) ||
+                    currentMapEndC1.Equals(incorrectVector_t) || currentMapEndC2.Equals(incorrectVector_t))
                 {
                     return;
                 }
                 if (!useTriggersAndFakeZones)
                 {
-                    isInsideStartBox = Utils.IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
-                    isInsideEndBox = Utils.IsVectorInsideBox(playerPos, currentMapEndC1, currentMapEndC2);
+                    isInsideStartBox = Utils.IsVector_tInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
+                    isInsideEndBox = Utils.IsVector_tInsideBox(playerPos, currentMapEndC1, currentMapEndC2);
                 }
                 bool[] isInsideBonusStartBox = new bool[11];
                 bool[] isInsideBonusEndBox = new bool[11];
@@ -206,8 +207,8 @@ namespace SharpTimer
                         }
                         else
                         {
-                            isInsideBonusStartBox[bonus] = Utils.IsVectorInsideBox(playerPos, currentBonusStartC1[bonus], currentBonusStartC2[bonus]);
-                            isInsideBonusEndBox[bonus] = Utils.IsVectorInsideBox(playerPos, currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
+                            isInsideBonusStartBox[bonus] = Utils.IsVector_tInsideBox(playerPos, currentBonusStartC1[bonus], currentBonusStartC2[bonus]);
+                            isInsideBonusEndBox[bonus] = Utils.IsVector_tInsideBox(playerPos, currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
                         }
                     }
                 }

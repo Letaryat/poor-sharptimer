@@ -19,6 +19,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
+using FixVectorLeak;
 
 namespace SharpTimer
 {
@@ -108,7 +109,7 @@ namespace SharpTimer
                 if (!player!.IsValid)
                     return HookResult.Continue;
 
-                Vector playerSpeed = player!.PlayerPawn.Value!.AbsVelocity ?? new Vector(0, 0, 0);
+                Vector playerSpeed = player!.PlayerPawn.Value!.AbsVelocity;
 
                 player.PlayerPawn.Value.Health = int.MaxValue;
                 player.PlayerPawn.Value.ArmorValue = int.MaxValue;

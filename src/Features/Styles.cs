@@ -1,5 +1,5 @@
 using CounterStrikeSharp.API.Core;
-using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
+using FixVectorLeak;
 
 namespace SharpTimer
 {
@@ -138,7 +138,7 @@ namespace SharpTimer
             playerTimers[player.Slot].changedStyle = true;
         }
 
-        public void SetVelocity(CCSPlayerController player, Vector currentVel, int desiredVel)
+        public void SetVelocity(CCSPlayerController player, Vector_t currentVel, int desiredVel)
         {
             if(currentVel.X > desiredVel) player!.PlayerPawn.Value!.AbsVelocity.X = desiredVel;
             if(currentVel.X < -desiredVel) player!.PlayerPawn.Value!.AbsVelocity.X = -desiredVel;

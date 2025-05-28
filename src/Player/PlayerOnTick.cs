@@ -17,6 +17,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
+using FixVectorLeak;
 
 namespace SharpTimer
 {
@@ -61,7 +62,7 @@ namespace SharpTimer
                         int timerTicks = playerTimer.TimerTicks;
 
                         PlayerButtons? playerButtons = player.Buttons;
-                        Vector playerSpeed = player.PlayerPawn!.Value!.AbsVelocity;
+                        Vector_t playerSpeed = player.PlayerPawn!.Value!.AbsVelocity.ToVector_t();
                         var hasWeapons = player.PlayerPawn?.Value?.WeaponServices?.MyWeapons?.Count > 0;
                         
                         if (connectedAFKPlayers.ContainsKey(player.Slot))
@@ -132,7 +133,7 @@ namespace SharpTimer
                         
                         if (playerTimer.currentStyle.Equals(4)) //check if 400vel
                         {
-                            SetVelocity(player, player!.Pawn.Value!.AbsVelocity, 400);
+                            SetVelocity(player, player!.Pawn.Value!.AbsVelocity.ToVector_t(), 400);
                         }
 
                         if (playerTimer.currentStyle.Equals(10) && !player.PlayerPawn!.Value.GroundEntity.IsValid && currentTick % 2 != 0) //check if ff
@@ -285,7 +286,7 @@ namespace SharpTimer
                         }
 
                         string playerVelColor = useDynamicColor ? secondaryHUDcolorDynamic : secondaryHUDcolor;
-                        string formattedPlayerPre = Math.Round(Utils.ParseVector(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
+                        string formattedPlayerPre = Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
                         string playerTime = Utils.FormatTime(timerTicks);
                         string playerBonusTime = Utils.FormatTime(playerTimer.BonusTimerTicks);
                         string timerLine = isBonusTimerRunning
@@ -392,14 +393,14 @@ namespace SharpTimer
                     bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
                     int timerTicks = playerTimer.TimerTicks;
                     PlayerButtons? playerButtons = target.Buttons;
-                    Vector playerSpeed = target.PlayerPawn!.Value!.AbsVelocity;
+                    Vector_t playerSpeed = target.PlayerPawn!.Value!.AbsVelocity.ToVector_t();
                     bool keyEnabled = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
                     bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;
 
                     string formattedPlayerVel = Math.Round(use2DSpeed ? playerSpeed.Length2D()
                                                                         : playerSpeed.Length())
                                                                         .ToString("0000");
-                    string formattedPlayerPre = Math.Round(Utils.ParseVector(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
+                    string formattedPlayerPre = Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
                     string playerTime = Utils.FormatTime(timerTicks);
                     string playerBonusTime = Utils.FormatTime(playerTimer.BonusTimerTicks);
                     string timerLine = isBonusTimerRunning

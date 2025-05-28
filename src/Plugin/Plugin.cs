@@ -1,6 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Modules.Timers;
-using CounterStrikeSharp.API.Modules.Utils;
+using FixVectorLeak;
 using System.Text.Json;
 
 namespace SharpTimer;
@@ -313,12 +313,12 @@ public partial class SharpTimer
                             if (FindEndTriggerPos() != null)
                                 useTriggersAndFakeZones = true;
                             Utils.LogDebug($"useTriggers: {useTriggers}!");
-                            currentBonusStartC1[bonus] = Utils.ParseVector(mapInfo.BonusStartC1);
-                            currentBonusStartC2[bonus] = Utils.ParseVector(mapInfo.BonusStartC2);
-                            currentBonusEndC1[bonus] = Utils.ParseVector(mapInfo.BonusEndC1);
-                            currentBonusEndC2[bonus] = Utils.ParseVector(mapInfo.BonusEndC2);
-                            currentBonusEndPos[bonus] = Utils.CalculateMiddleVector(currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
-                            bonusRespawnPoses[bonus] = Utils.ParseVector(mapInfo.BonusRespawnPos);
+                            currentBonusStartC1[bonus] = Utils.ParseVector_t(mapInfo.BonusStartC1);
+                            currentBonusStartC2[bonus] = Utils.ParseVector_t(mapInfo.BonusStartC2);
+                            currentBonusEndC1[bonus] = Utils.ParseVector_t(mapInfo.BonusEndC1);
+                            currentBonusEndC2[bonus] = Utils.ParseVector_t(mapInfo.BonusEndC2);
+                            currentBonusEndPos[bonus] = Utils.CalculateMiddleVector_t(currentBonusEndC1[bonus]!.Value, currentBonusEndC2[bonus]!.Value);
+                            bonusRespawnPoses[bonus] = Utils.ParseVector_t(mapInfo.BonusRespawnPos);
                             Utils.LogDebug($"Found Fake Bonus {bonus} Trigger Corners: START {currentBonusStartC1[bonus]}, {currentBonusStartC2[bonus]} | END {currentBonusEndC1[bonus]}, {currentBonusEndC2[bonus]}");
 
                             // Disable global for lackluster maps
@@ -326,8 +326,8 @@ public partial class SharpTimer
                         }
                         if (currentBonusStartC1[bonus] != null && currentBonusStartC2[bonus] != null && currentBonusEndC1[bonus] != null && currentBonusEndC2[bonus] != null)
                         {
-                            Utils.DrawWireframe3D(currentBonusStartC1[bonus], currentBonusStartC2[bonus], startBeamColor);
-                            Utils.DrawWireframe3D(currentBonusEndC1[bonus], currentBonusEndC2[bonus], endBeamColor);
+                            Utils.DrawWireframe3D(currentBonusStartC1[bonus]!.Value, currentBonusStartC2[bonus]!.Value, startBeamColor);
+                            Utils.DrawWireframe3D(currentBonusEndC1[bonus]!.Value, currentBonusEndC2[bonus]!.Value, endBeamColor);
                         }
                     }
                 }
@@ -343,11 +343,11 @@ public partial class SharpTimer
                 {
                     useTriggers = false;
                     Utils.LogDebug($"useTriggers: {useTriggers}!");
-                    currentMapStartC1 = Utils.ParseVector(mapInfo.MapStartC1);
-                    currentMapStartC2 = Utils.ParseVector(mapInfo.MapStartC2);
-                    currentMapEndC1 = Utils.ParseVector(mapInfo.MapEndC1);
-                    currentMapEndC2 = Utils.ParseVector(mapInfo.MapEndC2);
-                    currentEndPos = Utils.CalculateMiddleVector(currentMapEndC1, currentMapEndC2);
+                    currentMapStartC1 = Utils.ParseVector_t(mapInfo.MapStartC1);
+                    currentMapStartC2 = Utils.ParseVector_t(mapInfo.MapStartC2);
+                    currentMapEndC1 = Utils.ParseVector_t(mapInfo.MapEndC1);
+                    currentMapEndC2 = Utils.ParseVector_t(mapInfo.MapEndC2);
+                    currentEndPos = Utils.CalculateMiddleVector_t(currentMapEndC1!.Value, currentMapEndC2!.Value);
                     Utils.LogDebug($"Found Fake Trigger Corners: START {currentMapStartC1}, {currentMapStartC2} | END {currentMapEndC1}, {currentMapEndC2}");
 
                     // Disable global for lackluster maps
@@ -364,7 +364,7 @@ public partial class SharpTimer
 
                 if (!string.IsNullOrEmpty(mapInfo.RespawnPos))
                 {
-                    currentRespawnPos = Utils.ParseVector(mapInfo.RespawnPos);
+                    currentRespawnPos = Utils.ParseVector_t(mapInfo.RespawnPos);
                     Utils.LogDebug($"Found RespawnPos: {currentRespawnPos}");
                 }
                 else
@@ -494,8 +494,8 @@ public partial class SharpTimer
 
                 if (useTriggers == false && currentMapStartC1 != null && currentMapStartC2 != null && currentMapEndC1 != null && currentMapEndC2 != null)
                 {
-                    Utils.DrawWireframe3D(currentMapStartC1, currentMapStartC2, startBeamColor);
-                    Utils.DrawWireframe3D(currentMapEndC1, currentMapEndC2, endBeamColor);
+                    Utils.DrawWireframe3D(currentMapStartC1.GetValueOrDefault(), currentMapStartC2.GetValueOrDefault(), startBeamColor);
+                    Utils.DrawWireframe3D(currentMapEndC1.GetValueOrDefault(), currentMapEndC2.GetValueOrDefault(), endBeamColor);
                 }
                 else
                 {
@@ -503,8 +503,8 @@ public partial class SharpTimer
 
                     if (startRight == null || startLeft == null || endRight == null || endLeft == null) return;
 
-                    Utils.DrawWireframe3D(startRight, startLeft, startBeamColor);
-                    Utils.DrawWireframe3D(endRight, endLeft, endBeamColor);
+                    Utils.DrawWireframe3D(startRight.GetValueOrDefault(), startLeft.GetValueOrDefault(), startBeamColor);
+                    Utils.DrawWireframe3D(endRight.GetValueOrDefault(), endLeft.GetValueOrDefault(), endBeamColor);
                 }
 
                 if (useTriggers == true || useTriggersAndFakeZones == true)
@@ -537,8 +537,8 @@ public partial class SharpTimer
 
                 if (useTriggers == false && currentMapStartC1 != null && currentMapStartC2 != null && currentMapEndC1 != null && currentMapEndC2 != null && useTriggersAndFakeZones == false)
                 {
-                    Utils.DrawWireframe3D(currentMapStartC1, currentMapStartC2, startBeamColor);
-                    Utils.DrawWireframe3D(currentMapEndC1, currentMapEndC2, endBeamColor);
+                    Utils.DrawWireframe3D(currentMapStartC1.GetValueOrDefault(), currentMapStartC2.GetValueOrDefault(), startBeamColor);
+                    Utils.DrawWireframe3D(currentMapEndC1.GetValueOrDefault(), currentMapEndC2.GetValueOrDefault(), endBeamColor);
                 }
                 else
                 {
@@ -546,8 +546,8 @@ public partial class SharpTimer
 
                     if (startRight == null || startLeft == null || endRight == null || endLeft == null) return;
 
-                    Utils.DrawWireframe3D(startRight, startLeft, startBeamColor);
-                    Utils.DrawWireframe3D(endRight, endLeft, endBeamColor);
+                    Utils.DrawWireframe3D(startRight.GetValueOrDefault(), startLeft.GetValueOrDefault(), startBeamColor);
+                    Utils.DrawWireframe3D(endRight.GetValueOrDefault(), endLeft.GetValueOrDefault(), endBeamColor);
                 }
 
                 useTriggers = true;
@@ -576,20 +576,20 @@ public partial class SharpTimer
         useTriggers = true;
         useTriggersAndFakeZones = false;
 
-        currentMapStartC1 = new Vector(nint.Zero);
-        currentMapStartC2 = new Vector(nint.Zero);
-        currentMapEndC1 = new Vector(nint.Zero);
-        currentMapEndC2 = new Vector(nint.Zero);
+        currentMapStartC1 = new Vector_t(nint.Zero);
+        currentMapStartC2 = new Vector_t(nint.Zero);
+        currentMapEndC1 = new Vector_t(nint.Zero);
+        currentMapEndC2 = new Vector_t(nint.Zero);
 
         currentRespawnPos = null;
         currentRespawnAng = null;
 
         currentEndPos = null;
 
-        currentBonusStartC1 = new Vector[10];
-        currentBonusStartC2 = new Vector[10];
-        currentBonusEndC1 = new Vector[10];
-        currentBonusEndC2 = new Vector[10];
+        currentBonusStartC1 = new Vector_t?[10];
+        currentBonusStartC2 = new Vector_t?[10];
+        currentBonusEndC1 = new Vector_t?[10];
+        currentBonusEndC2 = new Vector_t?[10];
 
         // totalBonuses = new int[10];
         currentMapStartTriggerMaxs = null;

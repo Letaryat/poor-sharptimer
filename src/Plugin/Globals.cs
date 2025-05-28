@@ -18,9 +18,8 @@ using System.Text.Json;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
-using CounterStrikeSharp.API.Modules.Utils;
-using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
 using TagsApi;
+using FixVectorLeak;
 
 namespace SharpTimer
 {
@@ -64,18 +63,18 @@ namespace SharpTimer
         public bool beamColorOverride = false;
 
         private bool useStageTriggers = false;
-        public Vector? currentMapStartTriggerMins = null;
-        public Vector? currentMapStartTriggerMaxs = null;
+        public Vector_t? currentMapStartTriggerMins = null;
+        public Vector_t? currentMapStartTriggerMaxs = null;
 
-        public Vector? currentRespawnPos = null;
-        public QAngle? currentRespawnAng = null;
+        public Vector_t? currentRespawnPos = null;
+        public QAngle_t? currentRespawnAng = null;
         public string currentMapStartTrigger = "trigger_startzone";
         public string currentMapEndTrigger = "trigger_endzone";
-        public Vector currentMapStartC1 = new(0, 0, 0);
-        public Vector currentMapStartC2 = new(0, 0, 0);
-        public Vector currentMapEndC1 = new(0, 0, 0);
-        public Vector currentMapEndC2 = new(0, 0, 0);
-        public Vector? currentEndPos = null;
+        public Vector_t? currentMapStartC1 = new(0, 0, 0);
+        public Vector_t? currentMapStartC2 = new(0, 0, 0);
+        public Vector_t? currentMapEndC1 = new(0, 0, 0);
+        public Vector_t? currentMapEndC2 = new(0, 0, 0);
+        public Vector_t? currentEndPos = null;
 
         private Dictionary<nint, int> cpTriggers = [];
         public int cpTriggerCount;
@@ -85,15 +84,15 @@ namespace SharpTimer
         public bool applyInfiniteAmmo = true;
         public bool useAnticheat = false;
 
-        private Dictionary<int, Vector?> bonusRespawnPoses = [];
-        private Dictionary<int, QAngle?> bonusRespawnAngs = [];
+        private Dictionary<int, Vector_t?> bonusRespawnPoses = [];
+        private Dictionary<int, QAngle_t?> bonusRespawnAngs = [];
         public string currentBonusStartTrigger = "b1_start";
         public string currentBonusEndTrigger = "b1_end";
-        public Vector[] currentBonusStartC1 = new Vector[10];
-        public Vector[] currentBonusStartC2 = new Vector[10];
-        public Vector[] currentBonusEndC1 = new Vector[10];
-        public Vector[] currentBonusEndC2 = new Vector[10];
-        public Vector[] currentBonusEndPos = new Vector[10];
+        public Vector_t?[] currentBonusStartC1 = new Vector_t?[10];
+        public Vector_t?[] currentBonusStartC2 = new Vector_t?[10];
+        public Vector_t?[] currentBonusEndC1 = new Vector_t?[10];
+        public Vector_t?[] currentBonusEndC2 = new Vector_t?[10];
+        public Vector_t?[] currentBonusEndPos = new Vector_t?[10];
 
         private Dictionary<nint, int> bonusCheckpointTriggers = [];
         private int bonusCheckpointTriggerCount;
@@ -106,8 +105,8 @@ namespace SharpTimer
         public bool currentMapOverrideStageRequirement = false;
 
         private Dictionary<nint, int> stageTriggers = [];
-        private Dictionary<int, Vector?> stageTriggerPoses = [];
-        private Dictionary<int, QAngle?> stageTriggerAngs = [];
+        private Dictionary<int, Vector_t?> stageTriggerPoses = [];
+        private Dictionary<int, QAngle_t?> stageTriggerAngs = [];
         public int stageTriggerCount;
 
         public string? currentMapType = null;
