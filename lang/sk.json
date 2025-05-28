@@ -57,8 +57,6 @@
     "hud_hidden": "Hud je práve: {red}Skryté",
     "keys_shown": "Keys je práve: {green}Zobrazené",
     "keys_hidden": "Keys je práve: {red}Skryté",
-    "jumpstats_shown": "Jump Stats sú práve: {green}Zobrazené",
-    "jumpstats_hidden": "Jump Stats sú práve: {red}Skryté",
     "sounds_on": "Zvuky sú práve: {green}Zapnuté",
     "sounds_off": "Zvuky sú práve: {red}Vypnuté",
 
@@ -90,10 +88,6 @@
 
     "goto_player": "Teleportuje sa do {lime}{0}",
     "goto_player_not_found": "{lightred}Meno hráča sa nenašlo! Ak názov obsahuje medzery, skúste {lime}!goto 'nejaký názov'",
-
-    //jumpstats
-    "js_msg1": "{lime}JS: {grey} {0}: {1}{2}{grey} | Pre: {lime}{3}{grey} | Max: {lime}{4}{grey} | Strafes: {lime}{5}",
-    "js_msg2": "{grey}Výška: {lime}{0}{grey} | Šírka: {lime}{1}{grey} | WT: {lime}{2}{grey} | Synchronizácia: {lime}{3} %",
 
     //other
     "command_cooldown": "Príkaz je v režime cooldown. Kľud...",
@@ -136,7 +130,6 @@
   "console_replaypb": "• !replaypb (css_replaypb) - Predvaja vaš PB za trenutni zemljevid",
   "console_replaybonus": "• !replaybonus / !replayb [1-10] [bonus stage] (css_replaybonus) - Predvaja enega izmed 10 najboljših bonusnih zapisov strežnika",
   "console_replaybonuspb": "• !replaybonuspb / !replaybpb (css_replaybonuspb) - Predvaja vaš PB za bonus",
-  "console_jumpstats": "• !jumpstats (css_jumpstats) - Preklopi JumpStats",
   "console_hideweapon": "• !hideweapon (css_hideweapon) - Preklopi vidnost orožja",
   "console_spec": "• !spec (css_spec) - Premakne vas v opazovalca ali nazaj v ekipo",
   "console_styles": "• !styles (css_styles) - Prikazuje vse sloge"

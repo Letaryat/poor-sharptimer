@@ -60,8 +60,6 @@
   "hud_hidden": "HUD är nu: {red}Gömd",
   "keys_shown": "Tangenter är nu: {green}Synliga",
   "keys_hidden": "Tangenter är nu: {red}Gömda",
-  "jumpstats_shown": "Jump Stats är nu: {green}Synliga",
-  "jumpstats_hidden": "Jump Stats är nu: {red}Gömda",
   "sounds_on": "Ljud är nu: {green}PÅ",
   "sounds_off": "Ljud är nu: {red}AV",
 
@@ -93,10 +91,6 @@
 
   "goto_player": "Teleporterar till {lime}{0}",
   "goto_player_not_found": "{lightred}Namnet på spelaren hittades inte! Om namnet innehåller mellanslag, försök {lime}!goto 'spelarens namn'",
-
-  //jumpstats
-  "js_msg1": "{lime}JS: {grey} {0}: {1}{2}{grey} | Pre: {lime}{3}{grey} | Max: {lime}{4}{grey} | Strafes: {lime}{5}",
-  "js_msg2": "{grey}Height: {lime}{0}{grey} | Width: {lime}{1}{grey} | WT: {lime}{2}{grey} | Sync: {lime}{3}%",
 
   //other
   "command_cooldown": "Command är på cooldown. Chilla...",
@@ -143,7 +137,6 @@
   "console_replaypb": "• !replaypb (css_replaypb) - Prehrá váš PB pre aktuálnu mapu",
   "console_replaybonus": "• !replaybonus / !replayb [1-10] [bonus stage] (css_replaybonus) - Prehrá top 10 serverových bonusových rekordov",
   "console_replaybonuspb": "• !replaybonuspb / !replaybpb (css_replaybonuspb) - Prehrá váš PB pre bonus",
-  "console_jumpstats": "• !jumpstats (css_jumpstats) - Prepnúť JumpStats",
   "console_hideweapon": "• !hideweapon (css_hideweapon) - Prepnúť viditeľnosť zbrane",
   "console_spec": "• !spec (css_spec) - Presunie vás na diváka alebo späť do tímu",
   "console_styles": "• !styles (css_styles) - Zobraziť všetky štýly"

@@ -1,7 +1,8 @@
+# SharpTimer
+SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using CounterStrikeSharp<br>
+
 > [!NOTE]
 > The original creator of SharpTimer is dea_bb, who discontinued support for the project after version 0.2.6. This fork is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
-
-
 
 [**Discord**](https://discord.com/invite/SmQXeyMcny)
 
@@ -12,11 +13,6 @@
 	<br>
 	<a href="https://ko-fi.com/rcnoob"><img width="185" src="https://files.catbox.moe/rig9aq.svg" alt="Badge"></a>
 </p>
-
-
-# SharpTimer
-SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using CounterStrikeSharp<br>
-
 
 ## Features
 <details> 
@@ -40,10 +36,6 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 <details> 
   <summary>Discord Webhook</summary>
-</details>
-
-<details> 
-  <summary>JumpStats</summary>
 </details>
 
 <details> 
@@ -148,20 +140,6 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
   - [x] Player Server Stats
   - [x] Player Map Stats
 - [x] Replays
-- [x] Jumpstats
-  - [x] Distance
-  - [x] Pre
-  - [x] Max
-  - [x] Height
-  - [x] Width
-  - [ ] Sync
-  - [ ] Jump Types
-    - [x] Long Jump
-    - [x] BunnyHop
-    - [x] MultiBunnyHop
-    - [x] Jump Bug
-    - [ ] Edge Bug
-    - [ ] Ladder Jump
 - [ ] Silly Stuff
   - [x] Color customization
   - [x] Special Tester Gifs
@@ -171,6 +149,10 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 
 
 ## Authors:
-[DEA_BB](https://twitter.com/dea_bb)
+original creator: [DEA_BB](https://twitter.com/dea_bb)
+
+sharptimer team:
 [Letaryat](https://github.com/Letaryat)
 [rcnoob](https://github.com/rcnoob)
+[exkludera](https://github.com/exkludera)
+[Marchand](https://github.com/M-archand)

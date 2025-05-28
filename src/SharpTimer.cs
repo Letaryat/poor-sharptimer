@@ -29,7 +29,7 @@ public partial class SharpTimer : BasePlugin
 {
     public override string ModuleName => "SharpTimer";
     public override string ModuleVersion => $"0.3.1w";
-    public override string ModuleAuthor => "dea & sharptimer community";
+    public override string ModuleAuthor => "dea, rcnoob, exkludera & st community";
     public override string ModuleDescription => "A CS2 Timer Plugin";
 
     public Utils Utils = null!;
