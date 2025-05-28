@@ -15,7 +15,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using System.Text.Json;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Utils;
 using FixVectorLeak;
 
 namespace SharpTimer
@@ -24,13 +23,18 @@ namespace SharpTimer
     {
         public bool IsAllowedPlayer(CCSPlayerController? player)
         {
-            if (player == null || playerTimers[player.Slot].IsNoclip)
+            if (player == null)
                 return false;
 
-            int slot = player.Slot;
-            bool isConnected = connectedPlayers.ContainsKey(slot) && playerTimers.ContainsKey(slot);
+            if (playerTimers.TryGetValue(player.Slot, out var playTimer))
+            {
+                if (playTimer.IsNoclip)
+                    return false;
+            }
 
-            bool isAlive = player.Alive();
+            bool isConnected = connectedPlayers.ContainsKey(player.Slot) && playerTimers.ContainsKey(player.Slot);
+
+            bool isAlive = player.PawnIsAlive;
             bool isTeamValid = player.TeamCT() || player.TeamT();
 
             return isConnected && isAlive && isTeamValid;
@@ -41,14 +45,11 @@ namespace SharpTimer
             if (player == null)
                 return false;
 
-            bool isTeamValid = player.TeamSpec();
-
-            int slot = player.Slot;
-            bool isConnected = connectedPlayers.ContainsKey(slot) && playerTimers.ContainsKey(slot);
+            bool isConnected = connectedPlayers.ContainsKey(player.Slot) && playerTimers.ContainsKey(player.Slot);
             bool isObservingValid = player.Pawn?.Value!.ObserverServices?.ObserverTarget != null &&
-                                     specTargets.ContainsKey(player.Pawn.Value.ObserverServices.ObserverTarget.Index);
+                                    specTargets.ContainsKey(player.Pawn.Value.ObserverServices.ObserverTarget.Index);
 
-            return isTeamValid && isConnected && isObservingValid;
+            return isConnected && isObservingValid;
         }
 
         public bool IsPlayerOrSpectator(CCSPlayerController? player)

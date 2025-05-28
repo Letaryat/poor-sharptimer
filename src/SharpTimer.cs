@@ -295,7 +295,7 @@ public partial class SharpTimer : BasePlugin
     private HookResult EventPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo @eventInfo)
     {
         var player = @event.Userid;
-        if (player == null || player.NotValid())
+        if (player == null || !player.Valid())
             return HookResult.Continue;
 
         OnPlayerConnect(player);
@@ -347,7 +347,7 @@ public partial class SharpTimer : BasePlugin
     private HookResult EventPlayerSpawn(EventPlayerSpawn @event, GameEventInfo @eventInfo)
     {
         var player = @event.Userid;
-        if (player == null || player.NotValid())
+        if (player == null || !player.Valid())
             return HookResult.Continue;
 
         //just.. dont ask.
@@ -371,16 +371,13 @@ public partial class SharpTimer : BasePlugin
 
         Server.NextFrame(() => InvalidateTimer(player));
 
-        if (enableReplays && enableSRreplayBot && replayBotController == null)
-            _ = Task.Run(async () => await SpawnReplayBot());
-
         return HookResult.Continue;
     }
 
     private HookResult EventPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo @eventInfo)
     {
         var player = @event.Userid;
-        if (player == null || player.NotValid())
+        if (player == null || !player.Valid())
             return HookResult.Continue;
 
         OnPlayerDisconnect(player);

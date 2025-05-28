@@ -19,6 +19,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using System.Text.Json;
 using FixVectorLeak;
+using CounterStrikeSharp.API.Modules.Timers;
 
 namespace SharpTimer
 {
@@ -321,7 +322,7 @@ namespace SharpTimer
             }
         }
 
-        private async Task SpawnReplayBot(bool respawn = false)
+        private async Task SpawnReplayBot()
         {
             if (!await CheckSRReplay())
             {
@@ -331,15 +332,23 @@ namespace SharpTimer
 
             Server.NextFrame(() =>
             {
-                if (replayBotController == null)
+                Server.ExecuteCommand("bot_quota_mode normal");
+                Server.ExecuteCommand("bot_quota 1");
+                Server.ExecuteCommand("bot_chatter off");
+                Server.ExecuteCommand("bot_controllable 0");
+                Server.ExecuteCommand("bot_kick");
+                replayBotController = null;
+
+                AddTimer(3.0f, () =>
                 {
                     // wtf is this game even
                     Server.ExecuteCommand("bot_quota 1");
                     Server.ExecuteCommand("bot_add_ct");
+                    Server.ExecuteCommand("bot_quota 1");
 
                     Utils.LogDebug("Searching for replay bot...");
 
-                    AddTimer(1.0f, () =>
+                    AddTimer(0.0f, () =>
                     {
                         // find and setup bot
                         var bot = Utilities.GetPlayers().Where(b => b.IsBot && !b.IsHLTV).FirstOrDefault();
@@ -380,20 +389,13 @@ namespace SharpTimer
                         foreach (var kicked in bots)
                         {
                             OnPlayerDisconnect(kicked, true);
+                            Server.ExecuteCommand("bot_quota 1");
                             Server.ExecuteCommand($"kickid {kicked.UserId}");
+                            Server.ExecuteCommand("bot_quota 1");
                             Utils.LogDebug($"Kicking unused bot on spawn... {kicked.PlayerName}");
                         }
                     });
-                }
-                else if (replayBotController != null && respawn)
-                {
-                    var bot = replayBotController;
-                    OnPlayerDisconnect(bot, true);
-                    Server.ExecuteCommand($"kickid {bot.UserId}");
-                    replayBotController = null;
-                    Utils.LogDebug($"Respawning bot, probably new record...");
-                    _ = Task.Run(async () => await SpawnReplayBot());
-                }
+                }, TimerFlags.STOP_ON_MAPCHANGE);
             });
         }
 

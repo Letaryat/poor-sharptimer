@@ -33,7 +33,7 @@ public partial class SharpTimer
                         else
                             Utils.LogError("MapExec Error: file name returned null");
                     }
-                });
+                }, TimerFlags.STOP_ON_MAPCHANGE);
 
                 if (removeCrouchFatigueEnabled == true) Server.ExecuteCommand("sv_timebetweenducks 0");
 
@@ -99,10 +99,10 @@ public partial class SharpTimer
                 }
 
                 _ = Task.Run(async () => await CacheWorldRecords());
-                AddTimer(globalCacheInterval, async () => await CacheWorldRecords(), TimerFlags.REPEAT);
+                AddTimer(globalCacheInterval, async () => await CacheWorldRecords(), TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
 
                 _ = Task.Run(async () => await CacheGlobalPoints());
-                AddTimer(globalCacheInterval, async () => await CacheGlobalPoints(), TimerFlags.REPEAT);
+                AddTimer(globalCacheInterval, async () => await CacheGlobalPoints(), TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
             });
         }
         catch (Exception ex)
@@ -222,21 +222,13 @@ public partial class SharpTimer
                     else
                         Utils.LogError("MapExec Error: file name returned null");
                 }
-            });
+            }, TimerFlags.STOP_ON_MAPCHANGE);
 
             if (adServerRecordEnabled == true) ADtimerServerRecord();
             if (adMessagesEnabled == true) ADtimerMessages();
 
-            if (enableReplays && enableSRreplayBot)
-            {
-                replayBotController = null;
-                Server.ExecuteCommand("bot_quota_mode fill");
-                Server.ExecuteCommand("bot_quota 1");
-                Server.ExecuteCommand("bot_chatter off");
-                Server.ExecuteCommand("bot_controllable 0");
-                Server.ExecuteCommand("bot_join_after_player 0");
-                Server.ExecuteCommand("bot_kick");
-            }
+            if (connectedPlayers.Count() > 0 && enableReplays && enableSRreplayBot)
+                _ = Task.Run(SpawnReplayBot);
 
             entityCache = new EntityCache();
             UpdateEntityCache();
@@ -474,7 +466,7 @@ public partial class SharpTimer
                         {
                             Utils.LogError("Invalid int string format for MapTier");
                         }
-                    });
+                    }, TimerFlags.STOP_ON_MAPCHANGE);
                 }
 
                 if (!string.IsNullOrEmpty(mapInfo.MapType))
@@ -490,7 +482,7 @@ public partial class SharpTimer
                         {
                             Utils.LogError("Invalid string format for MapType");
                         }
-                    });
+                    }, TimerFlags.STOP_ON_MAPCHANGE);
                 }
 
                 if (useTriggers == false && !currentMapStartC1.Equals(new()) && !currentMapStartC2.Equals(new()) && !currentMapEndC1.Equals(new()) && !currentMapEndC2.Equals(new()))

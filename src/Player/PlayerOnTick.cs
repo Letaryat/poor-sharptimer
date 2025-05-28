@@ -35,7 +35,7 @@ namespace SharpTimer
 
                     var playerSlot = player.Slot;
 
-                    if ((CsTeam)player.TeamNum == CsTeam.Spectator)
+                    if ((CsTeam)player.TeamNum == CsTeam.Spectator || !player.PawnIsAlive)
                     {
                         SpectatorOnTick(player);
                         continue;

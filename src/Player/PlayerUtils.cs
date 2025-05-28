@@ -17,6 +17,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands.Targeting;
+using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using FixVectorLeak;
@@ -643,7 +644,7 @@ namespace SharpTimer
                 Utils.PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
                 if (enableStyles) Utils.PrintToChatAll(Localizer["timer_style", GetNamedStyle(style)]);
                 if (enableReplays == true && enableSRreplayBot == true && newSR && (oldticks > newticks || oldticks == 0))
-                    _ = Task.Run(async () => await SpawnReplayBot(true));
+                    _ = Task.Run(async () => await SpawnReplayBot());
             });
         }
         public async Task PrintStageTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int stage, int bonusX = 0, int prevSR = 0)
@@ -809,41 +810,48 @@ namespace SharpTimer
             return (ct_count, t_count);
         }
 
-        public void PlaySound(CCSPlayerController? player, string sound, bool allPlayers = false)
+        public void PlaySound(CCSPlayerController player, string sound, bool allPlayers = false)
         {
-            if (allPlayers)
+            if (string.IsNullOrEmpty(sound))
             {
-                foreach (var target in connectedPlayers.Values)
-                {
-                    if (target.IsBot) continue;
+                Utils.LogError("PlaySound: Sound string is null or empty");
+                return;
+            }
 
-                    if (playerTimers[target!.Slot].SoundsEnabled)
+            var targets = allPlayers
+                ? connectedPlayers.Values.Where(p => !p.IsBot && playerTimers.TryGetValue(p.Slot, out var t) && t.SoundsEnabled)
+                : (!player.IsBot && playerTimers.TryGetValue(player.Slot, out var t) && t.SoundsEnabled) ? new[] { player } : null;
+
+            if (targets == null || targets.Count() <= 0)
+                return;
+
+            foreach (var target in targets)
+            {
+                Server.NextFrame(() =>
+                {
+                    try
                     {
                         if (soundeventsEnabled)
                             target.EmitSound(sound, new(target));
-
-                        else target.ExecuteClientCommand($"play {sound}");
+                        else
+                            target.ExecuteClientCommand($"play {sound}");
                     }
-                }
-            }
-            else
-            {
-                if (playerTimers[player!.Slot].SoundsEnabled && !player.IsBot)
-                {
-                    if (soundeventsEnabled)
-                        player.EmitSound(sound, new(player));
-
-                    else player.ExecuteClientCommand($"play {sound}");
-                }
+                    catch (Exception ex)
+                    {
+                        Utils.LogError($"PlaySound: Error playing sound for {target.PlayerName}: {ex.Message}");
+                    }
+                });
             }
         }
     }
 
     public static class EntityExtends
     {
-        public static bool NotValid(this CCSPlayerController? player)
+        public static bool Valid(this CCSPlayerController? player)
         {
-            return player == null || !player.IsValid || player.PlayerPawn.Value == null || !player.PlayerPawn.IsValid || player.IsBot || player.IsHLTV;
+            if (player == null) return false;
+
+            return player.IsValid || !player.IsBot || !player.IsHLTV;
         }
 
         public static CCSPlayerPawn? PlayerPawn([NotNullWhen(true)] this CCSPlayerController player)
@@ -858,11 +866,6 @@ namespace SharpTimer
             CBasePlayerPawn? pawn = player.Pawn.Value;
 
             return pawn;
-        }
-
-        public static bool Alive([NotNullWhen(true)] this CCSPlayerController player)
-        {
-            return player.PawnIsAlive && player.PlayerPawn.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE;
         }
 
         public static bool TeamT([NotNullWhen(true)] this CCSPlayerController player)
