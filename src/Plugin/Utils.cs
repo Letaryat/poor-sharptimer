@@ -831,7 +831,7 @@ namespace SharpTimer
 
                 if (closestMatch == null || closestMatch == string.Empty)
                 {
-                    LogError("No closest MapExec match found.");
+                    LogDebug("No closest MapExec match found.");
                     return "null";
                 }
 

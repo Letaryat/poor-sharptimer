@@ -336,8 +336,12 @@ namespace SharpTimer
                 Server.NextFrame(() =>
                 {
                     Utils.PrintToChat(player, Localizer["current_wr", currentMapName!]);
+
+                    if (cache.CachedWorldRecords == null || cache.CachedWorldRecords.Count <= 0)
+                        return;
+
                     int position = 1;
-                    foreach (var record in cache.CachedWorldRecords!)
+                    foreach (var record in cache.CachedWorldRecords)
                     {
                         string replayIndicator = record.Value.Replay ? $"{ChatColors.Red}◉" : "";
                         Utils.PrintToChat(player, $"{Localizer["records_map", position, record.Value.PlayerName!, replayIndicator, Utils.FormatTime(record.Value.TimerTicks)]}");
