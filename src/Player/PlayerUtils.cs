@@ -851,7 +851,7 @@ namespace SharpTimer
         {
             if (player == null) return false;
 
-            return player.IsValid || !player.IsBot || !player.IsHLTV;
+            return player.IsValid && !player.IsBot && !player.IsHLTV;
         }
 
         public static CCSPlayerPawn? PlayerPawn([NotNullWhen(true)] this CCSPlayerController player)
