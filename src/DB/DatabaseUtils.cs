@@ -2577,18 +2577,13 @@ namespace SharpTimer
             return 0;
         }
 
-        public async Task<int> GetPlayerPointsFromDatabase(CCSPlayerController? player, string steamId, string playerName)
+        public async Task<int> GetPlayerPointsFromDatabase(string steamId, string? playerName = null)
         {
             SharpTimerDebug("Trying GetPlayerPointsFromDatabase");
             int playerPoints = 0;
 
             try
             {
-                if (!IsAllowedClient(player))
-                {
-                    return playerPoints;
-                }
-
                 using (var connection = await OpenConnectionAsync())
                 {
                     await CreatePlayerStatsTableAsync(connection);
