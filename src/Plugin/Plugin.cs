@@ -52,6 +52,7 @@ public partial class SharpTimer
 
                 if (!sqlCheck)
                 {
+
                     if (useMySQL)
                     {
                         string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
@@ -716,25 +717,25 @@ public partial class SharpTimer
     {
         var adMessages = new List<string>()
         {
-            $"{Localizer["prefix"]} {Localizer["ad_see_all_commands"]}",
-            $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_pb"]}" : "")}",
-            $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_sr"]}" : "")}",
-            $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_top"]}" : "")}",
-            $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_bonus"]}" : "")}",
-            $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_bonus_pb"]}" : "")}",
-            $"{(globalRanksEnabled ? $"{Localizer["prefix"]} {Localizer["ad_points"]}" : "")}",
-            $"{(respawnEnabled ? $"{Localizer["prefix"]} {Localizer["ad_respawn"]}" : "")}",
-            $"{(respawnEnabled ? $"{Localizer["prefix"]} {Localizer["ad_start_pos"]}" : "")}",
-            $"{(topEnabled ? $"{Localizer["prefix"]} {Localizer["ad_top"]}" : "")}",
-            $"{(rankEnabled ? $"{Localizer["prefix"]} {Localizer["ad_rank"]}" : "")}",
-            $"{(cpEnabled ? $"{Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? $"{Localizer["ad_save_loc"]}" : $"{Localizer["ad_cp"]}")}" : "")}",
-            $"{(cpEnabled ? $"{Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? $"{Localizer["ad_load_loc"]}" : $"{Localizer["ad_tp"]}")}" : "")}",
-            $"{(goToEnabled ? $"{Localizer["prefix"]} {Localizer["ad_goto"]}" : "")}",
-            $"{(fovChangerEnabled ? $"{Localizer["prefix"]} {Localizer["ad_fov"]}" : "")}",
-            $"{Localizer["prefix"]} {Localizer["ad_sounds"]}",
-            $"{Localizer["prefix"]} {Localizer["ad_hud"]}",
-            $"{Localizer["prefix"]} {Localizer["ad_keys"]}",
-            $"{(enableStyles ? $"{Localizer["prefix"]} {Localizer["ad_styles"]}" : "")}",
+            $"{Localizer["ad_see_all_commands"]}",
+            $"{(enableReplays ? $"{Localizer["ad_replay_pb"]}" : "")}",
+            $"{(enableReplays ? $"{Localizer["ad_replay_sr"]}" : "")}",
+            $"{(enableReplays ? $"{Localizer["ad_replay_top"]}" : "")}",
+            $"{(enableReplays ? $"{Localizer["ad_replay_bonus"]}" : "")}",
+            $"{(enableReplays ? $"{Localizer["ad_replay_bonus_pb"]}" : "")}",
+            $"{(globalRanksEnabled ? $"{Localizer["ad_points"]}" : "")}",
+            $"{(respawnEnabled ? $"{Localizer["ad_respawn"]}" : "")}",
+            $"{(respawnEnabled ? $"{Localizer["ad_start_pos"]}" : "")}",
+            $"{(topEnabled ? $"{Localizer["ad_top"]}" : "")}",
+            $"{(rankEnabled ? $"{Localizer["ad_rank"]}" : "")}",
+            $"{(cpEnabled ? $"{(currentMapName!.Contains("surf_") ? $"{Localizer["ad_save_loc"]}" : $"{Localizer["ad_cp"]}")}" : "")}",
+            $"{(cpEnabled ? $"{(currentMapName!.Contains("surf_") ? $"{Localizer["ad_load_loc"]}" : $"{Localizer["ad_tp"]}")}" : "")}",
+            $"{(goToEnabled ? $"{Localizer["ad_goto"]}" : "")}",
+            $"{(fovChangerEnabled ? $"{Localizer["ad_fov"]}" : "")}",
+            $"{Localizer["ad_sounds"]}",
+            $"{Localizer["ad_hud"]}",
+            $"{Localizer["ad_keys"]}",
+            $"{(enableStyles ? $"{Localizer["ad_styles"]}" : "")}",
         };
 
         return adMessages;

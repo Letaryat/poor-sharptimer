@@ -31,7 +31,7 @@ namespace SharpTimer
         public void PrintAllEnabledCommands(CCSPlayerController player)
         {
             Utils.LogDebug($"Printing Commands for {player.PlayerName}");
-            Utils.PrintToChat(player, $"{Localizer["prefix"]} {Localizer["Check_console"]}");
+            Utils.PrintToChat(player, $"{Localizer["Check_console"]}");
 
             if (respawnEnabled) player.PrintToConsole($"{Localizer["console_r"]}");
             if (respawnEnabled && bonusRespawnPoses.Count != 0) player.PrintToConsole($"{Localizer["console_rb"]}");

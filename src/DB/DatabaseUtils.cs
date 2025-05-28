@@ -1107,7 +1107,7 @@ namespace SharpTimer
 
                                 await upsertCommand!.ExecuteNonQueryAsync();
                                 Server.NextFrame(() => Utils.LogDebug($"Got player stats from database for {playerName}"));
-                                if (connectMsgEnabled) Server.NextFrame(() => Utils.PrintToChatAll($"{Localizer["prefix"]} {Localizer["connected_message", playerName, Utils.FormatOrdinal(timesConnected)]}"));
+                                if (connectMsgEnabled) Server.NextFrame(() => Utils.PrintToChatAll($"{Localizer["connected_message", playerName, Utils.FormatOrdinal(timesConnected)]}"));
                             }
 
                         }
@@ -1156,7 +1156,7 @@ namespace SharpTimer
 
                                 await upsertCommand!.ExecuteNonQueryAsync();
                                 Server.NextFrame(() => Utils.LogDebug($"Got player stats from database for {playerName}"));
-                                if (connectMsgEnabled) Server.NextFrame(() => Utils.PrintToChatAll($"{Localizer["prefix"]} {Localizer["connected_message_first", playerName]}"));
+                                if (connectMsgEnabled) Server.NextFrame(() => Utils.PrintToChatAll($"{Localizer["connected_message_first", playerName]}"));
                             }
                         }
                     }

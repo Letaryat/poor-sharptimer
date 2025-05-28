@@ -78,7 +78,7 @@ namespace SharpTimer
 
                         if (playerTimer.AFKTicks >= afkSeconds*48 && !playerTimer.AFKWarned && afkWarning)
                         {
-                            Utils.PrintToChat(player, $"{Localizer["prefix"]} {Localizer["afk_message"]}");
+                            Utils.PrintToChat(player, $"{Localizer["afk_message"]}");
                             playerTimer.AFKWarned = true;
                         }
                             

@@ -22,7 +22,6 @@ using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.UserMessages;
 using FixVectorLeak;
 using System.Runtime.InteropServices;
-using static SharpTimer.PlayerTimerInfo;
 
 namespace SharpTimer;
 

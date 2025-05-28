@@ -417,7 +417,7 @@ namespace SharpTimer
             else if (player.Team != CsTeam.Spectator)
             {
                 player.ChangeTeam(CsTeam.Spectator);
-                Utils.PrintToChat(player, $"{Localizer["prefix"]} You have been moved to Spectator.");
+                Utils.PrintToChat(player, $"You have been moved to Spectator.");
             }
         }
 
@@ -566,7 +566,10 @@ namespace SharpTimer
 
             var mapName = command.ArgByIndex(1);
 
-            _ = Task.Run(async () => await PrintTopRecordsHandler(player, player.PlayerName, 0, string.IsNullOrEmpty(mapName) ? "" : mapName, playerTimers[player.Slot].currentStyle));
+            Server.NextFrame(async () =>
+            {
+                await PrintTopRecordsHandler(player, player.PlayerName, 0, string.IsNullOrEmpty(mapName) ? "" : mapName, playerTimers[player.Slot].currentStyle);
+            });
         }
 
         [ConsoleCommand("css_points", "Prints top points")]
@@ -651,7 +654,7 @@ namespace SharpTimer
                 return;
             }
 
-            _ = Task.Run(async () => await PrintTopRecordsHandler(player, player.PlayerName, bonusX));
+            Server.NextFrame(async () => await PrintTopRecordsHandler(player, player.PlayerName, bonusX));
         }
 
         public async Task PrintTopRecordsHandler(CCSPlayerController? player, string playerName, int bonusX = 0, string mapName = "", int style = 0)
@@ -669,51 +672,46 @@ namespace SharpTimer
 
             var sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, mapName, style);
 
-            if (sortedRecords.Count == 0)
-            {
-                Server.NextFrame(() =>
-                {
-                    if (IsPlayerOrSpectator(player))
-                    {
-                        if (bonusX != 0)
-                            Utils.PrintToChat(player!, Localizer["no_records_available_bonus", bonusX, currentMapNamee]);
-                        else
-                            Utils.PrintToChat(player!, Localizer["no_records_available", currentMapNamee]);
-                    }
-                });
-                return;
-            }
-
-            List<string> printStatements;
-
-            if (bonusX != 0)
-                printStatements = [$" {Localizer["prefix"]} {Localizer["top10_records_bonus", GetNamedStyle(style), bonusX, currentMapNamee]}"];
-            else
-                printStatements = [$" {Localizer["prefix"]} {Localizer["top10_records", GetNamedStyle(style), currentMapNamee]}"];
-
-            int rank = 1;
-
-            foreach (var kvp in sortedRecords.Take(10))
-            {
-                string _playerName = kvp.Value.PlayerName!;
-                int timerTicks = kvp.Value.TimerTicks;
-
-                bool showReplays = false;
-                if (enableReplays == true) showReplays = await CheckSRReplay(kvp.Value.SteamID!, bonusX);
-
-                string replayIndicator = enableReplays ? (showReplays ? $"{ChatColors.Red}◉" : "") : "";
-
-                printStatements.Add($" {Localizer["prefix"]} {Localizer["records_map", rank, _playerName, replayIndicator, Utils.FormatTime(timerTicks)]}");
-                rank++;
-            }
-
             Server.NextFrame(() =>
             {
-                if (IsPlayerOrSpectator(player))
+                if (!IsPlayerOrSpectator(player))
+                    return;
+
+                if (sortedRecords.Count == 0)
                 {
-                    foreach (var statement in printStatements)
-                        Utils.PrintToChat(player!, statement);
+                    if (bonusX != 0)
+                        Utils.PrintToChat(player!, Localizer["no_records_available_bonus", bonusX, currentMapNamee]);
+                    else
+                        Utils.PrintToChat(player!, Localizer["no_records_available", currentMapNamee]);
+                    return;
                 }
+
+                List<string> printStatements;
+
+                if (bonusX != 0)
+                    printStatements = [$" {Localizer["top10_records_bonus", GetNamedStyle(style), bonusX, currentMapNamee]}"];
+                else
+                    printStatements = [$" {Localizer["top10_records", GetNamedStyle(style), currentMapNamee]}"];
+
+                int rank = 1;
+
+                foreach (var kvp in sortedRecords.Take(10))
+                {
+                    string _playerName = kvp.Value.PlayerName!;
+                    int timerTicks = kvp.Value.TimerTicks;
+
+                    bool showReplays = false;
+                    if (enableReplays == true)
+                        showReplays = Task.Run(() => CheckSRReplay(kvp.Value.SteamID!, bonusX)).Result;
+
+                    string replayIndicator = enableReplays ? (showReplays ? $"{ChatColors.Red}◉" : "") : "";
+
+                    printStatements.Add($" {Localizer["records_map", rank, _playerName, replayIndicator, Utils.FormatTime(timerTicks)]}");
+                    rank++;
+                }
+
+                foreach (var statement in printStatements)
+                    Utils.PrintToChat(player!, statement);
             });
         }
 
