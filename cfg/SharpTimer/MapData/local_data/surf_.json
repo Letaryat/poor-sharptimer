@@ -2843,7 +2843,7 @@
         "Tier": 4,
         "Type": "Linear"
     },
-    "surf_Vector_t": {
+    "surf_vector": {
         "Tier": 4,
         "Type": "Staged"
     },
