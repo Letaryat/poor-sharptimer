@@ -84,14 +84,11 @@ namespace SharpTimer
 
                 if (!isLatest && latestVersion != "null")
                 {
-                    for (int i = 0; i < 5; i++)
-                    {
-                        ConPrint($"\u001b[33m----------------------------------------------------");
-                        ConPrint($"\u001b[33mPLUGIN VERSION DOES NOT MATCH LATEST GITHUB RELEASE");
-                        ConPrint($"\u001b[33mCURRENT VERSION: {Plugin.ModuleVersion}");
-                        ConPrint($"\u001b[33mLATEST RELEASE VERSION: {latestVersion}");
-                        ConPrint($"\u001b[33mPLEASE CONSIDER UPDATING SOON!");
-                    }
+                    ConPrint($"\u001b[33m----------------------------------------------------");
+                    ConPrint($"\u001b[33mPLUGIN VERSION DOES NOT MATCH LATEST GITHUB RELEASE");
+                    ConPrint($"\u001b[33mCURRENT VERSION: {Plugin.ModuleVersion}");
+                    ConPrint($"\u001b[33mLATEST RELEASE VERSION: {latestVersion}");
+                    ConPrint($"\u001b[33mPLEASE CONSIDER UPDATING SOON!");
                     ConPrint($"\u001b[33m----------------------------------------------------");
                 }
             }
