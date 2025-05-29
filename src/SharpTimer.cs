@@ -307,7 +307,7 @@ public partial class SharpTimer : BasePlugin
     private HookResult EventPlayerTeam(EventPlayerTeam @event, GameEventInfo @eventInfo)
     {
         var player = @event.Userid;
-        if (player == null) return HookResult.Continue;
+        if (player == null || !player.Valid()) return HookResult.Continue;
 
         Server.NextFrame(() =>
         {

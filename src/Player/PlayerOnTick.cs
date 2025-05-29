@@ -261,72 +261,9 @@ namespace SharpTimer
                         if (currentTick % (64 / hudTickrate) != 0)
                             continue;
 
-                        bool keyEnabled = !playerTimer.HideKeys && keysOverlayEnabled;
-                        bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;
+                        string hudContent = GetHudContent(playerTimer, player);
 
-                        string formattedPlayerVel =
-                            Math.Round(use2DSpeed
-                                ? playerSpeed.Length2D()
-                                : playerSpeed.Length())
-                                .ToString("0000");
-
-                        int playerVel = int.Parse(formattedPlayerVel);
-                        
-                        string secondaryHUDcolorDynamic = "LimeGreen";
-                        int[] velocityThresholds = { 349, 699, 1049, 1399, 1749, 2099, 2449, 2799, 3149, 3499 };
-                        string[] hudColors = { "LimeGreen", "Lime", "GreenYellow", "Yellow", "Gold", "Orange", "DarkOrange", "Tomato", "OrangeRed", "Red", "Crimson" };
-
-                        for (int i = 0; i < velocityThresholds.Length; i++)
-                        {
-                            if (playerVel < velocityThresholds[i])
-                            {
-                                secondaryHUDcolorDynamic = hudColors[i];
-                                break;
-                            }
-                        }
-
-                        string playerVelColor = useDynamicColor ? secondaryHUDcolorDynamic : secondaryHUDcolor;
-                        string formattedPlayerPre = Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
-                        string playerTime = Utils.FormatTime(timerTicks);
-                        string playerBonusTime = Utils.FormatTime(playerTimer.BonusTimerTicks);
-                        string timerLine = isBonusTimerRunning
-                                            ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Bonus #{playerTimer.BonusStage} Timer:</font> <font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerBonusTime}</font> <br>"
-                                            : isTimerRunning
-                                                ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Timer: </font><font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerTime}</font> <font color='gray' class='fontSize-s stratum-bold-italic'>({GetPlayerPlacement(player)})</font>{((playerTimer.CurrentMapStage != 0 && useStageTriggers == true) ? $" <font color='gray' class='fontSize-s stratum-bold-italic'> {playerTimer.CurrentMapStage}/{stageTriggerCount}</font>" : "")} <br>"
-                                                : playerTimer.IsReplaying
-                                                    ? $" <font class='horizontal-center' color='red'>◉ REPLAY {Utils.FormatTime(playerReplays[playerSlot].CurrentPlaybackFrame)}</font> <br>"
-                                                    : "";
-
-                        string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{playerVelColor}'>{formattedPlayerVel}</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre})</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
-
-                        string syncLine = $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> <font class='fontSize-l horizontal-center color='{secondaryHUDcolor}'>{playerTimer.Sync:F2}%</font> <br>";//2f
-
-                        string infoLine = "";
-
-                        if (playerTimer.CurrentZoneInfo.InBonusStartZone)
-                            infoLine = GetBonusInfoLine(playerTimer);
-
-                        else
-                            infoLine = GetMainMapInfoLine(playerTimer);
-
-                        string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-light-mono' color='{tertiaryHUDcolor}'>{((playerButtons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
-                                                $"{((playerButtons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
-                                                $"{((playerButtons & PlayerButtons.Moveright) != 0 ? "D" : "_")} " +
-                                                $"{((playerButtons & PlayerButtons.Back) != 0 ? "S" : "_")} " +
-                                                $"{((playerButtons & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.OldJumpPressed ? "J" : "_")} " +
-                                                $"{((playerButtons & PlayerButtons.Duck) != 0 ? "C" : "_")}";
-
-
-                        string hudContent = (hudEnabled ? timerLine +
-                                            (VelocityHudEnabled ? veloLine : "") +
-                                            (StrafeHudEnabled && !playerTimer.IsReplaying ? syncLine : "") +
-                                            infoLine : "") +
-                                            (keyEnabled && !playerTimer.IsReplaying ? keysLineNoHtml : "") +
-                                            ((playerTimer.IsTester && !playerTimer.IsReplaying) ? $"{(!keyEnabled ? "<br>" : "")}" + playerTimer.TesterBigGif : "") +
-                                            ((playerTimer.IsVip && !playerTimer.IsTester && !playerTimer.IsReplaying) ? $"{(!keyEnabled ? "<br><br>" : "")}" + $"<br><img src='https://files.catbox.moe/{playerTimer.VipBigGif}.gif'><br>" : "") +
-                                            ((playerTimer.IsReplaying && playerTimer.VipReplayGif != "x") ? playerTimer.VipReplayGif : "");
-
-                        if (hudEnabled || keyEnabled)
+                        if (!string.IsNullOrEmpty(hudContent))
                             player.PrintToCenterHtml(hudContent);
                         
                         playerTimer.MovementService!.OldJumpPressed = false;
@@ -337,6 +274,80 @@ namespace SharpTimer
             {
                 if (ex.Message != "Invalid game event") Utils.LogError($"Error in TimerOnTick: {ex.StackTrace}");
             }
+        }
+
+        private string GetHudContent(PlayerTimerInfo playerTimer, CCSPlayerController player)
+        {
+            bool isTimerRunning = playerTimer.IsTimerRunning;
+            bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
+            int timerTicks = playerTimer.TimerTicks;
+            PlayerButtons? playerButtons = player.Buttons;
+            Vector_t playerSpeed = player.PlayerPawn!.Value!.AbsVelocity.ToVector_t();
+            bool keyEnabled = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
+            bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;
+
+            string formattedPlayerVel = Math.Round(use2DSpeed
+                ? playerSpeed.Length2D()
+                : playerSpeed.Length())
+                .ToString("0000");
+
+            int playerVel = int.Parse(formattedPlayerVel);
+
+            string secondaryHUDcolorDynamic = "LimeGreen";
+            int[] velocityThresholds = { 349, 699, 1049, 1399, 1749, 2099, 2449, 2799, 3149, 3499 };
+            string[] hudColors = { "LimeGreen", "Lime", "GreenYellow", "Yellow", "Gold", "Orange", "DarkOrange", "Tomato", "OrangeRed", "Red", "Crimson" };
+
+            for (int i = 0; i < velocityThresholds.Length; i++)
+            {
+                if (playerVel < velocityThresholds[i])
+                {
+                    secondaryHUDcolorDynamic = hudColors[i];
+                    break;
+                }
+            }
+
+            string playerVelColor = useDynamicColor ? secondaryHUDcolorDynamic : secondaryHUDcolor;
+            string formattedPlayerPre = Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
+            string playerTime = Utils.FormatTime(timerTicks);
+            string playerBonusTime = Utils.FormatTime(playerTimer.BonusTimerTicks);
+            string timerLine = isBonusTimerRunning
+                                ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Bonus #{playerTimer.BonusStage} Timer:</font> <font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerBonusTime}</font> <br>"
+            : isTimerRunning
+                                    ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Timer: </font><font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerTime}</font> <font color='gray' class='fontSize-s stratum-bold-italic'>({GetPlayerPlacement(player)})</font>{((playerTimer.CurrentMapStage != 0 && useStageTriggers == true) ? $" <font color='gray' class='fontSize-s stratum-bold-italic'> {playerTimer.CurrentMapStage}/{stageTriggerCount}</font>" : "")} <br>"
+                                    : playerTimer.IsReplaying
+                                        ? $" <font class='horizontal-center' color='red'>◉ REPLAY {Utils.FormatTime(playerReplays[player.Slot].CurrentPlaybackFrame)}</font> <br>"
+                                        : "";
+
+            string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{playerVelColor}'>{formattedPlayerVel}</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre})</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
+
+            string syncLine = $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> <font class='fontSize-l horizontal-center color='{secondaryHUDcolor}'>{playerTimer.Sync:F2}%</font> <br>";//2f
+
+            string infoLine = "";
+
+            if (playerTimer.CurrentZoneInfo.InBonusStartZone)
+                infoLine = GetBonusInfoLine(playerTimer);
+
+            else
+                infoLine = GetMainMapInfoLine(playerTimer);
+
+            string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-light-mono' color='{tertiaryHUDcolor}'>{((playerButtons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
+                                    $"{((playerButtons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
+                                    $"{((playerButtons & PlayerButtons.Moveright) != 0 ? "D" : "_")} " +
+                                    $"{((playerButtons & PlayerButtons.Back) != 0 ? "S" : "_")} " +
+                                    $"{((playerButtons & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.OldJumpPressed ? "J" : "_")} " +
+                                    $"{((playerButtons & PlayerButtons.Duck) != 0 ? "C" : "_")}";
+
+
+            string hudContent = (hudEnabled ? timerLine +
+                                (VelocityHudEnabled ? veloLine : "") +
+                                (StrafeHudEnabled && !playerTimer.IsReplaying ? syncLine : "") +
+                                infoLine : "") +
+                                (keyEnabled && !playerTimer.IsReplaying ? keysLineNoHtml : "") +
+                                ((playerTimer.IsTester && !playerTimer.IsReplaying) ? $"{(!keyEnabled ? "<br>" : "")}" + playerTimer.TesterBigGif : "") +
+                                ((playerTimer.IsVip && !playerTimer.IsTester && !playerTimer.IsReplaying) ? $"{(!keyEnabled ? "<br><br>" : "")}" + $"<br><img src='https://files.catbox.moe/{playerTimer.VipBigGif}.gif'><br>" : "") +
+                                ((playerTimer.IsReplaying && playerTimer.VipReplayGif != "x") ? playerTimer.VipReplayGif : "");
+
+            return hudContent;
         }
 
         private string GetMainMapInfoLine(PlayerTimerInfo playerTimer)
@@ -389,61 +400,9 @@ namespace SharpTimer
                 var target = specTargets[player.Pawn.Value!.ObserverServices!.ObserverTarget.Index];
                 if (playerTimers.TryGetValue(target.Slot, out PlayerTimerInfo? playerTimer) && IsAllowedPlayer(target))
                 {
-                    bool isTimerRunning = playerTimer.IsTimerRunning;
-                    bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
-                    int timerTicks = playerTimer.TimerTicks;
-                    PlayerButtons? playerButtons = target.Buttons;
-                    Vector_t playerSpeed = target.PlayerPawn!.Value!.AbsVelocity.ToVector_t();
-                    bool keyEnabled = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
-                    bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;
+                    string hudContent = GetHudContent(playerTimer, target);
 
-                    string formattedPlayerVel = Math.Round(use2DSpeed ? playerSpeed.Length2D()
-                                                                        : playerSpeed.Length())
-                                                                        .ToString("0000");
-                    string formattedPlayerPre = Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
-                    string playerTime = Utils.FormatTime(timerTicks);
-                    string playerBonusTime = Utils.FormatTime(playerTimer.BonusTimerTicks);
-                    string timerLine = isBonusTimerRunning
-                                        ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Bonus #{playerTimer.BonusStage} Timer:</font> <font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerBonusTime}</font> <br>"
-                                        : isTimerRunning
-                                            ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Timer: </font><font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerTime}</font> <font color='gray' class='fontSize-s stratum-bold-italic'>({GetPlayerPlacement(target)})</font>{((playerTimer.CurrentMapStage != 0 && useStageTriggers == true) ? $" <font color='gray' class='fontSize-s stratum-bold-italic'> {playerTimer.CurrentMapStage}/{stageTriggerCount}</font>" : "")} <br>"
-                                            : playerTimer.IsReplaying
-                                                ? $" <font class='horizontal-center' color='red'>◉ REPLAY {Utils.FormatTime(playerReplays[target.Slot].CurrentPlaybackFrame)}</font> <br>"
-                                                : "";
-
-                    string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{secondaryHUDcolor}'>{formattedPlayerVel}</font><font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> u/s</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre} u/s)</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
-
-                    string syncLine = $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> <font class='fontSize-l horizontal-center color='{secondaryHUDcolor}'>{playerTimer.Sync:F2}%</font> <br>";//2f
-
-                    string infoLine = "";
-                    if (playerTimer.CurrentZoneInfo.InBonusStartZone)
-                    {
-                        infoLine = GetBonusInfoLine(playerTimer);
-                    }
-                    else
-                    {
-                        infoLine = GetMainMapInfoLine(playerTimer);
-                    }
-
-                    string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-bold-mono' color='{tertiaryHUDcolor}'>{((playerButtons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
-                                            $"{((playerButtons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
-                                            $"{((playerButtons & PlayerButtons.Moveright) != 0 ? "D" : "_")} " +
-                                            $"{((playerButtons & PlayerButtons.Back) != 0 ? "S" : "_")} " +
-                                            $"{((playerButtons & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.OldJumpPressed ? "J" : "_")} " +
-                                            $"{((playerButtons & PlayerButtons.Duck) != 0 ? "C" : "_")}";
-
-                    if (playerTimer.MovementService!.OldJumpPressed == true) playerTimer.MovementService.OldJumpPressed = false;
-
-                    string hudContent = (hudEnabled ? timerLine +
-                                        (VelocityHudEnabled ? veloLine : "") +
-                                        (StrafeHudEnabled && !playerTimer.IsReplaying ? syncLine : "") +
-                                        infoLine : "") +
-                                        (keyEnabled && !playerTimer.IsReplaying ? keysLineNoHtml : "") +
-                                        ((playerTimer.IsTester && !playerTimer.IsReplaying) ? playerTimer.TesterBigGif : "") +
-                                        ((playerTimer.IsVip && !playerTimer.IsTester && !playerTimer.IsReplaying) ? $"<br><img src='https://files.catbox.moe/{playerTimer.VipBigGif}.gif'><br>" : "") +
-                                        ((playerTimer.IsReplaying && playerTimer.VipReplayGif != "x") ? playerTimer.VipReplayGif : "");
-
-                    if (hudEnabled || keyEnabled)
+                    if (!string.IsNullOrEmpty(hudContent))
                         player.PrintToCenterHtml(hudContent);
                 }
             }

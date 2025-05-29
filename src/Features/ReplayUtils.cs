@@ -326,75 +326,78 @@ namespace SharpTimer
         {
             if (!await CheckSRReplay())
             {
-                Utils.LogDebug("Replay check failed, not spawning bot.");
+                Utils.LogError("Replay check failed, not spawning bot.");
                 return;
             }
 
             Server.NextFrame(() =>
             {
-                Server.ExecuteCommand("bot_quota_mode normal");
-                Server.ExecuteCommand("bot_quota 1");
-                Server.ExecuteCommand("bot_chatter off");
-                Server.ExecuteCommand("bot_controllable 0");
-                Server.ExecuteCommand("bot_kick");
-                replayBotController = null;
-
                 AddTimer(3.0f, () =>
                 {
-                    // wtf is this game even
-                    Server.ExecuteCommand("bot_quota 1");
-                    Server.ExecuteCommand("bot_add_ct");
-                    Server.ExecuteCommand("bot_quota 1");
+                    Server.ExecuteCommand("bot_quota_mode normal");
+                    Server.ExecuteCommand("bot_quota 0");
+                    Server.ExecuteCommand("bot_chatter off");
+                    Server.ExecuteCommand("bot_controllable 0");
+                    Server.ExecuteCommand("bot_kick");
+                    replayBotController = null;
 
-                    Utils.LogDebug("Searching for replay bot...");
-
-                    AddTimer(0.0f, () =>
+                    AddTimer(3.0f, () =>
                     {
-                        // find and setup bot
-                        var bot = Utilities.GetPlayers().Where(b => b.IsBot && !b.IsHLTV).FirstOrDefault();
-                        if (bot != null)
+                        // wtf is this game even
+                        Server.ExecuteCommand("bot_quota 1");
+                        Server.ExecuteCommand("bot_add_ct");
+                        Server.ExecuteCommand("bot_quota 1");
+
+                        Utils.LogDebug("Searching for replay bot...");
+
+                        AddTimer(0.0f, () =>
                         {
-                            replayBotController = bot;
-                            Utils.LogDebug($"Found replay bot: {bot.PlayerName}");
+                            // find and setup bot
+                            var bot = Utilities.GetPlayers().Where(b => b.IsBot && !b.IsHLTV).FirstOrDefault();
+                            if (bot != null)
+                            {
+                                replayBotController = bot;
+                                Utils.LogDebug($"Found replay bot: {bot.PlayerName}");
 
-                            var botPawn = bot.PlayerPawn.Value;
-                            if (botPawn == null) return;
+                                var botPawn = bot.PlayerPawn.Value;
+                                if (botPawn == null) return;
 
-                            // bot settings
-                            bot.RemoveWeapons();
-                            botPawn.Bot!.IsStopping = true;
-                            botPawn.Bot.IsSleeping = true;
-                            botPawn.Bot.AllowActive = true;
-                            bot!.Pawn.Value!.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
-                            bot!.Pawn.Value!.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
-                            Utilities.SetStateChanged(bot, "CCollisionProperty", "m_CollisionGroup");
-                            Utilities.SetStateChanged(bot, "CCollisionProperty", "m_collisionAttribute");
-                            Utils.LogDebug($"Configured replay bot collision and weapons for {bot.PlayerName}");
+                                // bot settings
+                                bot.RemoveWeapons();
+                                botPawn.Bot!.IsStopping = true;
+                                botPawn.Bot.IsSleeping = true;
+                                botPawn.Bot.AllowActive = true;
+                                botPawn.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
+                                botPawn.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
+                                Utilities.SetStateChanged(bot, "CCollisionProperty", "m_CollisionGroup");
+                                Utilities.SetStateChanged(bot, "CCollisionProperty", "m_collisionAttribute");
+                                Utils.LogDebug($"Configured replay bot collision and weapons for {bot.PlayerName}");
 
-                            // start bot replay
-                            OnPlayerConnect(bot, true);
-                            ChangePlayerName(bot, replayBotName);
-                            playerTimers[bot.Slot].IsTimerBlocked = true;
-                            _ = Task.Run(async () => await ReplayHandler(bot, bot.Slot));
-                            Utils.LogDebug($"Starting replay for {bot.PlayerName}");
-                        }
-                        else
-                        {
-                            Utils.LogError($"Failed to spawn replay bot");
-                            return;
-                        }
+                                // start bot replay
+                                OnPlayerConnect(bot, true);
+                                ChangePlayerName(bot, replayBotName);
+                                playerTimers[bot.Slot].IsTimerBlocked = true;
+                                _ = Task.Run(async () => await ReplayHandler(bot, bot.Slot));
+                                Utils.LogDebug($"Starting replay for {bot.PlayerName}");
+                            }
+                            else
+                            {
+                                Utils.LogError($"Failed to spawn replay bot");
+                                return;
+                            }
 
-                        // kick unused bots if there are any
-                        var bots = Utilities.GetPlayers().Where(b => b.IsBot && !b.IsHLTV && b != replayBotController);
-                        foreach (var kicked in bots)
-                        {
-                            OnPlayerDisconnect(kicked, true);
-                            Server.ExecuteCommand("bot_quota 1");
-                            Server.ExecuteCommand($"kickid {kicked.UserId}");
-                            Server.ExecuteCommand("bot_quota 1");
-                            Utils.LogDebug($"Kicking unused bot on spawn... {kicked.PlayerName}");
-                        }
-                    });
+                            // kick unused bots if there are any
+                            var bots = Utilities.GetPlayers().Where(b => b.IsBot && !b.IsHLTV && b != replayBotController);
+                            foreach (var kicked in bots)
+                            {
+                                OnPlayerDisconnect(kicked, true);
+                                Server.ExecuteCommand("bot_quota 1");
+                                Server.ExecuteCommand($"kickid {kicked.UserId}");
+                                Server.ExecuteCommand("bot_quota 1");
+                                Utils.LogDebug($"Kicking unused bot on spawn... {kicked.PlayerName}");
+                            }
+                        });
+                    }, TimerFlags.STOP_ON_MAPCHANGE);
                 }, TimerFlags.STOP_ON_MAPCHANGE);
             });
         }

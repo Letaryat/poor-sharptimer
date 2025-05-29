@@ -227,8 +227,8 @@ public partial class SharpTimer
             if (adServerRecordEnabled == true) ADtimerServerRecord();
             if (adMessagesEnabled == true) ADtimerMessages();
 
-            if (connectedPlayers.Count() > 0 && enableReplays && enableSRreplayBot)
-                _ = Task.Run(SpawnReplayBot);
+            if (enableReplays && enableSRreplayBot && replayBotController == null)
+                Server.NextFrame(() => _ = Task.Run(SpawnReplayBot));
 
             entityCache = new EntityCache();
             UpdateEntityCache();

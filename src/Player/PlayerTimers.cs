@@ -333,10 +333,10 @@ namespace SharpTimer
                         (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamID();
 
                     (srSteamID, srPlayerName, srTime) = await GetStageRecordSteamIDFromDatabase(cpTrigger);
-                    var (previousCheckpointTime, previousCheckpointSpeed) = await GetStageRecordFromDatabase(cpTrigger, playerSteamID);
-                    var (srCheckpointTime, srCheckpointSpeed) = await GetStageRecordFromDatabase(cpTrigger, srSteamID);
+                    var (previousStageTime, previousStageSpeed) = await GetStageRecordFromDatabase(cpTrigger, playerSteamID);
+                    var (srStageTime, srStageSpeed) = await GetStageRecordFromDatabase(cpTrigger, srSteamID);
 
-                    string currentSpeed = GetCurrentPlayerSpeed(player);
+                    string currentStageSpeed = GetCurrentPlayerSpeed(player);
 
                     Server.NextFrame(() =>
                     {
@@ -346,7 +346,7 @@ namespace SharpTimer
                             if (playerTimer == null) return;
 
                             //TO-DO: Add player setting to enabled/disable printing time comparisons to chat
-                            if (previousCheckpointTime != 0)
+                            if (previousStageTime != 0)
                             {
                                 Utils.PrintToChat(player, $"Checkpoint: {playerTimer.CurrentMapCheckpoint}");
                                 Utils.PrintToChat(player, $"Time: {ChatColors.White}[{primaryChatColor}{Utils.FormatTime(playerTimerTicks)}{ChatColors.White}] " +
@@ -366,7 +366,7 @@ namespace SharpTimer
                                 {
                                     Utils.LogDebug($"Player {playerName} cleared StageTimes before (cpTrigger)");
                                     playerTimer.StageTimes.Add(cpTrigger, playerTimerTicks);
-                                    playerTimer.StageVelos.Add(cpTrigger, currentSpeed);
+                                    playerTimer.StageVelos.Add(cpTrigger, currentStageSpeed);
                                 }
                                 else
                                 {
@@ -388,7 +388,7 @@ namespace SharpTimer
 
                     if (playerTimers[playerSlot].currentStyle == 0)
                     {
-                        await SavePlayerStageTimeToDatabase(player, playerTimerTicks, cpTrigger, currentSpeed, playerSteamID, playerName, playerSlot);
+                        await SavePlayerStageTimeToDatabase(player, playerTimerTicks, cpTrigger, currentStageSpeed, playerSteamID, playerName, playerSlot);
                     }
                 }
             }
@@ -426,8 +426,8 @@ namespace SharpTimer
                         (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamID();
 
                     (srSteamID, srPlayerName, srTime) = await GetStageRecordSteamIDFromDatabase(bonusCheckpointTrigger);
-                    var (previousCheckpointTime, previousCheckpointSpeed) = await GetStageRecordFromDatabase(bonusCheckpointTrigger, playerSteamID);
-                    var (srCheckpointTime, srCheckpointSpeed) = await GetStageRecordFromDatabase(bonusCheckpointTrigger, srSteamID);
+                    var (previousStageTime, previousStageSpeed) = await GetStageRecordFromDatabase(bonusCheckpointTrigger, playerSteamID);
+                    var (srStageTime, srStageSpeed) = await GetStageRecordFromDatabase(bonusCheckpointTrigger, srSteamID);
 
                     string currentStageSpeed = GetCurrentPlayerSpeed(player);
 
@@ -442,7 +442,7 @@ namespace SharpTimer
                                 return;
 
                             //TO-DO: Add player setting to enabled/disable printing time comparisons to chat
-                            if (previousCheckpointTime != 0)
+                            if (previousStageTime != 0)
                             {
                                 Utils.PrintToChat(player, $"Bonus Checkpoint: {bonusCheckpointTrigger}");
                                 Utils.PrintToChat(player, $"Time: {ChatColors.White}[{primaryChatColor}{Utils.FormatTime(playerTimerTicks)}{ChatColors.White}] " +
