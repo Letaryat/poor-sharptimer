@@ -50,6 +50,8 @@ namespace SharpTimer
             playerTimers[player.Slot].Sync = 0;
 
             playerTimers[player!.Slot].IsRecordingReplay = true;
+
+            if (printStartSpeedEnabled) PrintStartSpeed(player);
         }
 
         public void OnTimerStop(CCSPlayerController? player)
@@ -199,8 +201,14 @@ namespace SharpTimer
                             string updatedJson = JsonSerializer.Serialize(records, jsonSerializerOptions);
                             File.WriteAllText(mapRecordsPath, updatedJson);
 
-                            if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && (!enableDb) && playerTimers[player.Slot].currentStyle == 0) _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot));
-                            if (enableReplays == true && !enableDb) _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
+                            if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && (!enableDb) && playerTimers[player.Slot].currentStyle == 0 && !ignoreJSON)
+                            {
+                                _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot));
+                            }
+                            if (enableReplays == true && !enableDb)
+                            {
+                                _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, playerSlot, bonusX, playerTimers[player.Slot].currentStyle));
+                            }
                         }
                         else
                         {
@@ -221,9 +229,7 @@ namespace SharpTimer
             try
             {
                 if (!IsAllowedPlayer(player))
-                {
                     return;
-                }
 
                 Utils.LogDebug($"Player {playerName} has a stage trigger with handle {triggerHandle}");
 
@@ -234,10 +240,7 @@ namespace SharpTimer
                     var formattedStageTicks = Utils.FormatTime(playerStageTicks);
                     var prevStage = stageTrigger - 1;
 
-                    string currentSpeed = Math.Round(use2DSpeed ? Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value.AbsVelocity.X + player.PlayerPawn.Value.AbsVelocity.Y * player.PlayerPawn.Value.AbsVelocity.Y)
-                                                                                : Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value.AbsVelocity.X + player.PlayerPawn.Value.AbsVelocity.Y * player.PlayerPawn.Value.AbsVelocity.Y + player.PlayerPawn.Value.AbsVelocity.Z * player.PlayerPawn.Value.AbsVelocity.Z))
-                                                                                .ToString("0000");
-
+                    string currentSpeed = GetCurrentPlayerSpeed(player);
 
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     if (playerTimers[playerSlot].CurrentMapStage == stageTrigger || playerTimers[playerSlot] == null) return;
@@ -255,6 +258,7 @@ namespace SharpTimer
 
                             if (playerTimer.CurrentMapStage == stageTrigger || playerTimer == null) return;
 
+                            //TO-DO: Add player setting to enabled/disable printing time comparisons to chat
                             if (previousStageTime != 0)
                             {
                                 Utils.PrintToChat(player, $"Entering Stage: {stageTrigger}");
@@ -288,7 +292,10 @@ namespace SharpTimer
                         }
                     });
                     
-                    if (playerTimers[player.Slot].currentStyle == 0) await SavePlayerStageTimeToDatabase(player, playerStageTicks, prevStage, currentSpeed, playerSteamID, playerName, playerSlot);
+                    if (playerTimers[player.Slot].currentStyle == 0)
+                    {
+                        await SavePlayerStageTimeToDatabase(player, playerStageTicks, prevStage, currentSpeed, playerSteamID, playerName, playerSlot);
+                    }
                 }
             }
             catch (Exception ex)
@@ -302,9 +309,7 @@ namespace SharpTimer
             try
             {
                 if (!IsAllowedPlayer(player))
-                {
                     return;
-                }
 
                 if (cpTriggers.TryGetValue(triggerHandle, out int cpTrigger))
                 {
@@ -323,30 +328,25 @@ namespace SharpTimer
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     if (playerTimers[playerSlot] == null) return;
                     if (enableDb)
-                    {
                         (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase();
-                    }
                     else
-                    {
                         (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamID();
-                    }
 
-                    var (previousStageTime, previousStageSpeed) = await GetStageTime(playerSteamID, cpTrigger);
-                    var (srStageTime, srStageSpeed) = await GetStageTime(srSteamID, cpTrigger);
+                    (srSteamID, srPlayerName, srTime) = await GetStageRecordSteamIDFromDatabase(cpTrigger);
+                    var (previousCheckpointTime, previousCheckpointSpeed) = await GetStageRecordFromDatabase(cpTrigger, playerSteamID);
+                    var (srCheckpointTime, srCheckpointSpeed) = await GetStageRecordFromDatabase(cpTrigger, srSteamID);
+
+                    string currentSpeed = GetCurrentPlayerSpeed(player);
 
                     Server.NextFrame(() =>
                     {
                         if (!IsAllowedPlayer(player)) return;
                         if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
                         {
-
                             if (playerTimer == null) return;
 
-                            string currentStageSpeed = Math.Round(use2DSpeed ? Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value.AbsVelocity.X + player.PlayerPawn.Value.AbsVelocity.Y * player.PlayerPawn.Value.AbsVelocity.Y)
-                                                                                : Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value.AbsVelocity.X + player.PlayerPawn.Value.AbsVelocity.Y * player.PlayerPawn.Value.AbsVelocity.Y + player.PlayerPawn.Value.AbsVelocity.Z * player.PlayerPawn.Value.AbsVelocity.Z))
-                                                                                .ToString("0000");
-
-                            if (previousStageTime != 0)
+                            //TO-DO: Add player setting to enabled/disable printing time comparisons to chat
+                            if (previousCheckpointTime != 0)
                             {
                                 Utils.PrintToChat(player, $"Checkpoint: {playerTimer.CurrentMapCheckpoint}");
                                 Utils.PrintToChat(player, $"Time: {ChatColors.White}[{primaryChatColor}{Utils.FormatTime(playerTimerTicks)}{ChatColors.White}] " +
@@ -359,13 +359,14 @@ namespace SharpTimer
                                                                    $" {(previousStageSpeed != srStageSpeed ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                             }
 
-                            if (playerTimer.StageVelos != null && playerTimer.StageTimes != null && playerTimer.IsTimerRunning == true && IsAllowedPlayer(player) && playerTimer.currentStyle == 0)
+                            if (playerTimer.StageVelos != null && playerTimer.StageTimes != null &&
+                                playerTimer.IsTimerRunning == true && IsAllowedPlayer(player) && playerTimer.currentStyle == 0)
                             {
                                 if (!playerTimer.StageTimes.ContainsKey(cpTrigger))
                                 {
                                     Utils.LogDebug($"Player {playerName} cleared StageTimes before (cpTrigger)");
                                     playerTimer.StageTimes.Add(cpTrigger, playerTimerTicks);
-                                    playerTimer.StageVelos.Add(cpTrigger, $"{currentStageSpeed}");
+                                    playerTimer.StageVelos.Add(cpTrigger, currentSpeed);
                                 }
                                 else
                                 {
@@ -384,6 +385,11 @@ namespace SharpTimer
                             }
                         }
                     });
+
+                    if (playerTimers[playerSlot].currentStyle == 0)
+                    {
+                        await SavePlayerStageTimeToDatabase(player, playerTimerTicks, cpTrigger, currentSpeed, playerSteamID, playerName, playerSlot);
+                    }
                 }
             }
             catch (Exception ex)
@@ -397,9 +403,7 @@ namespace SharpTimer
             try
             {
                 if (!IsAllowedPlayer(player))
-                {
                     return;
-                }
 
                 if (bonusCheckpointTriggers.TryGetValue(triggerHandle, out int bonusCheckpointTrigger))
                 {
@@ -414,32 +418,31 @@ namespace SharpTimer
                     var playerTimerTicks = playerTimers[playerSlot].TimerTicks; // store so its in sync with player
 
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
-                    if (playerTimers[playerSlot].CurrentMapCheckpoint == bonusCheckpointTrigger || playerTimers[playerSlot] == null) return;
+                    if (playerTimers[playerSlot].CurrentMapCheckpoint == bonusCheckpointTrigger || playerTimers[playerSlot] == null)
+                        return;
                     if (enableDb)
-                    {
                         (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamIDFromDatabase();
-                    }
                     else
-                    {
                         (srSteamID, srPlayerName, srTime) = await GetMapRecordSteamID();
-                    }
 
-                    var (previousStageTime, previousStageSpeed) = await GetStageTime(playerSteamID, bonusCheckpointTrigger);
-                    var (srStageTime, srStageSpeed) = await GetStageTime(srSteamID, bonusCheckpointTrigger);
+                    (srSteamID, srPlayerName, srTime) = await GetStageRecordSteamIDFromDatabase(bonusCheckpointTrigger);
+                    var (previousCheckpointTime, previousCheckpointSpeed) = await GetStageRecordFromDatabase(bonusCheckpointTrigger, playerSteamID);
+                    var (srCheckpointTime, srCheckpointSpeed) = await GetStageRecordFromDatabase(bonusCheckpointTrigger, srSteamID);
+
+                    string currentStageSpeed = GetCurrentPlayerSpeed(player);
 
                     Server.NextFrame(() =>
                     {
-                        if (!IsAllowedPlayer(player)) return;
+                        if (!IsAllowedPlayer(player))
+                            return;
+                            
                         if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
                         {
+                            if (playerTimer == null)
+                                return;
 
-                            if (playerTimer.CurrentMapCheckpoint == bonusCheckpointTrigger || playerTimer == null) return;
-
-                            string currentStageSpeed = Math.Round(use2DSpeed ? Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value.AbsVelocity.X + player.PlayerPawn.Value.AbsVelocity.Y * player.PlayerPawn.Value.AbsVelocity.Y)
-                                                                                : Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value.AbsVelocity.X + player.PlayerPawn.Value.AbsVelocity.Y * player.PlayerPawn.Value.AbsVelocity.Y + player.PlayerPawn.Value.AbsVelocity.Z * player.PlayerPawn.Value.AbsVelocity.Z))
-                                                                                .ToString("0000");
-
-                            if (previousStageTime != 0)
+                            //TO-DO: Add player setting to enabled/disable printing time comparisons to chat
+                            if (previousCheckpointTime != 0)
                             {
                                 Utils.PrintToChat(player, $"Bonus Checkpoint: {bonusCheckpointTrigger}");
                                 Utils.PrintToChat(player, $"Time: {ChatColors.White}[{primaryChatColor}{Utils.FormatTime(playerTimerTicks)}{ChatColors.White}] " +
@@ -452,13 +455,14 @@ namespace SharpTimer
                                                                    $" {(previousStageSpeed != srStageSpeed ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                             }
 
-                            if (playerTimer.StageVelos != null && playerTimer.StageTimes != null && playerTimer.IsTimerRunning == true && IsAllowedPlayer(player))
+                            if (playerTimer.StageVelos != null && playerTimer.StageTimes != null &&
+                                playerTimer.IsTimerRunning == true && IsAllowedPlayer(player) && playerTimer.currentStyle == 0)
                             {
                                 if (!playerTimer.StageTimes.ContainsKey(bonusCheckpointTrigger))
                                 {
                                     Utils.LogDebug($"Player {playerName} cleared StageTimes before (cpTrigger)");
                                     playerTimer.StageTimes.Add(bonusCheckpointTrigger, playerTimerTicks);
-                                    playerTimer.StageVelos.Add(bonusCheckpointTrigger, $"{currentStageSpeed}");
+                                    playerTimer.StageVelos.Add(bonusCheckpointTrigger, currentStageSpeed);
                                 }
                                 else
                                 {
@@ -478,6 +482,11 @@ namespace SharpTimer
                             playerTimer.CurrentMapCheckpoint++;
                         }
                     });
+
+                    if (playerTimers[playerSlot].currentStyle == 0)
+                    {
+                        await SavePlayerStageTimeToDatabase(player, playerTimerTicks, bonusCheckpointTrigger, currentStageSpeed, playerSteamID, playerName, playerSlot);
+                    }
                 }
             }
             catch (Exception ex)

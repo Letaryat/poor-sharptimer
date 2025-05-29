@@ -1276,6 +1276,7 @@ namespace SharpTimer
                         Utils.PrintToChat(player, Localizer["style_not_found", desiredStyleInt]);
                         break;
                 }
+                RespawnPlayer(player);
             }
             else
             {
@@ -1352,6 +1353,7 @@ namespace SharpTimer
                         Utils.PrintToChat(player, Localizer["style_not_found", styleLowerCase]);
                         break;
                 }
+                RespawnPlayer(player);
             }
         }
 

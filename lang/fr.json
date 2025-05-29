@@ -102,6 +102,8 @@
   "connected_message": "Joueur {red}{0} {default}connecté pour la {1} fois!",
   "connected_message_first": "Le joueur {red}{0} {default} s'est connecté pour la première fois!",
   "disconnect_message": "Joueur {red}{0} {default}déconnecté!",
+  "afk_message": "{red}Vous allez être déplacé vers l'AFK !",
+  "start_speed": "Vitesse de départ:",
   
     // Error
   "error_savingtime": "Erreur de sauvegarde du temps : Le temps du joueur est de 0 ticks",

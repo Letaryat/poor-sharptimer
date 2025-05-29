@@ -131,6 +131,7 @@
     "connected_message_first": "Oyuncu {red}{0} {default} ilk kez bağlandı!",
     "disconnect_message": "Oyuncu {red}{0} {default}çıktı!",
     "afk_message": "{red}AFK'ya alınmak üzeresiniz!",
+    "start_speed": "Başlangıç hızı:",
   
     //Hata
     "error_savingtime": "Zaman kaydedilirken hata: Oyuncu zamanı 0 tick",

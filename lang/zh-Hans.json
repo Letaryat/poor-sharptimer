@@ -107,6 +107,7 @@
   "connected_message_first": "玩家 {red}{0} {default}首次进入服务器!",
   "disconnect_message": "玩家 {red}{0} {default}断开连接!",
   "afk_message": "{red}你即将到达 AFK 检测!",
+  "start_speed": "起始速度:",
   
   //报错
   "error_savingtime": "保存时间错误：玩家时间为 0 ticks",

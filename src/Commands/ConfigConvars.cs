@@ -827,6 +827,15 @@ namespace SharpTimer
             applyInfiniteAmmo = bool.TryParse(args, out bool value) ? value : args != "0" && applyInfiniteAmmo;
         }
 
+        [ConsoleCommand("sharptimer_print_start_speed", "Whether the start speed should be printed to chat when the player leaves the start zone. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerPrintStartSpeed(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            printStartSpeedEnabled = bool.TryParse(args, out bool value) ? value : args != "0" && printStartSpeedEnabled;
+        }
+
         [ConsoleCommand("sharptimer_use2Dspeed_enabled", "Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimer2dSpeedConvar(CCSPlayerController? player, CommandInfo command)

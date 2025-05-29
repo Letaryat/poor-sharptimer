@@ -103,10 +103,13 @@
   "connected_message_first": "Spleare {red}{0} {default}ansluten för första gången!",
   "disconnect_message": "Spelare {red}{0} {default}lämnade!",
 
+  "afk_message": "{red}Du är på väg att flyttas till AFK!",
+  "start_speed": "Startfart:",
+
   //Error
   "error_savingtime": "Error Saving Time: Spelartiden är 0 tick",
   "error_stagenotmatchfinalone": "Error Saving Time: Spelarens nuvarande stadium matchar inte det sista",
-  "error_checkpointnotmatchfinalone": "Error Saving Time: Spelarens aktuella kontrollpunkt matchar inte den sista{0}",
+  "error_checkpointnotmatchfinalone": "Error Saving Time: Spelarens aktuella checkpoint matchar inte den sista{0}",
 
   //help console Localizer
   "Check_console": "Kolla din konsol för en lista över tillgängliga kommandon!",

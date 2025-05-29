@@ -133,12 +133,13 @@
   "connected_message_first": "Player {red}{0} {default}connected for the first time!",
   "disconnect_message": "Player {red}{0} {default}disconnected!",
   "afk_message": "{red}You are about to be moved to AFK!",
+  "start_speed": "Start speed:",
 
   //Error
   "error_savingtime": "Error Saving Time: Player time is 0 ticks",
   "error_stagenotmatchfinalone": "Error Saving Time: Player current stage does not match final one",
   "error_checkpointnotmatchfinalone": "Error Saving Time: Player current checkpoint does not match final one{0}",
-  
+
   //help console Localizer
   "Check_console": "Check your console for a list of available commands!",
   "console_r": "• !r (css_r) - Respawns you",
