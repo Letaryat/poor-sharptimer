@@ -264,12 +264,12 @@ namespace SharpTimer
                                 Utils.PrintToChat(player, $"Entering Stage: {stageTrigger}");
                                 Utils.PrintToChat(player, $"Time: {ChatColors.White}[{primaryChatColor}{formattedStageTicks}{ChatColors.White}] " +
                                                                $" [{Utils.FormatTimeDifference(playerStageTicks, previousStageTime)}{ChatColors.White}]" +
-                                                               $" {(previousStageTime != srStageTime ? $"[SR {Utils.FormatTimeDifference(playerStageTicks, srStageTime)}{ChatColors.White}]" : "")}");
+                                                               $" {(previousStageTime != srStageTime && enableStageSR ? $"[SR {Utils.FormatTimeDifference(playerStageTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                 if (float.TryParse(currentSpeed, out float speed) && speed >= 100) //workaround for staged maps with not telehops
                                     Utils.PrintToChat(player, $"Speed: {ChatColors.White}[{primaryChatColor}{currentSpeed}u/s{ChatColors.White}]" +
                                                                    $" [{Utils.FormatSpeedDifferenceFromString(currentSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
-                                                                   $" {(previousStageSpeed != srStageSpeed ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
+                                                                   $" {(previousStageSpeed != srStageSpeed && enableStageSR ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                             }
 
                             if (playerTimer.StageVelos != null && playerTimer.StageTimes != null && playerTimer.IsTimerRunning == true && IsAllowedPlayer(player))
