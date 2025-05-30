@@ -838,7 +838,7 @@ namespace SharpTimer
             }
 
             var targets = allPlayers
-                ? connectedPlayers.Values.Where(p => !p.IsBot && playerTimers.TryGetValue(p.Slot, out var t) && t.SoundsEnabled)
+                ? Utilities.GetPlayers().Where(p => !p.IsBot && playerTimers.TryGetValue(p.Slot, out var t) && t.SoundsEnabled)
                 : (!player.IsBot && playerTimers.TryGetValue(player.Slot, out var t) && t.SoundsEnabled) ? new[] { player } : null;
 
             if (targets == null || targets.Count() <= 0)

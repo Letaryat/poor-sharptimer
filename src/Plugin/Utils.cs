@@ -891,5 +891,10 @@ namespace SharpTimer
         {
             Server.PrintToChatAll($" {Localizer["prefix"]} {message}");
         }
+
+        public int PlayersCount()
+        {
+            return Utilities.GetPlayers().Where(p => !p.IsBot && !p.IsHLTV).Count();
+        }
     }
 }

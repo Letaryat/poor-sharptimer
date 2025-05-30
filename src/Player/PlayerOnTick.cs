@@ -26,45 +26,48 @@ namespace SharpTimer
         public void PlayerOnTick()
         {
             try
-            {     
+            {
                 int currentTick = Server.TickCount;
 
                 foreach (CCSPlayerController player in connectedPlayers.Values)
                 {
                     if (player == null || !player.IsValid) continue;
 
-                    var playerSlot = player.Slot;
+                    int slot = player.Slot;
+                    string playerName = player.PlayerName;
+                    string steamID = player.SteamID.ToString();
 
                     if ((CsTeam)player.TeamNum == CsTeam.Spectator || !player.PawnIsAlive)
                     {
+                        if (currentTick % (64 / hudTickrate) != 0)
+                            continue;
+
                         SpectatorOnTick(player);
                         continue;
                     }
 
-                    if (playerTimers[playerSlot].IsAddingStartZone || playerTimers[playerSlot].IsAddingEndZone || playerTimers[playerSlot].IsAddingBonusStartZone || playerTimers[playerSlot].IsAddingBonusEndZone)
+                    if (playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
                     {
-                        OnTickZoneTool(player);
-                        continue;
-                    }
+                        if (playerTimer.IsAddingStartZone || playerTimer.IsAddingEndZone || playerTimer.IsAddingBonusStartZone || playerTimer.IsAddingBonusEndZone)
+                        {
+                            OnTickZoneTool(player);
+                            continue;
+                        }
 
-                    if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer) && IsAllowedPlayer(player))
-                    {
                         if (!IsAllowedPlayer(player))
                         {
                             InvalidateTimer(player);
                             continue;
                         }
 
-                        bool isOnBhopBlock = playerTimer.IsOnBhopBlock;
-                        bool isTimerRunning = playerTimer.IsTimerRunning;
-                        bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
-                        bool isTimerBlocked = playerTimer.IsTimerBlocked;
-                        int timerTicks = playerTimer.TimerTicks;
+                        var playerPawn = player.PlayerPawn?.Value;
+                        if (playerPawn == null) continue;
 
                         PlayerButtons? playerButtons = player.Buttons;
-                        Vector_t playerSpeed = player.PlayerPawn!.Value!.AbsVelocity.ToVector_t();
-                        var hasWeapons = player.PlayerPawn?.Value?.WeaponServices?.MyWeapons?.Count > 0;
-                        
+                        Vector_t playerSpeed = playerPawn.AbsVelocity.ToVector_t();
+                        bool isTimerBlocked = playerTimer.IsTimerBlocked;
+
+                        /* afk */
                         if (connectedAFKPlayers.ContainsKey(player.Slot))
                         {
                             if (!playerSpeed.IsZero())
@@ -89,21 +92,34 @@ namespace SharpTimer
                             playerTimer.AFKTicks++;
                         else
                             playerTimer.AFKTicks = 0;
+                        /* afk */
 
-                        if (!startzoneJumping && playerTimers[player.Slot].inStartzone)
-                        {
-                            if((playerButtons & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.OldJumpPressed)
-                                player!.Pawn.Value!.AbsVelocity.Z = 0f;
-                        }
+                        /* timer counting */
+                        bool isTimerRunning = playerTimer.IsTimerRunning;
+                        bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
 
                         if (isTimerRunning)
                         {
                             playerTimer.TimerTicks++;
-                            if (useStageTriggers) playerTimer.StageTicks++;
+
+                            if (useStageTriggers)
+                                playerTimer.StageTicks++;
                         }
                         else if (isBonusTimerRunning)
+                        {
                             playerTimer.BonusTimerTicks++;
+                        }
+                        /* timer counting */
 
+                        // remove jumping in startzone
+                        if (!startzoneJumping && playerTimers[player.Slot].inStartzone)
+                        {
+                            if((playerButtons & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.OldJumpPressed)
+                                playerPawn.AbsVelocity.Z = 0f;
+                        }
+
+                        /* hide weapons */
+                        bool hasWeapons = playerPawn.WeaponServices?.MyWeapons?.Count > 0;
                         if (playerTimer.HideWeapon)
                         {
                             if (hasWeapons)
@@ -130,15 +146,24 @@ namespace SharpTimer
                                 playerTimer.GivenWeapon = true;
                             }
                         }
-                        
-                        if (playerTimer.currentStyle.Equals(4)) //check if 400vel
-                        {
-                            SetVelocity(player, player!.Pawn.Value!.AbsVelocity.ToVector_t(), 400);
-                        }
+                        /* hide weapons */
 
-                        if (playerTimer.currentStyle.Equals(10) && !player.PlayerPawn!.Value.GroundEntity.IsValid && currentTick % 2 != 0) //check if ff
+                        /* styles */
+                        if (playerTimer.currentStyle.Equals(4)) //check if 400vel
+                            SetVelocity(player, playerPawn.AbsVelocity.ToVector_t(), 400);
+
+                        if (playerTimer.currentStyle.Equals(10) && !playerPawn.GroundEntity.IsValid && currentTick % 2 != 0) //check if ff
                             IncreaseVelocity(player);
 
+                        if (playerTimer.changedStyle)
+                        {
+                            _ = Task.Run(async () => await RankCommandHandler(player, steamID, slot, playerName, true, playerTimer.currentStyle));
+                            playerTimer.changedStyle = false;
+                        }
+                        /* styles */
+
+                        // respawn player if on bhop block too long
+                        bool isOnBhopBlock = playerTimer.IsOnBhopBlock;
                         if (isOnBhopBlock)
                         {
                             playerTimer.TicksOnBhopBlock++;
@@ -147,57 +172,45 @@ namespace SharpTimer
                                 RespawnPlayer(player);
                         }
 
-                        if (useTriggers == false && isTimerBlocked == false)
-                            CheckPlayerCoords(player, playerSpeed);
- 
-                        if (useTriggers == true && isTimerBlocked == false && useTriggersAndFakeZones == true)
+                        if (!useTriggers || useTriggersAndFakeZones && !isTimerBlocked)
                             CheckPlayerCoords(player, playerSpeed);
 
-                        if (StrafeHudEnabled == true)
-                            OnSyncTick(player, playerButtons, player.PlayerPawn?.Value.EyeAngles!);
+                        /* hud strafe sync % */
+                        if (StrafeHudEnabled)
+                            OnSyncTick(player, playerButtons, playerPawn.EyeAngles!);
 
-                        //reset sync in startzone
-                        if (StrafeHudEnabled == true && playerTimers[player.Slot].inStartzone && playerTimer.Rotation.Count > 0) 
+                        // reset in startzone
+                        if (StrafeHudEnabled && playerTimer.inStartzone && playerTimer.Rotation.Count > 0) 
                         { 
                             playerTimer.Sync = 100.00f;
                             playerTimer.Rotation.Clear();
                         }
+                        /* hud strafe sync % */
 
-                        if (forcePlayerSpeedEnabled == true)
+                        if (forcePlayerSpeedEnabled)
                         {
-                            string designerName = player.Pawn!.Value!.WeaponServices!.ActiveWeapon?.Value?.DesignerName ?? "no_knife";
+                            string designerName = playerPawn.WeaponServices!.ActiveWeapon?.Value?.DesignerName ?? "no_knife";
                             ForcePlayerSpeed(player, designerName);
                         }
 
+                        /* ranks */
                         if (playerTimer.IsRankPbCached == false)
                         {
-                            var playerName = player.PlayerName;
-                            var steamID = player.SteamID.ToString();
                             Utils.LogDebug($"{playerName} has rank and pb null... calling handler");
-                            _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true, playerTimer.currentStyle));
+                            _ = Task.Run(async () => await RankCommandHandler(player, steamID, slot, playerName, true, playerTimer.currentStyle));
 
                             playerTimer.IsRankPbCached = true;
                         }
 
-                        //attempted bugfix on rank not appearing
+                        // attempted bugfix on rank not appearing
                         if (playerTimer.CachedMapPlacement == null && !playerTimer.IsRankPbReallyCached)
                         {
-                            var playerName = player.PlayerName;
-                            var steamID = player.SteamID.ToString();
                             Utils.LogDebug($"{playerName} CachedMapPlacement is still null, calling rank handler once more");
-                            AddTimer(3.0f, () => { _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true, playerTimer.currentStyle)); });                           
+                            AddTimer(3.0f, () => { _ = Task.Run(async () => await RankCommandHandler(player, steamID, slot, playerName, true, playerTimer.currentStyle)); });                           
                             playerTimer.IsRankPbReallyCached = true;
                         }
 
-                        if (playerTimer.changedStyle)
-                        {
-                            var playerName = player.PlayerName;
-                            var steamID = player.SteamID.ToString();
-                            _ = Task.Run(async () => await RankCommandHandler(player, steamID, playerSlot, playerName, true, playerTimer.currentStyle));                           
-                            playerTimer.changedStyle = false;
-                        }
-
-                        if (displayScoreboardTags == true)
+                        if (displayScoreboardTags)
                         {
                             if (playerTimer.TicksSinceLastRankUpdate > 511 && playerTimer.CachedRank != null && (player.Clan != null || !player.Clan!.Contains($"[{playerTimer.CachedRank}]")))
                             {
@@ -209,30 +222,34 @@ namespace SharpTimer
 
                         if (playerTimer.TicksSinceLastRankUpdate < 511)
                             playerTimer.TicksSinceLastRankUpdate++;
+                        /* ranks */
 
-                        if (playerTimer.IsSpecTargetCached == false || specTargets.ContainsKey(player.Pawn!.Value!.EntityHandle.Index) == false)
+                        if (playerTimer.IsSpecTargetCached == false || specTargets.ContainsKey(playerPawn.EntityHandle.Index) == false)
                         {
-                            specTargets[player.Pawn!.Value!.EntityHandle.Index] = new CCSPlayerController(player.Handle);
+                            specTargets[playerPawn.EntityHandle.Index] = new CCSPlayerController(player.Handle);
                             playerTimer.IsSpecTargetCached = true;
-                            Utils.LogDebug($"{player.PlayerName} was not in specTargets, adding...");
+                            Utils.LogDebug($"{playerName} was not in specTargets, adding...");
                         }
 
-                        if (removeCollisionEnabled == true)
+                        if (removeCollisionEnabled)
                         {
-                            if (player.PlayerPawn!.Value.Collision.CollisionGroup != (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING || player.PlayerPawn.Value.Collision.CollisionAttribute.CollisionGroup != (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING)
+                            if (playerPawn.Collision.CollisionGroup != (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING ||
+                                playerPawn.Collision.CollisionAttribute.CollisionGroup != (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING
+                                )
                             {
-                                Utils.LogDebug($"{player.PlayerName} has wrong collision group... RemovePlayerCollision");
+                                Utils.LogDebug($"{playerName} has wrong collision group... RemovePlayerCollision");
                                 RemovePlayerCollision(player);
                             }
                         }
 
-                        if (removeCrouchFatigueEnabled == true)
+                        if (removeCrouchFatigueEnabled)
                         {
                             if (playerTimer.MovementService != null && playerTimer.MovementService.DuckSpeed != 7.0f)
                                 playerTimer.MovementService.DuckSpeed = 7.0f;
                         }
 
-                        if (((PlayerFlags)player.Pawn.Value.Flags & PlayerFlags.FL_ONGROUND) != PlayerFlags.FL_ONGROUND)
+                        // update pre speed for hud
+                        if (((PlayerFlags)playerPawn.Flags & PlayerFlags.FL_ONGROUND) != PlayerFlags.FL_ONGROUND)
                         {
                             playerTimer.TicksInAir++;
 
@@ -241,23 +258,26 @@ namespace SharpTimer
                         }
                         else playerTimer.TicksInAir = 0;
 
+                        // replays
                         if (enableReplays)
                         {
+                            int timerTicks = playerTimer.TimerTicks;
                             if (!playerTimer.IsReplaying && (timerTicks > 0 || playerTimer.BonusTimerTicks > 0) && playerTimer.IsRecordingReplay && !isTimerBlocked)
                                 ReplayUpdate(player, timerTicks);
 
                             if (playerTimer.IsReplaying && !playerTimer.IsRecordingReplay && isTimerBlocked)
                                 ReplayPlay(player);
 
-                            else if
-                                (!isTimerBlocked &&
-                                (player.PlayerPawn!.Value.MoveType.HasFlag(MoveType_t.MOVETYPE_OBSERVER) ||
-                                player.PlayerPawn.Value.ActualMoveType.HasFlag(MoveType_t.MOVETYPE_OBSERVER)))
+                            else if (
+                                !isTimerBlocked &&
+                                (playerPawn.MoveType.HasFlag(MoveType_t.MOVETYPE_OBSERVER) || playerPawn.ActualMoveType.HasFlag(MoveType_t.MOVETYPE_OBSERVER)) &&
+                                !playerPawn.MoveType.HasFlag(MoveType_t.MOVETYPE_LADDER))
                             {
                                 SetMoveType(player, MoveType_t.MOVETYPE_WALK);
                             }
                         }
 
+                        // timer hud content
                         if (currentTick % (64 / hudTickrate) != 0)
                             continue;
 
@@ -266,6 +286,7 @@ namespace SharpTimer
                         if (!string.IsNullOrEmpty(hudContent))
                             player.PrintToCenterHtml(hudContent);
                         
+                        // idk what this is for
                         playerTimer.MovementService!.OldJumpPressed = false;
                     }
                 }
@@ -310,25 +331,42 @@ namespace SharpTimer
             string formattedPlayerPre = Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
             string playerTime = Utils.FormatTime(timerTicks);
             string playerBonusTime = Utils.FormatTime(playerTimer.BonusTimerTicks);
-            string timerLine = isBonusTimerRunning
-                                ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Bonus #{playerTimer.BonusStage} Timer:</font> <font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerBonusTime}</font> <br>"
-            : isTimerRunning
-                                    ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Timer: </font><font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerTime}</font> <font color='gray' class='fontSize-s stratum-bold-italic'>({GetPlayerPlacement(player)})</font>{((playerTimer.CurrentMapStage != 0 && useStageTriggers == true) ? $" <font color='gray' class='fontSize-s stratum-bold-italic'> {playerTimer.CurrentMapStage}/{stageTriggerCount}</font>" : "")} <br>"
-                                    : playerTimer.IsReplaying
-                                        ? $" <font class='horizontal-center' color='red'>◉ REPLAY {Utils.FormatTime(playerReplays[player.Slot].CurrentPlaybackFrame)}</font> <br>"
-                                        : "";
 
-            string veloLine = $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> {(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{playerVelColor}'>{formattedPlayerVel}</font> <font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre})</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} <br>";
+            string timerLine =
+                isBonusTimerRunning
+                    ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Bonus #{playerTimer.BonusStage} Timer:</font> " +
+                        $"<font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerBonusTime}</font> " +
+                        $"<br>"
+                    : isTimerRunning
+                        ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Timer: </font>" +
+                            $"<font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerTime}</font> " +
+                            $"<font color='gray' class='fontSize-s stratum-bold-italic'>({GetPlayerPlacement(player)})</font>" +
+                            $"{((playerTimer.CurrentMapStage != 0 && useStageTriggers == true) ? $" " +
+                            $"<font color='gray' class='fontSize-s stratum-bold-italic'> {playerTimer.CurrentMapStage}/{stageTriggerCount}</font>" : "")} " +
+                            $"<br>"
+                        : playerTimer.IsReplaying
+                            ? $" <font class='horizontal-center' color='red'>◉ REPLAY {Utils.FormatTime(playerReplays[player.Slot].CurrentPlaybackFrame)}</font> " +
+                            $"<br>"
+                            : "";
 
-            string syncLine = $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> <font class='fontSize-l horizontal-center color='{secondaryHUDcolor}'>{playerTimer.Sync:F2}%</font> <br>";//2f
+            string veloLine =
+                $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}" +
+                $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Speed:</font> " +
+                $"{(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color='{playerVelColor}'>{formattedPlayerVel}</font> " +
+                $"<font class='fontSize-s stratum-bold-italic' color='gray'>({formattedPlayerPre})</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} " +
+                $"<br>";
+
+            string syncLine =
+                $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> " +
+                $"<font class='fontSize-l horizontal-center color='{secondaryHUDcolor}'>{playerTimer.Sync:F2}%</font> " +
+                $"<br>";
 
             string infoLine = "";
 
             if (playerTimer.CurrentZoneInfo.InBonusStartZone)
                 infoLine = GetBonusInfoLine(playerTimer);
 
-            else
-                infoLine = GetMainMapInfoLine(playerTimer);
+            else infoLine = GetMainMapInfoLine(playerTimer);
 
             string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-light-mono' color='{tertiaryHUDcolor}'>{((playerButtons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                     $"{((playerButtons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
@@ -352,7 +390,7 @@ namespace SharpTimer
 
         private string GetMainMapInfoLine(PlayerTimerInfo playerTimer)
         {
-           return !playerTimer.IsReplaying
+            return !playerTimer.IsReplaying
                 ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
 
                     $"{playerTimer.CachedPB} " +
