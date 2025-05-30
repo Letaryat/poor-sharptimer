@@ -1179,6 +1179,15 @@ namespace SharpTimer
             enableStageTimes = bool.TryParse(args, out bool enableStageTimesValue) ? enableStageTimesValue : args != "0" && enableStageTimes;
         }
 
+        [ConsoleCommand("sharptimer_stage_sr_enabled", "Whether stage time server records are enabled by default or not. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerStageServerRecordConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            enableStageSR = bool.TryParse(args, out bool enableStageSRValue) ? enableStageSRValue : args != "0" && enableStageSRValue;
+        }
+
         [ConsoleCommand("sharptimer_connect_commands_msg_enabled", "Whether commands on join messages are enabled by default or not. Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerConnectCmdMSGConvar(CCSPlayerController? player, CommandInfo command)

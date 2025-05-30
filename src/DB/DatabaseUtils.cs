@@ -1169,6 +1169,7 @@ namespace SharpTimer
                 Server.NextFrame(() => Utils.LogError($"Error getting player stats from database for {playerName}: {ex}"));
             }
         }
+
         public async Task SavePlayerStageTimeToDatabase(CCSPlayerController? player, int timerTicks, int stage, string velocity, string steamId, string playerName, int playerSlot, int bonusX = 0, int style = 0)
         {
             Utils.LogDebug($"Trying to save player {(bonusX != 0 ? $"bonus {bonusX} stage {stage} time" : $"stage {stage} time")} to database for {playerName} {timerTicks}");
@@ -1323,7 +1324,7 @@ namespace SharpTimer
                             var prevSR = await GetPreviousPlayerStageRecordFromDatabase(player, prevSRID.Item1, currentMapNamee, stage, prevSRID.Item2, bonusX);
                             await upsertCommand!.ExecuteNonQueryAsync();
                             Server.NextFrame(() => Utils.LogDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} stage {stage} time" : $"{stage} time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
-                            if (IsAllowedPlayer(player)) Server.NextFrame(() => _ = Task.Run(async () => await PrintStageTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, stage, bonusX, prevSR)));
+                            if (IsAllowedPlayer(player) && enableStageTimes && enableStageSR) Server.NextFrame(() => _ = Task.Run(async () => await PrintStageTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, stage, bonusX, prevSR)));
                         }
                     }
                     else
@@ -1372,7 +1373,7 @@ namespace SharpTimer
                             //dont save stagetimes unless they complete map
                             //if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, playerSlot)));
                             Server.NextFrame(() => Utils.LogDebug($"Saved player {(bonusX != 0 ? $"bonus {bonusX} stage {stage} time" : $"stage {stage} time")} to database for {playerName} {timerTicks} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}"));
-                            if (IsAllowedPlayer(player) && enableStageTimes) Server.NextFrame(() => _ = Task.Run(async () => await PrintStageTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, stage, bonusX, prevSR)));
+                            if (IsAllowedPlayer(player) && enableStageTimes && enableStageSR) Server.NextFrame(() => _ = Task.Run(async () => await PrintStageTimeToChat(player!, steamId, playerName, dBtimerTicks, timerTicks, stage, bonusX, prevSR)));
                         }
 
                     }

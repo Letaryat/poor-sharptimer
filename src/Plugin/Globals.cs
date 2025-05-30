@@ -122,6 +122,7 @@ namespace SharpTimer
         public string dbPath = "";
         public bool enableDb = false;
         public bool enableStageTimes = true;
+        public bool enableStageSR = true;
         public bool ignoreJSON = false;
         public bool enableReplays = false;
         public bool onlySRReplay = false;
