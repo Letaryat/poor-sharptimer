@@ -725,16 +725,27 @@ namespace SharpTimer
                 string rankColor = GetRankColorForChat(player);
                 string chatTag = $"{rankColor}{rank} ";
 
-                TagApi.ResetAttribute(player, Tags.TagType.ScoreTag);
-                TagApi.ResetAttribute(player, Tags.TagType.ChatTag);
+                if (displayChatTags)
+                {
+                    TagApi.ResetAttribute(player, Tags.TagType.ChatTag);
 
-                Server.NextFrame(() => {
-                    string oldClanTag = TagApi.GetAttribute(player, Tags.TagType.ScoreTag) ?? "";
-                    TagApi.SetAttribute(player, Tags.TagType.ScoreTag, oldClanTag + clanTag);
+                    Server.NextFrame(() =>
+                    {
+                        string oldChatTag = TagApi.GetAttribute(player, Tags.TagType.ChatTag) ?? "";
+                        TagApi.SetAttribute(player, Tags.TagType.ChatTag, oldChatTag + chatTag);
+                    });
+                }
 
-                    string oldChatTag = TagApi.GetAttribute(player, Tags.TagType.ChatTag) ?? "";
-                    TagApi.SetAttribute(player, Tags.TagType.ChatTag, oldChatTag + chatTag);
-                });
+                if (displayScoreboardTags)
+                {
+                    TagApi.ResetAttribute(player, Tags.TagType.ScoreTag);
+
+                    Server.NextFrame(() =>
+                    {
+                        string oldClanTag = TagApi.GetAttribute(player, Tags.TagType.ScoreTag) ?? "";
+                        TagApi.SetAttribute(player, Tags.TagType.ScoreTag, oldClanTag + clanTag);
+                    });
+                }
 
                 Utils.LogDebug($"Set Scoreboard Tag for {player.Clan} {player.PlayerName}");
             }

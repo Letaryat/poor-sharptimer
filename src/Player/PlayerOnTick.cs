@@ -210,13 +210,13 @@ namespace SharpTimer
                             playerTimer.IsRankPbReallyCached = true;
                         }
 
-                        if (displayScoreboardTags)
+                        if (displayScoreboardTags || displayChatTags)
                         {
-                            if (playerTimer.TicksSinceLastRankUpdate > 511 && playerTimer.CachedRank != null && (player.Clan != null || !player.Clan!.Contains($"[{playerTimer.CachedRank}]")))
+                            if (playerTimer.TicksSinceLastRankUpdate > 511 && playerTimer.CachedRank != null)
                             {
                                 AddRankTagToPlayer(player, playerTimer.CachedRank);
                                 playerTimer.TicksSinceLastRankUpdate = 0;
-                                Utils.LogDebug($"Setting Scoreboard Tag for {player.PlayerName} from TimerOnTick");
+                                Utils.LogDebug($"Setting Scoreboard/Chat Tag for {player.PlayerName} from TimerOnTick");
                             }
                         }
 
