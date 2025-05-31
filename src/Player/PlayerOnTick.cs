@@ -172,8 +172,14 @@ namespace SharpTimer
                                 RespawnPlayer(player);
                         }
 
-                        if (!useTriggers || useTriggersAndFakeZones && !isTimerBlocked)
+                        /* checking if player in zones */
+                        if (useTriggers == false && isTimerBlocked == false)
                             CheckPlayerCoords(player, playerSpeed);
+
+                        // idk why there is another one but replay breaks with them merged into one :D
+                        if (useTriggers == true && isTimerBlocked == false && useTriggersAndFakeZones)
+                            CheckPlayerCoords(player, playerSpeed);
+                        /* checking if player in zones */
 
                         /* hud strafe sync % */
                         if (StrafeHudEnabled)

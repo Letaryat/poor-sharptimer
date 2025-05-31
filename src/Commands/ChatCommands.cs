@@ -1542,7 +1542,8 @@ namespace SharpTimer
             var slot = player!.Slot;
 
             // Remove checkpoints for the current player
-            playerCheckpoints.Remove(slot);
+            if (playerCheckpoints.ContainsKey(slot))
+                playerCheckpoints.Remove(slot);
 
             playerTimers[slot].IsTimerBlocked = true;
             playerTimers[slot].IsRecordingReplay = false;

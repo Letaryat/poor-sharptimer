@@ -263,9 +263,9 @@ namespace SharpTimer
         public List<ReplayFrames> replayFrames { get; set; } = [];
         public class ReplayFrames
         {
-            public ReplayVector_t? Position { get; set; }
-            public ReplayQAngle_t? Rotation { get; set; }
-            public ReplayVector_t? Speed { get; set; }
+            public ReplayVector? Position { get; set; }
+            public ReplayQAngle? Rotation { get; set; }
+            public ReplayVector? Speed { get; set; }
             public PlayerButtons? Buttons { get; set; }
             public uint Flags { get; set; }
             public MoveType_t MoveType { get; set; }
@@ -278,50 +278,50 @@ namespace SharpTimer
         public PlayerReplays.ReplayFrames? Frame { get; set; }
     }
 
-    public class ReplayVector_t
+    public class ReplayVector
     {
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
 
-        public ReplayVector_t(float x, float y, float z)
+        public ReplayVector(float x, float y, float z)
         {
             X = x;
             Y = y;
             Z = z;
         }
 
-        public static ReplayVector_t GetVector_tish(Vector_t actualVector_t)
+        public static ReplayVector GetVectorish(Vector actualVector_t)
         {
-            return new ReplayVector_t(actualVector_t.X, actualVector_t.Y, actualVector_t.Z);
+            return new ReplayVector(actualVector_t.X, actualVector_t.Y, actualVector_t.Z);
         }
-        public static Vector_t ToVector_t(ReplayVector_t replayVector_t)
+        public static Vector ToVector(ReplayVector replayVector_t)
         {
-            return new Vector_t(replayVector_t.X, replayVector_t.Y, replayVector_t.Z);
+            return new Vector(replayVector_t.X, replayVector_t.Y, replayVector_t.Z);
         }
     }
 
-    public class ReplayQAngle_t
+    public class ReplayQAngle
     {
         public float Pitch { get; set; }
         public float Yaw { get; set; }
         public float Roll { get; set; }
 
-        public ReplayQAngle_t(float pitch, float yaw, float roll)
+        public ReplayQAngle(float pitch, float yaw, float roll)
         {
             Pitch = pitch;
             Yaw = yaw;
             Roll = roll;
         }
 
-        public static ReplayQAngle_t GetQAngle_tish(QAngle_t actualQAngle_t)
+        public static ReplayQAngle GetQAngleish(QAngle actualQAngle_t)
         {
-            return new ReplayQAngle_t(actualQAngle_t.X, actualQAngle_t.Y, actualQAngle_t.Z);
+            return new ReplayQAngle(actualQAngle_t.X, actualQAngle_t.Y, actualQAngle_t.Z);
         }
 
-        public static QAngle_t ToQAngle_t(ReplayQAngle_t replayQAngle_t)
+        public static QAngle ToQAngle(ReplayQAngle replayQAngle_t)
         {
-            return new QAngle_t(replayQAngle_t.Pitch, replayQAngle_t.Yaw, replayQAngle_t.Roll);
+            return new QAngle(replayQAngle_t.Pitch, replayQAngle_t.Yaw, replayQAngle_t.Roll);
         }
     }
 

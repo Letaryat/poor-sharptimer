@@ -32,9 +32,9 @@ namespace SharpTimer
                 if (!IsAllowedPlayer(player)) return;
 
                 // Get the player's current position and rotation
-                ReplayVector_t currentPosition = ReplayVector_t.GetVector_tish(player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.ToVector_t() ?? new Vector_t(0, 0, 0));
-                ReplayVector_t currentSpeed = ReplayVector_t.GetVector_tish(player.PlayerPawn.Value!.AbsVelocity.ToVector_t());
-                ReplayQAngle_t currentRotation = ReplayQAngle_t.GetQAngle_tish(player.PlayerPawn.Value.EyeAngles.ToQAngle_t());
+                ReplayVector currentPosition = ReplayVector.GetVectorish(player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new(0, 0, 0));
+                ReplayVector currentSpeed = ReplayVector.GetVectorish(player.PlayerPawn.Value!.AbsVelocity);
+                ReplayQAngle currentRotation = ReplayQAngle.GetQAngleish(player.PlayerPawn.Value.EyeAngles);
 
                 var buttons = player.Buttons;
                 var flags = player.Pawn.Value.Flags;
@@ -89,7 +89,7 @@ namespace SharpTimer
                         value.MovementService!.DuckAmount = 0;
                     }
 
-                    player.PlayerPawn.Value!.Teleport(ReplayVector_t.ToVector_t(replayFrame.Position!), ReplayQAngle_t.ToQAngle_t(replayFrame.Rotation!), ReplayVector_t.ToVector_t(replayFrame.Speed!));
+                    player.PlayerPawn.Value!.Teleport(ReplayVector.ToVector(replayFrame.Position!), ReplayQAngle.ToQAngle(replayFrame.Rotation!), ReplayVector.ToVector(replayFrame.Speed!));
 
                     var replayButtons = $"{((replayFrame.Buttons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                                         $"{((replayFrame.Buttons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
