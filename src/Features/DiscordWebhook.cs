@@ -371,7 +371,7 @@ namespace SharpTimer
             }
 
             string imageRepo = $"{discordWebhookImageRepoURL}{(bonusX == 0 ? currentMapName : $"{currentMapName}_b{bonusX}")}.jpg";
-            string error = $"{discordWebhookImageRepoURL}{(currentMapName!.Contains("surf_") ? "surf404" : $"{(currentMapName!.Contains("kz_") ? "kz404" : $"{(currentMapName!.Contains("bhop_") ? "bhop404" : "404")}")}")}.jpg";
+            string error = $"{discordWebhookImageRepoURL}{(currentMapName!.Contains("surf_") ? "surf404" : $"{(currentMapName!.Contains("bhop_") ? "bhop404" : "404")}")}.jpg";
             try
             {
                 using var client = new HttpClient();

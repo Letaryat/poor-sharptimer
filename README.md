@@ -1,5 +1,5 @@
 # SharpTimer
-SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using CounterStrikeSharp<br>
+SharpTimer is a "simple" Surf/Bhop/MG/Deathrun/etc. CS2 Timer plugin using CounterStrikeSharp<br>
 
 > [!NOTE]
 > The original creator of SharpTimer is dea_bb, who discontinued support for the project after version 0.2.6. This fork is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
@@ -65,7 +65,7 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 </details>
 
 <details> 
-  <summary>KZ Checkpoint system (disabled by default, check config)</summary>
+  <summary>Checkpoint system (disabled by default, check config)</summary>
    <img src="https://i.imgur.com/USX5i8C.png"><br>
    <img src="https://i.imgur.com/kWiHOlz.png"><br>
    <img src="https://i.imgur.com/lXwXNN7.png"><br>
@@ -121,7 +121,7 @@ SharpTimer is a "simple" Surf/KZ/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Co
 - [x] Zones
   - [x] Hook common triggers by default
   - [x] Manual Zones
-  - [x] Hook Bonus Zones Triggers (KZ & Surf) 
+  - [x] Hook Bonus Zones Triggers (Surf) 
 - [x] Player PBs
   - [x] Save to Json
   - [x] Save to MySQL

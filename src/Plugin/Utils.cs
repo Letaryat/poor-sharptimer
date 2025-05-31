@@ -682,7 +682,6 @@ namespace SharpTimer
             {
                 return Plugin.currentMapName switch
                 {
-                    var name when name!.StartsWith("kz_") => Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "kz_.json")!,
                     var name when name!.StartsWith("bhop_") => Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "bhop_.json")!,
                     var name when name!.StartsWith("surf_") => Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json"),
                     _ => null
@@ -690,7 +689,6 @@ namespace SharpTimer
             }
             return Plugin.currentMapName switch
             {
-                var name when name!.StartsWith("kz_") => Plugin.remoteKZDataSource!,
                 var name when name!.StartsWith("bhop_") => Plugin.remoteBhopDataSource!,
                 var name when name!.StartsWith("surf_") => Plugin.remoteSurfDataSource!,
                 _ => null

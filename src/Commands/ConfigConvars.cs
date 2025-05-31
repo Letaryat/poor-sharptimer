@@ -49,7 +49,7 @@ namespace SharpTimer
             autosetHostname = bool.TryParse(args, out bool autosetHostnameValue) ? autosetHostnameValue : args != "0" && autosetHostname;
         }
 
-        [ConsoleCommand("sharptimer_custom_map_cfgs_enabled", "Whether Custom Map .cfg files should be executed for the corresponding maps (found in cfg/SharpTimer/MapData/MapExecs/kz_example.cfg). Default value: true")]
+        [ConsoleCommand("sharptimer_custom_map_cfgs_enabled", "Whether Custom Map .cfg files should be executed for the corresponding maps (found in cfg/SharpTimer/MapData/MapExecs/de_example.cfg). Default value: true")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerCustomMapExecConvar(CCSPlayerController? player, CommandInfo command)
         {
@@ -1735,22 +1735,6 @@ namespace SharpTimer
             }
 
             remoteBhopDataSource = $"{args}";
-        }
-
-        [ConsoleCommand("sharptimer_remote_data_kz", "Override for kz remote_data")]
-        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
-        public void SharpTimerRemoteDataOverrideKZ(CCSPlayerController? player, CommandInfo command)
-        {
-
-            string args = command.ArgString.Trim();
-
-            if (string.IsNullOrEmpty(args))
-            {
-                remoteKZDataSource = $"https://raw.githubusercontent.com/Letaryat/poor-SharpTimer/main/remote_data/kz_.json";
-                return;
-            }
-
-            remoteKZDataSource = $"{args}";
         }
 
         [ConsoleCommand("sharptimer_remote_data_surf", "Override for surf remote_data")]
