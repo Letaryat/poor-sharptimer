@@ -169,7 +169,7 @@ namespace SharpTimer
             }
         }
 
-        public async Task DumpReplayToJson(CCSPlayerController player, string steamID, int playerSlot, int bonusX = 0, int style = 0)
+        public async Task DumpReplayToJson(CCSPlayerController player, string steamID, int slot, int bonusX = 0, int style = 0)
         {
             await Task.Run(() =>
             {
@@ -192,9 +192,9 @@ namespace SharpTimer
                         Directory.CreateDirectory(playerReplaysDirectory);
                     }
 
-                    if (playerReplays[playerSlot].replayFrames.Count >= maxReplayFrames) return;
+                    if (playerReplays[slot].replayFrames.Count >= maxReplayFrames) return;
 
-                    var indexedReplayFrames = playerReplays[playerSlot].replayFrames
+                    var indexedReplayFrames = playerReplays[slot].replayFrames
                         .Select((frame, index) => new IndexedReplayFrames { Index = index, Frame = frame })
                         .ToList();
 
@@ -210,7 +210,7 @@ namespace SharpTimer
             });
         }
 
-        public string GetReplayJson(CCSPlayerController player, int playerSlot)
+        public string GetReplayJson(CCSPlayerController player, int slot)
         {
             if (!IsAllowedPlayer(player))
             {
@@ -220,9 +220,9 @@ namespace SharpTimer
 
             try
             {
-                if (playerReplays[playerSlot].replayFrames.Count >= maxReplayFrames) return "";
+                if (playerReplays[slot].replayFrames.Count >= maxReplayFrames) return "";
 
-                var indexedReplayFrames = playerReplays[playerSlot].replayFrames
+                var indexedReplayFrames = playerReplays[slot].replayFrames
                     .Select((frame, index) => new IndexedReplayFrames { Index = index, Frame = frame })
                     .ToList();
 
@@ -235,7 +235,7 @@ namespace SharpTimer
             }
         }
 
-        private async Task ReadReplayFromJson(CCSPlayerController player, string steamId, int playerSlot, int bonusX = 0, int style = 0)
+        private async Task ReadReplayFromJson(CCSPlayerController player, string steamId, int slot, int bonusX = 0, int style = 0)
         {
             string fileName = $"{steamId}_replay.json";
             string playerReplaysPath;
@@ -258,10 +258,10 @@ namespace SharpTimer
                                 .Select(frame => frame.Frame)
                                 .ToList();
 
-                            if (!playerReplays.TryGetValue(playerSlot, out PlayerReplays? value))
+                            if (!playerReplays.TryGetValue(slot, out PlayerReplays? value))
                             {
                                 value = new PlayerReplays();
-                                playerReplays[playerSlot] = value;
+                                playerReplays[slot] = value;
                             }
 
                             value.replayFrames = replayFrames!;

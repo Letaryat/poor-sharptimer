@@ -736,6 +736,9 @@ namespace SharpTimer
 
         public async Task RankCommandHandler(CCSPlayerController? player, string steamId, int slot, string playerName, bool sendRankToHUD = false, int style = 0)
         {
+            if (player!.IsBot || player.SteamID.ToString() == "0")
+                return;
+
             try
             {
                 if (!IsPlayerOrSpectator(player))

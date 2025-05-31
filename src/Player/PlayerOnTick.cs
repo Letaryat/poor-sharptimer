@@ -132,13 +132,15 @@ namespace SharpTimer
                         {
                             if (!hasWeapons && !playerTimer.GivenWeapon)
                             {
-                                if (player.Team == CsTeam.Terrorist)
+                                if (player.TeamT())
                                 {
+                                    player.RemoveWeapons();
                                     player.GiveNamedItem("weapon_knife_t");
                                     player.GiveNamedItem("weapon_glock");
                                 }
-                                else if (player.Team == CsTeam.CounterTerrorist)
+                                else if (player.TeamCT())
                                 {
+                                    player.RemoveWeapons();
                                     player.GiveNamedItem("weapon_knife");
                                     player.GiveNamedItem("weapon_usp_silencer");
                                 }
@@ -215,19 +217,6 @@ namespace SharpTimer
                             playerTimer.IsRankPbReallyCached = true;
                             AddTimer(3.0f, () => { _ = Task.Run(async () => await RankCommandHandler(player, steamID, slot, playerName, true, playerTimer.currentStyle)); });                           
                         }
-
-                        if (displayScoreboardTags || displayChatTags)
-                        {
-                            if (playerTimer.TicksSinceLastRankUpdate > 511 && playerTimer.CachedRank != null)
-                            {
-                                AddRankTagToPlayer(player, playerTimer.CachedRank);
-                                playerTimer.TicksSinceLastRankUpdate = 0;
-                                Utils.LogDebug($"Setting Scoreboard/Chat Tag for {player.PlayerName} from TimerOnTick");
-                            }
-                        }
-
-                        if (playerTimer.TicksSinceLastRankUpdate < 511)
-                            playerTimer.TicksSinceLastRankUpdate++;
                         /* ranks */
 
                         if (playerTimer.IsSpecTargetCached == false || specTargets.ContainsKey(playerPawn.EntityHandle.Index) == false)

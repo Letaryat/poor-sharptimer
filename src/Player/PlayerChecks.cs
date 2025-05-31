@@ -60,7 +60,7 @@ namespace SharpTimer
             return IsAllowedPlayer(player) || IsAllowedSpectator(player);
         }
 
-        async Task IsPlayerATester(string steamId64, int playerSlot)
+        async Task IsPlayerATester(string steamId64, int slot)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace SharpTimer
 
                 using (JsonDocument jsonDocument = JsonDocument.Parse(response))
                 {
-                    if (playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
+                    if (playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
                     {
                         playerTimer.IsTester = jsonDocument.RootElement.TryGetProperty(steamId64, out JsonElement steamData);
 

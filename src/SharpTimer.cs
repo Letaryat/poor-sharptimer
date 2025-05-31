@@ -21,6 +21,7 @@ using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.UserMessages;
 using FixVectorLeak;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace SharpTimer;
@@ -350,26 +351,41 @@ public partial class SharpTimer : BasePlugin
         if (player == null || !player.Valid())
             return HookResult.Continue;
 
+        var playerPawn = player.PlayerPawn();
+        if (playerPawn == null)
+            return HookResult.Continue;
+
         //just.. dont ask.
         AddTimer(0f, () =>
         {
             if (spawnOnRespawnPos == true && currentRespawnPos != null)
-                player!.PlayerPawn.Value!.Teleport(currentRespawnPos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t());
+                playerPawn.Teleport(currentRespawnPos, playerPawn.EyeAngles.ToQAngle_t());
         });
 
-        if (enableStyles && playerTimers.ContainsKey(player.Slot))
-            setStyle(player, playerTimers[player.Slot].currentStyle);
-
-        AddTimer(3.0f, () =>
+        if (playerTimers.TryGetValue(player.Slot, out var playerTimer))
         {
-            if (enableDb && playerTimers.ContainsKey(player.Slot) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
-            {
-                Utils.LogDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
-                SetFov(player, playerTimers[player.Slot].PlayerFov, true);
-            }
-        });
+            playerTimer.GivenWeapon = false;
 
-        Server.NextFrame(() => InvalidateTimer(player));
+            if (enableStyles)
+                setStyle(player, playerTimers[player.Slot].currentStyle);
+
+            AddTimer(3.0f, () =>
+            {
+                if (enableDb && playerTimers.ContainsKey(player.Slot) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
+                {
+                    Utils.LogDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
+                    SetFov(player, playerTimers[player.Slot].PlayerFov, true);
+                }
+            });
+
+            Server.NextFrame(() => InvalidateTimer(player));
+        }
+
+        if (removeLegsEnabled == true)
+        {
+            playerPawn.Render = Color.FromArgb(254, 254, 254, 254);
+            Utilities.SetStateChanged(playerPawn, "CBaseModelEntity", "m_clrRender");
+        }
 
         return HookResult.Continue;
     }

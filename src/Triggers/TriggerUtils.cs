@@ -243,7 +243,7 @@ namespace SharpTimer
             }
         }
 
-        private (bool valid, int X) IsValidEndBonusTriggerName(string triggerName, int playerSlot)
+        private (bool valid, int X) IsValidEndBonusTriggerName(string triggerName, int slot)
         {
             try
             {
@@ -269,13 +269,13 @@ namespace SharpTimer
                             }
                             else
                             {
-                                if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
+                                if (X != playerTimers[slot].BonusStage) return (false, 0);
                                 return (true, X);
                             }
                         }
                         catch (Exception)
                         {
-                            if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
+                            if (X != playerTimers[slot].BonusStage) return (false, 0);
                             return (true, X);
                         }
 

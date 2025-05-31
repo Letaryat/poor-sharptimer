@@ -13,7 +13,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Drawing;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
@@ -44,57 +43,64 @@ namespace SharpTimer
                     return;
                 }
 
-                int playerSlot = player.Slot;
+                int slot = player.Slot;
                 string playerName = player.PlayerName;
 
                 try
                 {
-                    connectedPlayers[playerSlot] = new CCSPlayerController(player.Handle);
-                    playerTimers[playerSlot] = new PlayerTimerInfo();
+                    connectedPlayers[slot] = new CCSPlayerController(player.Handle);
+                    playerTimers[slot] = new PlayerTimerInfo();
 
-                    if (enableReplays) playerReplays[playerSlot] = new PlayerReplays();
-                    playerTimers[playerSlot].MovementService = new CCSPlayer_MovementServices(player.PlayerPawn.Value.MovementServices!.Handle);
-                    playerTimers[playerSlot].StageTimes = new Dictionary<int, int>();
-                    playerTimers[playerSlot].StageVelos = new Dictionary<int, string>();
-                    if (AdminManager.PlayerHasPermissions(player, "@css/root")) playerTimers[playerSlot].ZoneToolWire = new Dictionary<int, CBeam>();
-                    playerTimers[playerSlot].CurrentMapStage = 0;
-                    playerTimers[playerSlot].CurrentMapCheckpoint = 0;
-                    SetNormalStyle(player);
-                    playerTimers[playerSlot].IsRecordingReplay = false;
-                    playerTimers[playerSlot].SetRespawnPos = null;
-                    playerTimers[playerSlot].SetRespawnAng = null;
-                    playerTimers[playerSlot].SoundsEnabled = soundsEnabledByDefault;
+                    if (playerTimers.TryGetValue(slot, out var playerTime))
+                    {
+                        if (enableReplays)
+                            playerReplays[slot] = new PlayerReplays();
+
+                        if (AdminManager.PlayerHasPermissions(player, "@css/root"))
+                            playerTime.ZoneToolWire = new Dictionary<int, CBeam>();
+
+                        playerTime.MovementService = new CCSPlayer_MovementServices(player.PlayerPawn.Value.MovementServices!.Handle);
+                        playerTime.StageTimes = new Dictionary<int, int>();
+                        playerTime.StageVelos = new Dictionary<int, string>();
+                        playerTime.CurrentMapStage = 0;
+                        playerTime.CurrentMapCheckpoint = 0;
+                        playerTime.IsRecordingReplay = false;
+                        playerTime.SetRespawnPos = null;
+                        playerTime.SetRespawnAng = null;
+                        playerTime.SoundsEnabled = soundsEnabledByDefault;
+
+                        SetNormalStyle(player);
+                    }
 
                     if (isForBot == false)
                     {
-                        _ = Task.Run(async () => await IsPlayerATester(player.SteamID.ToString(), playerSlot));
-                        if (enableDb) _ = Task.Run(async () => await GetPlayerStats(player, player.SteamID.ToString(), playerName, playerSlot, true));
-                        if (cmdJoinMsgEnabled == true) PrintAllEnabledCommands(player);
-                    }
+                        string steamID = player.SteamID.ToString();
 
-                    if (connectMsgEnabled == true && !enableDb) Utils.PrintToChatAll(Localizer["connect_message", player.PlayerName]);
+                        _ = Task.Run(async () => await IsPlayerATester(steamID, slot));
+
+                        if (enableDb)
+                            _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, slot, true));
+
+                        if (cmdJoinMsgEnabled == true)
+                            PrintAllEnabledCommands(player);
+
+                        if (connectMsgEnabled == true && !enableDb)
+                            Utils.PrintToChatAll(Localizer["connect_message", player.PlayerName]);
+                    }
 
                     Utils.LogDebug($"Added player {player.PlayerName} with UserID {player.UserId} to connectedPlayers");
                     Utils.LogDebug($"Total players connected: {connectedPlayers.Count}");
                     Utils.LogDebug($"Total playerTimers: {playerTimers.Count}");
                     Utils.LogDebug($"Total playerReplays: {playerReplays.Count}");
-
-                    if (removeLegsEnabled == true)
-                    {
-                        player.PlayerPawn.Value.Render = Color.FromArgb(254, 254, 254, 254);
-                        Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
-                    }
                 }
                 finally
                 {
-                    if (connectedPlayers[playerSlot] == null)
-                    {
-                        connectedPlayers.Remove(playerSlot);
-                    }
+                    if (connectedPlayers[slot] == null)
+                        connectedPlayers.Remove(slot);
 
-                    if (playerTimers[playerSlot] == null)
+                    if (playerTimers[slot] == null)
                     {
-                        playerTimers.Remove(playerSlot);
+                        playerTimers.Remove(slot);
                     }
                 }
             }

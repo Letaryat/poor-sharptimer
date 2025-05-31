@@ -48,7 +48,7 @@ namespace SharpTimer
                 if (!IsAllowedPlayer(player) || caller.Entity!.Name == null || !connectedPlayers.TryGetValue(player.Slot, out var connected)) return HookResult.Continue;
 
                 var callerHandle = caller.Handle;
-                var playerSlot = player.Slot;
+                var slot = player.Slot;
                 var playerName = player.PlayerName;
                 var steamID = player.SteamID.ToString();
                 var callerName = caller.Entity.Name;
@@ -59,33 +59,33 @@ namespace SharpTimer
                     return HookResult.Continue;
                 }
 
-                if (useStageTriggers == true && stageTriggers.ContainsKey(callerHandle) && playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsTimerRunning == true)
+                if (useStageTriggers == true && stageTriggers.ContainsKey(callerHandle) && playerTimers[slot].IsTimerBlocked == false && playerTimers[slot].IsTimerRunning == true)
                 {
                     if (stageTriggers[callerHandle] == 1)
                     {
-                        playerTimers[playerSlot].CurrentMapStage = 1;
+                        playerTimers[slot].CurrentMapStage = 1;
                         return HookResult.Continue;
                     }
                     else
                     {
-                        _ = Task.Run(async () => await HandlePlayerStageTimes(player, callerHandle, playerSlot, steamID, playerName));
+                        _ = Task.Run(async () => await HandlePlayerStageTimes(player, callerHandle, slot, steamID, playerName));
                         return HookResult.Continue;
                     }
                 }
 
-                if (useCheckpointTriggers == true && cpTriggers.ContainsKey(callerHandle) && playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsTimerRunning == true)
+                if (useCheckpointTriggers == true && cpTriggers.ContainsKey(callerHandle) && playerTimers[slot].IsTimerBlocked == false && playerTimers[slot].IsTimerRunning == true)
                 {
-                    _ = Task.Run(async () => await HandlePlayerCheckpointTimes(player, callerHandle, playerSlot, steamID, playerName));
+                    _ = Task.Run(async () => await HandlePlayerCheckpointTimes(player, callerHandle, slot, steamID, playerName));
                     return HookResult.Continue;
                 }
 
-                if (useBonusCheckpointTriggers == true && bonusCheckpointTriggers.ContainsKey(callerHandle) && playerTimers[playerSlot].IsTimerBlocked == false && playerTimers[playerSlot].IsBonusTimerRunning == true)
+                if (useBonusCheckpointTriggers == true && bonusCheckpointTriggers.ContainsKey(callerHandle) && playerTimers[slot].IsTimerBlocked == false && playerTimers[slot].IsBonusTimerRunning == true)
                 {
-                    _ = Task.Run(async () => await HandlePlayerBonusCheckpointTimes(player, callerHandle, playerSlot, steamID, playerName));
+                    _ = Task.Run(async () => await HandlePlayerBonusCheckpointTimes(player, callerHandle, slot, steamID, playerName));
                     return HookResult.Continue;
                 }
 
-                if (IsValidEndTriggerName(callerName) && playerTimers[playerSlot].IsTimerRunning && !playerTimers[playerSlot].IsTimerBlocked)
+                if (IsValidEndTriggerName(callerName) && playerTimers[slot].IsTimerRunning && !playerTimers[slot].IsTimerBlocked)
                 {
                     OnTimerStop(player);
                     if (enableReplays) OnRecordingStop(player);
@@ -95,7 +95,7 @@ namespace SharpTimer
 
                 if (IsValidStartTriggerName(callerName))
                 {
-                    if(playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
+                    if(playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
                     {
                         playerTimer.inStartzone = true;
                     }
@@ -109,7 +109,7 @@ namespace SharpTimer
                         adjustVelocity(player, maxStartingSpeed, false);
                     }
 
-                    playerTimers[playerSlot].CurrentZoneInfo = new()
+                    playerTimers[slot].CurrentZoneInfo = new()
                     {
                         InMainMapStartZone = true,
                         InBonusStartZone = false,
@@ -121,9 +121,9 @@ namespace SharpTimer
                     return HookResult.Continue;
                 }
 
-                var (validEndBonus, endBonusX) = IsValidEndBonusTriggerName(callerName, playerSlot);
+                var (validEndBonus, endBonusX) = IsValidEndBonusTriggerName(callerName, slot);
 
-                if (validEndBonus && playerTimers[playerSlot].IsBonusTimerRunning && !playerTimers[playerSlot].IsTimerBlocked)
+                if (validEndBonus && playerTimers[slot].IsBonusTimerRunning && !playerTimers[slot].IsTimerBlocked)
                 {
                     OnBonusTimerStop(player, endBonusX);
                     if (enableReplays) OnRecordingStop(player);
@@ -145,7 +145,7 @@ namespace SharpTimer
                         adjustVelocity(player, maxBonusStartingSpeed, false);
                     }
 
-                    playerTimers[playerSlot].CurrentZoneInfo = new()
+                    playerTimers[slot].CurrentZoneInfo = new()
                     {
                         InMainMapStartZone = false,
                         InBonusStartZone = true,
@@ -206,7 +206,7 @@ namespace SharpTimer
 
                 if (!IsAllowedPlayer(player) || caller.Entity!.Name == null || !connectedPlayers.TryGetValue(player.Slot, out var connected)) return HookResult.Continue;
 
-                var playerSlot = player.Slot;
+                var slot = player.Slot;
                 var playerName = player.PlayerName;
                 var callerName = caller.Entity.Name;
 
@@ -218,9 +218,9 @@ namespace SharpTimer
                     return HookResult.Continue;
                 }
 
-                if (IsValidStartTriggerName(callerName) && !playerTimers[playerSlot].IsTimerBlocked)
+                if (IsValidStartTriggerName(callerName) && !playerTimers[slot].IsTimerBlocked)
                 {
-                    if(playerTimers.TryGetValue(playerSlot, out PlayerTimerInfo? playerTimer))
+                    if(playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
                     {
                         playerTimer.inStartzone = false;
                     }
@@ -242,7 +242,7 @@ namespace SharpTimer
 
                 var (validStartBonus, StartBonusX) = IsValidStartBonusTriggerName(callerName);
 
-                if (validStartBonus == true && !playerTimers[playerSlot].IsTimerBlocked)
+                if (validStartBonus == true && !playerTimers[slot].IsTimerBlocked)
                 {
                     OnTimerStart(player, StartBonusX);
                     if (enableReplays) OnRecordingStart(player, StartBonusX);

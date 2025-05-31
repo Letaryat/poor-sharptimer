@@ -294,7 +294,7 @@ namespace SharpTimer
             }
         }
 
-        public void DrawZoneToolWireframe(Vector_t? corner1, Vector_t? corner8, int playerSlot)
+        public void DrawZoneToolWireframe(Vector_t? corner1, Vector_t? corner8, int slot)
         {
             try
             {
@@ -310,22 +310,22 @@ namespace SharpTimer
                 corner5 != null && corner6 != null && corner7 != null && corner8 != null)
                 {
                     // top square
-                    DrawZoneToolWire(corner1, corner2, playerSlot, 1);
-                    DrawZoneToolWire(corner2, corner3, playerSlot, 2);
-                    DrawZoneToolWire(corner3, corner4, playerSlot, 3);
-                    DrawZoneToolWire(corner4, corner1, playerSlot, 4);
+                    DrawZoneToolWire(corner1, corner2, slot, 1);
+                    DrawZoneToolWire(corner2, corner3, slot, 2);
+                    DrawZoneToolWire(corner3, corner4, slot, 3);
+                    DrawZoneToolWire(corner4, corner1, slot, 4);
 
                     // bottom square
-                    DrawZoneToolWire(corner5, corner6, playerSlot, 5);
-                    DrawZoneToolWire(corner6, corner7, playerSlot, 6);
-                    DrawZoneToolWire(corner7, corner8, playerSlot, 7);
-                    DrawZoneToolWire(corner8, corner5, playerSlot, 8);
+                    DrawZoneToolWire(corner5, corner6, slot, 5);
+                    DrawZoneToolWire(corner6, corner7, slot, 6);
+                    DrawZoneToolWire(corner7, corner8, slot, 7);
+                    DrawZoneToolWire(corner8, corner5, slot, 8);
 
                     // connect them both to build a cube, 
-                    DrawZoneToolWire(corner1, corner6, playerSlot, 9);
-                    DrawZoneToolWire(corner2, corner7, playerSlot, 10);
-                    DrawZoneToolWire(corner3, corner8, playerSlot, 11);
-                    DrawZoneToolWire(corner4, corner5, playerSlot, 12);
+                    DrawZoneToolWire(corner1, corner6, slot, 9);
+                    DrawZoneToolWire(corner2, corner7, slot, 10);
+                    DrawZoneToolWire(corner3, corner8, slot, 11);
+                    DrawZoneToolWire(corner4, corner5, slot, 12);
                 }
                 else
                 {
@@ -338,23 +338,23 @@ namespace SharpTimer
             }
         }
 
-        public void DrawZoneToolWire(Vector_t? startPos, Vector_t? endPos, int playerSlot, int wireIndex)
+        public void DrawZoneToolWire(Vector_t? startPos, Vector_t? endPos, int slot, int wireIndex)
         {
             try
             {
-                if (playerTimers.ContainsKey(playerSlot) && playerTimers[playerSlot] != null)
+                if (playerTimers.ContainsKey(slot) && playerTimers[slot] != null)
                 {
-                    if (!playerTimers[playerSlot].ZoneToolWire!.ContainsKey(wireIndex))
+                    if (!playerTimers[slot].ZoneToolWire!.ContainsKey(wireIndex))
                     {
-                        playerTimers[playerSlot].ZoneToolWire![wireIndex] = Utilities.CreateEntityByName<CBeam>("beam")!;
+                        playerTimers[slot].ZoneToolWire![wireIndex] = Utilities.CreateEntityByName<CBeam>("beam")!;
                     }
                     else
                     {
-                        playerTimers[playerSlot].ZoneToolWire![wireIndex].Remove();
-                        playerTimers[playerSlot].ZoneToolWire![wireIndex] = Utilities.CreateEntityByName<CBeam>("beam")!;
+                        playerTimers[slot].ZoneToolWire![wireIndex].Remove();
+                        playerTimers[slot].ZoneToolWire![wireIndex] = Utilities.CreateEntityByName<CBeam>("beam")!;
                     }
 
-                    CBeam wire = playerTimers[playerSlot].ZoneToolWire![wireIndex];
+                    CBeam wire = playerTimers[slot].ZoneToolWire![wireIndex];
 
                     if (wire != null)
                     {
@@ -375,7 +375,7 @@ namespace SharpTimer
                 }
                 else
                 {
-                    Utils.LogDebug($"Player slot {playerSlot} not found in the dictionary.");
+                    Utils.LogDebug($"Player slot {slot} not found in the dictionary.");
                 }
             }
             catch (Exception ex)
