@@ -13,7 +13,7 @@ struct CUtlMemory
 }
 
 [StructLayout(LayoutKind.Sequential)]
-struct CUtlVector
+struct CUtlVector_t
 {
     public unsafe nint this[int index]
     {
@@ -46,17 +46,17 @@ public class INetworkGameServer : NativeObject
 {
     private static int SlotsOffset = GameData.GetOffset("INetworkGameServer_Slots");
 
-    private CUtlVector Slots;
+    private CUtlVector_t Slots;
 
     public INetworkGameServer(nint ptr) : base(ptr)
     {
-        this.Slots = Marshal.PtrToStructure<CUtlVector>(base.Handle + SlotsOffset);
+        this.Slots = Marshal.PtrToStructure<CUtlVector_t>(base.Handle + SlotsOffset);
     }
 
-    public CServerSideClient? GetClientBySlot(int playerSlot)
+    public CServerSideClient? GetClientBySlot(int slot)
     {
-        if (playerSlot >= 0 && playerSlot < this.Slots.m_iSize)
-            return this.Slots[playerSlot] == IntPtr.Zero ? null : new CServerSideClient(this.Slots[playerSlot]);
+        if (slot >= 0 && slot < this.Slots.m_iSize)
+            return this.Slots[slot] == IntPtr.Zero ? null : new CServerSideClient(this.Slots[slot]);
         
         return null;
     }

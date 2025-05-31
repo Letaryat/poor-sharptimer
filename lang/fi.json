@@ -57,8 +57,6 @@
     "hud_hidden": "Hud on nyt: {red}Piilossa",
     "keys_shown": "Napit ovat nyt: {green}Piilossa",
     "keys_hidden": "Napit ovat nyt: {red}Piilossa",
-    "jumpstats_shown": "Hyppytiedot ovat nyt: {green}Piilossa",
-    "jumpstats_hidden": "Hyppytiedot ovat nyt: {red}Piilossa",
     "sounds_on": "Äänet ovat nyt: {green}PÄÄLLÄ",
     "sounds_off": "Äänet ovat nyt: {red}POIS PÄÄLTÄ",
 
@@ -90,10 +88,6 @@
 
     "goto_player": "Teleportataan pelaajaan {lime}{0}",
     "goto_player_not_found": "{lightred}Pelaaja ei löytynyt! Jos nimi sisältää välilyönnin, käytä {lime}!goto 'joku nimi' komentoa",
-
-    //jumpstats
-    "js_msg1": "{lime}JS: {grey} {0}: {1}{2}{grey} | Pre: {lime}{3}{grey} | Max: {lime}{4}{grey} | Strafes: {lime}{5}",
-    "js_msg2": "{grey}Height: {lime}{0}{grey} | Width: {lime}{1}{grey} | WT: {lime}{2}{grey} | Sync: {lime}{3}%",
 
     //other
     "command_cooldown": "Komento on jäähyllä. Chillaa...",
@@ -142,8 +136,6 @@
     "console_replaypb": "• !replaypb (css_replaypb) - Toistaa sinun parhaat tuloksesi nykyiseltä kartalta",
     "console_replaybonus": "• !replaybonus / !replayb [1-10] [bonus-vaihe] (css_replaybonus) - Toistaa kymmenen parasta serverin bonus-tulosta",
     "console_replaybonuspb": "• !replaybonuspb / !replaybpb (css_replaybonuspb) - Toistaa sinun parhaat tuloksesi bonus-vaiheessa",
-    "console_jumpstats": "• !jumpstats (css_jumpstats) - Vaihtaa JumpStatsin päälle/pois",
     "console_hideweapon": "• !hideweapon (css_hideweapon) - Vaihtaa aseen näkyvyyden päälle/pois",
     "console_spec": "• !spec (css_spec) - Siirtää sinut katselijaksi tai takaisin tiimiin",
     "console_styles": "• !styles (css_styles) - Listaa kaikki tyylit"
-}

@@ -18,7 +18,8 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using System.Text.Json;
-using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
+using FixVectorLeak;
+using CounterStrikeSharp.API.Modules.Timers;
 
 namespace SharpTimer
 {
@@ -31,9 +32,9 @@ namespace SharpTimer
                 if (!IsAllowedPlayer(player)) return;
 
                 // Get the player's current position and rotation
-                ReplayVector currentPosition = ReplayVector.GetVectorish(player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new Vector(0, 0, 0));
-                ReplayVector currentSpeed = ReplayVector.GetVectorish(player.PlayerPawn.Value!.AbsVelocity ?? new Vector(0, 0, 0));
-                ReplayQAngle currentRotation = ReplayQAngle.GetQAngleish(player.PlayerPawn.Value.EyeAngles ?? new QAngle(0, 0, 0));
+                ReplayVector currentPosition = ReplayVector.GetVectorish(player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin ?? new(0, 0, 0));
+                ReplayVector currentSpeed = ReplayVector.GetVectorish(player.PlayerPawn.Value!.AbsVelocity);
+                ReplayQAngle currentRotation = ReplayQAngle.GetQAngleish(player.PlayerPawn.Value.EyeAngles);
 
                 var buttons = player.Buttons;
                 var flags = player.Pawn.Value.Flags;
@@ -53,7 +54,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in ReplayUpdate: {ex.Message}");
+                Utils.LogError($"Error in ReplayUpdate: {ex.Message}");
             }
         }
 
@@ -105,7 +106,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in ReplayPlayback: {ex.Message}");
+                Utils.LogError($"Error in ReplayPlayback: {ex.Message}");
             }
         }
 
@@ -127,14 +128,13 @@ namespace SharpTimer
                     adjustVelocity(player, 0, false);
                 }
 
-                if (jumpStatsEnabled) InvalidateJS(player.Slot);
                 ReplayPlayback(player, playerReplays[player.Slot].CurrentPlaybackFrame);
 
                 playerReplays[player.Slot].CurrentPlaybackFrame++;
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in ReplayPlay: {ex.Message}");
+                Utils.LogError($"Error in ReplayPlay: {ex.Message}");
             }
         }
 
@@ -152,7 +152,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in OnRecordingStart: {ex.Message}");
+                Utils.LogError($"Error in OnRecordingStart: {ex.Message}");
             }
         }
 
@@ -165,17 +165,17 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in OnRecordingStop: {ex.Message}");
+                Utils.LogError($"Error in OnRecordingStop: {ex.Message}");
             }
         }
 
-        public async Task DumpReplayToJson(CCSPlayerController player, string steamID, int playerSlot, int bonusX = 0, int style = 0)
+        public async Task DumpReplayToJson(CCSPlayerController player, string steamID, int slot, int bonusX = 0, int style = 0)
         {
             await Task.Run(() =>
             {
                 if (!IsAllowedPlayer(player))
                 {
-                    SharpTimerError($"Error in DumpReplayToJson: Player not allowed or not on server anymore");
+                    Utils.LogError($"Error in DumpReplayToJson: Player not allowed or not on server anymore");
                     return;
                 }
 
@@ -192,9 +192,9 @@ namespace SharpTimer
                         Directory.CreateDirectory(playerReplaysDirectory);
                     }
 
-                    if (playerReplays[playerSlot].replayFrames.Count >= maxReplayFrames) return;
+                    if (playerReplays[slot].replayFrames.Count >= maxReplayFrames) return;
 
-                    var indexedReplayFrames = playerReplays[playerSlot].replayFrames
+                    var indexedReplayFrames = playerReplays[slot].replayFrames
                         .Select((frame, index) => new IndexedReplayFrames { Index = index, Frame = frame })
                         .ToList();
 
@@ -205,24 +205,24 @@ namespace SharpTimer
                 }
                 catch (Exception ex)
                 {
-                    SharpTimerError($"Error during serialization: {ex.Message}");
+                    Utils.LogError($"Error during serialization: {ex.Message}");
                 }
             });
         }
 
-        public async Task<string> GetReplayJson(CCSPlayerController player, int playerSlot)
+        public string GetReplayJson(CCSPlayerController player, int slot)
         {
             if (!IsAllowedPlayer(player))
             {
-                SharpTimerError($"Error in GetReplayJson: Player not allowed or not on server anymore");
+                Utils.LogError($"Error in GetReplayJson: Player not allowed or not on server anymore");
                 return "";
             }
 
             try
             {
-                if (playerReplays[playerSlot].replayFrames.Count >= maxReplayFrames) return "";
+                if (playerReplays[slot].replayFrames.Count >= maxReplayFrames) return "";
 
-                var indexedReplayFrames = playerReplays[playerSlot].replayFrames
+                var indexedReplayFrames = playerReplays[slot].replayFrames
                     .Select((frame, index) => new IndexedReplayFrames { Index = index, Frame = frame })
                     .ToList();
 
@@ -230,12 +230,12 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error during serialization: {ex.Message}");
+                Utils.LogError($"Error during serialization: {ex.Message}");
                 return "";
             }
         }
 
-        private async Task ReadReplayFromJson(CCSPlayerController player, string steamId, int playerSlot, int bonusX = 0, int style = 0)
+        private async Task ReadReplayFromJson(CCSPlayerController player, string steamId, int slot, int bonusX = 0, int style = 0)
         {
             string fileName = $"{steamId}_replay.json";
             string playerReplaysPath;
@@ -258,10 +258,10 @@ namespace SharpTimer
                                 .Select(frame => frame.Frame)
                                 .ToList();
 
-                            if (!playerReplays.TryGetValue(playerSlot, out PlayerReplays? value))
+                            if (!playerReplays.TryGetValue(slot, out PlayerReplays? value))
                             {
                                 value = new PlayerReplays();
-                                playerReplays[playerSlot] = value;
+                                playerReplays[slot] = value;
                             }
 
                             value.replayFrames = replayFrames!;
@@ -269,18 +269,18 @@ namespace SharpTimer
                     }
                     else
                     {
-                        Server.NextFrame(() => { PrintToChat(player, $"Unsupported replay format"); });
+                        Server.NextFrame(() => { Utils.PrintToChat(player, $"Unsupported replay format"); });
                     }
                 }
                 else
                 {
-                    SharpTimerError($"File does not exist: {playerReplaysPath}");
-                    Server.NextFrame(() => PrintToChat(player, Localizer["replay_dont_exist"]));
+                    Utils.LogError($"File does not exist: {playerReplaysPath}");
+                    Server.NextFrame(() => Utils.PrintToChat(player, Localizer["replay_dont_exist"]));
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error during deserialization: {ex.Message}");
+                Utils.LogError($"Error during deserialization: {ex.Message}");
             }
         }
 
@@ -318,104 +318,88 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error during deserialization: {ex.Message}");
+                Utils.LogError($"Error during deserialization: {ex.Message}");
             }
         }
 
         private async Task SpawnReplayBot()
         {
-            try
+            if (!await CheckSRReplay())
             {
-                if (await CheckSRReplay() != true) return;
+                Utils.LogError("Replay check failed, not spawning bot.");
+                return;
+            }
 
-                Server.NextFrame(() =>
+            Server.NextFrame(() =>
+            {
+                AddTimer(3.0f, () =>
                 {
-                    startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = false;
-                    foreach (CCSPlayerController bot in connectedReplayBots.Values.ToList())
-                    {
-                        if (bot != null)
-                        {
-                            OnPlayerDisconnect(bot, true);
-                            if (connectedReplayBots.TryGetValue(bot.Slot, out var someValue)) connectedReplayBots.Remove(bot.Slot);
-                        }
-                    }
-                    Server.ExecuteCommand("sv_cheats 1");
-                    Server.ExecuteCommand("bot_add_ct");
-                    Server.ExecuteCommand("bot_quota 1");
-                    Server.ExecuteCommand("bot_quota_mode 0");
-                    Server.ExecuteCommand("bot_stop 1");
-                    Server.ExecuteCommand("bot_freeze 1");
-                    Server.ExecuteCommand("bot_zombie 1");
+                    Server.ExecuteCommand("bot_quota_mode normal");
+                    Server.ExecuteCommand("bot_quota 0");
                     Server.ExecuteCommand("bot_chatter off");
-                    Server.ExecuteCommand("sv_cheats 0");
+                    Server.ExecuteCommand("bot_controllable 0");
+                    Server.ExecuteCommand("bot_kick");
+                    replayBotController = null;
 
                     AddTimer(3.0f, () =>
                     {
-                        foundReplayBot = false;
-                        SharpTimerDebug($"Trying to find replay bot!");
-                        var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
-                        foreach (var tempPlayer in playerEntities)
+                        // wtf is this game even
+                        Server.ExecuteCommand("bot_quota 1");
+                        Server.ExecuteCommand("bot_add_ct");
+                        Server.ExecuteCommand("bot_quota 1");
+
+                        Utils.LogDebug("Searching for replay bot...");
+
+                        AddTimer(0.0f, () =>
                         {
-                            if (tempPlayer == null || !tempPlayer.IsValid || !tempPlayer.IsBot || tempPlayer.IsHLTV)
-                                continue;
-                            if (tempPlayer.UserId.HasValue)
+                            // find and setup bot
+                            var bot = Utilities.GetPlayers().Where(b => b.IsBot && !b.IsHLTV).FirstOrDefault();
+                            if (bot != null)
                             {
-                                if (foundReplayBot == true)
-                                {
-                                    OnPlayerDisconnect(tempPlayer, true);
-                                    Server.ExecuteCommand($"kickid {tempPlayer.Slot}");
-                                    SharpTimerDebug($"Kicking unused replay bot!");
-                                }
-                                else
-                                {
-                                    SharpTimerDebug($"Found replay bot!");
-                                    OnReplayBotConnect(tempPlayer);
-                                    tempPlayer.PlayerPawn.Value!.Bot!.IsSleeping = true;
-                                    tempPlayer.PlayerPawn.Value!.Bot!.AllowActive = true;
-                                    tempPlayer.RemoveWeapons();
-                                    tempPlayer!.Pawn.Value!.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
-                                    tempPlayer!.Pawn.Value!.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
-                                    Utilities.SetStateChanged(tempPlayer, "CCollisionProperty", "m_CollisionGroup");
-                                    Utilities.SetStateChanged(tempPlayer, "CCollisionProperty", "m_collisionAttribute");
-                                    SharpTimerDebug($"Removed Collison for replay bot!");
-                                    foundReplayBot = true;
-                                    startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = true;
-                                }
+                                replayBotController = bot;
+                                Utils.LogDebug($"Found replay bot: {bot.PlayerName}");
+
+                                var botPawn = bot.PlayerPawn.Value;
+                                if (botPawn == null) return;
+
+                                // bot settings
+                                bot.RemoveWeapons();
+                                botPawn.Bot!.IsStopping = true;
+                                botPawn.Bot.IsSleeping = true;
+                                botPawn.Bot.AllowActive = true;
+                                botPawn.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
+                                botPawn.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
+                                Utilities.SetStateChanged(bot, "CCollisionProperty", "m_CollisionGroup");
+                                Utilities.SetStateChanged(bot, "CCollisionProperty", "m_collisionAttribute");
+                                Utils.LogDebug($"Configured replay bot collision and weapons for {bot.PlayerName}");
+
+                                // start bot replay
+                                OnPlayerConnect(bot, true);
+                                ChangePlayerName(bot, replayBotName);
+                                playerTimers[bot.Slot].IsTimerBlocked = true;
+                                _ = Task.Run(async () => await ReplayHandler(bot, bot.Slot));
+                                Utils.LogDebug($"Starting replay for {bot.PlayerName}");
                             }
-                        }
-                    });
-                });
-            }
-            catch (Exception ex)
-            {
-                SharpTimerError($"Error in SpawnReplayBot: {ex.Message}");
-            }
-        }
+                            else
+                            {
+                                Utils.LogError($"Failed to spawn replay bot");
+                                return;
+                            }
 
-        private void OnReplayBotConnect(CCSPlayerController bot)
-        {
-            try
-            {
-                var botSlot = bot.Slot;
-                var botName = bot.PlayerName;
-                
-                if(bot.IsHLTV)
-                    return;
-
-                AddTimer(3.0f, () =>
-                {
-                    OnPlayerConnect(bot, true);
-                    connectedReplayBots[botSlot] = new CCSPlayerController(bot.Handle);
-                    ChangePlayerName(bot, replayBotName);
-                    playerTimers[botSlot].IsTimerBlocked = true;
-                    _ = Task.Run(async () => await ReplayHandler(bot, botSlot));
-                    SharpTimerDebug($"Starting replay for {botName}");
-                });
-            }
-            catch (Exception ex)
-            {
-                SharpTimerError($"Error in OnReplayBotConnect: {ex.Message}");
-            }
+                            // kick unused bots if there are any
+                            var bots = Utilities.GetPlayers().Where(b => b.IsBot && !b.IsHLTV && b != replayBotController);
+                            foreach (var kicked in bots)
+                            {
+                                OnPlayerDisconnect(kicked, true);
+                                Server.ExecuteCommand("bot_quota 1");
+                                Server.ExecuteCommand($"kickid {kicked.UserId}");
+                                Server.ExecuteCommand("bot_quota 1");
+                                Utils.LogDebug($"Kicking unused bot on spawn... {kicked.PlayerName}");
+                            }
+                        });
+                    }, TimerFlags.STOP_ON_MAPCHANGE);
+                }, TimerFlags.STOP_ON_MAPCHANGE);
+            });
         }
 
         public async Task<bool> CheckSRReplay(string topSteamID = "x", int bonusX = 0, int style = 0)

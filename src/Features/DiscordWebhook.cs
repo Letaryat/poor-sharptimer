@@ -27,7 +27,7 @@ namespace SharpTimer
         {
             try
             {
-                using JsonDocument? jsonConfig = await LoadJson(discordURLpath)!;
+                using JsonDocument? jsonConfig = await Utils.LoadJson(discordURLpath)!;
                 if (jsonConfig != null)
                 {
                     JsonElement root = jsonConfig.RootElement;
@@ -37,7 +37,7 @@ namespace SharpTimer
                             try {
                                 return getValue(property);
                             } catch (Exception ex) {
-                                SharpTimerError($"Error parsing {propertyName}: {ex.Message}");
+                                Utils.LogError($"Error parsing {propertyName}: {ex.Message}");
                                 return defaultValue;
                             }
                         }
@@ -82,12 +82,12 @@ namespace SharpTimer
                 }
                 else
                 {
-                    SharpTimerError($"DiscordWebhookUrl json was null");
+                    Utils.LogError($"DiscordWebhookUrl json was null");
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in GetDiscordWebhookURLFromConfigFile: {ex.Message}");
+                Utils.LogError($"Error in GetDiscordWebhookURLFromConfigFile: {ex.Message}");
             }
         }
 
@@ -107,7 +107,7 @@ namespace SharpTimer
 
                 if (string.IsNullOrEmpty(webhookURL) || webhookURL == "your_discord_webhook_url")
                 {
-                    SharpTimerError($"DiscordWebhookUrl was invalid");
+                    Utils.LogError($"DiscordWebhookUrl was invalid");
                     return;
                 }
 
@@ -257,12 +257,12 @@ namespace SharpTimer
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    SharpTimerError($"Failed to send message. Status code: {response.StatusCode}");
+                    Utils.LogError($"Failed to send message. Status code: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"An error occurred while sending Discord PB message: {ex.Message}");
+                Utils.LogError($"An error occurred while sending Discord PB message: {ex.Message}");
             }
         }
 
@@ -274,7 +274,7 @@ namespace SharpTimer
 
                 if (string.IsNullOrEmpty(webhookURL))
                 {
-                    SharpTimerError($"DiscordACWebhookUrl was invalid");
+                    Utils.LogError($"DiscordACWebhookUrl was invalid");
                     return;
                 }
                 using var client = new HttpClient();
@@ -351,12 +351,12 @@ namespace SharpTimer
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    SharpTimerError($"Failed to send message. Status code: {response.StatusCode}");
+                    Utils.LogError($"Failed to send message. Status code: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"An error occurred while sending Discord AC message: {ex.Message}");
+                Utils.LogError($"An error occurred while sending Discord AC message: {ex.Message}");
             }
         }
 
@@ -371,7 +371,7 @@ namespace SharpTimer
             }
 
             string imageRepo = $"{discordWebhookImageRepoURL}{(bonusX == 0 ? currentMapName : $"{currentMapName}_b{bonusX}")}.jpg";
-            string error = $"{discordWebhookImageRepoURL}{(currentMapName!.Contains("surf_") ? "surf404" : $"{(currentMapName!.Contains("kz_") ? "kz404" : $"{(currentMapName!.Contains("bhop_") ? "bhop404" : "404")}")}")}.jpg";
+            string error = $"{discordWebhookImageRepoURL}{(currentMapName!.Contains("surf_") ? "surf404" : $"{(currentMapName!.Contains("bhop_") ? "bhop404" : "404")}")}.jpg";
             try
             {
                 using var client = new HttpClient();
@@ -386,7 +386,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Failed to get DiscordWebhook img. {ex.Message}");
+                Utils.LogError($"Failed to get DiscordWebhook img. {ex.Message}");
                 return error;
             }
         }
@@ -425,7 +425,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError("GetAvatarLink Error occurred: " + ex.Message);
+                Utils.LogError("GetAvatarLink Error occurred: " + ex.Message);
                 return "https://cdn.discordapp.com/icons/1196646791450472488/634963a8207fdb1b30bf909d31f05e57.webp";
             }
         }
