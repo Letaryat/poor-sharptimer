@@ -790,7 +790,7 @@ namespace SharpTimer
                     playerTimers[slot].CachedRank = ranking;
                     playerTimers[slot].CachedMapPlacement = mapPlacement;
 
-                    //if (displayScoreboardTags) AddRankTagToPlayer(player!, ranking);
+                    if (displayScoreboardTags) AddRankTagToPlayer(player!, ranking);
                 });
 
                 if (!sendRankToHUD)

@@ -212,8 +212,8 @@ namespace SharpTimer
                         if (playerTimer.CachedMapPlacement == null && !playerTimer.IsRankPbReallyCached)
                         {
                             Utils.LogDebug($"{playerName} CachedMapPlacement is still null, calling rank handler once more");
-                            AddTimer(3.0f, () => { _ = Task.Run(async () => await RankCommandHandler(player, steamID, slot, playerName, true, playerTimer.currentStyle)); });                           
                             playerTimer.IsRankPbReallyCached = true;
+                            AddTimer(3.0f, () => { _ = Task.Run(async () => await RankCommandHandler(player, steamID, slot, playerName, true, playerTimer.currentStyle)); });                           
                         }
 
                         if (displayScoreboardTags || displayChatTags)
