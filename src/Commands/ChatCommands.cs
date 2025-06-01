@@ -434,8 +434,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_hud...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             playerTimers[slot].HideTimerHud = !playerTimers[slot].HideTimerHud;
 
@@ -463,8 +463,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_keys...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             playerTimers[slot].HideKeys = playerTimers[slot].HideKeys ? false : true;
 
@@ -492,8 +492,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_sounds...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             playerTimers[slot].SoundsEnabled = playerTimers[slot].SoundsEnabled ? false : true;
 
@@ -561,8 +561,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{player!.PlayerName} calling css_top...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             var mapName = command.ArgByIndex(1);
 
@@ -582,8 +582,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{player!.PlayerName} calling css_points...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             _ = Task.Run(async () => await PrintTop10PlayerPoints(player));
         }
@@ -597,8 +597,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{player!.PlayerName} calling css_wr...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             PrintWorldRecord(player);
         }
@@ -612,8 +612,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{player!.PlayerName} calling css_gpoints...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             PrintGlobalPoints(player);
         }
@@ -628,7 +628,6 @@ namespace SharpTimer
             Utils.LogDebug($"{player!.PlayerName} calling css_grank...");
 
             if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
 
             _ = Task.Run(async () => await PrintGlobalRankAsync(player));
         }
@@ -643,8 +642,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{player!.PlayerName} calling css_topbonus...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             if (!int.TryParse(command.ArgString, out int bonusX))
             {
@@ -728,8 +727,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_rank...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             _ = Task.Run(async () => await RankCommandHandler(player, steamID, slot, playerName, false, playerTimers[slot].currentStyle));
         }
@@ -838,8 +837,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_sr...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             _ = Task.Run(async () => await SRCommandHandler(player, playerName));
         }
@@ -888,8 +887,8 @@ namespace SharpTimer
 
                 Utils.LogDebug($"{playerName} calling css_rb...");
 
-                if (CommandCooldown(player)) return;
-                else CommandAddCooldown(player);
+                if (CommandCooldown(player))
+                    return;
 
                 if (ReplayCheck(player))
                     return;
@@ -1039,8 +1038,8 @@ namespace SharpTimer
 
                 Utils.LogDebug($"{playerName} calling css_stage...");
 
-                if (CommandCooldown(player)) return;
-                else CommandAddCooldown(player);
+                if (CommandCooldown(player))
+                    return;
 
                 if (ReplayCheck(player))
                     return;
@@ -1109,8 +1108,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_r...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player)) 
+                return;
 
             if (playerTimers[slot].IsReplaying)
             {
@@ -1150,8 +1149,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_end...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             playerTimers[slot].IsTimerRunning = false;
             playerTimers[slot].TimerTicks = 0;
@@ -1175,8 +1174,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_noclip...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             if (IsTimerBlocked(player))
                 return;
@@ -1235,8 +1234,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_style...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             playerTimers[slot].IsTimerRunning = false;
             playerTimers[slot].TimerTicks = 0;
@@ -1367,8 +1366,8 @@ namespace SharpTimer
             if (!IsAllowedPlayer(player))
                 return;
 
-            if (CommandCooldown(player!)) return;
-            else CommandAddCooldown(player!);
+            if (CommandCooldown(player!))
+                return;
 
             if (!rankEnabled)
             {
@@ -1457,10 +1456,10 @@ namespace SharpTimer
             var slot = player!.Slot;
             var playerName = player.PlayerName;
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
-
             Utils.LogDebug($"{playerName} calling css_rs...");
+
+            if (CommandCooldown(player))
+                return;
 
             if (stageTriggerCount == 0)
             {
@@ -1510,8 +1509,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_timer...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             if (ReplayCheck(player))
                 return;
@@ -1573,8 +1572,8 @@ namespace SharpTimer
                 return;
             }
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             Utils.PrintToChat(player, Localizer["info_version", ModuleVersion]);
             Utils.PrintToChat(player, Localizer["info_os", RuntimeInformation.OSDescription]);
@@ -1592,8 +1591,8 @@ namespace SharpTimer
             var playerName = player.PlayerName;
             var steamID = player.SteamID.ToString();
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             bool hidingPlayers = !playerTimers[slot].HidePlayers;
 
@@ -1657,8 +1656,8 @@ namespace SharpTimer
 
             Utils.LogDebug($"{playerName} calling css_goto...");
 
-            if (CommandCooldown(player)) return;
-            else CommandAddCooldown(player);
+            if (CommandCooldown(player))
+                return;
 
             if (ReplayCheck(player))
                 return;

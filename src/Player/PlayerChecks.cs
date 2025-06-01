@@ -307,21 +307,21 @@ namespace SharpTimer
 
         public bool CommandCooldown(CCSPlayerController player)
         {
-            if (playerTimers.TryGetValue(player.Slot, out var data))
+            if (playerTimers.TryGetValue(player.Slot, out var playerTimer))
             {
-                double secondsRemaining = (data.CmdCooldown - DateTime.Now).TotalSeconds;
+                double secondsRemaining = (playerTimer.CmdCooldown - DateTime.Now).TotalSeconds;
                 if (secondsRemaining > 0)
                 {
                     Utils.PrintToChat(player, Localizer["command_cooldown", secondsRemaining]);
                     return true;
                 }
+                else
+                {
+                    playerTimer.CmdCooldown = DateTime.Now.AddSeconds(cmdCooldown);
+                    return false;
+                }
             }
             return false;
-        }
-
-        public void CommandAddCooldown(CCSPlayerController player)
-        {
-            playerTimers[player.Slot].CmdCooldown = DateTime.Now.AddSeconds(cmdCooldown);
         }
 
         public bool IsTimerBlocked(CCSPlayerController? player)
