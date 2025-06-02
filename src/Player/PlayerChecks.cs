@@ -164,6 +164,7 @@ namespace SharpTimer
             }
         }
 
+
         private void CheckPlayerCoords(CCSPlayerController? player, Vector_t playerSpeed)
         {
             try
@@ -173,20 +174,20 @@ namespace SharpTimer
                     return;
                 }
 
-                Vector_t incorrectVector_t = new(0, 0, 0);
-                Vector_t? playerPos = player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin.ToVector_t();
+                Vector_t incorrectVector = new(0, 0, 0);
+                Vector_t playerPos = player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin.ToVector_t() ?? new();
                 bool isInsideStartBox = false;
                 bool isInsideEndBox = false;
 
-                if (playerPos == null || currentMapStartC1.Equals(incorrectVector_t) || currentMapStartC2.Equals(incorrectVector_t) ||
-                    currentMapEndC1.Equals(incorrectVector_t) || currentMapEndC2.Equals(incorrectVector_t))
+                if (playerPos.Equals(incorrectVector) || currentMapStartC1.Equals(incorrectVector) || currentMapStartC2.Equals(incorrectVector) ||
+                    currentMapEndC1.Equals(incorrectVector) || currentMapEndC2.Equals(incorrectVector))
                 {
                     return;
                 }
                 if (!useTriggersAndFakeZones)
                 {
-                    isInsideStartBox = Utils.IsVector_tInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
-                    isInsideEndBox = Utils.IsVector_tInsideBox(playerPos, currentMapEndC1, currentMapEndC2);
+                    isInsideStartBox = Utils.IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
+                    isInsideEndBox = Utils.IsVectorInsideBox(playerPos, currentMapEndC1, currentMapEndC2);
                 }
                 bool[] isInsideBonusStartBox = new bool[11];
                 bool[] isInsideBonusEndBox = new bool[11];
@@ -208,8 +209,8 @@ namespace SharpTimer
                         }
                         else
                         {
-                            isInsideBonusStartBox[bonus] = Utils.IsVector_tInsideBox(playerPos, currentBonusStartC1[bonus], currentBonusStartC2[bonus]);
-                            isInsideBonusEndBox[bonus] = Utils.IsVector_tInsideBox(playerPos, currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
+                            isInsideBonusStartBox[bonus] = Utils.IsVectorInsideBox(playerPos, currentBonusStartC1[bonus], currentBonusStartC2[bonus]);
+                            isInsideBonusEndBox[bonus] = Utils.IsVectorInsideBox(playerPos, currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
                         }
                     }
                 }
@@ -223,7 +224,7 @@ namespace SharpTimer
                     }
                     else if (isInsideStartBox)
                     {
-                        if(playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
+                        if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
                         {
                             playerTimer.inStartzone = true;
                             InvalidateTimer(player);
@@ -271,7 +272,7 @@ namespace SharpTimer
                             }
                             else if (isInsideBonusStartBox[bonus])
                             {
-                                if(playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
+                                if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
                                 {
                                     playerTimer.inStartzone = true;
                                 }
@@ -288,11 +289,11 @@ namespace SharpTimer
                             }
                             else if (!isInsideBonusStartBox[bonus])
                             {
-                                if(playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
+                                if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
                                 {
                                     playerTimer.inStartzone = false;
                                 }
-                                
+
                             }
                         }
                     }

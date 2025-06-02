@@ -994,7 +994,7 @@ namespace SharpTimer
 
             if (useTriggers == true)
             {
-                if (Utils.IsVector_tInsideBox(currentPosition + new Vector_t(0, 0, 10), currentMapStartTriggerMaxs!, currentMapStartTriggerMins!))
+                if (Utils.IsVectorInsideBox(currentPosition + new Vector_t(0, 0, 10), currentMapStartTriggerMaxs.GetValueOrDefault(), currentMapStartTriggerMins.GetValueOrDefault()))
                 {
                     // Convert position and rotation to strings
                     string positionString = $"{currentPosition.X} {currentPosition.Y} {currentPosition.Z}";
@@ -1009,7 +1009,7 @@ namespace SharpTimer
             }
             else
             {
-                if (Utils.IsVector_tInsideBox(currentPosition + new Vector_t(0, 0, 10), currentMapStartC1, currentMapStartC2))
+                if (Utils.IsVectorInsideBox(currentPosition + new Vector_t(0, 0, 10), currentMapStartC1, currentMapStartC2))
                 {
                     // Convert position and rotation to strings
                     string positionString = $"{currentPosition.X} {currentPosition.Y} {currentPosition.Z}";
@@ -1518,7 +1518,7 @@ namespace SharpTimer
             // Remove checkpoints for the current player
             playerCheckpoints.Remove(slot);
 
-            playerTimers[slot].IsTimerBlocked = playerTimers[slot].IsTimerBlocked ? false : true;
+            playerTimers[slot].IsTimerBlocked = !playerTimers[slot].IsTimerBlocked;
             playerTimers[slot].IsRecordingReplay = false;
 
 
@@ -1534,6 +1534,15 @@ namespace SharpTimer
 
             if (stageTriggers.Count != 0) playerTimers[slot].StageTimes!.Clear(); //remove previous stage times if the map has stages
             if (stageTriggers.Count != 0) playerTimers[slot].StageVelos!.Clear(); //remove previous stage times if the map has stages
+
+            // fix timer toggle bug
+            if (!playerTimers[slot].IsTimerBlocked)
+            {
+                Vector_t playerPos = player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin.ToVector_t() ?? new();
+                bool isInsideStartBox = Utils.IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
+                playerTimers[slot].inStartzone = isInsideStartBox; // Only set to true if player is actually in the start zone
+            }
+            else playerTimers[slot].inStartzone = false;
 
             PlaySound(player, timerSound);
             Utils.LogDebug($"{player.PlayerName} css_timer to {playerTimers[slot].IsTimerBlocked}");

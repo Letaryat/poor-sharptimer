@@ -338,7 +338,7 @@ namespace SharpTimer
 
                 foreach (var info_tp in entityCache.InfoTeleportDestinations)
                 {
-                    if (info_tp.Entity?.Name != null && Utils.IsVector_tInsideBox(info_tp.AbsOrigin!.ToVector_t(),
+                    if (info_tp.Entity?.Name != null && Utils.IsVectorInsideBox(info_tp.AbsOrigin!.ToVector_t(),
                                                         (trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin!).ToVector_t(),
                                                         (trigger.Collision.Maxs + trigger.CBodyComponent!.SceneNode!.AbsOrigin!).ToVector_t()))
                     {
@@ -388,7 +388,7 @@ namespace SharpTimer
                 {
                     foreach (var info_tp in entityCache.InfoTeleportDestinations)
                     {
-                        if (info_tp.Entity?.Name != null && Utils.IsVector_tInsideBox(info_tp.AbsOrigin!.ToVector_t(),
+                        if (info_tp.Entity?.Name != null && Utils.IsVectorInsideBox(info_tp.AbsOrigin!.ToVector_t(),
                                                             (trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin).ToVector_t(),
                                                             (trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin).ToVector_t()))
                         {
@@ -489,7 +489,7 @@ namespace SharpTimer
 
                     foreach (var info_tp in entityCache.InfoTeleportDestinations)
                     {
-                        if (info_tp.Entity?.Name != null && Utils.IsVector_tInsideBox(info_tp.AbsOrigin!.ToVector_t(),
+                        if (info_tp.Entity?.Name != null && Utils.IsVectorInsideBox(info_tp.AbsOrigin!.ToVector_t(),
                                                             (trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin).ToVector_t(),
                                                             (trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin).ToVector_t())
                             )

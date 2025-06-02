@@ -395,22 +395,19 @@ namespace SharpTimer
             DrawLaserBetween(corner4, corner5, _color);
         }
 
-        public bool IsVector_tInsideBox(Vector_t? playerVector_t, Vector_t? corner1, Vector_t? corner2)
+        public bool IsVectorInsideBox(Vector_t playerVector, Vector_t corner1, Vector_t corner2)
         {
-            var c1 = corner1!.Value;
-            var c2 = corner2!.Value;
+            float minX = Math.Min(corner1.X, corner2.X);
+            float minY = Math.Min(corner1.Y, corner2.Y);
+            float minZ = Math.Min(corner1.Z, corner2.Z);
 
-            float minX = Math.Min(c1.X, c2.X);
-            float minY = Math.Min(c1.Y, c2.Y);
-            float minZ = Math.Min(c1.Z, c2.Z);
+            float maxX = Math.Max(corner1.X, corner2.X);
+            float maxY = Math.Max(corner1.Y, corner2.Y);
+            float maxZ = Math.Max(corner1.Z, corner2.Z + Plugin.fakeTriggerHeight);
 
-            float maxX = Math.Max(c1.X, c2.X);
-            float maxY = Math.Max(c1.Y, c2.Y);
-            float maxZ = Math.Max(c1.Z, c2.Z + Plugin.fakeTriggerHeight);
-
-            return playerVector_t!.Value.X >= minX && playerVector_t!.Value.X <= maxX &&
-                   playerVector_t.Value.Y >= minY && playerVector_t.Value.Y <= maxY &&
-                   playerVector_t.Value.Z >= minZ && playerVector_t.Value.Z <= maxZ;
+            return playerVector.X >= minX && playerVector.X <= maxX &&
+                   playerVector.Y >= minY && playerVector.Y <= maxY &&
+                   playerVector.Z >= minZ && playerVector.Z <= maxZ;
         }
 
         public Vector_t CalculateMiddleVector_t(Vector_t corner1, Vector_t corner2)
