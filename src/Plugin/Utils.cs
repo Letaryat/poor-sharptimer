@@ -19,16 +19,20 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using System.Drawing;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
-using CounterStrikeSharp.API.Modules.Entities;
+using System.Runtime.InteropServices;
 
 namespace SharpTimer
 {
     public partial class SharpTimer
     {
+        private delegate nint CNetworkSystemUpdatePublicIp(nint a1);
+        private static CNetworkSystemUpdatePublicIp? _networkSystemUpdatePublicIp;
+
         public async Task<(bool IsLatest, string LatestVersion)> IsLatestVersion()
         {
             try
@@ -95,17 +99,8 @@ namespace SharpTimer
             {
                 Task.Run(async () =>
                 {
-                    Dictionary<string, PlayerRecord> sortedRecords;
-                    if (!useMySQL && !usePostgres)
-                    {
-                        SharpTimerDebug($"Getting Server Record AD using json");
-                        sortedRecords = await GetSortedRecords();
-                    }
-                    else
-                    {
-                        SharpTimerDebug($"Getting Server Record AD using database");
-                        sortedRecords = await GetSortedRecordsFromDatabase(100);
-                    }
+                    SharpTimerDebug($"Getting Server Record AD using database");
+                    var sortedRecords = await GetSortedRecordsFromDatabase(100);
 
                     SharpTimerDebug($"Running Server Record AD...");
 
@@ -115,12 +110,12 @@ namespace SharpTimer
                         return;
                     }
 
-                    Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr", currentMapName!]}"));
+                    Server.NextFrame(() => PrintToChatAll(Localizer["current_sr", currentMapName!]));
 
                     var serverRecord = sortedRecords.FirstOrDefault();
                     string playerName = serverRecord.Value.PlayerName!; // Get the player name from the dictionary value
                     int timerTicks = serverRecord.Value.TimerTicks; // Get the timer ticks from the dictionary value
-                    Server.NextFrame(() => Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["current_sr_player", playerName, FormatTime(timerTicks)]}"));
+                    Server.NextFrame(() => PrintToChatAll(Localizer["current_sr_player", playerName, FormatTime(timerTicks)]));
 
                     SortedCachedRecords = sortedRecords;
                 });
@@ -135,15 +130,53 @@ namespace SharpTimer
 
             var timer = AddTimer(adMessagesTimer, () =>
             {
-                string[] adMessages = File.ReadAllLines(Path.Join(gameDir + "/csgo/cfg/SharpTimer/admessages.txt"));
-                var nonEmptyAds = adMessages.Where(ad => !string.IsNullOrEmpty(ad) && !ad.TrimStart().StartsWith("//")).ToArray();
-                Server.NextFrame(() => Server.PrintToChatAll($"{ReplaceAdMessagePlaceholders(nonEmptyAds[new Random().Next(nonEmptyAds.Length)])}"));
+                List<string> allAdMessages = [.. GetAdMessages()];
+
+                var customAdMessageFilePath = Path.Join(gameDir + "/csgo/cfg/SharpTimer/admessages.txt");
+                if (File.Exists(customAdMessageFilePath))
+                {
+                    string[] customAdMessages = File.ReadAllLines(customAdMessageFilePath, System.Text.Encoding.UTF8);
+                    var nonEmptyCustomAds = customAdMessages.Where(ad => !string.IsNullOrEmpty(ad) && !ad.TrimStart().StartsWith("//")).ToList();
+
+                    allAdMessages.AddRange(nonEmptyCustomAds);
+                }
+
+                Server.NextFrame(() => Server.PrintToChatAll($"{ReplaceVars(allAdMessages[new Random().Next(allAdMessages.Count)])}"));
             }, TimerFlags.REPEAT);
 
             isADMessagesTimerRunning = true;
         }
 
-        private string ReplaceAdMessagePlaceholders(string message)
+        private List<string> GetAdMessages()
+        {
+            var adMessages = new List<string>() 
+            {
+                $"{Localizer["prefix"]} {Localizer["ad_see_all_commands"]}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_pb"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_sr"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_top"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_bonus"]}" : "")}",
+                $"{(enableReplays ? $"{Localizer["prefix"]} {Localizer["ad_replay_bonus_pb"]}" : "")}",
+                $"{(globalRanksEnabled ? $"{Localizer["prefix"]} {Localizer["ad_points"]}" : "")}",
+                $"{(respawnEnabled ? $"{Localizer["prefix"]} {Localizer["ad_respawn"]}" : "")}",
+                $"{(respawnEnabled ? $"{Localizer["prefix"]} {Localizer["ad_start_pos"]}" : "")}",
+                $"{(topEnabled ? $"{Localizer["prefix"]} {Localizer["ad_top"]}" : "")}",
+                $"{(rankEnabled ? $"{Localizer["prefix"]} {Localizer["ad_rank"]}" : "")}",
+                $"{(cpEnabled ? $"{Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? $"{Localizer["ad_save_loc"]}" : $"{Localizer["ad_cp"]}")}" : "")}",
+                $"{(cpEnabled ? $"{Localizer["prefix"]} {(currentMapName!.Contains("surf_") ? $"{Localizer["ad_load_loc"]}" : $"{Localizer["ad_tp"]}")}" : "")}",
+                $"{(goToEnabled ? $"{Localizer["prefix"]} {Localizer["ad_goto"]}" : "")}",
+                $"{(fovChangerEnabled ? $"{Localizer["prefix"]} {Localizer["ad_fov"]}" : "")}",
+                $"{Localizer["prefix"]} {Localizer["ad_sounds"]}",
+                $"{Localizer["prefix"]} {Localizer["ad_hud"]}",
+                $"{Localizer["prefix"]} {Localizer["ad_keys"]}",
+                $"{(enableStyles ? $"{Localizer["prefix"]} {Localizer["ad_styles"]}" : "")}",
+                $"{(jumpStatsEnabled ? $"{Localizer["prefix"]} {Localizer["ad_jumpstats"]}" : "")}"
+            };
+
+            return adMessages;
+        }
+
+        private string ReplaceVars(string message)
         {
             var replacements = new Dictionary<string, string>
             {
@@ -153,9 +186,10 @@ namespace SharpTimer
                 { "{players}",      $"{Utilities.GetPlayers().Count()}" },
                 { "{current_time}", $"{DateTime.Now.ToString("HH:mm:ss")}" },
                 { "{current_date}", $"{DateTime.Now.ToString("dd.MMM.yyyy")}" },
+                { "{primary}",      $"{primaryChatColor}" },
+                { "{default}",      $"{ChatColors.Default}" },
                 { "{red}",          $"{ChatColors.Red}" },
                 { "{white}",        $"{ChatColors.White}" },
-                { "{default}",      $"{ChatColors.Default}" },
                 { "{darkred}",      $"{ChatColors.DarkRed}" },
                 { "{green}",        $"{ChatColors.Green}" },
                 { "{lightyellow}",  $"{ChatColors.LightYellow}" },
@@ -246,68 +280,6 @@ namespace SharpTimer
             {
                 return "n/a";
             }
-        }
-
-        public double CalculatePoints(int timerTicks, int style)
-        {
-            double basePoints = 10000.0;
-            double timeFactor = 0.0001;
-            double tierMult = 0.1;
-            double styleMult = GetStyleMultiplier(style);
-
-            if (currentMapTier != null)
-            {
-                tierMult = (double)(currentMapTier * 0.1);
-            }
-
-            double points = basePoints / (timerTicks * timeFactor);
-            return points * tierMult * styleMult;
-        }
-
-        public double CalculatePBPoints(int timerTicks, int style)
-        {
-            double basePoints = 10000.0;
-            double timeFactor = 0.01;
-            double tierMult = 0.1;
-            double styleMult = GetStyleMultiplier(style);
-
-            if (currentMapTier != null)
-            {
-                tierMult = (double)(currentMapTier * 0.1);
-            }
-
-            double points = basePoints / (timerTicks * timeFactor);
-            return points * tierMult * styleMult;
-        }
-
-        static string ReplaceVars(string loc_string, params string[] args)
-        {
-            return string.Format(loc_string, args);
-        }
-
-        static string ParsePrefixColors(string input)
-        {
-            Dictionary<string, string> colorNameSymbolMap = new(StringComparer.OrdinalIgnoreCase)
-             {
-                 { "{white}", "" },
-                 { "{darkred}", "" },
-                 { "{purple}", "" },
-                 { "{olive}", "" },
-                 { "{lime}", "" },
-                 { "{green}", "" },
-                 { "{red}", "" },
-                 { "{grey}", "" },
-                 { "{orange}", "" },
-                 { "{lightpurple}", "" },
-                 { "{lightred}", "" }
-             };
-
-            foreach (var entry in colorNameSymbolMap)
-            {
-                input = input.Replace(entry.Key, entry.Value.ToString());
-            }
-
-            return input;
         }
 
         string ParseColorToSymbol(string input)
@@ -540,9 +512,9 @@ namespace SharpTimer
             var values = vectorString.Split(separator);
 
             if (values.Length == 3 &&
-                float.TryParse(values[0], out float x) &&
-                float.TryParse(values[1], out float y) &&
-                float.TryParse(values[2], out float z))
+                float.TryParse(values[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float x) &&
+                float.TryParse(values[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float y) &&
+                float.TryParse(values[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float z))
             {
                 return new Vector(x, y, z);
             }
@@ -562,9 +534,9 @@ namespace SharpTimer
             var values = qAngleString.Split(separator);
 
             if (values.Length == 3 &&
-                float.TryParse(values[0], out float pitch) &&
-                float.TryParse(values[1], out float yaw) &&
-                float.TryParse(values[2], out float roll))
+                float.TryParse(values[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float pitch) &&
+                float.TryParse(values[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float yaw) &&
+                float.TryParse(values[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float roll))
             {
                 return new QAngle(pitch, yaw, roll);
             }
@@ -666,6 +638,24 @@ namespace SharpTimer
             return sortedRecords;
         }
 
+        public static PlayerRecord GetRecordByPosition(Dictionary<string, PlayerRecord> sortedRecords, int position)
+        {
+            if (position < 1 || position > sortedRecords.Count)
+            {
+                return null;
+            }
+
+            var recordsList = sortedRecords.Values.ToList();
+            for (int i = 0; i < recordsList.Count; i++)
+            {
+                if (i + 1 == position)
+                {
+                    return recordsList[i];
+                }
+            }
+            return null; 
+        }
+
         public async Task<(string, string, string)> GetMapRecordSteamID(int bonusX = 0, int top10 = 0)
         {
             string mapRecordsPath = Path.Combine(playerRecordsPath!, bonusX == 0 ? $"{currentMapName}.json" : $"{currentMapName}_bonus{bonusX}.json");
@@ -718,17 +708,19 @@ namespace SharpTimer
             return (steamId64, playerName, timerTicks);
         }
 
-        private async Task<(int? Tier, string? Type)> FindMapInfoFromHTTP(string url)
+        private async Task<(int? Tier, string? Type)> FindMapInfoFromHTTP(string url, string mapname = "")
         {
             try
             {
+                if (mapname == "")
+                    mapname = currentMapName!;
                 SharpTimerDebug($"Trying to fetch remote_data for {currentMapName} from {url}");
 
                 var response = await httpClient.GetStringAsync(url);
 
                 using (var jsonDocument = JsonDocument.Parse(response))
                 {
-                    if (jsonDocument.RootElement.TryGetProperty(currentMapName!, out var mapInfo))
+                    if (jsonDocument.RootElement.TryGetProperty(mapname, out var mapInfo))
                     {
                         int? tier = null;
                         string? type = null;
@@ -758,10 +750,57 @@ namespace SharpTimer
             }
         }
 
+        private async Task<(int? Tier, string? Type)> FindMapInfoFromLocal(string path, string mapname = "")
+        {
+            try
+            {
+                if (mapname == "")
+                    mapname = currentMapName!;
+                SharpTimerDebug($"Trying to fetch local_data for {currentMapName} from {path}");
+
+                using (var jsonDocument = await LoadJson(path))
+                {
+                    
+                    if (jsonDocument!.RootElement.TryGetProperty(mapname, out var mapInfo))
+                    {
+                        int? tier = null;
+                        string? type = null;
+
+                        if (mapInfo.TryGetProperty("Tier", out var tierElement))
+                        {
+                            tier = tierElement.GetInt32();
+                        }
+
+                        if (mapInfo.TryGetProperty("Type", out var typeElement))
+                        {
+                            type = typeElement.GetString();
+                        }
+
+                        SharpTimerDebug($"Fetched local_data success! {tier} {type}");
+
+                        return (tier, type);
+                    } 
+                }
+
+                return (null, null);
+            }
+            catch (Exception ex)
+            {
+                SharpTimerError($"Error Getting local_data for {currentMapName}: {ex.Message}");
+                return (null, null);
+            }
+        }
+
         private async Task GetMapInfo()
         {
             string mapInfoSource = GetMapInfoSource();
-            var (mapTier, mapType) = await FindMapInfoFromHTTP(mapInfoSource);
+            int? mapTier;
+            string? mapType;
+            if (disableRemoteData)
+                (mapTier, mapType) = await FindMapInfoFromLocal(mapInfoSource);
+            else
+                (mapTier, mapType) = await FindMapInfoFromHTTP(mapInfoSource);
+                
             currentMapTier = mapTier;
             currentMapType = mapType;
             string tierString = currentMapTier != null ? $" | Tier: {currentMapTier}" : "";
@@ -779,6 +818,16 @@ namespace SharpTimer
 
         private string GetMapInfoSource()
         {
+            if (disableRemoteData)
+            {
+                return currentMapName switch
+                {
+                    var name when name!.StartsWith("kz_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "kz_.json")!,
+                    var name when name!.StartsWith("bhop_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "bhop_.json")!,
+                    var name when name!.StartsWith("surf_") => Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json"),
+                    _ => null
+                } ?? Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json");
+            }
             return currentMapName switch
             {
                 var name when name!.StartsWith("kz_") => remoteKZDataSource!,
@@ -821,9 +870,6 @@ namespace SharpTimer
                         SharpTimerDebug("Re-Executing SharpTimer/custom_exec");
                         Server.ExecuteCommand("execifexists SharpTimer/custom_exec.cfg");
 
-                        //enforce sv_cheats 0 for dumb maps
-                        Server.ExecuteCommand("sv_cheats 0");
-
                         if (execCustomMapCFG == true)
                         {
                             string MapExecFile = GetClosestMapCFGMatch();
@@ -832,45 +878,12 @@ namespace SharpTimer
                             else
                                 SharpTimerError("MapExec Error: file name returned null");
                         }
-
-                        if (hideAllPlayers == true) Server.ExecuteCommand($"mp_teammates_are_enemies 1");
-                        if (enableSRreplayBot)
-                        {
-                            Server.NextFrame(() =>
-                            {
-                                Server.ExecuteCommand($"sv_hibernate_when_empty 0");
-                                Server.ExecuteCommand($"bot_join_after_player 0");
-                            });
-                        }
                     });
-
-                    if (enableReplays == true && enableSRreplayBot == true)
-                    {
-                        AddTimer(5.0f, () =>
-                        {
-                            if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0)
-                                _ = SpawnReplayBot();
-                            else
-                            {
-                                Server.PrintToChatAll($" {ChatColors.LightRed}Couldnt Spawn Replay bot!");
-                                Server.PrintToChatAll($" {ChatColors.LightRed}Please make sure mp_force_pick_time is set to 1");
-                                Server.PrintToChatAll($" {ChatColors.LightRed}in your custom_exec.cfg");
-                                SharpTimerError("Couldnt Spawn Replay bot! Please make sure mp_force_pick_time is set to 1 in your custom_exec.cfg");
-                            }
-                        });
-                    }
 
                     if (removeCrouchFatigueEnabled == true) Server.ExecuteCommand("sv_timebetweenducks 0");
 
                     //bonusRespawnPoses.Clear();
                     bonusRespawnAngs.Clear();
-                    
-                    if(!sqlCheck)
-                    {
-                        if(usePostgres) _ = Task.Run(async () => await CheckPostgresTablesAsync());
-                        if(useMySQL) _ = Task.Run(async () => await CheckTablesAsync());
-                        sqlCheck = true;
-                    }
 
                     cpTriggers.Clear();         // make sure old data is flushed in case new map uses fake zones
                     cpTriggerCount = 0;
@@ -880,6 +893,60 @@ namespace SharpTimer
                     stageTriggerPoses.Clear();
 
                     KillServerCommandEnts();
+                    globalDisabled = false;
+
+                    if (!sqlCheck)
+                    {
+                        if (useMySQL)
+                        {
+                            string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
+                            mySQLpath = Path.Join(gameDir + "/csgo/cfg", mysqlConfigFileName);
+                            SharpTimerDebug($"Set mySQLpath to {mySQLpath}");
+                            dbType = DatabaseType.MySQL;
+                            dbPath = mySQLpath;
+                            enableDb = true;
+                        }
+                        else if (usePostgres)
+                        {
+                            string postgresConfigFileName = "SharpTimer/postgresConfig.json";
+                            postgresPath = Path.Join(gameDir + "/csgo/cfg", postgresConfigFileName);
+                            SharpTimerDebug($"Set postgresPath to {postgresPath}");
+                            dbType = DatabaseType.PostgreSQL;
+                            dbPath = postgresPath;
+                            enableDb = true;
+                        }
+                        else
+                        {
+                            SharpTimerDebug($"No db set, defaulting to SQLite");
+                            dbPath = Path.Join(gameDir + "/csgo/cfg", "SharpTimer/database.db");
+                            dbType = DatabaseType.SQLite;
+                            enableDb = true;
+                        }
+                        using (var connection = OpenConnection())
+                        {
+                            CheckTablesAsync();
+                            ExecuteMigrations(connection);
+                        }
+                        sqlCheck = true;
+                    }
+
+                    if (Directory.Exists($"{gameDir}/addons/StripperCS2/maps/{Server.MapName}"))
+                    {
+                        globalDisabled = true;
+                        SharpTimerError("StripperCS2 detected for current map; disabling globalapi");
+                    }
+
+                    if (currentMapOverrideDisableTelehop!.Length > 0)
+                    {
+                        globalDisabled = true;
+                        SharpTimerError("OverrideDisableTelehop detected for current map; disabling globalapi");
+                    }
+                    
+                    _ = Task.Run(async () => await CacheWorldRecords());
+                    AddTimer(globalCacheInterval, async () => await CacheWorldRecords(), TimerFlags.REPEAT);
+
+                    _ = Task.Run(async () => await CacheGlobalPoints());
+                    AddTimer(globalCacheInterval, async () => await CacheGlobalPoints(), TimerFlags.REPEAT);
                 });
             }
             catch (Exception ex)
@@ -893,6 +960,7 @@ namespace SharpTimer
             try
             {
                 currentMapName = mapName;
+                currentAddonID = GetAddonID();
                 totalBonuses = new int[11];
                 bonusRespawnPoses.Clear();
                 bonusRespawnAngs.Clear();
@@ -907,6 +975,9 @@ namespace SharpTimer
 
                 string discordConfigFileName = "SharpTimer/discordConfig.json";
                 string discordCFGpath = Path.Join(gameDir + "/csgo/cfg", discordConfigFileName);
+
+                string ranksFileName = $"SharpTimer/ranks.json";
+                string ranksPath = Path.Join(gameDir + "/csgo/cfg", ranksFileName);
 
                 string mapdataFileName = $"SharpTimer/MapData/{currentMapName}.json";
                 string mapdataPath = Path.Join(gameDir + "/csgo/cfg", mapdataFileName);
@@ -934,7 +1005,6 @@ namespace SharpTimer
                     else if (file.Contains($"{currentMapName}_bonus3"))
                     {
                         totalBonuses[3] = 3;
-                        SharpTimerDebug($"Found bonus 3 in {currentMapName}");
                         bonusdataFileNames[3] = $"/SharpTimer/MapData/{currentMapName}_bonus3.json";
                         bonusdataPaths[3] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[3]);
                     }
@@ -996,16 +1066,6 @@ namespace SharpTimer
                         else
                             SharpTimerError("MapExec Error: file name returned null");
                     }
-
-                    if (hideAllPlayers == true) Server.ExecuteCommand($"mp_teammates_are_enemies 1");
-                    if (enableSRreplayBot)
-                    {
-                        Server.NextFrame(() =>
-                        {
-                            Server.ExecuteCommand($"sv_hibernate_when_empty 0");
-                            Server.ExecuteCommand($"bot_join_after_player 0");
-                        });
-                    }
                 });
 
                 if (adServerRecordEnabled == true) ADtimerServerRecord();
@@ -1014,8 +1074,6 @@ namespace SharpTimer
                 entityCache = new EntityCache();
                 UpdateEntityCache();
 
-                _ = Task.Run(async () => { SortedCachedRecords = await GetSortedRecords(); });
-
                 ClearMapData();
 
                 _ = Task.Run(GetMapInfo);
@@ -1023,6 +1081,52 @@ namespace SharpTimer
                 _ = Task.Run(async () => await GetDiscordWebhookURLFromConfigFile(discordCFGpath));
 
                 primaryChatColor = ParseColorToSymbol(primaryHUDcolor);
+
+                using JsonDocument? ranksJsonDocument = LoadJsonOnMainThread(ranksPath);
+                if (ranksJsonDocument != null)
+                {
+                    SharpTimerDebug($"Ranks json found!");
+                    JsonElement root = ranksJsonDocument.RootElement;
+
+                    rankDataList.Clear();
+
+                    foreach (var property in root.EnumerateObject())
+                    {
+                        JsonElement rankElement = property.Value;
+                        RankData rankData = new RankData
+                        {
+                            Title = rankElement.TryGetProperty("title", out JsonElement titleElement) ? titleElement.GetString()! : string.Empty,
+                            Percent = rankElement.TryGetProperty("percent", out var percentElement) ? percentElement.GetDouble() : 0,
+                            Placement = rankElement.TryGetProperty("placement", out var placementElement) ? placementElement.GetInt32() : 0,
+                            Color = rankElement.TryGetProperty("color", out JsonElement colorElement) ? colorElement.GetString()! : string.Empty,
+                            Icon = rankElement.TryGetProperty("icon", out JsonElement iconElement) ? iconElement.GetString()! : string.Empty,
+                        };
+
+                        rankDataList.Add(rankData);
+
+                        if (property.Name.ToLower() == "unranked")
+                        {
+                            UnrankedTitle = rankElement.GetProperty("title").GetString()!;
+                            UnrankedColor = rankElement.GetProperty("color").GetString()!;
+                            UnrankedIcon = rankElement.GetProperty("icon").GetString()!;
+                        }
+                    }
+
+                    rankDataList = rankDataList
+                        .OrderBy(r => r.Placement > 0 ? 0 : 1)  // Placement > 0 should come first
+                        .ThenBy(r => r.Placement)               // sort Placement (low to high)
+                        .ThenBy(r => r.Percent)                 // sort Percent (low to high)
+                        .ToList();
+
+                    foreach (var xd in rankDataList)
+                    {
+                        SharpTimerDebug(xd.Title + xd.Percent + xd.Placement);
+                    }
+                }
+                else
+                {
+                    SharpTimerError($"Ranks json was null");
+                }
 
                 SharpTimerConPrint($"Trying to find Map data json for map: {currentMapName}!");
                 //Bonus fake zone check
@@ -1034,7 +1138,7 @@ namespace SharpTimer
                         using JsonDocument? bonusJsonDocument = LoadJsonOnMainThread(bonusdataPaths[bonus]);
                         if (bonusJsonDocument != null)
                         {
-                            var mapInfo = JsonSerializer.Deserialize<MapInfo>(bonusJsonDocument.RootElement.GetRawText());
+                            var mapInfo = JsonSerializer.Deserialize<MapInfo>(bonusJsonDocument.RootElement.GetRawText(), jsonSerializerOptions);
                             SharpTimerDebug($"Map data json found for map: {currentMapName}, bonus {bonus}!");
 
                             if (!string.IsNullOrEmpty(mapInfo!.BonusStartC1) && !string.IsNullOrEmpty(mapInfo.BonusStartC2) && !string.IsNullOrEmpty(mapInfo.BonusEndC1) && !string.IsNullOrEmpty(mapInfo.BonusEndC2) && !string.IsNullOrEmpty(mapInfo.BonusRespawnPos))
@@ -1050,6 +1154,9 @@ namespace SharpTimer
                                 currentBonusEndPos[bonus] = CalculateMiddleVector(currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
                                 bonusRespawnPoses[bonus] = ParseVector(mapInfo.BonusRespawnPos);
                                 SharpTimerConPrint($"Found Fake Bonus {bonus} Trigger Corners: START {currentBonusStartC1[bonus]}, {currentBonusStartC2[bonus]} | END {currentBonusEndC1[bonus]}, {currentBonusEndC2[bonus]}");
+
+                                // Disable global for lackluster maps
+                                globalDisabled = true;
                             }
                             if (currentBonusStartC1[bonus] != null && currentBonusStartC2[bonus] != null && currentBonusEndC1[bonus] != null && currentBonusEndC2[bonus] != null)
                             {
@@ -1076,6 +1183,9 @@ namespace SharpTimer
                         currentMapEndC2 = ParseVector(mapInfo.MapEndC2);
                         currentEndPos = CalculateMiddleVector(currentMapEndC1, currentMapEndC2);
                         SharpTimerConPrint($"Found Fake Trigger Corners: START {currentMapStartC1}, {currentMapStartC2} | END {currentMapEndC1}, {currentMapEndC2}");
+
+                        // Disable global for lackluster maps
+                        globalDisabled = true;
                     }
 
                     if (!string.IsNullOrEmpty(mapInfo.MapStartTrigger) && !string.IsNullOrEmpty(mapInfo.MapEndTrigger))
@@ -1171,23 +1281,6 @@ namespace SharpTimer
                         currentMapOverrideStageRequirement = false;
                     }
 
-                    if (!string.IsNullOrEmpty(mapInfo.OverrideTriggerPushFix))
-                    {
-                        try
-                        {
-                            currentMapOverrideTriggerPushFix = bool.Parse(mapInfo.OverrideTriggerPushFix);
-                            SharpTimerConPrint($"Overriding TriggerPushFix...");
-                        }
-                        catch (FormatException)
-                        {
-                            SharpTimerError("Invalid boolean string format for OverrideTriggerPushFix");
-                        }
-                    }
-                    else
-                    {
-                        currentMapOverrideTriggerPushFix = false;
-                    }
-
                     if (!string.IsNullOrEmpty(mapInfo.GlobalPointsMultiplier))
                     {
                         try
@@ -1248,9 +1341,6 @@ namespace SharpTimer
                         DrawWireframe3D(endRight, endLeft, endBeamColor);
                     }
 
-                    if (triggerPushFixEnabled == true && currentMapOverrideTriggerPushFix == false)
-                        FindTriggerPushData();
-
                     if (useTriggers == true || useTriggersAndFakeZones == true)
                     {
                         FindStageTriggers();
@@ -1264,9 +1354,6 @@ namespace SharpTimer
                 {
                     SharpTimerConPrint($"Map data json not found for map: {currentMapName}!");
                     SharpTimerConPrint($"Trying to hook Triggers supported by default!");
-
-                    if (triggerPushFixEnabled == true && currentMapOverrideTriggerPushFix == false)
-                        FindTriggerPushData();
 
                     KillServerCommandEnts();
 
@@ -1347,10 +1434,8 @@ namespace SharpTimer
             currentMapOverrideDisableTelehop = []; //making sure previous map overrides are reset
             currentMapOverrideMaxSpeedLimit = [];
             currentMapOverrideStageRequirement = false;
-            currentMapOverrideTriggerPushFix = false;
 
             globalPointsMultiplier = 1.0f;
-
             startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile = false;
         }
 
@@ -1395,17 +1480,11 @@ namespace SharpTimer
         public string RemovePlayerTags(string input)
         {
             string originalTag = input;
-            string[] playerTagsToRemove = [   $"[{customVIPTag}]",
-                                                "[Unranked]",
-                                                "[Silver I]", "[Silver II]", "[Silver III]",
-                                                "[Gold I]", "[Gold II]", "[Gold III]",
-                                                "[Platinum I]", "[Platinum II]", "[Platinum III]",
-                                                "[Diamond I]", "[Diamond II]", "[Diamond III]",
-                                                "[Master I]", "[Master II]", "[Master III]",
-                                                "[Legend I]", "[Legend II]", "[Legend III]",
-                                                "[Royalty I]", "[Royalty II]", "[Royalty III]",
-                                                "[God I]", "[God II]", "[God III]"
-                                            ];
+
+            List<string> playerTagsToRemove = [$"{customVIPTag}", $"{UnrankedTitle}"];
+
+            foreach (var rank in rankDataList)
+                playerTagsToRemove.Add(rank.Title);
 
             if (!string.IsNullOrEmpty(input))
             {
@@ -1512,6 +1591,47 @@ namespace SharpTimer
                 SharpTimerError($"Error GetClosestMapCFGMatch: {ex.StackTrace}");
                 return "null";
             }
+        }
+
+        public bool IsApproximatelyEqual(float actual, float expected, float tolerance = 0.01f)
+        {
+            return Math.Abs(actual - expected) < tolerance;
+        }
+
+        // https://github.com/daffyyyy/CS2-SimpleAdmin/blob/main/CS2-SimpleAdmin/Helper.cs#L457C5-L481C6
+        // remember, dont reinvent the wheel
+        public static string GetServerIp()
+        {
+            var networkSystem = NativeAPI.GetValveInterface(0, "NetworkSystemVersion001");
+
+            unsafe
+            {
+                if (_networkSystemUpdatePublicIp == null)
+                {
+                    var funcPtr = *(nint*)(*(nint*)(networkSystem) + 256);
+                    _networkSystemUpdatePublicIp = Marshal.GetDelegateForFunctionPointer<CNetworkSystemUpdatePublicIp>(funcPtr);
+                }
+                /*
+                struct netadr_t
+                {
+                uint32_t type
+                uint8_t ip[4]
+                uint16_t port
+                }
+                */
+                // + 4 to skip type, because the size of uint32_t is 4 bytes
+                var ipBytes = (byte*)(_networkSystemUpdatePublicIp(networkSystem) + 4);
+                // port is always 0, use the one from convar "hostport"
+                return $"{ipBytes[0]}.{ipBytes[1]}.{ipBytes[2]}.{ipBytes[3]}";
+            }
+        }
+
+        public (string, string) GetHostnameAndIp()
+        {
+            string ip = $"{GetServerIp()}:{ConVar.Find("hostport")!.GetPrimitiveValue<int>()}";
+            string hostname = ConVar.Find("hostname")!.StringValue;
+
+            return (hostname, ip);
         }
     }
 }

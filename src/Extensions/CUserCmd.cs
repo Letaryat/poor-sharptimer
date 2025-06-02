@@ -1,6 +1,4 @@
 using System.Runtime.CompilerServices;
-using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 
 public class CUserCmd
@@ -55,7 +53,7 @@ public class CUserCmd
         if (Handle == IntPtr.Zero)
             return ["None"];
 
-        nint inputs = Unsafe.Read<IntPtr>((void*)(Handle + 0x50));
+        nint inputs = Unsafe.Read<IntPtr>((void*)(Handle + 0x60));
         
         // System.Console.WriteLine(moveMent); // Use this to see the value of the button you are pressing
 
@@ -82,12 +80,29 @@ public class CUserCmd
 
     public unsafe CBaseUserCmd GetBaseCmd()
     {
-        var baseCmd = Unsafe.Read<IntPtr>((void*)(Handle + 0x30));
+        var baseCmd = Unsafe.Read<IntPtr>((void*)(Handle + 0x40));
 
         return new CBaseUserCmd(baseCmd);
     }
     public unsafe void DisableInput(IntPtr userCmd, nint value)
     {
         Unsafe.Write((void*)(userCmd + 0x50), Unsafe.Read<IntPtr>((void*)(userCmd + 0x50)) & ~(value));
+    }
+    public unsafe QAngle? GetViewAngles()
+    {
+        if (Handle == IntPtr.Zero)
+            return null;
+
+        var baseCmd = Unsafe.Read<IntPtr>((void*)(Handle + 0x40));
+        if (baseCmd == IntPtr.Zero)
+            return null;
+
+        var msgQAngle = Unsafe.Read<IntPtr>((void*)(baseCmd + 0x40));
+        if (msgQAngle == IntPtr.Zero)
+            return null;
+
+        var viewAngles = new QAngle(msgQAngle + 0x18);
+        
+        return viewAngles.Handle == IntPtr.Zero ? null : viewAngles;
     }
 }

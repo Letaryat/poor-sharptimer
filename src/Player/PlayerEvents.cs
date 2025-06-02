@@ -19,6 +19,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Modules.Cvars;
 
 namespace SharpTimer
 {
@@ -54,12 +55,12 @@ namespace SharpTimer
                 {
                     connectedPlayers[playerSlot] = new CCSPlayerController(player.Handle);
                     playerTimers[playerSlot] = new PlayerTimerInfo();
+                    playerJumpStats[playerSlot] = new PlayerJumpStats();
                     if (enableReplays) playerReplays[playerSlot] = new PlayerReplays();
                     playerTimers[playerSlot].MovementService = new CCSPlayer_MovementServices(player.PlayerPawn.Value.MovementServices!.Handle);
                     playerTimers[playerSlot].StageTimes = new Dictionary<int, int>();
                     playerTimers[playerSlot].StageVelos = new Dictionary<int, string>();
                     if (AdminManager.PlayerHasPermissions(player, "@css/root")) playerTimers[playerSlot].ZoneToolWire = new Dictionary<int, CBeam>();
-                    if (jumpStatsEnabled) playerJumpStats[playerSlot] = new PlayerJumpStats();
                     playerTimers[playerSlot].CurrentMapStage = 0;
                     playerTimers[playerSlot].CurrentMapCheckpoint = 0;
                     SetNormalStyle(player);
@@ -73,9 +74,9 @@ namespace SharpTimer
                     if (isForBot == false) _ = Task.Run(async () => await IsPlayerATester(steamID, playerSlot));
 
                     //PlayerSettings
-                    if ((useMySQL || usePostgres) && isForBot == false) _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, playerSlot, true));
+                    if (enableDb) _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, playerSlot, true));
 
-                    if (connectMsgEnabled == true && !useMySQL && !usePostgres) Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["connect_message", player.PlayerName]}");
+                    if (connectMsgEnabled == true && !enableDb) PrintToChatAll(Localizer["connect_message", player.PlayerName]);
                     if (cmdJoinMsgEnabled == true && isForBot == false) PrintAllEnabledCommands(player);
 
                     SharpTimerDebug($"Added player {player.PlayerName} with UserID {player.UserId} to connectedPlayers");
@@ -83,12 +84,7 @@ namespace SharpTimer
                     SharpTimerDebug($"Total playerTimers: {playerTimers.Count}");
                     SharpTimerDebug($"Total playerReplays: {playerReplays.Count}");
 
-                    if (isForBot == true || hideAllPlayers == true)
-                    {
-                        player.PlayerPawn.Value.Render = Color.FromArgb(0, 0, 0, 0);
-                        Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
-                    }
-                    else if (removeLegsEnabled == true)
+                    if (removeLegsEnabled == true)
                     {
                         player.PlayerPawn.Value.Render = Color.FromArgb(254, 254, 254, 254);
                         Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
@@ -113,6 +109,31 @@ namespace SharpTimer
             }
         }
 
+        private void OnPlayerSpawn(CCSPlayerController? player)
+        {
+            //just.. dont ask.
+            AddTimer(0f, () =>
+            {
+                if (spawnOnRespawnPos == true && currentRespawnPos != null)
+                    player!.PlayerPawn.Value!.Teleport(currentRespawnPos!, null, null);
+            });
+
+            if (enableReplays && enableSRreplayBot && connectedReplayBots.Count == 0)
+                    {
+                        AddTimer(5.0f, () =>
+                        {
+                            if (ConVar.Find("mp_force_pick_time")!.GetPrimitiveValue<float>() == 1.0 && ConVar.Find("mp_humanteam")!.StringValue == "ct")
+                                _ = Task.Run(async () => await SpawnReplayBot());
+                            else
+                            {
+                                SharpTimerError("Couldnt Spawn Replay bot! Please make sure you have the following in your custom_exec.cfg\n"
+                                    + "mp_force_pick_time 1\n"
+                                    + "mp_humanteam ct\n");
+                            }
+                        });
+                    }
+        }
+
         private void OnPlayerDisconnect(CCSPlayerController? player, bool isForBot = false)
         {
             if (player == null) return;
@@ -124,9 +145,9 @@ namespace SharpTimer
                     connectedReplayBots.Remove(player.Slot);
                     SharpTimerDebug($"Removed bot {connectedReplayBot.PlayerName} with UserID {connectedReplayBot.UserId} from connectedReplayBots.");
                 }
-
                 if (connectedPlayers.TryGetValue(player.Slot, out var connectedPlayer))
                 {
+                    
                     connectedPlayers.Remove(player.Slot);
 
                     //schizo removing data from memory
@@ -136,6 +157,13 @@ namespace SharpTimer
                     //schizo removing data from memory
                     playerCheckpoints[player.Slot] = new List<PlayerCheckpoint>();
                     playerCheckpoints.Remove(player.Slot);
+
+                    //schizo removing replay bots after last dc
+                    AddTimer(5.0f, () =>
+                    {
+                        if(Utilities.GetPlayers().Count == 0)
+                            connectedReplayBots = [];
+                    });
 
                     specTargets.Remove(player.Pawn.Value!.EntityHandle.Index);
 
@@ -154,7 +182,7 @@ namespace SharpTimer
 
                     if (connectMsgEnabled == true && isForBot == false)
                     {
-                        Server.PrintToChatAll($" {Localizer["prefix"]} {Localizer["disconnect_message", connectedPlayer.PlayerName]}");
+                        PrintToChatAll(Localizer["disconnect_message", connectedPlayer.PlayerName]);
                     }
                 }
             }
@@ -176,20 +204,22 @@ namespace SharpTimer
             else
                 msg = message.GetArg(1);
 
+            playerTimers[player.Slot].AFKTicks = 0;
+
             if (msg.Length > 0 && (msg[0] == '!' || msg[0] == '/' || msg[0] == '.'))
                 return HookResult.Continue;
             else
             {
-                char rankColor = GetRankColorForChat(player);
+                string rankColor = GetRankColorForChat(player);
 
                 if (playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? value))
                 {
                     string deadText = player.PawnIsAlive ? "" : $"{ChatColors.Grey}*DEAD* ";
-                    string vipText = (value.IsVip ? $"{ChatColors.Magenta}[{customVIPTag}] " : "");
+                    string vipText = (value.IsVip ? $"{ChatColors.Magenta}{customVIPTag} " : "");
                     if (player.Team == CsTeam.Terrorist)
-                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}[{value.CachedRank}] {ChatColors.ForTeam(CsTeam.Terrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.Terrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
                     if (player.Team == CsTeam.CounterTerrorist)
-                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}[{value.CachedRank}] {ChatColors.ForTeam(CsTeam.CounterTerrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
+                        Server.PrintToChatAll($" {deadText}{vipText}{rankColor}{value.CachedRank} {ChatColors.ForTeam(CsTeam.CounterTerrorist)}{player.PlayerName} {ChatColors.Default}: {msg}");
                     if (player.Team == CsTeam.Spectator)
                         Server.PrintToChatAll($" {ChatColors.Grey}*SPEC* {ChatColors.ForTeam(CsTeam.Spectator)}{player.PlayerName} {ChatColors.Default}: {msg}");
                     if (player.Team == CsTeam.None)

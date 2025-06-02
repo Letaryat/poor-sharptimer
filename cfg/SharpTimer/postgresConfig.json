@@ -1,8 +1,8 @@
 {
-    "PostgresHost": "",
-    "PostgresDatabase": "",
-    "PostgresUsername": "",
-    "PostgresPassword": "",
-    "PostgresTablePrefix": "",
-    "PostgresPort": 3306
+    "Host": "",
+    "Database": "",
+    "Username": "",
+    "Password": "",
+    "TablePrefix": "",
+    "Port": 3306
 }

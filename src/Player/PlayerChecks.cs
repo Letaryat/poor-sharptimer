@@ -60,7 +60,7 @@ namespace SharpTimer
 
         public bool IsAllowedClient(CCSPlayerController? player)
         {
-            if (player == null || !player.IsValid || player.Pawn == null || !player.PlayerPawn.IsValid || player.IsBot)
+            if (player == null || !player.IsValid || player.Pawn == null || !player.PlayerPawn.IsValid)
                 return false;
 
             return true;
@@ -232,20 +232,23 @@ namespace SharpTimer
                         if(playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
                         {
                             playerTimer.inStartzone = true;
-                        }
-
-                        OnTimerStart(player);
-                        if (enableReplays) OnRecordingStart(player);
-
-                        if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxStartingSpeed) ||
-                            (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxStartingSpeed))
-                        {
-                            Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                            adjustVelocity(player, maxStartingSpeed, true);
+                            InvalidateTimer(player);
                         }
                     }
                     else if (!isInsideStartBox && playerTimers.TryGetValue(player.Slot, out PlayerTimerInfo? playerTimer))
                     {
+                        if (playerTimer.inStartzone == true)
+                        {
+                            OnTimerStart(player);
+                            if (enableReplays) OnRecordingStart(player);
+
+                            if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxStartingSpeed) ||
+                                (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxStartingSpeed))
+                            {
+                                Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                                adjustVelocity(player, maxStartingSpeed, true);
+                            }
+                        }
                         playerTimer.inStartzone = false;
                     }
                 }
@@ -282,11 +285,11 @@ namespace SharpTimer
                                 OnTimerStart(player, bonus);
                                 if (enableReplays) OnRecordingStart(player, bonus);
 
-                                if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxStartingSpeed) ||
-                                    (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxStartingSpeed))
+                                if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(playerSpeed.Length()) > maxBonusStartingSpeed) ||
+                                    (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(playerSpeed.Length2D()) > maxBonusStartingSpeed))
                                 {
                                     Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                                    adjustVelocity(player, maxStartingSpeed, true);
+                                    adjustVelocity(player, maxBonusStartingSpeed, true);
                                 }
                             }
                             else if (!isInsideBonusStartBox[bonus])
@@ -308,44 +311,11 @@ namespace SharpTimer
             }
         }
 
-        private void CheckPlayerTriggerPushCoords(CCSPlayerController player, Vector playerSpeed)
-        {
-            try
-            {
-                if (player == null || !IsAllowedPlayer(player) || triggerPushData.Count == 0) return;
-
-                Vector? playerPos = player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin;
-
-                if (playerPos == null) return;
-
-                var data = GetTriggerPushDataForVector(playerPos);
-                if (data != null)
-                {
-                    var (pushDirEntitySpace, pushSpeed) = data.Value;
-                    float currentSpeed = playerSpeed.Length();
-                    float speedDifference = pushSpeed - currentSpeed;
-
-                    if (speedDifference > 0)
-                    {
-                        float velocityChange = speedDifference;
-                        player.PlayerPawn.Value!.AbsVelocity.X += pushDirEntitySpace.X * velocityChange;
-                        player.PlayerPawn.Value!.AbsVelocity.Y += pushDirEntitySpace.Y * velocityChange;
-                        player.PlayerPawn.Value!.AbsVelocity.Z += pushDirEntitySpace.Z * velocityChange;
-                        SharpTimerDebug($"trigger_push fix: Player velocity adjusted for {player.PlayerName} by {speedDifference}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                SharpTimerError($"Error in CheckPlayerTriggerPushCoords: {ex.Message}");
-            }
-        }
-
         public bool CommandCooldown(CCSPlayerController? player)
         {
             if (playerTimers[player!.Slot].TicksSinceLastCmd < cmdCooldown)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["command_cooldown"]}");
+                PrintToChat(player, Localizer["command_cooldown"]);
                 return true;
             }
             return false;
@@ -355,7 +325,7 @@ namespace SharpTimer
         {
             if (!playerTimers[player!.Slot].IsTimerBlocked)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["stop_using_timer"]}");
+                PrintToChat(player, Localizer["stop_using_timer"]);
                 return true;
             }
             return false;
@@ -365,7 +335,7 @@ namespace SharpTimer
         {
             if (playerTimers[player!.Slot].IsReplaying)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["end_your_replay"]}");
+                PrintToChat(player, Localizer["end_your_replay"]);
                 return true;
             }
             return false;
@@ -375,11 +345,13 @@ namespace SharpTimer
         {
             if (cpOnlyWhenTimerStopped == true && playerTimers[player!.Slot].IsTimerBlocked == false)
             {
-                player.PrintToChat($" {Localizer["prefix"]} {Localizer["cant_use_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]}");
+                if (playerTimers[player.Slot].currentStyle == 12)
+                    return true;
+                PrintToChat(player, Localizer["cant_use_checkpoint", (currentMapName!.Contains("surf_") ? "loc" : "checkpoint")]);
                 PlaySound(player, cpSoundError);
-                return true;
+                return false;
             }
-            return false;
+            return true;
         }
     }
 }
