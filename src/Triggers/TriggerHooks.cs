@@ -62,10 +62,7 @@ namespace SharpTimer
                 if (useStageTriggers == true && stageTriggers.ContainsKey(callerHandle) && playerTimers[slot].IsTimerBlocked == false && playerTimers[slot].IsTimerRunning == true)
                 {
                     if (stageTriggers[callerHandle] == 1)
-                    {
                         playerTimers[slot].CurrentMapStage = 1;
-                        return HookResult.Continue;
-                    }
                     else
                     {
                         _ = Task.Run(async () => await HandlePlayerStageTimes(player, callerHandle, slot, steamID, playerName));
