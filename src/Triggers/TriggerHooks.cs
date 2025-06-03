@@ -40,12 +40,12 @@ namespace SharpTimer
                 }
                 if (player.IsBot)
                 {
-                    Utils.LogDebug("Player is bot in trigger_multiple OnStartTouch hook.");
+                    //Utils.LogDebug("Player is bot in trigger_multiple OnStartTouch hook.");
                     return HookResult.Continue;
                 }
 
-
-                if (!IsAllowedPlayer(player) || caller.Entity!.Name == null || !connectedPlayers.TryGetValue(player.Slot, out var connected)) return HookResult.Continue;
+                if (!IsAllowedPlayer(player) || caller.Entity!.Name == null || !connectedPlayers.TryGetValue(player.Slot, out var connected))
+                    return HookResult.Continue;
 
                 var callerHandle = caller.Handle;
                 var slot = player.Slot;
@@ -197,7 +197,7 @@ namespace SharpTimer
                 }
                 if (player.IsBot)
                 {
-                    Utils.LogDebug("Player is bot in trigger_multiple OnEndTouch hook.");
+                    //Utils.LogDebug("Player is bot in trigger_multiple OnEndTouch hook.");
                     return HookResult.Continue;
                 }
 

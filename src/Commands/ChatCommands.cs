@@ -1406,16 +1406,16 @@ namespace SharpTimer
                     if (currentRespawnPos != null && playerTimers[slot].SetRespawnPos == null)
                     {
                         if (currentRespawnAng != null)
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, currentRespawnAng, new Vector_t(0, 0, 0));
+                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, currentRespawnAng);
                         else
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t());
 
                         Utils.LogDebug($"{player.PlayerName} css_r to {currentRespawnPos}");
                     }
                     else
                     {
                         if (playerTimers[slot].SetRespawnPos != null && playerTimers[slot].SetRespawnAng != null)
-                            player.PlayerPawn.Value!.Teleport(Utils.ParseVector_t(playerTimers[slot].SetRespawnPos!), Utils.ParseQAngle_t(playerTimers[slot].SetRespawnAng!), new Vector_t(0, 0, 0));
+                            player.PlayerPawn.Value!.Teleport(Utils.ParseVector_t(playerTimers[slot].SetRespawnPos!), Utils.ParseQAngle_t(playerTimers[slot].SetRespawnAng!));
                         else
                             Utils.PrintToChat(player, Localizer["no_respawnpos"]);
                     }

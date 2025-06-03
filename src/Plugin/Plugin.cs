@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Modules.Timers;
 using FixVectorLeak;
+using System.Text;
 using System.Text.Json;
 
 namespace SharpTimer;
@@ -22,7 +23,7 @@ public partial class SharpTimer
                 Utils.LogDebug("Creating custom_exec 1sec delay");
                 var custom_exec_delay = AddTimer(1.0f, () =>
                 {
-                    Utils.LogDebug("Re-Executing SharpTimer/custom_exec");
+                    //Utils.LogDebug("Re-Executing SharpTimer/custom_exec");
                     Server.ExecuteCommand("execifexists SharpTimer/custom_exec.cfg");
 
                     if (execCustomMapCFG == true)
@@ -115,11 +116,12 @@ public partial class SharpTimer
     {
         try
         {
+            Utils.LogDebug($"Loading MapData on RoundStart...");
+
             currentMapName = mapName;
             currentAddonID = GetAddonID();
             totalBonuses = new int[11];
-            bonusRespawnPoses.Clear();
-            bonusRespawnAngs.Clear();
+
             string recordsFileName = $"SharpTimer/PlayerRecords/";
             playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
 
@@ -230,17 +232,13 @@ public partial class SharpTimer
             if (Utils.PlayersCount() > 0 && enableReplays && enableSRreplayBot && replayBotController == null)
                 Server.NextFrame(() => _ = Task.Run(SpawnReplayBot));
 
-            entityCache = new EntityCache();
-            UpdateEntityCache();
-
-            ClearMapData();
-
             _ = Task.Run(Utils.GetMapInfo);
 
             _ = Task.Run(async () => await GetDiscordWebhookURLFromConfigFile(discordCFGpath));
 
             primaryChatColor = Utils.ParseColorToSymbol(primaryHUDcolor);
 
+            /* ranks */
             using JsonDocument? ranksJsonDocument = Utils.LoadJsonOnMainThread(ranksPath);
             if (ranksJsonDocument != null)
             {
@@ -248,6 +246,7 @@ public partial class SharpTimer
                 JsonElement root = ranksJsonDocument.RootElement;
 
                 rankDataList.Clear();
+                var rankSummary = new StringBuilder("Rank Data Summary:\n");
 
                 foreach (var property in root.EnumerateObject())
                 {
@@ -277,15 +276,16 @@ public partial class SharpTimer
                     .ThenBy(r => r.Percent)                 // sort Percent (low to high)
                     .ToList();
 
-                foreach (var xd in rankDataList)
-                {
-                    Utils.LogDebug(xd.Title + xd.Percent + xd.Placement);
-                }
+                foreach (var rank in rankDataList)
+                    rankSummary.AppendLine($"Title: {rank.Title}, Percent: {rank.Percent}, Placement: {rank.Placement}");
+
+                Utils.LogDebug(rankSummary.ToString());
             }
             else
             {
-                Utils.LogError($"Ranks json was null");
+                Utils.LogError($"Ranks json null/not found");
             }
+            /* ranks */
 
             Utils.LogDebug($"Trying to find Map data json for map: {currentMapName}!");
             //Bonus fake zone check
@@ -366,7 +366,7 @@ public partial class SharpTimer
                     currentEndPos = FindEndTriggerPos();
                     FindBonusStartTriggerPos();
                     Utils.LogDebug($"RespawnPos not found, trying to hook trigger pos instead");
-                    if (currentRespawnPos == null)
+                    if (!currentRespawnPos.HasValue || currentRespawnPos.Equals(new()))
                     {
                         Utils.LogError($"Hooking Trigger RespawnPos Failed!");
                     }
@@ -509,9 +509,10 @@ public partial class SharpTimer
 
                 Utils.KillServerCommandEnts();
             }
+            //"real" zones
             else
             {
-                Utils.ConPrint($"Map data json not found for map: {currentMapName}!");
+                Utils.LogDebug($"Map data json not found for map: {currentMapName}!");
                 Utils.LogDebug($"Trying to hook Triggers supported by default!");
 
                 Utils.KillServerCommandEnts();
@@ -523,8 +524,8 @@ public partial class SharpTimer
                 FindCheckpointTriggers();
                 FindBonusCheckpointTriggers();
 
-                if (currentRespawnPos == null)
-                    Utils.LogError($"Hooking Trigger RespawnPos Failed!");
+                if (!currentRespawnPos.HasValue || currentRespawnPos.Equals(new()))
+                    Utils.LogError($"Hooking Trigger RespawnPos Failed! map: {currentMapName}");
                 else
                     Utils.LogDebug($"Hooking Trigger RespawnPos Success! {currentRespawnPos}");
 
@@ -537,7 +538,8 @@ public partial class SharpTimer
                 {
                     var (startRight, startLeft, endRight, endLeft) = FindTriggerBounds();
 
-                    if (startRight == null || startLeft == null || endRight == null || endLeft == null) return;
+                    if (startRight == null || startLeft == null || endRight == null || endLeft == null)
+                        return;
 
                     Utils.DrawWireframe3D(startRight.Value, startLeft.Value, startBeamColor);
                     Utils.DrawWireframe3D(endRight.Value, endLeft.Value, endBeamColor);
@@ -556,15 +558,26 @@ public partial class SharpTimer
 
     public void ClearMapData()
     {
+        Utils.LogDebug($"Clearing MapData on RoundStart...");
+
         cpTriggers.Clear();
         cpTriggerCount = 0;
+
+        totalBonuses = [];
         bonusCheckpointTriggers.Clear();
+        bonusRespawnPoses.Clear();
+        bonusRespawnAngs.Clear();
+
         stageTriggers.Clear();
         stageTriggerAngs.Clear();
         stageTriggerPoses.Clear();
 
         stageTriggerCount = 0;
         useStageTriggers = false;
+
+        entityCache.Triggers.Clear();
+        entityCache.InfoTeleportDestinations.Clear();
+        entityCache.UpdateCache();
 
         useTriggers = true;
         useTriggersAndFakeZones = false;

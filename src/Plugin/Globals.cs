@@ -42,7 +42,7 @@ namespace SharpTimer
         public Dictionary<int, CCSPlayerController> connectedPlayers = [];
         public Dictionary<int, CCSPlayerController> connectedAFKPlayers = [];
         private Dictionary<uint, CCSPlayerController> specTargets = [];
-        private EntityCache? entityCache;
+        private EntityCache entityCache = new();
         public Dictionary<int, PlayerRecord>? SortedCachedRecords = [];
         public readonly HttpClient httpClient = new();
         public JsonSerializerOptions jsonSerializerOptions = new()
@@ -63,18 +63,18 @@ namespace SharpTimer
         public bool beamColorOverride = false;
 
         private bool useStageTriggers = false;
-        public Vector_t? currentMapStartTriggerMins = null;
-        public Vector_t? currentMapStartTriggerMaxs = null;
+        public Vector_t? currentMapStartTriggerMins;
+        public Vector_t? currentMapStartTriggerMaxs;
 
-        public Vector_t? currentRespawnPos = null;
-        public QAngle_t? currentRespawnAng = null;
+        public Vector_t? currentRespawnPos;
+        public QAngle_t? currentRespawnAng;
         public string currentMapStartTrigger = "trigger_startzone";
         public string currentMapEndTrigger = "trigger_endzone";
         public Vector_t currentMapStartC1 = new(0, 0, 0);
         public Vector_t currentMapStartC2 = new(0, 0, 0);
         public Vector_t currentMapEndC1 = new(0, 0, 0);
         public Vector_t currentMapEndC2 = new(0, 0, 0);
-        public Vector_t? currentEndPos = null;
+        public Vector_t? currentEndPos;
 
         private Dictionary<nint, int> cpTriggers = [];
         public int cpTriggerCount;

@@ -26,14 +26,11 @@ namespace SharpTimer
     {
         public List<CBaseTrigger> Triggers { get; private set; }
         public List<CInfoTeleportDestination> InfoTeleportDestinations { get; private set; }
-        public List<CPointEntity> InfoTargetEntities { get; private set; }
 
         public EntityCache()
         {
-            Triggers = [];
-            InfoTeleportDestinations = [];
-            InfoTargetEntities = [];
-            UpdateCache();
+            Triggers = new();
+            InfoTeleportDestinations = new();
         }
 
         public void UpdateCache()

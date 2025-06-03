@@ -330,18 +330,20 @@ public partial class SharpTimer : BasePlugin
 
     private HookResult EventRoundStart(EventRoundStart @event, GameEventInfo @eventInfo)
     {
-        var mapName = Server.MapName;
-        LoadMapData(mapName);
-        Utils.LogDebug($"Loading MapData on RoundStart...");
+        //fck this shit game, entities doesnt seem to spawn so logs get confusing af
+        if (Utils.PlayersCount() <= 0)
+            return HookResult.Continue;
+
+        ClearMapData();
+        LoadMapData(Server.MapName);
         return HookResult.Continue;
     }
 
     private HookResult EventRoundEnd(EventRoundEnd @event, GameEventInfo @eventInfo)
     {
         foreach (CCSPlayerController player in connectedPlayers.Values)
-        {
             InvalidateTimer(player);
-        }
+
         return HookResult.Continue;
     }
 
@@ -359,7 +361,7 @@ public partial class SharpTimer : BasePlugin
         AddTimer(0f, () =>
         {
             if (spawnOnRespawnPos == true && currentRespawnPos != null)
-                playerPawn.Teleport(currentRespawnPos, playerPawn.EyeAngles.ToQAngle_t());
+                playerPawn.Teleport(currentRespawnPos);
         });
 
         if (playerTimers.TryGetValue(player.Slot, out var playerTimer))
