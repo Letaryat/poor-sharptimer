@@ -15,515 +15,434 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
+using CounterStrikeSharp.API.Modules.Timers;
+using CounterStrikeSharp.API.Modules.UserMessages;
+using FixVectorLeak;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace SharpTimer
+namespace SharpTimer;
+
+public partial class SharpTimer : BasePlugin
 {
-    [MinimumApiVersion(287)]
-    public partial class SharpTimer : BasePlugin
+    public override string ModuleName => "SharpTimer";
+    public override string ModuleVersion => $"0.3.1w";
+    public override string ModuleAuthor => "dea, rcnoob, exkludera & st community";
+    public override string ModuleDescription => "A CS2 Timer Plugin";
+
+    public Utils Utils = null!;
+    public RemoveDamage RemoveDamage = null!;
+
+    public override void Load(bool hotReload)
     {
-        public required IRunCommand RunCommand;
-        private static readonly MemoryFunctionVoid<CCSPlayerPawn, CSPlayerState> StateTransition = new(GameData.GetSignature("StateTransition"));
-        private readonly INetworkServerService networkServerService = new();
-        private int movementServices;
-        private int movementPtr;
-        private readonly CSPlayerState[] _oldPlayerState = new CSPlayerState[65];
-        public override void Load(bool hotReload)
+        Utils = new Utils(this);
+        RemoveDamage = new RemoveDamage(this);
+
+        Utils.CheckForUpdate();
+
+        defaultServerHostname = ConVar.Find("hostname")!.StringValue;
+        Server.ExecuteCommand($"execifexists SharpTimer/config.cfg");
+
+        gameDir = Server.GameDirectory;
+        Utils.LogDebug($"Set gameDir to {gameDir}");
+
+        float randomf = new Random().Next(5, 31);
+        if (apiKey != "")
+            AddTimer(randomf, () => CheckCvarsAndMaxVelo(), TimerFlags.REPEAT);
+
+        currentMapName = Server.MapName;
+
+        string recordsFileName = $"SharpTimer/PlayerRecords/";
+        playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
+
+        isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? true : false;
+
+        movementServices = isLinux ? 0 : 3;
+        movementPtr = isLinux ? 1 : 2;
+        RunCommand = isLinux ? new RunCommandLinux() : new RunCommandWindows();
+
+        if (isLinux) RunCommand?.Hook(OnRunCommand, HookMode.Pre);
+        StateTransition.Hook(Hook_StateTransition, HookMode.Post);
+        RemoveDamage?.Hook();
+
+        RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);
+        RegisterListener<Listeners.OnTick>(PlayerOnTick);
+        RegisterListener<Listeners.CheckTransmit>(CheckTransmit);
+
+        RegisterEventHandler<EventPlayerConnectFull>(EventPlayerConnectFull);
+        RegisterEventHandler<EventPlayerTeam>(EventPlayerTeam);
+        RegisterEventHandler<EventRoundStart>(EventRoundStart);
+        RegisterEventHandler<EventRoundEnd>(EventRoundEnd);
+        RegisterEventHandler<EventPlayerSpawn>(EventPlayerSpawn);
+        RegisterEventHandler<EventPlayerDisconnect>(EventPlayerDisconnect);
+        RegisterEventHandler<EventWeaponFire>(EventWeaponFire);
+
+        AddCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
+
+        HookUserMessage(452, OnUserMessage_RemoveSound, HookMode.Pre);
+        HookUserMessage(369, OnUserMessage_RemoveSound, HookMode.Pre);
+        HookUserMessage(208, OnUserMessage_RemoveSound, HookMode.Pre);
+
+        HookEntityOutput("trigger_multiple", "OnStartTouch", TriggerMultiple_OnStartTouch, HookMode.Pre);
+        HookEntityOutput("trigger_multiple", "OnEndTouch", TriggerMultiple_OnEndTouch, HookMode.Pre);
+
+        HookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTeleport_OnStartTouch, HookMode.Pre);
+        HookEntityOutput("trigger_teleport", "OnEndTouch", TriggerTeleport_OnEndTouch, HookMode.Pre);
+    }
+
+    public override void Unload(bool hotReload)
+    {
+        if (isLinux) RunCommand?.Unhook(OnRunCommand, HookMode.Pre);
+        StateTransition.Unhook(Hook_StateTransition, HookMode.Post);
+        RemoveDamage?.Unhook();
+
+        RemoveListener<Listeners.OnMapStart>(OnMapStartHandler);
+        RemoveListener<Listeners.OnTick>(PlayerOnTick);
+        RemoveListener<Listeners.CheckTransmit>(CheckTransmit);
+
+        DeregisterEventHandler<EventPlayerConnectFull>(EventPlayerConnectFull);
+        DeregisterEventHandler<EventPlayerTeam>(EventPlayerTeam);
+        DeregisterEventHandler<EventRoundStart>(EventRoundStart);
+        DeregisterEventHandler<EventRoundEnd>(EventRoundEnd);
+        DeregisterEventHandler<EventPlayerSpawn>(EventPlayerSpawn);
+        DeregisterEventHandler<EventPlayerDisconnect>(EventPlayerDisconnect);
+        DeregisterEventHandler<EventWeaponFire>(EventWeaponFire);
+
+        RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
+
+        UnhookUserMessage(452, OnUserMessage_RemoveSound, HookMode.Pre);
+        UnhookUserMessage(369, OnUserMessage_RemoveSound, HookMode.Pre);
+        UnhookUserMessage(208, OnUserMessage_RemoveSound, HookMode.Pre);
+
+        UnhookEntityOutput("trigger_multiple", "OnStartTouch", TriggerMultiple_OnStartTouch, HookMode.Pre);
+        UnhookEntityOutput("trigger_multiple", "OnEndTouch", TriggerMultiple_OnEndTouch, HookMode.Pre);
+
+        UnhookEntityOutput("trigger_teleport", "OnStartTouch", TriggerTeleport_OnStartTouch, HookMode.Pre);
+        UnhookEntityOutput("trigger_teleport", "OnEndTouch", TriggerTeleport_OnEndTouch, HookMode.Pre);
+    }
+
+    private HookResult OnRunCommand(DynamicHook h)
+    {
+        var player = h.GetParam<CCSPlayer_MovementServices>(movementServices).Pawn.Value.Controller.Value?.As<CCSPlayerController>();
+
+        if (player == null || player.IsBot || !player.IsValid || player.IsHLTV) return HookResult.Continue;
+
+        var userCmd = new CUserCmd(h.GetParam<IntPtr>(movementPtr));
+        var baseCmd = userCmd.GetBaseCmd();
+        var getMovementButton = userCmd.GetMovementButton();
+
+        if (player != null && !player.IsBot && player.IsValid && !player.IsHLTV)
         {
-            SharpTimerConPrint("Loading Plugin...");
-            CheckForUpdate();
-
-            defaultServerHostname = ConVar.Find("hostname")!.StringValue;
-            Server.ExecuteCommand($"execifexists SharpTimer/config.cfg");
-
-            gameDir = Server.GameDirectory;
-            SharpTimerDebug($"Set gameDir to {gameDir}");
-
-            string recordsFileName = $"SharpTimer/PlayerRecords/";
-            playerRecordsPath = Path.Join(gameDir + "/csgo/cfg", recordsFileName);
-
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) isLinux = true;
-            else isLinux = false;
-
-            if (isLinux)
+            try
             {
-                movementServices = 0;
-                movementPtr = 1;
-                RunCommand = new RunCommandLinux();
-            }
-            else if (!isLinux)
-            {
-                movementServices = 3;
-                movementPtr = 2;
-                RunCommand = new RunCommandWindows();
-            }
+                var moveForward = getMovementButton.Contains("Forward");
+                var moveBackward = getMovementButton.Contains("Backward");
+                var moveLeft = getMovementButton.Contains("Left");
+                var moveRight = getMovementButton.Contains("Right");
+                var usingUse = getMovementButton.Contains("Use");
 
-            if (isLinux) RunCommand.Hook(OnRunCommand, HookMode.Pre);
-            StateTransition.Hook(Hook_StateTransition, HookMode.Post);
-
-            float randomf = new Random().Next(5, 31);
-            if (apiKey != "")
-                AddTimer(randomf, () => CheckCvarsAndMaxVelo(), CounterStrikeSharp.API.Modules.Timers.TimerFlags.REPEAT);
-
-            currentMapName = Server.MapName;
-
-            RegisterListener<Listeners.CheckTransmit>((CCheckTransmitInfoList infoList) =>
-            {
-                IEnumerable<CCSPlayerController> players = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
-
-                if (!players.Any())
-                    return;
-
-                foreach ((CCheckTransmitInfo info, CCSPlayerController? player) in infoList)
+                // AC Stuff
+                if (useAnticheat)
                 {
-                    if (player == null || player.IsBot || !player.IsValid || player.IsHLTV)
-                        continue;
-
-                    if (!connectedPlayers.TryGetValue(player.Slot, out var connected) || connected == null)
-                        continue;
-
-                    if (!playerTimers.TryGetValue(player.Slot, out var timer) || timer == null || !timer.HidePlayers)
-                        continue;
-
-                    foreach (var target in Utilities.GetPlayers())
-                    {
-                        if (target == null || target.IsHLTV || target.IsBot || !target.IsValid)
-                            continue;
-
-                        var pawn = target.Pawn?.Value;
-                        if (pawn is null)
-                            continue;
-
-                        var playerPawn = player.Pawn.Value?.As<CCSPlayerPawnBase>().PlayerState;
-                        if (playerPawn == null || playerPawn == CSPlayerState.STATE_OBSERVER_MODE)
-                            continue;
-
-                        if (pawn == player.Pawn.Value)
-                            continue;
-
-                        if ((LifeState_t)pawn.LifeState != LifeState_t.LIFE_ALIVE)
-                        {
-                            info.TransmitEntities.Remove(pawn);
-                            continue;
-                        }
-
-                        info.TransmitEntities.Remove(pawn);
-                    }
+                    ParseInputs(player, baseCmd.GetSideMove(), moveLeft, moveRight);
+                    QAngle_t viewAngle = userCmd.GetViewAngles()!.Value;
+                    ParseStrafes(player, new (viewAngle.X, viewAngle.Y, viewAngle.Z));
                 }
-            });
-
-            HookUserMessage(452, sound =>
-            {
-                foreach (var p in connectedPlayers)
-                {
-                    if (connectedPlayers.TryGetValue(p.Key, out var player))
-                    {
-                        if (player is null || !player.IsValid)
-                            return HookResult.Continue;
-                        
-                        if (playerTimers[player.Slot].HidePlayers)
-                            sound.Recipients.Remove(player);
-                    }
-                }
-                return HookResult.Continue;
-            }, HookMode.Pre);
-
-            HookUserMessage(369, sound =>
-            {
-                foreach (var p in connectedPlayers)
-                {
-                    if (connectedPlayers.TryGetValue(p.Key, out var player))
-                    {
-                        if (player is null || !player.IsValid)
-                            return HookResult.Continue;
-                        
-                        if (playerTimers[player.Slot].HidePlayers)
-                            sound.Recipients.Remove(player);
-                    }
-                }
-                return HookResult.Continue;
-            }, HookMode.Pre);
-
-            HookUserMessage(208, sound =>
-            {
-                foreach (var p in connectedPlayers)
-                {
-                    if (connectedPlayers.TryGetValue(p.Key, out var player))
-                    {
-                        if (player is null || !player.IsValid)
-                            return HookResult.Continue;
-                        
-                        if (playerTimers[player.Slot].HidePlayers)
-                            sound.Recipients.Remove(player);
-                    }
-                }
-                return HookResult.Continue;
-            }, HookMode.Pre);
-
-            // Apply Infinite Ammo by https://github.com/zakriamansoor47
-            RegisterEventHandler<EventWeaponFire>((@event, info) =>
-            {
-                if (@event.Userid == null || !@event.Userid.IsValid) return HookResult.Continue;
-
-                var player = @event.Userid;
-
-                if (!applyInfiniteAmmo)
-                    return HookResult.Continue;
-                
-                ApplyInfiniteClip(player);
-                ApplyInfiniteReserve(player);
-                return HookResult.Continue;
-            });
-            
-            RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);
-
-            RegisterEventHandler<EventPlayerConnectFull>((@event, info) =>
-            {
-                if (@event.Userid!.IsValid)
-                {
-                    var player = @event.Userid;
-
-                    if (player.IsValid && !player.IsBot)
-                    {
-                        OnPlayerConnect(player);
-                        _oldPlayerState[player.Index] = CSPlayerState.STATE_WELCOME;
-                    }
-                }
-                return HookResult.Continue;
-            });
-
-            RegisterEventHandler<EventPlayerTeam>((@event, info) =>
-            {
-                if (@event.Userid!.IsValid)
-                {
-                    if (@event.Userid == null) return HookResult.Continue;
-                    var player = @event.Userid;
-
-                    if (player.IsValid && player.IsBot)
-                    {
-                        if (startKickingAllFuckingBotsExceptReplayOneIFuckingHateValveDogshitFuckingCompanySmile)
-                        {
-                            AddTimer(4.0f, () =>
-                            {
-                                Server.ExecuteCommand($"kickid {player.Slot}");
-                                SharpTimerDebug($"Kicking unused bot on spawn...");
-                            });
-                        }
-                    }
-                    else if (player.IsValid && !player.IsBot)
-                    {
-                        Server.NextFrame(() =>
-                        {
-                            InvalidateTimer(player);
-                            try
-                            {
-                                if (playerTimers[player.Slot].IsReplaying) StopReplay(player);
-                            }
-                            catch (Exception ex)
-                            {
-                                // playerTimers for requested player does not exist
-                            }
-                        });
-                    }
-                }
-                return HookResult.Continue;
-            }, HookMode.Pre);
-
-            RegisterEventHandler<EventRoundStart>((@event, info) =>
-            {
-                var mapName = Server.MapName;
-                LoadMapData(mapName);
-                SharpTimerDebug($"Loading MapData on RoundStart...");
-                return HookResult.Continue;
-            });
-
-            RegisterEventHandler<EventRoundEnd>((@event, info) =>
-            {
-                foreach (CCSPlayerController player in connectedPlayers.Values)
-                {
-                    InvalidateTimer(player);
-                }
-                return HookResult.Continue;
-            }, HookMode.Pre);
-
-            RegisterEventHandler<EventPlayerSpawn>((@event, info) =>
-            {
-                var player = @event.Userid!;
-
-                if (player.IsBot || !player.IsValid || player == null)
-                    return HookResult.Continue;
-
-                if (player.IsValid && !player.IsBot)
-                {
-                    OnPlayerSpawn(player);
-                }
-
-                if (enableStyles && playerTimers.ContainsKey(player.Slot))
-                    setStyle(player, playerTimers[player.Slot].currentStyle);
-
-                AddTimer(3.0f, () =>
-                {
-                    if (enableDb && playerTimers.ContainsKey(player.Slot) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
-                    {
-                        SharpTimerDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
-                        SetFov(player, playerTimers[player.Slot].PlayerFov, true);
-                    }
-                });
-
-                Server.NextFrame(() => InvalidateTimer(player));
-
-                return HookResult.Continue;
-            }, HookMode.Pre);
-
-            RegisterEventHandler<EventPlayerDisconnect>((@event, info) =>
-            {
-                if (@event.Userid!.IsValid)
-                {
-                    var player = @event.Userid;
-
-                    if (player.IsBot || !player.IsValid)
-                    {
-                        return HookResult.Continue;
-                    }
-                    else
-                    {
-                        OnPlayerDisconnect(player);
-                    }
-                }
-                return HookResult.Continue;
-            });
-
-            RegisterEventHandler<EventPlayerJump>((@event, info) =>
-            {
-                if (@event.Userid!.IsValid)
-                {
-                    var player = @event.Userid;
-
-                    if (player.IsBot || !player.IsValid)
-                    {
-                        return HookResult.Continue;
-                    }
-                    else
-                    {
-                        if (jumpStatsEnabled == true) OnJumpStatJumped(player);
-                    }
-                }
-                return HookResult.Continue;
-            });
-
-            RegisterEventHandler<EventPlayerSound>((@event, info) =>
-            {
-                if (@event.Userid!.IsValid)
-                {
-                    var player = @event.Userid;
-
-                    if (player.IsBot || !player.IsValid)
-                    {
-                        return HookResult.Continue;
-                    }
-                    else
-                    {
-                        if (jumpStatsEnabled == true && @event.Step == true) OnJumpStatSound(player);
-                    }
-                }
-                return HookResult.Continue;
-            });
-
-            RegisterListener<Listeners.OnTick>(PlayerOnTick);
-
-            HookEntityOutput("trigger_multiple", "OnStartTouch", (CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay) =>
-            {
-                TriggerMultipleOnStartTouch(activator, caller);
-                return HookResult.Continue;
-            });
-
-            HookEntityOutput("trigger_multiple", "OnEndTouch", (CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay) =>
-            {
-                TriggerMultipleOnEndTouch(activator, caller);
-                return HookResult.Continue;
-            });
-
-            HookEntityOutput("trigger_teleport", "OnEndTouch", (CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay) =>
-            {
-                TriggerTeleportOnEndTouch(activator, caller);
-                return HookResult.Continue;
-            });
-
-            HookEntityOutput("trigger_teleport", "OnStartTouch", (CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay) =>
-            {
-                TriggerTeleportOnStartTouch(activator, caller);
-                return HookResult.Continue;
-            });
-
-            AddTimer(1.0f, () =>
-            {
-                DamageHook();
-            });
-
-            AddCommandListener("say", OnPlayerChat);
-            AddCommandListener("say_team", OnPlayerChat);
-            AddCommandListener("jointeam", OnCommandJoinTeam);
-
-            SharpTimerConPrint("Plugin Loaded");
-        }
-        
-        private void ApplyInfiniteClip(CCSPlayerController player)
-        {
-            var activeWeaponHandle = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon;
-            if (activeWeaponHandle?.Value != null)
-            {
-                activeWeaponHandle.Value.Clip1 = 100;
-            }
-        }
-
-        private void ApplyInfiniteReserve(CCSPlayerController player)
-        {
-            var activeWeaponHandle = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon;
-            if (activeWeaponHandle?.Value != null)
-            {
-                activeWeaponHandle.Value.ReserveAmmo[0] = 100;
-            }
-        }
-
-        private HookResult Hook_StateTransition(DynamicHook h)
-        {
-            var player = h.GetParam<CCSPlayerPawn>(0).OriginalController.Value;
-            var state = h.GetParam<CSPlayerState>(1);
-
-            if (player is null) return HookResult.Continue;
-
-            if (state != _oldPlayerState[player.Index])
-            {
-                if (state == CSPlayerState.STATE_OBSERVER_MODE || _oldPlayerState[player.Index] == CSPlayerState.STATE_OBSERVER_MODE)
-                {
-                    ForceFullUpdate(player);
-                }
-            }
-
-            _oldPlayerState[player.Index] = state;
-
-            return HookResult.Continue;
-        }
-        private void ForceFullUpdate(CCSPlayerController? player)
-        {
-            if (player is null || !player.IsValid) return;
-
-            var networkGameServer = networkServerService.GetIGameServer();
-            networkGameServer.GetClientBySlot(player.Slot)?.ForceFullUpdate();
-
-            player.PlayerPawn.Value?.Teleport(null, player.PlayerPawn.Value.EyeAngles, null);
-        }
-        private HookResult OnRunCommand(DynamicHook h)
-        {
-            var player = h.GetParam<CCSPlayer_MovementServices>(movementServices).Pawn.Value.Controller.Value?.As<CCSPlayerController>();
-
-            if (player == null || player.IsBot || !player.IsValid || player.IsHLTV) return HookResult.Continue;
-
-            var userCmd = new CUserCmd(h.GetParam<IntPtr>(movementPtr));
-            var baseCmd = userCmd.GetBaseCmd();
-            var getMovementButton = userCmd.GetMovementButton();
-
-            if (player != null && !player.IsBot && player.IsValid && !player.IsHLTV)
-            {
-                try
-                {
-                    var moveForward = getMovementButton.Contains("Forward");
-                    var moveBackward = getMovementButton.Contains("Backward");
-                    var moveLeft = getMovementButton.Contains("Left");
-                    var moveRight = getMovementButton.Contains("Right");
-                    var usingUse = getMovementButton.Contains("Use");
-
-                    // AC Stuff
-                    if (useAnticheat)
-                    {
-                        ParseInputs(player, baseCmd.GetSideMove(), moveLeft, moveRight);
-                        ParseStrafes(player, userCmd.GetViewAngles()!);
-                    }
                     
-                    // Style Stuff
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(2) && (moveLeft || moveRight)) //sideways
-                    {
-                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1536); //disable left (512) + right (1024) = 1536
-                        baseCmd.DisableSideMove(); //disable side movement
-                        return HookResult.Changed;
-                    }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(9) && (moveLeft || moveRight) && !(moveForward || moveBackward)) //halfsideways
-                    {
-                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1536); //disable left (512) + right (1024) = 1536
-                        baseCmd.DisableSideMove(); //disable side movement
-                        return HookResult.Changed;
-                    }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(9) && !(moveLeft || moveRight) && (moveForward || moveBackward)) //halfsideways pt2
-                    {
-                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 24); //disable backward (16) + forward (8) = 24
-                        baseCmd.DisableForwardMove(); //disable forward movement
-                        return HookResult.Changed;
-                    }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(3) && (moveLeft || moveRight || moveBackward)) //only w
-                    {
-                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1552); //disable backward (16) + left (512) + right (1024) = 1552
-                        baseCmd.DisableSideMove(); //disable side movement
-                        baseCmd.DisableForwardMove(); //set forward move to 0 ONLY if player is moving backwards; ie: disable s
-                        return HookResult.Changed;
-                    }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(6) && (moveForward || moveRight || moveBackward)) //only a
-                    {
-                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1048); //disable backward (16) + forward (8) + right (1024) = 1048
-                        baseCmd.DisableSideMove(); //disable only right movement
-                        baseCmd.DisableForwardMove(); //disable forward movement
-                        return HookResult.Changed;
-                    }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(7) && (moveForward || moveLeft || moveBackward)) //only d
-                    {
-                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 536); //disable backward (16) + forward (8) + left (512) = 536
-                        baseCmd.DisableSideMove(); //disable only left movement
-                        baseCmd.DisableForwardMove(); //disable forward movement
-                        return HookResult.Changed;
-                    }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(8) && (moveForward || moveLeft || moveRight)) //only s
-                    {
-                        userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1544); //disable right (1024) + forward (8) + left (512) = 1544
-                        baseCmd.DisableSideMove(); //disable side movement
-                        baseCmd.DisableForwardMove(); //disable only forward movement
-                        return HookResult.Changed;
-                    }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(11) && usingUse) //parachute
-                    {
-                        player.Pawn.Value!.GravityScale = 0.2f;
-                        return HookResult.Changed;
-                    }
-                    if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(11) && !usingUse) //parachute
-                    {
-                        player.Pawn.Value!.GravityScale = 1f;
-                        return HookResult.Changed;
-                    }
+                // Style Stuff
+                if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(2) && (moveLeft || moveRight)) //sideways
+                {
+                    userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1536); //disable left (512) + right (1024) = 1536
+                    baseCmd.DisableSideMove(); //disable side movement
                     return HookResult.Changed;
                 }
-                catch (Exception)
+                if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(9) && (moveLeft || moveRight) && !(moveForward || moveBackward)) //halfsideways
                 {
-                    //i dont fucking know why it spams errors when the player disconnects but is also passing all the null checks
-                    //so here lies my humble try catch
-                    return HookResult.Continue; // :)
+                    userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1536); //disable left (512) + right (1024) = 1536
+                    baseCmd.DisableSideMove(); //disable side movement
+                    return HookResult.Changed;
                 }
+                if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(9) && !(moveLeft || moveRight) && (moveForward || moveBackward)) //halfsideways pt2
+                {
+                    userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 24); //disable backward (16) + forward (8) = 24
+                    baseCmd.DisableForwardMove(); //disable forward movement
+                    return HookResult.Changed;
+                }
+                if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(3) && (moveLeft || moveRight || moveBackward)) //only w
+                {
+                    userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1552); //disable backward (16) + left (512) + right (1024) = 1552
+                    baseCmd.DisableSideMove(); //disable side movement
+                    baseCmd.DisableForwardMove(); //set forward move to 0 ONLY if player is moving backwards; ie: disable s
+                    return HookResult.Changed;
+                }
+                if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(6) && (moveForward || moveRight || moveBackward)) //only a
+                {
+                    userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1048); //disable backward (16) + forward (8) + right (1024) = 1048
+                    baseCmd.DisableSideMove(); //disable only right movement
+                    baseCmd.DisableForwardMove(); //disable forward movement
+                    return HookResult.Changed;
+                }
+                if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(7) && (moveForward || moveLeft || moveBackward)) //only d
+                {
+                    userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 536); //disable backward (16) + forward (8) + left (512) = 536
+                    baseCmd.DisableSideMove(); //disable only left movement
+                    baseCmd.DisableForwardMove(); //disable forward movement
+                    return HookResult.Changed;
+                }
+                if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(8) && (moveForward || moveLeft || moveRight)) //only s
+                {
+                    userCmd.DisableInput(h.GetParam<IntPtr>(movementPtr), 1544); //disable right (1024) + forward (8) + left (512) = 1544
+                    baseCmd.DisableSideMove(); //disable side movement
+                    baseCmd.DisableForwardMove(); //disable only forward movement
+                    return HookResult.Changed;
+                }
+                if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(11) && usingUse) //parachute
+                {
+                    player.Pawn.Value!.GravityScale = 0.2f;
+                    return HookResult.Changed;
+                }
+                if ((playerTimers[player.Slot].IsTimerRunning || playerTimers[player.Slot].IsBonusTimerRunning) && playerTimers[player.Slot].currentStyle.Equals(11) && !usingUse) //parachute
+                {
+                    player.Pawn.Value!.GravityScale = 1f;
+                    return HookResult.Changed;
+                }
+                return HookResult.Changed;
             }
-
-            return HookResult.Continue;
+            catch (Exception)
+            {
+                //i dont fucking know why it spams errors when the player disconnects but is also passing all the null checks
+                //so here lies my humble try catch
+                return HookResult.Continue; // :)
+            }
         }
-        public override void Unload(bool hotReload)
+
+        return HookResult.Continue;
+    }
+    private HookResult Hook_StateTransition(DynamicHook h)
+    {
+        var player = h.GetParam<CCSPlayerPawn>(0).OriginalController.Value;
+        var state = h.GetParam<CSPlayerState>(1);
+
+        if (player is null) return HookResult.Continue;
+
+        if (state != _oldPlayerState[player.Index])
         {
-            DamageUnHook();
-            RemoveCommandListener("say", OnPlayerChat, HookMode.Pre);
-            RemoveCommandListener("say_team", OnPlayerChat, HookMode.Pre);
-            RemoveCommandListener("jointeam", OnCommandJoinTeam, HookMode.Pre);
-
-            if (isLinux) RunCommand.Unhook(OnRunCommand, HookMode.Pre);
-            StateTransition.Unhook(Hook_StateTransition, HookMode.Post);
-
-            SharpTimerConPrint("Plugin Unloaded");
+            if (state == CSPlayerState.STATE_OBSERVER_MODE || _oldPlayerState[player.Index] == CSPlayerState.STATE_OBSERVER_MODE)
+                ForceFullUpdate(player);
         }
+
+        _oldPlayerState[player.Index] = state;
+
+        return HookResult.Continue;
+    }
+    private void ForceFullUpdate(CCSPlayerController? player)
+    {
+        if (player is null || !player.IsValid) return;
+
+        var networkGameServer = networkServerService.GetIGameServer();
+        networkGameServer.GetClientBySlot(player.Slot)?.ForceFullUpdate();
+
+        player.PlayerPawn.Value?.Teleport(null, player.PlayerPawn.Value.EyeAngles, null);
+    }
+
+    private void CheckTransmit(CCheckTransmitInfoList infoList)
+    {
+        IEnumerable<CCSPlayerController> players = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
+
+        if (!players.Any())
+            return;
+
+        foreach ((CCheckTransmitInfo info, CCSPlayerController? player) in infoList)
+        {
+            if (player == null || player.IsBot || !player.IsValid || player.IsHLTV)
+                continue;
+
+            if (!connectedPlayers.TryGetValue(player.Slot, out var connected) || connected == null)
+                continue;
+
+            if (!playerTimers.TryGetValue(player.Slot, out var timer) || timer == null || !timer.HidePlayers)
+                continue;
+
+            foreach (var target in Utilities.GetPlayers())
+            {
+                if (target == null || target.IsHLTV || !target.IsValid)
+                    continue;
+
+                var pawn = target.Pawn?.Value;
+                if (pawn is null)
+                    continue;
+
+                var playerPawn = player.Pawn.Value?.As<CCSPlayerPawnBase>().PlayerState;
+                if (playerPawn == null || playerPawn == CSPlayerState.STATE_OBSERVER_MODE)
+                    continue;
+
+                if (pawn == player.Pawn.Value)
+                    continue;
+
+                if ((LifeState_t)pawn.LifeState != LifeState_t.LIFE_ALIVE)
+                {
+                    info.TransmitEntities.Remove(pawn);
+                    continue;
+                }
+
+                info.TransmitEntities.Remove(pawn);
+            }
+        }
+    }
+
+    private HookResult EventPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo @eventInfo)
+    {
+        var player = @event.Userid;
+        if (player == null || !player.Valid())
+            return HookResult.Continue;
+
+        OnPlayerConnect(player);
+        _oldPlayerState[player.Index] = CSPlayerState.STATE_WELCOME;
+
+        return HookResult.Continue;
+    }
+
+    private HookResult EventPlayerTeam(EventPlayerTeam @event, GameEventInfo @eventInfo)
+    {
+        var player = @event.Userid;
+        if (player == null || !player.Valid()) return HookResult.Continue;
+
+        Server.NextFrame(() =>
+        {
+            InvalidateTimer(player);
+            try
+            {
+                if (playerTimers.TryGetValue(player.Slot, out var data) && data.IsReplaying)
+                    StopReplay(player);
+            }
+            catch (Exception ex)
+            {
+                // playerTimers for requested player does not exist
+                Utils.LogError("(EventPlayerTeam) " + ex.Message);
+            }
+        });
+
+        return HookResult.Continue;
+    }
+
+    private HookResult EventRoundStart(EventRoundStart @event, GameEventInfo @eventInfo)
+    {
+        //fck this shit game, entities doesnt seem to spawn so logs get confusing af
+        if (Utils.PlayersCount() <= 0)
+            return HookResult.Continue;
+
+        ClearMapData();
+        LoadMapData(Server.MapName);
+        return HookResult.Continue;
+    }
+
+    private HookResult EventRoundEnd(EventRoundEnd @event, GameEventInfo @eventInfo)
+    {
+        foreach (CCSPlayerController player in connectedPlayers.Values)
+            InvalidateTimer(player);
+
+        return HookResult.Continue;
+    }
+
+    private HookResult EventPlayerSpawn(EventPlayerSpawn @event, GameEventInfo @eventInfo)
+    {
+        var player = @event.Userid;
+        if (player == null || !player.Valid())
+            return HookResult.Continue;
+
+        var playerPawn = player.PlayerPawn();
+        if (playerPawn == null)
+            return HookResult.Continue;
+
+        //just.. dont ask.
+        AddTimer(0f, () =>
+        {
+            if (spawnOnRespawnPos == true && currentRespawnPos != null)
+                playerPawn.Teleport(currentRespawnPos);
+        });
+
+        if (playerTimers.TryGetValue(player.Slot, out var playerTimer))
+        {
+            playerTimer.GivenWeapon = false;
+
+            if (enableStyles)
+                setStyle(player, playerTimers[player.Slot].currentStyle);
+
+            AddTimer(3.0f, () =>
+            {
+                if (enableDb && playerTimers.ContainsKey(player.Slot) && player.DesiredFOV != (uint)playerTimers[player.Slot].PlayerFov)
+                {
+                    Utils.LogDebug($"{player.PlayerName} has wrong PlayerFov {player.DesiredFOV}... SetFov to {(uint)playerTimers[player.Slot].PlayerFov}");
+                    SetFov(player, playerTimers[player.Slot].PlayerFov, true);
+                }
+            });
+
+            Server.NextFrame(() => InvalidateTimer(player));
+        }
+
+        if (removeLegsEnabled == true)
+        {
+            playerPawn.Render = Color.FromArgb(254, 254, 254, 254);
+            Utilities.SetStateChanged(playerPawn, "CBaseModelEntity", "m_clrRender");
+        }
+
+        return HookResult.Continue;
+    }
+
+    private HookResult EventPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo @eventInfo)
+    {
+        var player = @event.Userid;
+        if (player == null || !player.Valid())
+            return HookResult.Continue;
+
+        OnPlayerDisconnect(player);
+
+        return HookResult.Continue;
+    }
+
+    private HookResult EventWeaponFire(EventWeaponFire @event, GameEventInfo @eventInfo)
+    {
+        if (@event.Userid == null || !@event.Userid.IsValid) return HookResult.Continue;
+
+        var player = @event.Userid;
+
+        if (!applyInfiniteAmmo)
+            return HookResult.Continue;
+
+        var activeWeaponHandle = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon;
+        if (activeWeaponHandle?.Value != null)
+        {
+            activeWeaponHandle.Value.Clip1 = 100;
+            activeWeaponHandle.Value.ReserveAmmo[0] = 100;
+        }
+
+        return HookResult.Continue;
+    }
+
+    private HookResult OnCommandJoinTeam(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (player == null || !player.IsValid) return HookResult.Handled;
+        InvalidateTimer(player);
+        return HookResult.Continue;
+    }
+
+    private HookResult OnUserMessage_RemoveSound(UserMessage um)
+    {
+        foreach (var p in connectedPlayers)
+        {
+            if (connectedPlayers.TryGetValue(p.Key, out var player))
+            {
+                if (player is null || !player.IsValid)
+                    return HookResult.Continue;
+
+                if (playerTimers[player.Slot].HidePlayers)
+                    um.Recipients.Remove(player);
+            }
+        }
+
+        return HookResult.Continue;
     }
 }

@@ -17,6 +17,7 @@ using System.Text.Json.Serialization;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
+using FixVectorLeak;
 
 namespace SharpTimer
 {
@@ -25,14 +26,11 @@ namespace SharpTimer
     {
         public List<CBaseTrigger> Triggers { get; private set; }
         public List<CInfoTeleportDestination> InfoTeleportDestinations { get; private set; }
-        public List<CPointEntity> InfoTargetEntities { get; private set; }
 
         public EntityCache()
         {
-            Triggers = [];
-            InfoTeleportDestinations = [];
-            InfoTargetEntities = [];
-            UpdateCache();
+            Triggers = new();
+            InfoTeleportDestinations = new();
         }
 
         public void UpdateCache()
@@ -161,7 +159,7 @@ namespace SharpTimer
         public double Sync { get; set; }
         public int GoodSync { get; set; }
         public int TotalSync { get; set; }
-        public List<QAngle> Rotation { get; set; } = new List<QAngle>();
+        public List<QAngle_t> Rotation { get; set; } = new List<QAngle_t>();
 
         //player settings/stats
         public bool Azerty { get; set; }
@@ -172,11 +170,9 @@ namespace SharpTimer
         public bool GivenWeapon { get; set; }
         public bool SoundsEnabled { get; set; }
         public bool BindsDisabled { get; set; }
-        public bool HideJumpStats { get; set; }
         public int PlayerFov { get; set; }
         public int TimesConnected { get; set; }
-        public int TicksSinceLastCmd { get; set; }
-        public int TicksSinceLastRankUpdate { get; set; }
+        public DateTime CmdCooldown { get; set; }
 
         //super special stuff for testers
         public bool IsTester { get; set; }
@@ -215,7 +211,7 @@ namespace SharpTimer
             public float Y { get; set; }
             public float Z { get; set; }
 
-            public ViewAngle (QAngle angles)
+            public ViewAngle (QAngle_t angles)
             {
                 X = angles.X;
                 Y = angles.Y;
@@ -245,45 +241,6 @@ namespace SharpTimer
         public bool InMainMapStartZone { get; set; }
         public bool InBonusStartZone { get; set; }
         public int CurrentBonusNumber { get; set; }
-    }
-
-    public class PlayerJumpStats
-    {
-        public int FramesOnGround { get; set; }
-        public int LastFramesOnGround { get; set; }
-        public bool OnGround { get; set; }
-        public bool LastOnGround { get; set; }
-        public string? LastPosOnGround { get; set; }
-        public string? LastSpeed { get; set; }
-        public string? JumpPos { get; set; }
-        public string? OldJumpPos { get; set; }
-        public string? JumpSpeed { get; set; }
-        public bool Jumped { get; set; }
-        public string? LastJumpType { get; set; }
-        public bool LastDucked { get; set; }
-        public bool LandedFromSound { get; set; }
-        public bool LastLandedFromSound { get; set; }
-        public int WTicks { get; set; }
-
-        public List<IFrame> jumpFrames { get; set; } = new List<IFrame>();
-        public List<IFrame> timerSyncFrames { get; set; } = new List<IFrame>();
-        public class IFrame
-        {
-            public string? PositionString { get; set; }
-            public string? RotationString { get; set; }
-            public string? SpeedString { get; set; }
-            public double MaxSpeed { get; set; }
-            public double MaxHeight { get; set; }
-            public bool LastLeft { get; set; }
-            public bool LastRight { get; set; }
-            public bool LastLeftRight { get; set; }
-        }
-
-        public List<JumpInterp> jumpInterp { get; set; } = [];
-        public class JumpInterp
-        {
-            public string? InterpString { get; set; }
-        }
     }
 
     public class PlayerBonusPlacementInfo
@@ -330,13 +287,13 @@ namespace SharpTimer
             Z = z;
         }
 
-        public static ReplayVector GetVectorish(Vector actualVector)
+        public static ReplayVector GetVectorish(Vector actualVector_t)
         {
-            return new ReplayVector(actualVector.X, actualVector.Y, actualVector.Z);
+            return new ReplayVector(actualVector_t.X, actualVector_t.Y, actualVector_t.Z);
         }
-        public static Vector ToVector(ReplayVector replayVector)
+        public static Vector ToVector(ReplayVector replayVector_t)
         {
-            return new Vector(replayVector.X, replayVector.Y, replayVector.Z);
+            return new Vector(replayVector_t.X, replayVector_t.Y, replayVector_t.Z);
         }
     }
 
@@ -353,14 +310,14 @@ namespace SharpTimer
             Roll = roll;
         }
 
-        public static ReplayQAngle GetQAngleish(QAngle actualQAngle)
+        public static ReplayQAngle GetQAngleish(QAngle actualQAngle_t)
         {
-            return new ReplayQAngle(actualQAngle.X, actualQAngle.Y, actualQAngle.Z);
+            return new ReplayQAngle(actualQAngle_t.X, actualQAngle_t.Y, actualQAngle_t.Z);
         }
 
-        public static QAngle ToQAngle(ReplayQAngle replayQAngle)
+        public static QAngle ToQAngle(ReplayQAngle replayQAngle_t)
         {
-            return new QAngle(replayQAngle.Pitch, replayQAngle.Yaw, replayQAngle.Roll);
+            return new QAngle(replayQAngle_t.Pitch, replayQAngle_t.Yaw, replayQAngle_t.Roll);
         }
     }
 
@@ -379,7 +336,7 @@ namespace SharpTimer
     {
         public string? map_name { get; set; }
         public string? workshop_id { get; set; }
-        public string steamid { get; set; }
+        public string? steamid { get; set; }
         public string? player_name { get; set; }
         public int timer_ticks { get; set; }
         public string? formatted_time { get; set; }
@@ -410,7 +367,7 @@ namespace SharpTimer
         public int GlobalPoints { get; set; }
     }
 
-    // KZ checkpoints
+    // Checkpoints
     public class PlayerCheckpoint
     {
         public string? PositionString { get; set; }

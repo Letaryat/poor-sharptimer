@@ -39,16 +39,16 @@ namespace SharpTimer
 
                 if (response.IsSuccessStatusCode)
                 {
-                    SharpTimerConPrint("Record submitted successfully.");
+                    Utils.ConPrint("Record submitted successfully.");
                 }
                 else
                 {
-                    SharpTimerError($"Failed to submit record. Status code: {response.StatusCode}");
+                    Utils.LogError($"Failed to submit record. Status code: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in SubmitRecordAsync: {ex.Message}");
+                Utils.LogError($"Error in SubmitRecordAsync: {ex.Message}");
             }
         }
 
@@ -76,7 +76,7 @@ namespace SharpTimer
                     workshop_id = currentAddonID
                 };
                 string jsonPayload = JsonSerializer.Serialize(payload);
-                SharpTimerDebug($"CheckAddon payload: {jsonPayload}");
+                Utils.LogDebug($"CheckAddon payload: {jsonPayload}");
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
                 client.DefaultRequestHeaders.Clear();
@@ -92,7 +92,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in CheckAddonAsync: {ex.Message}");
+                Utils.LogError($"Error in CheckAddonAsync: {ex.Message}");
                 return false;
             }
         }
@@ -122,7 +122,7 @@ namespace SharpTimer
         public async Task<List<PlayerPoints>> GetTopPointsAsync(int limit = 10)
         {
             if (apiKey == "")
-                return null;
+                return null!;
 
             try
             {
@@ -161,19 +161,19 @@ namespace SharpTimer
                             }
                             return player_points;
                         }
-                        return null;
+                        return null!;
                     }
                 }
                 else
                 {
-                    SharpTimerError($"Failed to get top points. Status code: {response.StatusCode}; Message: {response.Content}");
-                    return null;
+                    Utils.LogError($"Failed to get top points. Status code: {response.StatusCode}; Message: {response.Content}");
+                    return null!;
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in GetRecordIDAsync: {ex.Message}");
-                return null;
+                Utils.LogError($"Error in GetRecordIDAsync: {ex.Message}");
+                return null!;
             }
         }
 
@@ -204,25 +204,25 @@ namespace SharpTimer
                         }
                         else
                         {
-                            SharpTimerError($"No record ID found");
+                            Utils.LogError($"No record ID found");
                             return 0;
                         }
                     }
                 }
                 else
                 {
-                    SharpTimerError($"Failed to retrieve record_id. Status code: {response.StatusCode}; Message: {response.Content}");
+                    Utils.LogError($"Failed to retrieve record_id. Status code: {response.StatusCode}; Message: {response.Content}");
                     return 0;
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in GetRecordIDAsync: {ex.Message}");
+                Utils.LogError($"Error in GetRecordIDAsync: {ex.Message}");
                 return 0;
             }
         }
 
-        public async Task<(int, int, int)> GetGlobalRank(CCSPlayerController? player)
+        public async Task<(int, int, int)> GetGlobalRank(CCSPlayerController player)
         {
             if (apiKey == "")
                 return (0, 0, 0);
@@ -268,19 +268,19 @@ namespace SharpTimer
                 }
                 else
                 {
-                    SharpTimerError($"Failed to retrieve player rank. Status code: {response.StatusCode}; Message: {response.Content}");
+                    Utils.LogError($"Failed to retrieve player rank. Status code: {response.StatusCode}; Message: {response.Content}");
                     return (0, 0, 0);
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in GetGlobalRankAsync: {ex.Message}");
+                Utils.LogError($"Error in GetGlobalRankAsync: {ex.Message}");
                 return (0, 0, 0);
             }
             return (0, 0, 0);
         }
 
-        public async Task PrintGlobalRankAsync(CCSPlayerController? player)
+        public async Task PrintGlobalRankAsync(CCSPlayerController player)
         {
             if (apiKey == "")
                 return;
@@ -288,8 +288,8 @@ namespace SharpTimer
             var (points, rank, totalPlayers) = await GetGlobalRank(player);
             Server.NextFrame(() =>
             {
-                PrintToChat(player, $"{Localizer["total_gpoints"]}: {points}");
-                PrintToChat(player, $"{Localizer["grank"]}: {rank}/{totalPlayers}");
+                Utils.PrintToChat(player, $"{Localizer["total_gpoints"]}: {points}");
+                Utils.PrintToChat(player, $"{Localizer["grank"]}: {rank}/{totalPlayers}");
             });
         }
 
@@ -313,16 +313,16 @@ namespace SharpTimer
 
                 if (response.IsSuccessStatusCode)
                 {
-                    SharpTimerConPrint("Replay uploaded successfully.");
+                    Utils.ConPrint("Replay uploaded successfully.");
                 }
                 else
                 {
-                    SharpTimerError($"Failed to upload replay. Status code: {response.StatusCode}; Message: {response.Content}");
+                    Utils.LogError($"Failed to upload replay. Status code: {response.StatusCode}; Message: {response.Content}");
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in SubmitReplayAsync: {ex.Message}");
+                Utils.LogError($"Error in SubmitReplayAsync: {ex.Message}");
             }
         }
 
@@ -335,19 +335,23 @@ namespace SharpTimer
                 
                 Server.NextFrame(() =>
                 {
-                    PrintToChat(player, Localizer["current_wr", currentMapName!]);
+                    Utils.PrintToChat(player, Localizer["current_wr", currentMapName!]);
+
+                    if (cache.CachedWorldRecords == null || cache.CachedWorldRecords.Count <= 0)
+                        return;
+
                     int position = 1;
-                    foreach (var record in cache.CachedWorldRecords!)
+                    foreach (var record in cache.CachedWorldRecords)
                     {
                         string replayIndicator = record.Value.Replay ? $"{ChatColors.Red}◉" : "";
-                        PrintToChat(player, $"{Localizer["records_map", position, record.Value.PlayerName!, replayIndicator, FormatTime(record.Value.TimerTicks)]}");
+                        Utils.PrintToChat(player, $"{Localizer["records_map", position, record.Value.PlayerName!, replayIndicator, Utils.FormatTime(record.Value.TimerTicks)]}");
                         position++;
                     }
                 });
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in PrintWorldRecord: {ex.Message}");
+                Utils.LogError($"Error in PrintWorldRecord: {ex.Message}");
             }
         }
 
@@ -360,30 +364,34 @@ namespace SharpTimer
                 
                 Server.NextFrame(() =>
                 {
-                    PrintToChat(player, Localizer["top_10_points"]);
+                    Utils.PrintToChat(player, Localizer["top_10_points"]);
+
+                    if (cache.CachedGlobalPoints == null || cache.CachedGlobalPoints.Count <= 0)
+                        return;
+
                     int position = 1;
-                    foreach (var p in cache.CachedGlobalPoints!)
+                    foreach (var p in cache.CachedGlobalPoints)
                     {
-                        PrintToChat(player, $"{Localizer["top_10_points_list", position, p.PlayerName!, p.GlobalPoints]}");
+                        Utils.PrintToChat(player, $"{Localizer["top_10_points_list", position, p.PlayerName!, p.GlobalPoints]}");
                         position++;
                     }
                 });
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in PrintGlobalPoints: {ex.Message}");
+                Utils.LogError($"Error in PrintGlobalPoints: {ex.Message}");
             }
         }
 
         public async Task<Dictionary<int, PlayerRecord>> GetSortedRecordsFromGlobal(int limit = 0, int bonusX = 0, string mapName = "", int style = 0)
         {
             if (apiKey == "")
-                return null;
+                return null!;
 
             if (globalDisabled)
-                return null;
+                return null!;
             
-            SharpTimerDebug($"Trying GetSortedRecordsFromGlobal {(bonusX != 0 ? $"bonus {bonusX}" : "")}");
+            Utils.LogDebug($"Trying GetSortedRecordsFromGlobal {(bonusX != 0 ? $"bonus {bonusX}" : "")}");
             using (var connection = await OpenConnectionAsync())
             {
                 string? currentMapNamee;
@@ -442,24 +450,24 @@ namespace SharpTimer
                                 sortedRecords = sortedRecords.OrderBy(record => record.Value.TimerTicks)
                                                             .ToDictionary(record => record.Key, record => record.Value);
 
-                                SharpTimerDebug("Got sorted records from global");
+                                Utils.LogDebug("Got sorted records from global");
                                 return sortedRecords;
                             }
                             else
                             {
-                                SharpTimerDebug("No data returned");
+                                Utils.LogDebug("No data returned");
                                 return sortedRecords;
                             }
                         }
                     }
                     else
                     {
-                        SharpTimerError($"Failed to GetSortedRecordsFromGlobal. Status code: {response.StatusCode}");
+                        Utils.LogError($"Failed to GetSortedRecordsFromGlobal. Status code: {response.StatusCode}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    SharpTimerError($"Error in GetSortedRecordsFromGlobal: {ex.Message}");
+                    Utils.LogError($"Error in GetSortedRecordsFromGlobal: {ex.Message}");
                 }
             }
             return [];
@@ -489,12 +497,12 @@ namespace SharpTimer
                 }
                 else
                 {
-                    SharpTimerError($"Failed to get global replay. Status code: {response.StatusCode}");
+                    Utils.LogError($"Failed to get global replay. Status code: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error in GetReplayFromGlobal: {ex.Message}");
+                Utils.LogError($"Error in GetReplayFromGlobal: {ex.Message}");
             }
             return "";
         }
@@ -507,7 +515,7 @@ namespace SharpTimer
             if (globalDisabled)
                 return 0;
             
-            SharpTimerDebug($"Trying to get Previous {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} from global for {playerName}");
+            Utils.LogDebug($"Trying to get Previous {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} from global for {playerName}");
             try
             {
                 string currentMapNamee = bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}";
@@ -548,13 +556,13 @@ namespace SharpTimer
                 }
                 else
                 {
-                    SharpTimerConPrint($"No previous record found for steamid: {steamId}");
+                    Utils.ConPrint($"No previous record found for steamid: {steamId}");
                     return 0;
                 }
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Error getting previous player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} from global: {ex.Message}");
+                Utils.LogError($"Error getting previous player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} from global: {ex.Message}");
             }
             return 0;
         }
@@ -587,6 +595,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
+                Utils.LogError(ex.Message);
                 return false;
             }
         }
@@ -623,6 +632,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
+                 Utils.LogError(ex.Message);
                 return false;
             }
         }
@@ -631,45 +641,53 @@ namespace SharpTimer
         {
             if (!globalDisabled)
             {
-                if (IsApproximatelyEqual(ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>(), 10)
-                && ((IsApproximatelyEqual(ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>(), 150) && currentMapName!.Contains("surf_"))
-                    || (IsApproximatelyEqual(ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>(), 1000) && currentMapName!.Contains("bhop_")))
-                && IsApproximatelyEqual(ConVar.Find("sv_friction")!.GetPrimitiveValue<float>(), (float)5.2)
-                && IsApproximatelyEqual(ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>(), 800)
-                && IsApproximatelyEqual(ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>(), 1)
-                && IsApproximatelyEqual(ConVar.Find("sv_staminajumpcost")!.GetPrimitiveValue<float>(), 0)
-                && IsApproximatelyEqual(ConVar.Find("sv_staminalandcost")!.GetPrimitiveValue<float>(), 0)
-                && IsApproximatelyEqual(ConVar.Find("sv_staminamax")!.GetPrimitiveValue<float>(), 0)
-                && IsApproximatelyEqual(ConVar.Find("sv_staminarecoveryrate")!.GetPrimitiveValue<float>(), 0)
-                && IsApproximatelyEqual(ConVar.Find("sv_wateraccelerate")!.GetPrimitiveValue<float>(), 10)
+                var equal = Utils.IsApproximatelyEqual;
+
+                if (equal(ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>(), 10)
+
+                && ((equal(ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>(), 150) && currentMapName!.Contains("surf_")) ||
+                    (equal(ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>(), 1000) && currentMapName!.Contains("bhop_")))
+                
+                && equal(ConVar.Find("sv_friction")!.GetPrimitiveValue<float>(), (float)5.2)
+                && equal(ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>(), 800)
+                && equal(ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>(), 1)
+                && equal(ConVar.Find("sv_staminajumpcost")!.GetPrimitiveValue<float>(), 0)
+                && equal(ConVar.Find("sv_staminalandcost")!.GetPrimitiveValue<float>(), 0)
+                && equal(ConVar.Find("sv_staminamax")!.GetPrimitiveValue<float>(), 0)
+                && equal(ConVar.Find("sv_staminarecoveryrate")!.GetPrimitiveValue<float>(), 0)
+                && equal(ConVar.Find("sv_wateraccelerate")!.GetPrimitiveValue<float>(), 10)
                 && ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>() == false
-                && (IsApproximatelyEqual(ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>(), 30) || IsApproximatelyEqual(ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>(), (float)37.41))
-                && IsApproximatelyEqual(ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>(), 420)
+
+                && (equal(ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>(), 30) ||
+                    equal(ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>(), (float)37.41))
+                
+                && equal(ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>(), 420)
                 && useCheckpointVerification)
                 {
                     // THICK
                     globalChecksPassed = true;
                     return (true, ConVar.Find("sv_maxvelocity")!.GetPrimitiveValue<float>(), ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>());
                 }
+
                 //Checks failed, disable global api
-                SharpTimerConPrint($"GLOBAL CHECK FAILED -- Current Values:");
-                SharpTimerConPrint($"sv_accelerate: {ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>()} [should be 10]");
-                SharpTimerConPrint($"sv_airaccelerate: {ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>()} [should be 150 for surf_ or 1000 for bhop_]");
-                SharpTimerConPrint($"sv_friction: {ConVar.Find("sv_friction")!.GetPrimitiveValue<float>()} [should be 5.2]");
-                SharpTimerConPrint($"sv_gravity: {ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>()} [should be 800]");
-                SharpTimerConPrint($"sv_ladder_scale_speed: {ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>()} [should be 1]");
-                SharpTimerConPrint($"sv_staminajumpcost: {ConVar.Find("sv_staminajumpcost")!.GetPrimitiveValue<float>()} [should be 0]");
-                SharpTimerConPrint($"sv_staminalandcost: {ConVar.Find("sv_staminalandcost")!.GetPrimitiveValue<float>()} [should be 0]");
-                SharpTimerConPrint($"sv_staminamax: {ConVar.Find("sv_staminamax")!.GetPrimitiveValue<float>()} [should be 0]");
-                SharpTimerConPrint($"sv_staminarecoveryrate: {ConVar.Find("sv_staminarecoveryrate")!.GetPrimitiveValue<float>()} [should be 0]");
-                SharpTimerConPrint($"sv_wateraccelerate: {ConVar.Find("sv_wateraccelerate")!.GetPrimitiveValue<float>()} [should be 10]");
-                SharpTimerConPrint($"sv_maxspeed: {ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>()} [should be 420]");
-                SharpTimerConPrint($"sharptimer_max_start_speed: {ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>()} [should be 420]");
-                SharpTimerConPrint($"sv_air_max_wishspeed: {ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>()} [should be 30 or 37.41]");
-                SharpTimerConPrint($"sv_cheats: {ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>()} [should be false]");
-                SharpTimerConPrint($"Map is properly zoned?: {useTriggers} [should be true]");
-                SharpTimerConPrint($"Use checkpoint verification?: {useCheckpointVerification} [should be true]");
-                SharpTimerConPrint($"Using StripperCS2 on current map?: {Directory.Exists($"{gameDir}/addons/StripperCS2/maps/{Server.MapName}")} [should be false]");
+                Utils.ConPrint($"GLOBAL CHECK FAILED -- Current Values:");
+                Utils.ConPrint($"sv_accelerate: {ConVar.Find("sv_accelerate")!.GetPrimitiveValue<float>()} [should be 10]");
+                Utils.ConPrint($"sv_airaccelerate: {ConVar.Find("sv_airaccelerate")!.GetPrimitiveValue<float>()} [should be 150 for surf_ or 1000 for bhop_]");
+                Utils.ConPrint($"sv_friction: {ConVar.Find("sv_friction")!.GetPrimitiveValue<float>()} [should be 5.2]");
+                Utils.ConPrint($"sv_gravity: {ConVar.Find("sv_gravity")!.GetPrimitiveValue<float>()} [should be 800]");
+                Utils.ConPrint($"sv_ladder_scale_speed: {ConVar.Find("sv_ladder_scale_speed")!.GetPrimitiveValue<float>()} [should be 1]");
+                Utils.ConPrint($"sv_staminajumpcost: {ConVar.Find("sv_staminajumpcost")!.GetPrimitiveValue<float>()} [should be 0]");
+                Utils.ConPrint($"sv_staminalandcost: {ConVar.Find("sv_staminalandcost")!.GetPrimitiveValue<float>()} [should be 0]");
+                Utils.ConPrint($"sv_staminamax: {ConVar.Find("sv_staminamax")!.GetPrimitiveValue<float>()} [should be 0]");
+                Utils.ConPrint($"sv_staminarecoveryrate: {ConVar.Find("sv_staminarecoveryrate")!.GetPrimitiveValue<float>()} [should be 0]");
+                Utils.ConPrint($"sv_wateraccelerate: {ConVar.Find("sv_wateraccelerate")!.GetPrimitiveValue<float>()} [should be 10]");
+                Utils.ConPrint($"sv_maxspeed: {ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>()} [should be 420]");
+                Utils.ConPrint($"sharptimer_max_start_speed: {ConVar.Find("sv_maxspeed")!.GetPrimitiveValue<float>()} [should be 420]");
+                Utils.ConPrint($"sv_air_max_wishspeed: {ConVar.Find("sv_air_max_wishspeed")!.GetPrimitiveValue<float>()} [should be 30 or 37.41]");
+                Utils.ConPrint($"sv_cheats: {ConVar.Find("sv_cheats")!.GetPrimitiveValue<bool>()} [should be false]");
+                Utils.ConPrint($"Map is properly zoned?: {useTriggers} [should be true]");
+                Utils.ConPrint($"Use checkpoint verification?: {useCheckpointVerification} [should be true]");
+                Utils.ConPrint($"Using StripperCS2 on current map?: {Directory.Exists($"{gameDir}/addons/StripperCS2/maps/{Server.MapName}")} [should be false]");
 
                 globalDisabled = true;
                 globalChecksPassed = false;
