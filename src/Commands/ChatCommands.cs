@@ -1521,7 +1521,6 @@ namespace SharpTimer
             playerTimers[slot].IsTimerBlocked = !playerTimers[slot].IsTimerBlocked;
             playerTimers[slot].IsRecordingReplay = false;
 
-
             if (playerTimers[slot].IsTimerBlocked)
                 Utils.PrintToChat(player, Localizer["timer_disabled"]);
             else

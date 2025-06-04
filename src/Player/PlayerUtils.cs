@@ -21,6 +21,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using FixVectorLeak;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using SharpTimerAPI.Events;
 using TagsApi;
 
 namespace SharpTimer
@@ -662,6 +663,16 @@ namespace SharpTimer
                 if (enableStyles) Utils.PrintToChatAll(Localizer["timer_style", GetNamedStyle(style)]);
                 if (enableReplays == true && enableSRreplayBot == true && newSR && (oldticks > newticks || oldticks == 0))
                     _ = Task.Run(async () => await SpawnReplayBot());
+                
+                try
+                {
+                    StEventSenderCapability.Get()
+                        ?.TriggerEvent(new FinishMapEvent(player, newSR, beatPB, currentMapTier ?? 1));
+                }
+                catch (Exception e)
+                {
+                    SharpTimerError($"Couldn't trigger timer stop event {e.Message}");
+                }
             });
         }
         public async Task PrintStageTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int stage, int bonusX = 0, int prevSR = 0)

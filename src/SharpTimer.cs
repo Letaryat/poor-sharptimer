@@ -23,6 +23,9 @@ using CounterStrikeSharp.API.Modules.UserMessages;
 using FixVectorLeak;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using CounterStrikeSharp.API.Core.Capabilities;
+using Microsoft.Extensions.Logging;
+using SharpTimerAPI;
 
 namespace SharpTimer;
 
@@ -33,13 +36,23 @@ public partial class SharpTimer : BasePlugin
     public override string ModuleAuthor => "dea, rcnoob, exkludera & st community";
     public override string ModuleDescription => "A CS2 Timer Plugin";
 
+    public static SharpTimer Instance;
+
     public Utils Utils = null!;
     public RemoveDamage RemoveDamage = null!;
+    
+    public static PluginCapability<ISharpTimerEventSender> StEventSenderCapability { get; } = new("sharptimer:event_sender");
+    public static PluginCapability<ISharpTimerManager> StManagerCapability { get; } = new("sharptimer:manager");
 
     public override void Load(bool hotReload)
     {
+        Instance = this;
+
         Utils = new Utils(this);
         RemoveDamage = new RemoveDamage(this);
+        
+        Capabilities.RegisterPluginCapability(StEventSenderCapability, () => new SharpTimerEventSender());
+        Capabilities.RegisterPluginCapability(StManagerCapability, () => new SharpTimerManager());
 
         Utils.CheckForUpdate();
 

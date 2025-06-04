@@ -16,6 +16,23 @@
     <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
     <Reference Include="src/API/TagsApi.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="SharpTimerAPI\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="SharpTimerAPI\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="SharpTimerAPI\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="SharpTimerAPI">
+      <HintPath>SharpTimerAPI\SharpTimerAPI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="SharpTimerAPI\SharpTimerAPI.csproj" />
+  </ItemGroup>
 
   <Target Name="Date" BeforeTargets="BeforeBuild">
     <WriteLinesToFile File="$(IntermediateOutputPath)gen.cs" Lines="static partial class CompileTimeStamp { public static long CompileTime = $([System.DateTime]::UtcNow.Ticks) %3B }" Overwrite="true" />

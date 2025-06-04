@@ -16,7 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System.Text.Json.Serialization;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
+using SharpTimerAPI;
+using SharpTimerAPI.Events;
 using FixVectorLeak;
 
 namespace SharpTimer
@@ -204,6 +207,9 @@ namespace SharpTimer
         //set respawn
         public string? SetRespawnPos { get; set; }
         public string? SetRespawnAng { get; set; }
+        //api stuff
+        public bool RespawnCmdBlocked { get; set; }
+        public bool TimerCmdBlocked { get; set; }
 
         public class ViewAngle
         {
@@ -380,5 +386,55 @@ namespace SharpTimer
     {
         public Dictionary<int, int>? StageTimes { get; set; }
         public Dictionary<int, string>? StageVelos { get; set; }
+    }
+
+    // Trigger push
+    public class TriggerPushData(float pushSpeed, QAngle pushEntitySpace, Vector pushDirEntitySpace, Vector pushMins, Vector pushMaxs)
+    {
+        public float PushSpeed { get; set; } = pushSpeed;
+        public QAngle PushEntitySpace { get; set; } = pushEntitySpace;
+        public Vector PushDirEntitySpace { get; set; } = pushDirEntitySpace;
+        public Vector PushMins { get; set; } = pushMins;
+        public Vector PushMaxs { get; set; } = pushMaxs;
+    }
+    
+    public class SharpTimerManager : ISharpTimerManager
+    {
+        public void RestartTimer(CCSPlayerController player)
+        {
+            SharpTimer.Instance.RespawnPlayer(player);
+        }
+
+        public bool IsTimerOn(CCSPlayerController player)
+        {
+            return !SharpTimer.Instance.playerTimers[player.Slot].IsTimerBlocked;
+        }
+
+        public void ToggleTimer(CCSPlayerController player)
+        {
+            //should probably create a method that actually forces timer toggle.
+            //this one wont toggle if player is in command cd or is mid replay.
+            SharpTimer.Instance.ForceStopTimer(player, null);
+        }
+
+        public void BlockTimerCmd(CCSPlayerController player, bool block)
+        {
+            SharpTimer.Instance.playerTimers[player.Slot].TimerCmdBlocked = block;
+        }
+
+        public void BlockRespawnCmd(CCSPlayerController player, bool block)
+        {
+            SharpTimer.Instance.playerTimers[player.Slot].RespawnCmdBlocked = block;
+        }
+    }
+    
+    public class SharpTimerEventSender : ISharpTimerEventSender
+    {
+        public void TriggerEvent(ISharpTimerPlayerEvent @event)
+        {
+            STEventSender?.Invoke(this, @event);
+        }
+
+        public event EventHandler<ISharpTimerPlayerEvent>? STEventSender;
     }
 }
