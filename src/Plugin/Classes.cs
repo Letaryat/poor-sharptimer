@@ -397,44 +397,4 @@ namespace SharpTimer
         public Vector PushMins { get; set; } = pushMins;
         public Vector PushMaxs { get; set; } = pushMaxs;
     }
-    
-    public class SharpTimerManager : ISharpTimerManager
-    {
-        public void RestartTimer(CCSPlayerController player)
-        {
-            SharpTimer.Instance.RespawnPlayer(player);
-        }
-
-        public bool IsTimerOn(CCSPlayerController player)
-        {
-            return !SharpTimer.Instance.playerTimers[player.Slot].IsTimerBlocked;
-        }
-
-        public void ToggleTimer(CCSPlayerController player)
-        {
-            //should probably create a method that actually forces timer toggle.
-            //this one wont toggle if player is in command cd or is mid replay.
-            SharpTimer.Instance.ForceStopTimer(player, null);
-        }
-
-        public void BlockTimerCmd(CCSPlayerController player, bool block)
-        {
-            SharpTimer.Instance.playerTimers[player.Slot].TimerCmdBlocked = block;
-        }
-
-        public void BlockRespawnCmd(CCSPlayerController player, bool block)
-        {
-            SharpTimer.Instance.playerTimers[player.Slot].RespawnCmdBlocked = block;
-        }
-    }
-    
-    public class SharpTimerEventSender : ISharpTimerEventSender
-    {
-        public void TriggerEvent(ISharpTimerPlayerEvent @event)
-        {
-            STEventSender?.Invoke(this, @event);
-        }
-
-        public event EventHandler<ISharpTimerPlayerEvent>? STEventSender;
-    }
 }

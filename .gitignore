@@ -4,6 +4,7 @@ CounterStrikeSharp.API.dll
 .vscode/
 .vs/
 /.idea
-SharpTimer.csproj.user
-Properties/PublishProfiles/FolderProfile.pubxml
-Properties/PublishProfiles/FolderProfile.pubxml.user
+/src/SharpTimer.csproj.user
+/src/Properties/PublishProfiles/FolderProfile.pubxml
+/src/Properties/PublishProfiles/FolderProfile.pubxml.user
+/Build

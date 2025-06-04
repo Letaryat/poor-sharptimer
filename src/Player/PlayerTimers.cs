@@ -33,7 +33,7 @@ namespace SharpTimer
             }
             catch (Exception e)
             {
-                SharpTimerError($"Couldn't trigger timer start event {e.Message}");
+                Utils.LogError($"Couldn't trigger timer start event {e.Message}");
             }
 
             if (bonusX != 0)

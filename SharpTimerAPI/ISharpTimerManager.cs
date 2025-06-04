@@ -1,12 +1,15 @@
 ﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Capabilities;
 
 namespace SharpTimerAPI;
 
 public interface ISharpTimerManager
 {
-    void RestartTimer(CCSPlayerController player);
-    bool IsTimerOn(CCSPlayerController player);
-    void ToggleTimer(CCSPlayerController player);
-    void BlockTimerCmd(CCSPlayerController player, bool block);
-    void BlockRespawnCmd(CCSPlayerController player, bool block);
+    public static readonly PluginCapability<ISharpTimerManager> Capability = new("sharptimer:manager");
+
+    public void RestartTimer(CCSPlayerController player);
+    public bool IsTimerOn(CCSPlayerController player);
+    public void ToggleTimer(CCSPlayerController player);
+    public void BlockTimerCmd(CCSPlayerController player, bool block);
+    public void BlockRespawnCmd(CCSPlayerController player, bool block);
 }

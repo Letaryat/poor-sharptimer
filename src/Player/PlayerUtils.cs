@@ -671,7 +671,7 @@ namespace SharpTimer
                 }
                 catch (Exception e)
                 {
-                    SharpTimerError($"Couldn't trigger timer stop event {e.Message}");
+                    Utils.LogError($"Couldn't trigger timer stop event {e.Message}");
                 }
             });
         }

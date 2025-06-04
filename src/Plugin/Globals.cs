@@ -20,12 +20,26 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using TagsApi;
 using FixVectorLeak;
+using CounterStrikeSharp.API.Core.Capabilities;
+using SharpTimerAPI;
 
 namespace SharpTimer
 {
     public partial class SharpTimer
     {
-        public string compileTimeStamp = new DateTime(CompileTimeStamp.CompileTime, DateTimeKind.Utc).ToString();
+        public override string ModuleName => "SharpTimer";
+        public override string ModuleVersion => $"0.3.1x";
+        public override string ModuleAuthor => "dea + sharptimer team & community";
+        public override string ModuleDescription => "A CS2 Timer Plugin";
+
+        public static SharpTimer Instance = new();
+
+        public Utils Utils = null!;
+        public RemoveDamage RemoveDamage = null!;
+
+        public static PluginCapability<ISharpTimerEventSender> StEventSenderCapability { get; } = new("sharptimer:event_sender");
+        public static PluginCapability<ISharpTimerManager> StManagerCapability { get; } = new("sharptimer:manager");
+        public static PluginCapability<ISharpTimerDatabase> StDatabaseCapability { get; } = new("sharptimer:database");
 
         public ITagApi? TagApi { get; set; }
 
