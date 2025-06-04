@@ -13,9 +13,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using CounterStrikeSharp.API.Modules.Utils;
 using System.Text.RegularExpressions;
-using Vector = CounterStrikeSharp.API.Modules.Utils.Vector;
+using FixVectorLeak;
 
 namespace SharpTimer
 {
@@ -31,12 +30,12 @@ namespace SharpTimer
             }
             catch (NullReferenceException ex)
             {
-                SharpTimerError($"Null ref in IsValidStartTriggerName: {ex.Message}");
+                Utils.LogError($"Null ref in IsValidStartTriggerName: {ex.Message}");
                 return false;
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidStartTriggerName: {ex.Message}");
+                Utils.LogError($"Exception in IsValidStartTriggerName: {ex.Message}");
                 return false;
             }
         }
@@ -63,7 +62,7 @@ namespace SharpTimer
                         {
                             if (totalBonuses[X] != 0)
                             {
-                                SharpTimerDebug($"Fake bonus {X} found, overwriting real start trigger");
+                                Utils.LogDebug($"Fake bonus {X} found, overwriting real start trigger");
                                 return (false, X);
                             }
                             else
@@ -82,7 +81,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidStartBonusTriggerName: {ex.Message}");
+                Utils.LogError($"Exception in IsValidStartBonusTriggerName: {ex.Message}");
                 return (false, 0);
             }
         }
@@ -126,7 +125,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidFakeStartBonusTriggerName: {ex.Message}");
+                Utils.LogError($"Exception in IsValidFakeStartBonusTriggerName: {ex.Message}");
                 return (false, 0);
             }
         }
@@ -164,7 +163,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidStageTriggerName: {ex.Message}");
+                Utils.LogError($"Exception in IsValidStageTriggerName: {ex.Message}");
                 return (false, 0);
             }
         }
@@ -194,7 +193,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidCheckpointTriggerName: {ex.Message}");
+                Utils.LogError($"Exception in IsValidCheckpointTriggerName: {ex.Message}");
                 return (false, 0);
             }
         }
@@ -224,7 +223,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidBonusCheckpointTriggerName: {ex.Message}");
+                Utils.LogError($"Exception in IsValidBonusCheckpointTriggerName: {ex.Message}");
                 return (false, 0);
             }
         }
@@ -239,12 +238,12 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidEndTriggerName: {ex.Message}");
+                Utils.LogError($"Exception in IsValidEndTriggerName: {ex.Message}");
                 return false;
             }
         }
 
-        private (bool valid, int X) IsValidEndBonusTriggerName(string triggerName, int playerSlot)
+        private (bool valid, int X) IsValidEndBonusTriggerName(string triggerName, int slot)
         {
             try
             {
@@ -265,18 +264,18 @@ namespace SharpTimer
                         {
                             if (totalBonuses[X] != 0)
                             {
-                                SharpTimerDebug($"Fake bonus {X} found, overwriting real end trigger");
+                                Utils.LogDebug($"Fake bonus {X} found, overwriting real end trigger");
                                 return (false, X);
                             }
                             else
                             {
-                                if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
+                                if (X != playerTimers[slot].BonusStage) return (false, 0);
                                 return (true, X);
                             }
                         }
                         catch (Exception)
                         {
-                            if (X != playerTimers[playerSlot].BonusStage) return (false, 0);
+                            if (X != playerTimers[slot].BonusStage) return (false, 0);
                             return (true, X);
                         }
 
@@ -287,7 +286,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidEndBonusTriggerName: {ex.Message}");
+                Utils.LogError($"Exception in IsValidEndBonusTriggerName: {ex.Message}");
                 return (false, 0);
             }
         }
@@ -302,7 +301,7 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidStopTriggerName: {ex.Message}");
+                Utils.LogError($"Exception in IsValidStopTriggerName: {ex.Message}");
                 return false;
             }
         }
@@ -317,57 +316,56 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                SharpTimerError($"Exception in IsValidResetTriggerName: {ex.Message}");
+                Utils.LogError($"Exception in IsValidResetTriggerName: {ex.Message}");
                 return false;
             }
         }
 
-        private void UpdateEntityCache()
-        {
-            entityCache!.UpdateCache();
-        }
-
-        private (Vector?, QAngle?) FindStartTriggerPos()
+        private (Vector_t?, QAngle_t?) FindStartTriggerPos()
         {
             currentRespawnPos = null;
             currentRespawnAng = null;
 
-            foreach (var trigger in entityCache!.Triggers)
+            foreach (var trigger in entityCache.Triggers)
             {
                 if (trigger == null || trigger.Entity!.Name == null || !IsValidStartTriggerName(trigger.Entity.Name.ToString()))
                     continue;
 
                 foreach (var info_tp in entityCache.InfoTeleportDestinations)
                 {
-                    if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!, trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin!, trigger.Collision.Maxs + trigger.CBodyComponent!.SceneNode!.AbsOrigin!))
+                    if (info_tp.Entity?.Name != null
+                        && Utils.IsVectorInsideBox(info_tp.AbsOrigin!.ToVector_t(),
+                                                    (trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin!).ToVector_t(),
+                                                    (trigger.Collision.Maxs + trigger.CBodyComponent!.SceneNode!.AbsOrigin!).ToVector_t())
+                        )
                     {
                         if (info_tp.CBodyComponent!.SceneNode!.AbsOrigin != null && info_tp.AbsRotation != null)
                         {
-                            return (info_tp.CBodyComponent.SceneNode.AbsOrigin, info_tp.AbsRotation);
+                            return (info_tp.CBodyComponent.SceneNode.AbsOrigin.ToVector_t(), info_tp.AbsRotation.ToQAngle_t());
                         }
                     }
                 }
 
                 if (trigger.CBodyComponent!.SceneNode!.AbsOrigin != null)
                 {
-                    return (trigger.CBodyComponent.SceneNode.AbsOrigin, null);
+                    return (trigger.CBodyComponent.SceneNode.AbsOrigin.ToVector_t(), null);
                 }
             }
 
             return (null, null);
         }
 
-        private Vector? FindEndTriggerPos()
+        private Vector_t? FindEndTriggerPos()
         {
             currentEndPos = null;
 
-            foreach (var trigger in entityCache!.Triggers)
+            foreach (var trigger in entityCache.Triggers)
             {
                 if (trigger == null || trigger.Entity!.Name == null || !IsValidEndTriggerName(trigger.Entity.Name.ToString()))
                     continue;
 
-                if (trigger.CBodyComponent!.SceneNode!.AbsOrigin != null) return trigger.CBodyComponent.SceneNode.AbsOrigin;
-
+                if (trigger.CBodyComponent!.SceneNode!.AbsOrigin != null)
+                    return trigger.CBodyComponent.SceneNode.AbsOrigin.ToVector_t();
             }
 
             return null;
@@ -378,28 +376,34 @@ namespace SharpTimer
             stageTriggers.Clear();
             stageTriggerPoses.Clear();
 
-            foreach (var trigger in entityCache!.Triggers)
+            foreach (var trigger in entityCache.Triggers)
             {
-                if (trigger == null || trigger.Entity!.Name == null) continue;
+                if (trigger == null || trigger.Entity!.Name == null)
+                    continue;
 
                 var (validStage, X) = IsValidStageTriggerName(trigger.Entity.Name.ToString());
+
                 if (validStage)
                 {
                     foreach (var info_tp in entityCache.InfoTeleportDestinations)
                     {
-                        if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!, trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin, trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin))
+                        if (info_tp.Entity?.Name != null &&
+                            Utils.IsVectorInsideBox(info_tp.AbsOrigin!.ToVector_t(),
+                                                    (trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin).ToVector_t(),
+                                                    (trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin).ToVector_t())
+                            )
                         {
                             if (info_tp.CBodyComponent?.SceneNode?.AbsOrigin != null && info_tp.AbsRotation != null)
                             {
-                                stageTriggerPoses[X] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
-                                stageTriggerAngs[X] = info_tp.AbsRotation;
-                                SharpTimerDebug($"Added !stage {X} pos {stageTriggerPoses[X]} ang {stageTriggerAngs[X]}");
+                                stageTriggerPoses[X] = info_tp.CBodyComponent.SceneNode.AbsOrigin.ToVector_t();
+                                stageTriggerAngs[X] = info_tp.AbsRotation.ToQAngle_t();
+                                Utils.LogDebug($"Added !stage {X} pos {stageTriggerPoses[X]} ang {stageTriggerAngs[X]}");
                             }
                         }
                     }
 
                     stageTriggers[trigger.Handle] = X;
-                    SharpTimerDebug($"Added Stage {X} Trigger {trigger.Handle}");
+                    Utils.LogDebug($"Added Stage {X} Trigger {trigger.Handle}");
                 }
             }
 
@@ -413,15 +417,15 @@ namespace SharpTimer
                 stageTriggers.Clear();
                 stageTriggerPoses.Clear();
                 stageTriggerAngs.Clear();
-                SharpTimerDebug($"Only one Stage Trigger found. Not enough. Cancelling...");
+                Utils.LogDebug($"Only one Stage Trigger found. Not enough. Cancelling...");
             }
             else if (stageTriggerCount > 1)
             {
                 useStageTriggers = true;
             }
 
-            SharpTimerDebug($"Found a max of {stageTriggerCount} Stage triggers");
-            SharpTimerDebug($"Use stageTriggers is set to {useStageTriggers}");
+            Utils.LogDebug($"Found a max of {stageTriggerCount} Stage triggers");
+            Utils.LogDebug($"Use stageTriggers is set to {useStageTriggers}");
         }
 
         private void FindCheckpointTriggers()
@@ -429,38 +433,40 @@ namespace SharpTimer
             cpTriggers.Clear();
             cpTriggerCount = 0;
 
-            foreach (var trigger in entityCache!.Triggers)
+            foreach (var trigger in entityCache.Triggers)
             {
-                if (trigger == null || trigger.Entity!.Name == null) continue;
+                if (trigger == null || trigger.Entity!.Name == null)
+                    continue;
 
                 var (validCp, X) = IsValidCheckpointTriggerName(trigger.Entity.Name.ToString());
                 if (validCp)
                 {
                     cpTriggerCount++;
                     cpTriggers[trigger.Handle] = X;
-                    SharpTimerDebug($"Added Checkpoint {cpTriggerCount} Trigger {trigger.Handle}");
+                    Utils.LogDebug($"Added Checkpoint {cpTriggerCount} Trigger {trigger.Handle}");
                 }
             }
 
             useCheckpointTriggers = cpTriggerCount != 0;
 
-            SharpTimerDebug($"Found a max of {cpTriggerCount} Checkpoint triggers");
-            SharpTimerDebug($"Use useCheckpointTriggers is set to {useCheckpointTriggers}");
+            Utils.LogDebug($"Found a max of {cpTriggerCount} Checkpoint triggers");
+            Utils.LogDebug($"Use useCheckpointTriggers is set to {useCheckpointTriggers}");
         }
 
         private void FindBonusCheckpointTriggers()
         {
             bonusCheckpointTriggers.Clear();
 
-            foreach (var trigger in entityCache!.Triggers)
+            foreach (var trigger in entityCache.Triggers)
             {
-                if (trigger == null || trigger.Entity!.Name == null) continue;
+                if (trigger == null || trigger.Entity!.Name == null)
+                    continue;
 
                 var (validCp, X) = IsValidBonusCheckpointTriggerName(trigger.Entity.Name.ToString());
                 if (validCp)
                 {
                     bonusCheckpointTriggers[trigger.Handle] = X;
-                    SharpTimerDebug($"Added Bonus Checkpoint {X} Trigger {trigger.Handle}");
+                    Utils.LogDebug($"Added Bonus Checkpoint {X} Trigger {trigger.Handle}");
                 }
             }
 
@@ -468,47 +474,51 @@ namespace SharpTimer
 
             useBonusCheckpointTriggers = bonusCheckpointTriggerCount != 0;
 
-            SharpTimerDebug($"Found a max of {bonusCheckpointTriggerCount} Bonus Checkpoint triggers");
-            SharpTimerDebug($"Use useBonusCheckpointTriggers is set to {useBonusCheckpointTriggers}");
+            Utils.LogDebug($"Found a max of {bonusCheckpointTriggerCount} Bonus Checkpoint triggers");
+            Utils.LogDebug($"Use useBonusCheckpointTriggers is set to {useBonusCheckpointTriggers}");
         }
 
         private void FindBonusStartTriggerPos()
         {
 
-            foreach (var trigger in entityCache!.Triggers)
+            foreach (var trigger in entityCache.Triggers)
             {
-                if (trigger == null || trigger.Entity!.Name == null) continue;
+                if (trigger == null || trigger.Entity!.Name == null)
+                    continue;
 
                 var (validStartBonus, bonusX) = IsValidStartBonusTriggerName(trigger.Entity.Name.ToString());
+
                 if (validStartBonus)
                 {
                     bool bonusPosAndAngSet = false;
 
                     foreach (var info_tp in entityCache.InfoTeleportDestinations)
                     {
-                        if (info_tp.Entity?.Name != null && IsVectorInsideBox(info_tp.AbsOrigin!, trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin, trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin))
+                        if (info_tp.Entity?.Name != null &&
+                            Utils.IsVectorInsideBox(info_tp.AbsOrigin!.ToVector_t(),
+                                                    (trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin).ToVector_t(),
+                                                    (trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin).ToVector_t())
+                            )
                         {
                             if (info_tp.CBodyComponent?.SceneNode?.AbsOrigin != null && info_tp.AbsRotation != null)
                             {
                                 try
                                 {
                                     if (bonusRespawnPoses[bonusX] != null)
-                                    {
-                                        SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
-                                    }
+                                        Utils.LogDebug($"Fake bonus {bonusX} found, skipping real triggers");
                                     else
                                     {
-                                        bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
-                                        bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
-                                        SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
+                                        bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin.ToVector_t();
+                                        bonusRespawnAngs[bonusX] = info_tp.AbsRotation.ToQAngle_t();
+                                        Utils.LogDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
                                         bonusPosAndAngSet = true;
                                     }
                                 }
                                 catch (Exception)
                                 {
-                                    bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin;
-                                    bonusRespawnAngs[bonusX] = info_tp.AbsRotation;
-                                    SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
+                                    bonusRespawnPoses[bonusX] = info_tp.CBodyComponent.SceneNode.AbsOrigin.ToVector_t();
+                                    bonusRespawnAngs[bonusX] = info_tp.AbsRotation.ToQAngle_t();
+                                    Utils.LogDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]} ang {bonusRespawnAngs[bonusX]}");
                                     bonusPosAndAngSet = true;
                                 }
                             }
@@ -520,42 +530,40 @@ namespace SharpTimer
                         try
                         {
                             if (bonusRespawnPoses[bonusX] != null)
-                            {
-                                SharpTimerDebug($"Fake bonus {bonusX} found, skipping real triggers");
-                            }
+                                Utils.LogDebug($"Fake bonus {bonusX} found, skipping real triggers");
                             else
                             {
-                                bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
-                                SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
+                                bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin.ToVector_t();
+                                Utils.LogDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
                             }
                         }
                         catch (Exception)
                         {
-                            bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin;
-                            SharpTimerDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
+                            bonusRespawnPoses[bonusX] = trigger.CBodyComponent.SceneNode.AbsOrigin.ToVector_t();
+                            Utils.LogDebug($"Added Bonus !rb {bonusX} pos {bonusRespawnPoses[bonusX]}");
                         }
                     }
                 }
             }
         }
 
-        private (Vector?, Vector?, Vector?, Vector?) FindTriggerBounds()
+        private (Vector_t?, Vector_t?, Vector_t?, Vector_t?) FindTriggerBounds()
         {
-            Vector? startMins = null;
-            Vector? startMaxs = null;
+            Vector_t? startMins = null;
+            Vector_t? startMaxs = null;
 
-            Vector? endMins = null;
-            Vector? endMaxs = null;
+            Vector_t? endMins = null;
+            Vector_t? endMaxs = null;
 
-            foreach (var trigger in entityCache!.Triggers)
+            foreach (var trigger in entityCache.Triggers)
             {
                 if (trigger == null || trigger.Entity!.Name == null)
                     continue;
 
                 if (IsValidStartTriggerName(trigger.Entity.Name.ToString()))
                 {
-                    startMins = trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin;
-                    startMaxs = trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin;
+                    startMins = (trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin).ToVector_t();
+                    startMaxs = (trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin).ToVector_t();
                     currentMapStartTriggerMaxs = startMaxs;
                     currentMapStartTriggerMins = startMins;
                     continue;
@@ -563,8 +571,8 @@ namespace SharpTimer
 
                 if (IsValidEndTriggerName(trigger.Entity.Name.ToString()))
                 {
-                    endMins = trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin;
-                    endMaxs = trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin;
+                    endMins = (trigger.Collision.Mins + trigger.CBodyComponent!.SceneNode!.AbsOrigin).ToVector_t();
+                    endMaxs = (trigger.Collision.Maxs + trigger.CBodyComponent.SceneNode.AbsOrigin).ToVector_t();
                     continue;
                 }
             }

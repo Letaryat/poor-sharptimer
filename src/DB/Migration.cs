@@ -95,7 +95,7 @@ public partial class SharpTimer
                 // Update the last applied migration version
                 UpdateLastAppliedVersion(connection, version);
 
-                SharpTimerDebug($"Migration \"{version}\" successfully applied.");
+                Utils.LogDebug($"Migration \"{version}\" successfully applied.");
             }
         }
     }
