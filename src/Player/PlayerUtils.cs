@@ -23,6 +23,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using SharpTimerAPI.Events;
 using TagsApi;
+using CounterStrikeSharp.API.Modules.Memory;
 
 namespace SharpTimer
 {
@@ -182,14 +183,18 @@ namespace SharpTimer
 
         private string GetCurrentPlayerSpeed(CCSPlayerController player)
         {
+            var playerPawn = player.PlayerPawn();
+            if (playerPawn == null)
+                return "";
+
             return Math.Round(
-                use2DSpeed ?
-                    Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value!.AbsVelocity.X +
-                            player.PlayerPawn.Value!.AbsVelocity.Y * player.PlayerPawn.Value!.AbsVelocity.Y)
-                : Math.Sqrt(player.PlayerPawn.Value!.AbsVelocity.X * player.PlayerPawn.Value!.AbsVelocity.X +
-                            player.PlayerPawn.Value!.AbsVelocity.Y * player.PlayerPawn.Value!.AbsVelocity.Y +
-                            player.PlayerPawn.Value!.AbsVelocity.Z * player.PlayerPawn.Value!.AbsVelocity.Z)
-            ).ToString("0000");
+                use2DSpeed
+                ? Math.Sqrt(playerPawn.AbsVelocity.X * playerPawn.AbsVelocity.X +
+                            playerPawn.AbsVelocity.Y * playerPawn.AbsVelocity.Y)
+                : Math.Sqrt(playerPawn.AbsVelocity.X * playerPawn.AbsVelocity.X +
+                            playerPawn.AbsVelocity.Y * playerPawn.AbsVelocity.Y +
+                            playerPawn.AbsVelocity.Z * playerPawn.AbsVelocity.Z)
+                ).ToString("0000");
         }
 
         public void PrintStartSpeed(CCSPlayerController player)
@@ -201,20 +206,22 @@ namespace SharpTimer
       
         private void RemovePlayerCollision(CCSPlayerController? player)
         {
+            if (player == null) return;
+            var pawn = player.Pawn();
+            if (pawn == null) return;
+
             try
             {
-                Server.NextFrame(() =>
-                {
-                    if (removeCollisionEnabled == false || !IsAllowedPlayer(player)) return;
+                if (removeCollisionEnabled == false)
+                    return;
 
-                    player!.Pawn.Value!.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
-                    player!.Pawn.Value!.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
+                pawn.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
+                pawn.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
 
-                    Utilities.SetStateChanged(player, "CCollisionProperty", "m_CollisionGroup");
-                    Utilities.SetStateChanged(player, "CCollisionProperty", "m_collisionAttribute");
+                Utilities.SetStateChanged(player, "CCollisionProperty", "m_CollisionGroup");
+                Utilities.SetStateChanged(player, "CCollisionProperty", "m_collisionAttribute");
 
-                    Utils.LogDebug($"Removed Collison for {player.PlayerName}");
-                });
+                Utils.LogDebug($"Removed Collison for {player.PlayerName}");
             }
             catch (Exception ex)
             {
@@ -732,7 +739,7 @@ namespace SharpTimer
                 string clanTag = $"{rank} {(playerTimers[player.Slot].IsVip ? $"{customVIPTag}" : "")}";
 
                 string rankColor = GetRankColorForChat(player);
-                string chatTag = $"{rankColor}{rank} ";
+                string chatTag = $" {rankColor}{rank} ";
 
                 if (displayChatTags)
                 {
@@ -881,62 +888,6 @@ namespace SharpTimer
                     }
                 });
             }
-        }
-    }
-
-    public static class EntityExtends
-    {
-        public static bool Valid(this CCSPlayerController? player)
-        {
-            if (player == null) return false;
-
-            return player.IsValid && !player.IsBot && !player.IsHLTV;
-        }
-
-        public static CCSPlayerPawn? PlayerPawn([NotNullWhen(true)] this CCSPlayerController player)
-        {
-            CCSPlayerPawn? playerPawn = player.PlayerPawn.Value;
-
-            return playerPawn;
-        }
-
-        public static CBasePlayerPawn? Pawn([NotNullWhen(true)] this CCSPlayerController player)
-        {
-            CBasePlayerPawn? pawn = player.Pawn.Value;
-
-            return pawn;
-        }
-
-        public static bool TeamT([NotNullWhen(true)] this CCSPlayerController player)
-        {
-            return player.Team == CsTeam.Terrorist;
-        }
-        public static bool TeamCT([NotNullWhen(true)] this CCSPlayerController player)
-        {
-            return player.Team == CsTeam.CounterTerrorist;
-        }
-        public static bool TeamSpec([NotNullWhen(true)] this CCSPlayerController player)
-        {
-            return player.Team == CsTeam.Spectator;
-        }
-        public static bool TeamNone([NotNullWhen(true)] this CCSPlayerController player)
-        {
-            return player.Team == CsTeam.None;
-        }
-
-        public static bool isAdmin([NotNullWhen(true)] this CCSPlayerController player)
-        {
-            if (AdminManager.PlayerHasPermissions(player, "@css/ban"))
-                return true;
-
-            return false;
-        }
-        public static bool isVIP([NotNullWhen(true)] this CCSPlayerController player)
-        {
-            if (AdminManager.PlayerHasPermissions(player, "@css/reservation"))
-                return true;
-
-            return false;
         }
     }
 }

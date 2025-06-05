@@ -20,11 +20,10 @@ using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.UserMessages;
-using FixVectorLeak;
-using System.Drawing;
-using System.Runtime.InteropServices;
 using CounterStrikeSharp.API.Core.Capabilities;
-using SharpTimerAPI;
+using System.Runtime.InteropServices;
+using System.Drawing;
+using FixVectorLeak;
 
 namespace SharpTimer;
 

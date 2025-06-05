@@ -365,16 +365,16 @@ namespace SharpTimer
             LogDebug($"Beam Spawned at S:{startPos} E:{beam.EndPos}");
         }
 
-        public void DrawWireframe3D(Vector_t corner1, Vector_t corner8, string _color)
+        public void DrawWireframe3D(Vector_t corner1, Vector_t corner8, string _color, bool fakezone)
         {
             Vector_t corner2 = new(corner1.X, corner8.Y, corner1.Z);
             Vector_t corner3 = new(corner8.X, corner8.Y, corner1.Z);
             Vector_t corner4 = new(corner8.X, corner1.Y, corner1.Z);
 
-            Vector_t corner5 = new(corner8.X, corner1.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
-            Vector_t corner6 = new(corner1.X, corner1.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
-            Vector_t corner7 = new(corner1.X, corner8.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
-            if (Plugin.Box3DZones) corner8 = new(corner8.X, corner8.Y, corner8.Z + Plugin.fakeTriggerHeight);
+            Vector_t corner5 = new(corner8.X, corner1.Y, corner8.Z + (fakezone && Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            Vector_t corner6 = new(corner1.X, corner1.Y, corner8.Z + (fakezone && Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            Vector_t corner7 = new(corner1.X, corner8.Y, corner8.Z + (fakezone && Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            if (Plugin.Box3DZones) corner8 = new(corner8.X, corner8.Y, corner8.Z + (fakezone ? Plugin.fakeTriggerHeight : 0));
 
             //top square
             DrawLaserBetween(corner1, corner2, _color);
@@ -395,7 +395,7 @@ namespace SharpTimer
             DrawLaserBetween(corner4, corner5, _color);
         }
 
-        public bool IsVectorInsideBox(Vector_t playerVector, Vector_t corner1, Vector_t corner2)
+        public bool IsVectorInsideBox(Vector_t playerVector, Vector_t corner1, Vector_t corner2, bool fakezone)
         {
             float minX = Math.Min(corner1.X, corner2.X);
             float minY = Math.Min(corner1.Y, corner2.Y);
@@ -403,7 +403,7 @@ namespace SharpTimer
 
             float maxX = Math.Max(corner1.X, corner2.X);
             float maxY = Math.Max(corner1.Y, corner2.Y);
-            float maxZ = Math.Max(corner1.Z, corner2.Z + Plugin.fakeTriggerHeight);
+            float maxZ = Math.Max(corner1.Z, corner2.Z + (fakezone ? Plugin.fakeTriggerHeight : 0));
 
             return playerVector.X >= minX && playerVector.X <= maxX &&
                    playerVector.Y >= minY && playerVector.Y <= maxY &&
@@ -677,12 +677,19 @@ namespace SharpTimer
         {
             if (Plugin.disableRemoteData)
             {
-                return Plugin.currentMapName switch
-                {
-                    var name when name!.StartsWith("bhop_") => Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "bhop_.json")!,
-                    var name when name!.StartsWith("surf_") => Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json"),
-                    _ => null
-                } ?? Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json");
+                var mapName = Plugin.currentMapName;
+                if (string.IsNullOrEmpty(mapName))
+                    return "";
+
+                // Extract the prefix (part before and including the underscore)
+                int underscoreIndex = mapName.IndexOf('_');
+                if (underscoreIndex == -1)
+                    return "";
+
+                string prefix = mapName.Substring(0, underscoreIndex + 1); // e.g., "bhop_" or "surf_"
+                string jsonPath = Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", $"{prefix}.json");
+
+                return File.Exists(jsonPath) ? jsonPath : "";
             }
             return Plugin.currentMapName switch
             {

@@ -206,83 +206,119 @@ namespace SharpTimer
         {
             string[]? playerRecords;
             string[]? playerStats;
+            string[]? playerStageTimes;
+
             switch (dbType)
             {
                 case DatabaseType.MySQL:
-                    playerRecords = [       "MapName VARCHAR(255) DEFAULT ''",
-                                                    "SteamID VARCHAR(20) DEFAULT ''",
-                                                    "PlayerName VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT ''",
-                                                    "TimerTicks INT DEFAULT 0",
-                                                    "FormattedTime VARCHAR(255) DEFAULT ''",
-                                                    "UnixStamp INT DEFAULT 0",
-                                                    "LastFinished INT DEFAULT 0",
-                                                    "TimesFinished INT DEFAULT 0",
-                                                    "Style INT DEFAULT 0"
-                                                ];
-                    playerStats = [         "SteamID VARCHAR(20) DEFAULT ''",
-                                                    "PlayerName VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT ''",
-                                                    "TimesConnected INT DEFAULT 0",
-                                                    "LastConnected INT DEFAULT 0",
-                                                    "GlobalPoints INT DEFAULT 0",
-                                                    "HideTimerHud BOOL DEFAULT false",
-                                                    "HideKeys BOOL DEFAULT false",
-                                                    "SoundsEnabled BOOL DEFAULT false",
-                                                    "PlayerFov INT DEFAULT 0",
-                                                    "IsVip BOOL DEFAULT false",
-                                                    "BigGifID VARCHAR(16) DEFAULT 'x'"
-                                                ];
+                    playerRecords = [
+                        "MapName VARCHAR(255) DEFAULT ''",
+                        "SteamID VARCHAR(20) DEFAULT ''",
+                        "PlayerName VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT ''",
+                        "TimerTicks INT DEFAULT 0",
+                        "FormattedTime VARCHAR(255) DEFAULT ''",
+                        "UnixStamp INT DEFAULT 0",
+                        "LastFinished INT DEFAULT 0",
+                        "TimesFinished INT DEFAULT 0",
+                        "Style INT DEFAULT 0"
+                    ];
+                    playerStats = [
+                        "SteamID VARCHAR(20) DEFAULT ''",
+                        "PlayerName VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT ''",
+                        "TimesConnected INT DEFAULT 0",
+                        "LastConnected INT DEFAULT 0",
+                        "GlobalPoints INT DEFAULT 0",
+                        "HideTimerHud BOOL DEFAULT false",
+                        "HideKeys BOOL DEFAULT false",
+                        "SoundsEnabled BOOL DEFAULT false",
+                        "PlayerFov INT DEFAULT 0",
+                        "IsVip BOOL DEFAULT false",
+                        "BigGifID VARCHAR(16) DEFAULT 'x'"
+                    ];
+                    playerStageTimes = [
+                        "MapName VARCHAR(255) DEFAULT ''",
+                        "SteamID VARCHAR(20) DEFAULT ''",
+                        "PlayerName VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT ''",
+                        "Stage INT DEFAULT 0",
+                        "TimerTicks INT DEFAULT 0",
+                        "FormattedTime VARCHAR(255) DEFAULT ''",
+                        "Velocity VARCHAR(255) DEFAULT ''"
+                    ];
                     break;
                 case DatabaseType.PostgreSQL:
-                    playerRecords = [       @"""MapName"" VARCHAR(255) DEFAULT ''",
-                                                    @"""SteamID"" VARCHAR(20) DEFAULT ''",
-                                                    @"""PlayerName"" VARCHAR(32) DEFAULT ''",
-                                                    @"""TimerTicks"" INT DEFAULT 0",
-                                                    @"""FormattedTime"" VARCHAR(255) DEFAULT ''",
-                                                    @"""UnixStamp"" INT DEFAULT 0",
-                                                    @"""LastFinished"" INT DEFAULT 0",
-                                                    @"""TimesFinished"" INT DEFAULT 0",
-                                                    @"""Style"" INT DEFAULT 0"
-                                                ];
-                    playerStats = [         @"""SteamID"" VARCHAR(20) DEFAULT ''",
-                                                    @"""PlayerName"" VARCHAR(32) DEFAULT ''",
-                                                    @"""TimesConnected"" INT DEFAULT 0",
-                                                    @"""LastConnected"" INT DEFAULT 0",
-                                                    @"""GlobalPoints"" INT DEFAULT 0",
-                                                    @"""HideTimerHud"" BOOL DEFAULT false",
-                                                    @"""HideKeys"" BOOL DEFAULT false",
-                                                    @"""SoundsEnabled"" BOOL DEFAULT false",
-                                                    @"""PlayerFov"" INT DEFAULT 0",
-                                                    @"""IsVip"" BOOL DEFAULT false",
-                                                    @"""BigGifID"" VARCHAR(16) DEFAULT 'x'"
-                                                ];
+                    playerRecords = [
+                        @"""MapName"" VARCHAR(255) DEFAULT ''",
+                        @"""SteamID"" VARCHAR(20) DEFAULT ''",
+                        @"""PlayerName"" VARCHAR(32) DEFAULT ''",
+                        @"""TimerTicks"" INT DEFAULT 0",
+                        @"""FormattedTime"" VARCHAR(255) DEFAULT ''",
+                        @"""UnixStamp"" INT DEFAULT 0",
+                        @"""LastFinished"" INT DEFAULT 0",
+                        @"""TimesFinished"" INT DEFAULT 0",
+                        @"""Style"" INT DEFAULT 0"
+                    ];
+                    playerStats = [
+                        @"""SteamID"" VARCHAR(20) DEFAULT ''",
+                        @"""PlayerName"" VARCHAR(32) DEFAULT ''",
+                        @"""TimesConnected"" INT DEFAULT 0",
+                        @"""LastConnected"" INT DEFAULT 0",
+                        @"""GlobalPoints"" INT DEFAULT 0",
+                        @"""HideTimerHud"" BOOL DEFAULT false",
+                        @"""HideKeys"" BOOL DEFAULT false",
+                        @"""SoundsEnabled"" BOOL DEFAULT false",
+                        @"""PlayerFov"" INT DEFAULT 0",
+                        @"""IsVip"" BOOL DEFAULT false",
+                        @"""BigGifID"" VARCHAR(16) DEFAULT 'x'"
+                    ];
+                    playerStageTimes = [
+                        @"""MapName"" VARCHAR(255) DEFAULT ''",
+                        @"""SteamID"" VARCHAR(20) DEFAULT ''",
+                        @"""PlayerName"" VARCHAR(32) DEFAULT ''",
+                        @"""Stage"" INT DEFAULT 0",
+                        @"""TimerTicks"" INT DEFAULT 0",
+                        @"""FormattedTime"" VARCHAR(255) DEFAULT ''",
+                        @"""Velocity"" VARCHAR(255) DEFAULT ''"
+                    ];
                     break;
                 case DatabaseType.SQLite:
-                    playerRecords = [       "MapName TEXT DEFAULT ''",
-                                                    "SteamID TEXT DEFAULT ''",
-                                                    "PlayerName TEXT DEFAULT ''",
-                                                    "TimerTicks INT DEFAULT 0",
-                                                    "FormattedTime TEXT DEFAULT ''",
-                                                    "UnixStamp INT DEFAULT 0",
-                                                    "LastFinished INT DEFAULT 0",
-                                                    "TimesFinished INT DEFAULT 0",
-                                                    "Style INT DEFAULT 0"
-                                                ];
-                    playerStats = [         "SteamID TEXT DEFAULT ''",
-                                                    "PlayerName TEXT DEFAULT ''",
-                                                    "TimesConnected INTEGER DEFAULT 0",
-                                                    "LastConnected INTEGER DEFAULT 0",
-                                                    "GlobalPoints INTEGER DEFAULT 0",
-                                                    "HideTimerHud INTEGER DEFAULT 0",
-                                                    "HideKeys INTEGER DEFAULT 0",
-                                                    "SoundsEnabled INTEGER DEFAULT 1",
-                                                    "PlayerFov INTEGER DEFAULT 0",
-                                                    "IsVip INTEGER DEFAULT 0",
-                                                    "BigGifID TEXT DEFAULT 'x'"
-                                                ];
+                    playerRecords = [
+                        "MapName TEXT DEFAULT ''",
+                        "SteamID TEXT DEFAULT ''",
+                        "PlayerName TEXT DEFAULT ''",
+                        "TimerTicks INT DEFAULT 0",
+                        "FormattedTime TEXT DEFAULT ''",
+                        "UnixStamp INT DEFAULT 0",
+                        "LastFinished INT DEFAULT 0",
+                        "TimesFinished INT DEFAULT 0",
+                        "Style INT DEFAULT 0"
+                    ];
+                    playerStats = [
+                        "SteamID TEXT DEFAULT ''",
+                        "PlayerName TEXT DEFAULT ''",
+                        "TimesConnected INTEGER DEFAULT 0",
+                        "LastConnected INTEGER DEFAULT 0",
+                        "GlobalPoints INTEGER DEFAULT 0",
+                        "HideTimerHud INTEGER DEFAULT 0",
+                        "HideKeys INTEGER DEFAULT 0",
+                        "SoundsEnabled INTEGER DEFAULT 1",
+                        "PlayerFov INTEGER DEFAULT 0",
+                        "IsVip INTEGER DEFAULT 0",
+                        "BigGifID TEXT DEFAULT 'x'"
+                    ];
+                    playerStageTimes = [
+                        "MapName TEXT DEFAULT ''",
+                        "SteamID TEXT DEFAULT ''",
+                        "PlayerName TEXT DEFAULT ''",
+                        "Stage INTEGER DEFAULT 0",
+                        "TimerTicks INTEGER DEFAULT 0",
+                        "FormattedTime TEXT DEFAULT ''",
+                        "Velocity TEXT DEFAULT ''"
+                    ];
                     break;
                 default:
                     playerRecords = null;
                     playerStats = null;
+                    playerStageTimes = null;
                     Utils.LogError($"Database type not supported");
                     break;
             }
@@ -299,6 +335,11 @@ namespace SharpTimer
                     Utils.LogDebug($"Checking PlayerStats Table...");
                     await CreatePlayerStatsTableAsync(connection);
                     await UpdateTableColumnsAsync(connection, $"{PlayerStatsTable}", playerStats!);
+
+                    // Check PlayerStageTimes
+                    Utils.LogDebug($"Checking PlayerStageTimes Table...");
+                    await CreatePlayerStageTimesTableAsync(connection);
+                    await UpdateTableColumnsAsync(connection, "PlayerStageTimes", playerStageTimes!);
                 }
                 catch (Exception ex)
                 {
@@ -536,6 +577,8 @@ namespace SharpTimer
                                             PlayerFov INT,
                                             IsVip BOOL,
                                             BigGifID VARCHAR(16),
+                                            HideWeapon BOOL,
+                                            HidePlayers BOOL,
                                             PRIMARY KEY (SteamID)
                                         )";
                     command = new MySqlCommand(query, (MySqlConnection)connection);
@@ -553,6 +596,8 @@ namespace SharpTimer
                                             ""PlayerFov"" INT,
                                             ""IsVip"" BOOL,
                                             ""BigGifID"" VARCHAR(16),
+                                            ""HideWeapon"" BOOL,
+                                            ""HidePlayers"" BOOL,
                                             PRIMARY KEY (""SteamID"")
                                         )";
                     command = new NpgsqlCommand(query, (NpgsqlConnection)connection);
@@ -569,7 +614,10 @@ namespace SharpTimer
                                             SoundsEnabled INTEGER,
                                             PlayerFov INTEGER,
                                             IsVip INTEGER,
-                                            BigGifID TEXT)";
+                                            BigGifID TEXT,
+                                            HideWeapon INTEGER,
+                                            HidePlayers INTEGER
+                                        )";
                     command = new SQLiteCommand(query, (SQLiteConnection)connection);
                     break;
                 default:
@@ -588,6 +636,70 @@ namespace SharpTimer
                 }
             }
         }
+
+        private async Task CreatePlayerStageTimesTableAsync(IDbConnection connection)
+        {
+            DbCommand? command;
+            string query;
+            switch (dbType)
+            {
+                case DatabaseType.MySQL:
+                    query = @"CREATE TABLE IF NOT EXISTS PlayerStageTimes (
+                        MapName VARCHAR(255),
+                        SteamID VARCHAR(20),
+                        PlayerName VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+                        Stage INT,
+                        TimerTicks INT,
+                        FormattedTime VARCHAR(255),
+                        Velocity VARCHAR(255),
+                        PRIMARY KEY (MapName, SteamID, Stage)
+                    )";
+                    command = new MySqlCommand(query, (MySqlConnection)connection);
+                    break;
+                case DatabaseType.PostgreSQL:
+                    query = @"CREATE TABLE IF NOT EXISTS ""PlayerStageTimes"" (
+                        ""MapName"" VARCHAR(255),
+                        ""SteamID"" VARCHAR(20),
+                        ""PlayerName"" VARCHAR(32),
+                        ""Stage"" INT,
+                        ""TimerTicks"" INT,
+                        ""FormattedTime"" VARCHAR(255),
+                        ""Velocity"" VARCHAR(255),
+                        PRIMARY KEY (""MapName"", ""SteamID"", ""Stage"")
+                    )";
+                    command = new NpgsqlCommand(query, (NpgsqlConnection)connection);
+                    break;
+                case DatabaseType.SQLite:
+                    query = @"CREATE TABLE IF NOT EXISTS PlayerStageTimes (
+                        MapName TEXT,
+                        SteamID TEXT,
+                        PlayerName TEXT,
+                        Stage INTEGER,
+                        TimerTicks INTEGER,
+                        FormattedTime TEXT,
+                        Velocity TEXT,
+                        PRIMARY KEY (MapName, SteamID, Stage)
+                    )";
+                    command = new SQLiteCommand(query, (SQLiteConnection)connection);
+                    break;
+                default:
+                    command = null;
+                    break;
+            }
+
+            using (command)
+            {
+                try
+                {
+                    await command!.ExecuteNonQueryAsync();
+                }
+                catch (Exception ex)
+                {
+                    Utils.LogError($"Error in CreatePlayerStageTimesTableAsync: {ex.Message}");
+                }
+            }
+        }
+
         public async Task SavePlayerTimeToDatabase(CCSPlayerController? player, int timerTicks, string steamId, string playerName, int slot, int bonusX = 0, int style = 0)
         {
             Utils.LogDebug($"Trying to save player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database for {playerName} {timerTicks}");

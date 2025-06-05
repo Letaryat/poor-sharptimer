@@ -359,19 +359,14 @@ namespace SharpTimer
                                 replayBotController = bot;
                                 Utils.LogDebug($"Found replay bot: {bot.PlayerName}");
 
-                                var botPawn = bot.PlayerPawn.Value;
-                                if (botPawn == null) return;
+                                var botPlayerPawn = bot.PlayerPawn();
+                                if (botPlayerPawn == null) return;
 
                                 // bot settings
                                 bot.RemoveWeapons();
-                                botPawn.Bot!.IsStopping = true;
-                                botPawn.Bot.IsSleeping = true;
-                                botPawn.Bot.AllowActive = true;
-                                botPawn.Collision.CollisionAttribute.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
-                                botPawn.Collision.CollisionGroup = (byte)CollisionGroup.COLLISION_GROUP_DISSOLVING;
-                                Utilities.SetStateChanged(bot, "CCollisionProperty", "m_CollisionGroup");
-                                Utilities.SetStateChanged(bot, "CCollisionProperty", "m_collisionAttribute");
-                                Utils.LogDebug($"Configured replay bot collision and weapons for {bot.PlayerName}");
+                                botPlayerPawn.Bot!.IsStopping = true;
+                                botPlayerPawn.Bot.IsSleeping = true;
+                                botPlayerPawn.Bot.AllowActive = true;
 
                                 // start bot replay
                                 OnPlayerConnect(bot, true);

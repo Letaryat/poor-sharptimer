@@ -994,7 +994,7 @@ namespace SharpTimer
 
             if (useTriggers == true)
             {
-                if (Utils.IsVectorInsideBox(currentPosition + new Vector_t(0, 0, 10), currentMapStartTriggerMaxs.GetValueOrDefault(), currentMapStartTriggerMins.GetValueOrDefault()))
+                if (Utils.IsVectorInsideBox(currentPosition + new Vector_t(0, 0, 10), currentMapStartTriggerMaxs.GetValueOrDefault(), currentMapStartTriggerMins.GetValueOrDefault(), false))
                 {
                     // Convert position and rotation to strings
                     string positionString = $"{currentPosition.X} {currentPosition.Y} {currentPosition.Z}";
@@ -1009,7 +1009,7 @@ namespace SharpTimer
             }
             else
             {
-                if (Utils.IsVectorInsideBox(currentPosition + new Vector_t(0, 0, 10), currentMapStartC1, currentMapStartC2))
+                if (Utils.IsVectorInsideBox(currentPosition + new Vector_t(0, 0, 10), currentMapStartC1, currentMapStartC2, true))
                 {
                     // Convert position and rotation to strings
                     string positionString = $"{currentPosition.X} {currentPosition.Y} {currentPosition.Z}";
@@ -1406,9 +1406,9 @@ namespace SharpTimer
                     if (currentRespawnPos != null && playerTimers[slot].SetRespawnPos == null)
                     {
                         if (currentRespawnAng != null)
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, currentRespawnAng);
+                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, currentRespawnAng, new Vector_t(0, 0, 0));
                         else
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t());
+                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
 
                         Utils.LogDebug($"{player.PlayerName} css_r to {currentRespawnPos}");
                     }
@@ -1538,7 +1538,7 @@ namespace SharpTimer
             if (!playerTimers[slot].IsTimerBlocked)
             {
                 Vector_t playerPos = player.Pawn?.Value!.CBodyComponent?.SceneNode!.AbsOrigin.ToVector_t() ?? new();
-                bool isInsideStartBox = Utils.IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
+                bool isInsideStartBox = Utils.IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2, true);
                 playerTimers[slot].inStartzone = isInsideStartBox; // Only set to true if player is actually in the start zone
             }
             else playerTimers[slot].inStartzone = false;

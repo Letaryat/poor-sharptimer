@@ -319,8 +319,8 @@ public partial class SharpTimer
                         }
                         if (!currentBonusStartC1[bonus].Equals(new()) && !currentBonusStartC2[bonus].Equals(new()) && !currentBonusEndC1[bonus].Equals(new()) && !currentBonusEndC2[bonus].Equals(new()))
                         {
-                            Utils.DrawWireframe3D(currentBonusStartC1[bonus], currentBonusStartC2[bonus], startBeamColor);
-                            Utils.DrawWireframe3D(currentBonusEndC1[bonus], currentBonusEndC2[bonus], endBeamColor);
+                            Utils.DrawWireframe3D(currentBonusStartC1[bonus], currentBonusStartC2[bonus], startBeamColor, true);
+                            Utils.DrawWireframe3D(currentBonusEndC1[bonus], currentBonusEndC2[bonus], endBeamColor, true);
                         }
                     }
                 }
@@ -487,8 +487,8 @@ public partial class SharpTimer
 
                 if (useTriggers == false && !currentMapStartC1.Equals(new()) && !currentMapStartC2.Equals(new()) && !currentMapEndC1.Equals(new()) && !currentMapEndC2.Equals(new()))
                 {
-                    Utils.DrawWireframe3D(currentMapStartC1, currentMapStartC2, startBeamColor);
-                    Utils.DrawWireframe3D(currentMapEndC1, currentMapEndC2, endBeamColor);
+                    Utils.DrawWireframe3D(currentMapStartC1, currentMapStartC2, startBeamColor, true);
+                    Utils.DrawWireframe3D(currentMapEndC1, currentMapEndC2, endBeamColor, true);
                 }
                 else
                 {
@@ -496,8 +496,8 @@ public partial class SharpTimer
 
                     if (startRight == null || startLeft == null || endRight == null || endLeft == null) return;
 
-                    Utils.DrawWireframe3D(startRight.Value, startLeft.Value, startBeamColor);
-                    Utils.DrawWireframe3D(endRight.Value, endLeft.Value, endBeamColor);
+                    Utils.DrawWireframe3D(startRight.Value, startLeft.Value, startBeamColor, false);
+                    Utils.DrawWireframe3D(endRight.Value, endLeft.Value, endBeamColor, false);
                 }
 
                 if (useTriggers == true || useTriggersAndFakeZones == true)
@@ -531,8 +531,8 @@ public partial class SharpTimer
 
                 if (useTriggers == false && !currentMapStartC1.Equals(new()) && !currentMapStartC2.Equals(new()) && !currentMapEndC1.Equals(new()) && !currentMapEndC2.Equals(new()) && useTriggersAndFakeZones == false)
                 {
-                    Utils.DrawWireframe3D(currentMapStartC1, currentMapStartC2, startBeamColor);
-                    Utils.DrawWireframe3D(currentMapEndC1, currentMapEndC2, endBeamColor);
+                    Utils.DrawWireframe3D(currentMapStartC1, currentMapStartC2, startBeamColor, false);
+                    Utils.DrawWireframe3D(currentMapEndC1, currentMapEndC2, endBeamColor, false);
                 }
                 else
                 {
@@ -541,8 +541,8 @@ public partial class SharpTimer
                     if (startRight == null || startLeft == null || endRight == null || endLeft == null)
                         return;
 
-                    Utils.DrawWireframe3D(startRight.Value, startLeft.Value, startBeamColor);
-                    Utils.DrawWireframe3D(endRight.Value, endLeft.Value, endBeamColor);
+                    Utils.DrawWireframe3D(startRight.Value, startLeft.Value, startBeamColor, false);
+                    Utils.DrawWireframe3D(endRight.Value, endLeft.Value, endBeamColor, false);
                 }
 
                 useTriggers = true;

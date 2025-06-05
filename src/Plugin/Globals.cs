@@ -28,7 +28,7 @@ namespace SharpTimer
     public partial class SharpTimer
     {
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.3.1x";
+        public override string ModuleVersion => $"0.3.1y";
         public override string ModuleAuthor => "dea + sharptimer team & community";
         public override string ModuleDescription => "A CS2 Timer Plugin";
 
