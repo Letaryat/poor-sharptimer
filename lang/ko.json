@@ -1,5 +1,6 @@
 
 {
+  // Korean
   "prefix": "{lime}[알림]{white}",
 
   // 타이머
@@ -17,6 +18,7 @@
   "records_map": "#{0}: {lime}{1} {default}- {2} {lime}{3}",
   "new_server_record": "{lime}{0} {white}서버 기록(SR)을 새로 설정했습니다!",
   "new_stage_server_record": "{lime}{0} {white}스테이지 기록을 새로 설정했습니다!",
+  "new_cp_server_record": "{lime}{0} {white}새로운 체크포인트 기록을 세우세요!",
   "new_server_record_bonus": "{lime}{0} {white}보너스 {1} 서버 기록을 새로 설정했습니다!",
   "new_pb_record": "{lime}{0} {white}맵 PB를 새로 설정했습니다!",
   "new_pb_record_bonus": "{lime}{0} {white}보너스 {1} PB를 새로 설정했습니다!",

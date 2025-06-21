@@ -1,5 +1,8 @@
 {
-  "prefix": "{lime} [surf] {white}",
+  // Chinese (Simplified)
+  "prefix": "{lime}SharpTimer ●{white}",
+
+  // Timer
   "timer_time": "时间: [{lime}{0}{default}] {1}",
   "timer_style": "风格: [{lime}{0}{default}]",
   "stop_using_timer": "先用 {lime}!timer{default} 停止你的计时器!",
@@ -7,11 +10,14 @@
   "timer_disabled": "计时器: {red}禁用",
   "timer_cancelled": "由于你尝试偷鸡, 计时器已取消",
   "timer_reset": "由于你尝试偷鸡, 你已被重置",
+
+   // Records
   "no_records_available": "没有可用的记录 {0}",
   "no_records_available_bonus": "在 {1} 上没有可用的奖励关 {0} 记录",
   "records_map": "#{0}: {lime}{1} {default}- {2} {lime}{3}",
   "new_server_record": "{lime}{0} {white}滑出了新的服务器记录!",
   "new_stage_server_record": "{lime}{0} {white}滑出了新的阶段记录!",
+  "new_cp_server_record": "{lime}{0} {white}创下新的关卡记录！",
   "new_server_record_bonus": "{lime}{0} {white}滑出了新的奖励关 {1} 服务器记录!",
   "new_pb_record": "{lime}{0} {white}创造了新的地图个人最佳记录!",
   "new_pb_record_bonus": "{lime}{0} {white}完成了奖励关 {1} 个人最佳记录!",
@@ -20,27 +26,35 @@
   "map_finish_rank": "排名: [{lime}{0}{default}] 完成次数: [{lime}{1}{default}]",
   "top10_records": "前10名 {0} 的记录为 {1}:",
   "top10_records_bonus": "前10名 {0} 奖励关 {1} 记录在 {2}:",
+
+  // Stages
   "invalid_bonus_stage": "请输入有效的奖励关阶段，例如: {lime}!topbonus 1",
   "invalid_bonus_rb": "请输入有效的奖励关阶段，例如: {lime}!rb <索引>",
   "stages_unavalible": "阶段不可用",
   "stages_unavalible_respawnpos": "{lightred}当前地图未找到索引 {0} 的重生阶段位置!",
   "stages_enter_valid": "请输入有效的阶段，例如: {lime}!stage <索引>",
   "map_no_stages": "{lightred}当前地图没有阶段!",
+
+  // Rank
   "current_rank": "你当前是 {0}{1}{lime}",
   "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
   "current_pb": "你当前的个人最佳记录在 {lime}{0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
   "current_bonus_pb": "你当前的奖励关 {lime}Bonus {0}{default} 个人最佳记录: {lime}{1}{default} [{lime}{2}{default}]",
   "current_sr": "当前地图{lime}{0}{white}的纪录保持者:",
   "current_sr_player": "{lime}{0} {white} - 用时:{lime}{1}",
+  "current_wr": "当前地图 {lime}{0}{white}世界记录保持者:",
+  "current_wr_player": "{lime}{0} {white}- {lime}{1}",
   "reached_max_free": "你已达到免费积分奖励的上限 {lime}{0}{default}!",
   "gained_points": "{lime}{0} {default}获得了 {green}+{1} {default}积分 {grey}({2})",
+  "total_gpoints": "全球总积分",
+  "grank": "全球排名",
   "top_10_points": "前10名拥有最多积分的玩家:",
   "top_10_points_list": "#{0}: {lime}{1} {default}: {lime}{2} {default}积分",
+
+  // Replay
   "no_replay": "当前没有正在播放的重播",
   "end_your_replay": "请先结束你的当前重播 {lime}!stopreplay",
   "available_replay_cmds": "可用的重播命令: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
-  "current_wr": "当前地图 {lime}{0}{white}世界记录保持者:",
-  "current_wr_player": "{lime}{0} {white}- {lime}{1}",
   "no_sr_replay": "没有服务器记录可以重播!",
   "replaying_world_top": "  重播世界排名 {0} 类型 {lime} !stop 或 {lime} !stopreplay {default} 退出重播",
   "replaying_server_top": "正在重播服务器前 {0}，输入 {lime}!stop 或 {lime}!stopreplay {default}退出重播",
@@ -48,12 +62,16 @@
   "ending_replay": "重播结束!",
   "replay_corrupt": "请求的重播似乎已损坏",
   "replay_dont_exist": "请求的重播不存在",
+  
+  // Settings
   "hud_shown": "HUD : {green}显示",
   "hud_hidden": "HUD : {red}隐藏",
   "keys_shown": "按键: {green}显示",
   "keys_hidden": "按键: {red}隐藏",
   "sounds_on": "声音: {green}打开",
   "sounds_off": "声音: {red}关闭",
+
+  // Zones
   "no_respawnpos": "{lightred}当前地图未找到重生位置!",
   "no_respawnpos_bonus": "{lightred}当前地图未找到奖励关重生位置!",
   "no_respawnpos_bonus_index": "{lightred}当前地图未找到索引 {0} 的奖励关重生位置!",
@@ -61,12 +79,17 @@
   "map_using_manual_zones": "当前地图使用手动区域",
   "saved_custom_respawnpos": "自定义起始区域重生位置已保存!",
   "not_inside_startzone": "你不在起始区域内!",
+
+  // Styles
   "styles_list": "风格 {0}. {lime}{1}",
   "style_example": "例如: {lime}/style 1 或 lowgravity",
   "style_set": "风格已设置为: {lime}{0}",
   "style_not_found": "风格 {0} 不存在",
   "styles_disabled": "当前服务器上已禁用风格",
   "styles_not_supported": "本地记录当前不支持风格 :(",
+  "styles_moving": "{lightred}移动时无法改变样式",
+
+  // Checkpoints
   "checkpoint_set": "{0} 已设置! {lime}#{1}",
   "no_checkpoint_set": "未设置 {0}!",
   "cant_use_checkpoint": "{lightred}计时器运行时无法使用 {0}，请使用 {default}!timer",
@@ -74,8 +97,8 @@
   "used_checkpoint": "已传送至下一个 {0}",
   "used_recent_checkpoint": "已传送至最近的 {0}",
   "used_previous_checkpoint": "已传送至上一个 {0}",
-  "goto_player": "正在传送到 {lime}{0}",
-  "goto_player_not_found": "{lightred}未找到玩家名称!如果名称包含空格，请尝试 {lime}!goto '名称'",
+
+  //Ad messages
   "ad_see_all_commands": "{primary}输入 !sthelp{default} 查看所有命令!",
   "ad_replay_pb": "输入 {primary}!replaypb{default} 观看你个人最佳的重播!",
   "ad_replay_sr": "输入 {primary}!replay 或 {primary}!replaysr{default} 观看 {primary}{current_map}{default} 的服务器记录重播!",
@@ -97,6 +120,8 @@
   "ad_hud": "输入 {primary}!hud{default} 启用/禁用计时器 HUD!",
   "ad_keys": "输入 {primary}!keys{default} 启用/禁用 HUD 按键!",
   "ad_styles": "输入 {primary}!styles{default} 列出所有可用的风格!",
+
+  // Other
   "command_cooldown": "命令正在冷却中，请稍等...",
   "error_occured": "{lightred}发生错误。",
   "info_version": "此服务器运行 SharpTimer v{0}",
@@ -108,14 +133,16 @@
   "disconnect_message": "玩家 {red}{0} {default}断开连接!",
   "afk_message": "{red}你即将到达 AFK 检测!",
   "start_speed": "起始速度:",
+  "goto_player": "正在传送到 {lime}{0}",
+  "goto_player_not_found": "{lightred}未找到玩家名称!如果名称包含空格，请尝试 {lime}!goto '名称'",
   
-  //报错
+  // Error (报错)
   "error_savingtime": "保存时间错误：玩家时间为 0 ticks",
   "error_stagenotmatchfinalone": "保存时间错误：玩家当前阶段与最终阶段不匹配",
   "error_checkpointnotmatchfinalone": "保存时间错误：玩家当前检查点与最终检查点不匹配{0}",
 
-  //控制台项
-  "Check_console": "检查你的控制台以查看可用命令列表！",
+  // Help Console (控制台项)
+  "check_console": "检查你的控制台以查看可用命令列表！",
   "console_r": "• !r (css_r) - 使你复活",
   "console_rb": "• !rb <#> / !b <#> (css_rb / css_b) - 将你复活到一个奖励点",
   "console_setresp": "• !setresp / !startpos (css_setresp / css_startpos) - 在起始触发器内保存自定义复活点",
