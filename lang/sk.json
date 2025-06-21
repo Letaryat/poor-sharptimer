@@ -1,4 +1,5 @@
 {
+  // Slovak
   "prefix": "{lime}SharpTimer ●{white}",
 
   //timer
@@ -15,6 +16,8 @@
   "no_records_available_bonus": "Pre bonus {0} dňa {1} nie sú k dispozícii žiadne záznamy",
   "records_map": "#{0}: {lime}{1} {default}- {2} {lime}{3}",
   "new_server_record": "{lime}{0} {white}nastavil nový serverový rekord!",
+  "new_stage_server_record": "{lime}{0} {white}vytvoril nový etapový rekord!",
+  "new_cp_server_record": "{lime}{0} {white}vytvoril nový rekord na kontrolnom bode!",
   "new_server_record_bonus": "{lime}{0} {white}nastavil nový serverový rekord na mape {1} (Bonus)!",
   "new_pb_record": "{lime}{0} {white}získal nový najlepší čas hráča!",
   "new_pb_record_bonus": "{lime}{0} {white}získal nový nalepší čas hráča na mape {1} (Bonus)!",
