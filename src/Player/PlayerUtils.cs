@@ -711,7 +711,12 @@ namespace SharpTimer
                     {
                         timeDifference = $"[{Utils.FormatTimeDifference(newticks, prevSR)}{ChatColors.White}] ";
                     }
-                    Utils.PrintToChatAll(Localizer["new_stage_server_record", playerName]);
+
+                    var recordKey = (useStageTriggers || !useCheckpointTriggers)
+                        ? "new_stage_server_record"
+                        : "new_cp_server_record";
+                    Utils.PrintToChatAll(Localizer[recordKey, playerName]);
+
                     PlaySound(player, srSound, stageSoundAll ? true : false);
                     Utils.PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
                     //TODO: Discord webhook stage sr
