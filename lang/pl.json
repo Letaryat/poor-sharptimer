@@ -1,4 +1,5 @@
 {
+  // Polish
   "prefix": "{lime}SharpTimer ●{white}",
 
   //timer
@@ -15,6 +16,8 @@
   "no_records_available_bonus": "Brak dostepnych rekordow dla bonusu {0} na {1}",
   "records_map": "#{0}: {lime}{1} {default}- {2} {lime}{3}",
   "new_server_record": "{lime}{0} {white}ustanowil nowy SR!",
+  "new_stage_server_record": "{lime}{0} {white}ustanowił nowy rekord sceniczny!",
+  "new_cp_server_record": "{lime}{0} {white}ustanowił nowy rekord punktu kontrolnego!",
   "new_server_record_bonus": "{lime}{0} {white}ustanowil nowy Bonus {1} SR!",
   "new_pb_record": "{lime}{0} {white}ustanowil nowy PB mapy!",
   "new_pb_record_bonus": "{lime}{0} {white}ustanowil nowy Bonus {1} PB!",

@@ -1,7 +1,8 @@
 {
+    // Finnish
     "prefix": "{lime}SharpTimer ●{white}",
 
-    //timer
+    // Timer
     "timer_time": "Aika: [{lime}{0}{default}] {1}",
     "timer_style": "Tyyli: [{lime}{0}{default}]",
     "stop_using_timer": "Pysäytä ensin ajastimesi, käyttämällä {lime}!timer{default} komentoa!",
@@ -10,11 +11,13 @@
     "timer_cancelled": "Ajastin peruutettu laittoman ohitus yrityksen vuoksi",
     "timer_reset": "Sinut nollattiin laittoman ohitus yrityksen vuoksi.",
 
-    //records
+    // Records
     "no_records_available": "Aikoja ei saatavilla kentällä {0}",
     "no_records_available_bonus": "Aikoja ei saatavilla Boonukselle {0} kentällä {1}",
     "records_map": "#{0}: {lime}{1} {default}- {2} {lime}{3}",
     "new_server_record": "{lime}{0} {white}on asettanut uuden Palvelin Ennätyksen!",
+    "new_stage_server_record": "{lime}{0} {white}teki uuden lavaennätyksen!",
+    "new_cp_server_record": "{lime}{0} {white}tee uusi tarkastuspisteen ennätys!",
     "new_server_record_bonus": "{lime}{0} {white}on asettanut uuden Boonus {1} Palvelin Ennätyksen!",
     "new_pb_record": "{lime}{0} {white}on asettanut uuden Kenttä Ennätyksen!",
     "new_pb_record_bonus": "{lime}{0} {white}on asettanut uuden Boonus {0} Ennätyksen!",
@@ -24,7 +27,7 @@
     "top10_records": "Top 10 {0} Aikaa kentällä {1}:",
     "top10_records_bonus": "Top 10 {0} Aikaa Boonuksella {1} kentällä {2}:",
 
-    //stages
+    // Stages
     "invalid_bonus_stage": "Syötä kelvollinen Boonus taso, esim: {lime}!topbonus 1",
     "invalid_bonus_rb": "Syötä kelvollinen Boonus taso, esim: {lime}!rb <indeksi>",
     "stages_unavalible": "Kentät eivät ole saatavilla",
@@ -32,7 +35,7 @@
     "stages_enter_valid": "Syötä kelvollinen taso, esim:: {lime}!stage <indeksi>",
     "map_no_stages": "{lightred}Kentällä ei ole yhtään tasoa!",
 
-    //rank
+    // Rank
     "current_rank": "Sijoituksesi on nyt {0}{1}{lime}",
     "current_rank_points": "{default}({lime}{0}{default}) [{lime}{1}{default}]",
     "current_pb": "Ennätyksesi kentällä {lime}{0}{default}: {lime}{1}{default} [{lime}{2}{default}]",
@@ -41,7 +44,7 @@
     "current_sr_player": "{lime}{0} {white}- {lime}{1}",
     "reached_max_free": "Olet saavuttanut maksimi ilmaiset piste palkintosi kentälle {lime}{0}{default}!",
 
-    //replay
+    // Replay
     "no_replay": "Ei Replay toistoa käynnissä",
     "end_your_replay": "Lopeta tämänhetkinen Replay toistosi ensin {lime}!stopreplay komennolla",
     "available_replay_cmds": "Saatavilla olevat replay komennot: {lime}!replaypb{default} | {lime}!replaytop <1-10>{default} | {lime}!replaysr{default}",
@@ -52,7 +55,7 @@
     "replay_corrupt": "Toivottu Replay vaikuttaa olevan korruptoitunut",
     "replay_dont_exist": "Toivottu Replay ei ole olemassa",
 
-    //settings
+    //Settings
     "hud_shown": "Hud on nyt: {green}Piilossa",
     "hud_hidden": "Hud on nyt: {red}Piilossa",
     "keys_shown": "Napit ovat nyt: {green}Piilossa",
@@ -60,7 +63,7 @@
     "sounds_on": "Äänet ovat nyt: {green}PÄÄLLÄ",
     "sounds_off": "Äänet ovat nyt: {red}POIS PÄÄLTÄ",
 
-    //zones
+    // Zones
     "no_respawnpos": "{lightred}Ei löytynyt RespawnPos paikkaa tämänhetkiselle kentälle!",
     "no_respawnpos_bonus": "{lightred}Ei löytynyt RespawnBonusPos paikkaa tämänhetkiselle kentälle!",
     "no_respawnpos_bonus_index": "{lightred}Ei löytynyt RespawnBonusPos paikkaa indeksillä {0} tämänhetkiselle kentälle!",
@@ -69,7 +72,7 @@
     "saved_custom_respawnpos": "Tallennettiin custom Aloitus RespawnPos Alue!",
     "not_inside_startzone": "Et ole Aloitus Alueen sisällä!",
 
-    //styles
+    // Styles
     "styles_list": "Tyyli {0}. {lime}{1}",
     "style_example": "esimerkki: {lime}/style 1 tai lowgravity",
     "style_set": "Tyyli asetettu: {lime}{0} {default}tyyliin",
@@ -77,7 +80,7 @@
     "styles_disabled": "Tyylit ovat poissa käytöstä palvelimella tällähetkellä",
     "styles_not_supported": "Tyylit eivät ole tuettu palvelimen ajastimella :(",
 
-    //checkpoints
+    // Checkpoints
     "checkpoint_set": "{0}asetettu! {lime}#{1}",
     "no_checkpoint_set": "Ei {0} asetettu!",
     "cant_use_checkpoint": "{lightred}Ei voi käyttää {0} kun ajastin on päällä, käytä {default}!timer komentoa",
@@ -89,7 +92,7 @@
     "goto_player": "Teleportataan pelaajaan {lime}{0}",
     "goto_player_not_found": "{lightred}Pelaaja ei löytynyt! Jos nimi sisältää välilyönnin, käytä {lime}!goto 'joku nimi' komentoa",
 
-    //other
+    // Other
     "command_cooldown": "Komento on jäähyllä. Chillaa...",
     "error_occured": "{lightred}Tapahtui virhe.",
     "info_version": "Tällä palvelimella on käytössä SharpTimer v{0}",
@@ -107,7 +110,7 @@
     "error_stagenotmatchfinalone": "Virhe tallentaessa aikaa: Pelaajan nykyinen vaihe ei vastaa viimeistä vaihetta",
     "error_checkpointnotmatchfinalone": "Virhe tallentaessa aikaa: Pelaajan nykyinen tarkistuskohta ei vastaa viimeistä tarkistuspistettä {0}",
 
-    // help console Localizer
+    // Help Console
     "Check_console": "Tarkista konsolisi saatavilla olevien komentojen luettelon!",
     "console_r": "• !r (css_r) - Herättää sinut henkiin",
     "console_rb": "• !rb <#> / !b <#> (css_rb / css_b) - Herättää sinut bonukseen",
@@ -139,3 +142,4 @@
     "console_hideweapon": "• !hideweapon (css_hideweapon) - Vaihtaa aseen näkyvyyden päälle/pois",
     "console_spec": "• !spec (css_spec) - Siirtää sinut katselijaksi tai takaisin tiimiin",
     "console_styles": "• !styles (css_styles) - Listaa kaikki tyylit"
+}
