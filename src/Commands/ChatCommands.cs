@@ -671,6 +671,15 @@ namespace SharpTimer
 
             var sortedRecords = await GetSortedRecordsFromDatabase(10, bonusX, mapName, style);
 
+            bool[] replayResults = new bool[sortedRecords.Count];
+            if (enableReplays)
+            {
+                var replayTasks = sortedRecords.Take(10)
+                    .Select(kvp => CheckSRReplay(kvp.Value.SteamID!, bonusX))
+                    .ToArray();
+                replayResults = await Task.WhenAll(replayTasks);
+            }
+
             Server.NextFrame(() =>
             {
                 if (!IsPlayerOrSpectator(player))
@@ -693,20 +702,20 @@ namespace SharpTimer
                     printStatements = [$" {Localizer["top10_records", GetNamedStyle(style), currentMapNamee]}"];
 
                 int rank = 1;
+                int replayIdx = 0;
 
                 foreach (var kvp in sortedRecords.Take(10))
                 {
                     string _playerName = kvp.Value.PlayerName!;
                     int timerTicks = kvp.Value.TimerTicks;
 
-                    bool showReplays = false;
-                    if (enableReplays == true)
-                        showReplays = Task.Run(() => CheckSRReplay(kvp.Value.SteamID!, bonusX)).Result;
-
-                    string replayIndicator = enableReplays ? (showReplays ? $"{ChatColors.Red}◉" : "") : "";
+                    string replayIndicator = "";
+                    if (enableReplays)
+                        replayIndicator = replayResults.Length > replayIdx && replayResults[replayIdx] ? $"{ChatColors.Red}◉" : "";
 
                     printStatements.Add($" {Localizer["records_map", rank, _playerName, replayIndicator, Utils.FormatTime(timerTicks)]}");
                     rank++;
+                    replayIdx++;
                 }
 
                 foreach (var statement in printStatements)
