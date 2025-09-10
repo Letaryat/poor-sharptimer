@@ -123,13 +123,13 @@ public partial class SharpTimer
                 
                 
 
-                if (Directory.Exists($"{gameDir}/addons/StripperCS2/maps/{Server.MapName}"))
+                if (Directory.Exists($"{gameDir}/csgo/addons/StripperCS2/maps/{Server.MapName}"))
                 {
                     globalDisabled = true;
                     Utils.LogError("StripperCS2 detected for current map; disabling globalapi");
                 }
                 
-                if (!Directory.Exists($"{gameDir}/addons/stfixes-metamod/"))
+                if (!Directory.Exists($"{gameDir}/csgo/addons/stfixes-metamod/"))
                 {
                     globalDisabled = true;
                     Utils.LogError("stfixes-metamod is not installed; disabling globalapi");
