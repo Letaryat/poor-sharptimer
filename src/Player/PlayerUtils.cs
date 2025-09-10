@@ -202,7 +202,10 @@ namespace SharpTimer
         {
             int startSpeed = int.Parse(GetCurrentPlayerSpeed(player));
             int printSpeed = (maxStartingSpeedEnabled && startSpeed > maxStartingSpeed) ? maxStartingSpeed : startSpeed;
-            Utils.PrintToChat(player, $"{Localizer["prefix"]} {Localizer["start_speed"]} {ChatColors.Olive}{printSpeed}");
+            if (!playerTimers[player.Slot].HideChatSpeed)
+            {
+                Utils.PrintToChat(player, $"{Localizer["start_speed"]} {ChatColors.Olive}{printSpeed}");
+            }
             Utils.PrintToSpec(player, $"{Localizer["start_speed"]} {ChatColors.Olive}{printSpeed}");
         }
       

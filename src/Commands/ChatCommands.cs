@@ -427,7 +427,7 @@ namespace SharpTimer
 
             playerTimers[slot].HideChatSpeed = !playerTimers[slot].HideChatSpeed;
 
-            if (!playerTimers[slot].HideChatSpeed)
+            if (playerTimers[slot].HideChatSpeed)
                 Utils.PrintToChat(player, Localizer["printtime_hidden"]);
             else
                 Utils.PrintToChat(player, Localizer["printtime_shown"]);
