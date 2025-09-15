@@ -92,10 +92,10 @@ namespace SharpTimer
 
                 if (IsValidStartTriggerName(callerName))
                 {
-                    if(playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
+                    if (playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
                     {
                         playerTimer.inStartzone = true;
-        
+
                         InvalidateTimer(player, callerHandle);
 
                         if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn?.Value?.AbsVelocity.Length() ?? 0) > maxStartingSpeed) ||
@@ -113,6 +113,7 @@ namespace SharpTimer
                         };
 
                         Utils.LogDebug($"Player {playerName} entered StartZone");
+                        playerTimers[slot].currentTrack = 0;
                     }
 
                     return HookResult.Continue;
@@ -150,6 +151,7 @@ namespace SharpTimer
                     };
 
                     Utils.LogDebug($"Player {playerName} entered Bonus {(startBonusX != 0 ? startBonusX : fakeBonusX)} StartZone");
+                    playerTimers[slot].currentTrack = startBonusX != 0 ? startBonusX : fakeBonusX;
                     return HookResult.Continue;
                 }
 

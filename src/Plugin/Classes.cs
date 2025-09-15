@@ -135,6 +135,28 @@ namespace SharpTimer
         //timer
         public bool IsTimerRunning { get; set; }
         public int AFKTicks { get; set; }
+        public int currentTrack { get; set; } = 0;
+        public class BonusData
+        {
+            public string? positionString { get; set; }
+            public string? rotationString { get; set; }
+
+
+            public BonusData(string position, string rotation)
+            {
+                positionString = position;
+                rotationString = rotation;
+            }
+        }
+        private Dictionary<int, BonusData> bonuses = new Dictionary<int, BonusData>();
+        public void SetBonusCustomSpawn(int bonusX, string position, string rotation)
+        {
+            bonuses[bonusX] = new BonusData(position, rotation);
+        }
+        public BonusData GetBonusCustomSpawn(int bonusX)
+        {
+            return bonuses.TryGetValue(bonusX, out var bonus) ? bonus : null;
+        }
         public bool AFKWarned { get; set; }
         public bool IsOnBhopBlock { get; set; }
         public bool IsNoclip { get; set; }

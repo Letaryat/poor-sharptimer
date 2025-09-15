@@ -927,13 +927,22 @@ namespace SharpTimer
                 {
                     if (bonusRespawnPoses[1] != null)
                     {
-                        if (bonusRespawnAngs.TryGetValue(1, out QAngle_t? bonusAng) && bonusAng != null)
+                        var bonus = playerTimers[slot].GetBonusCustomSpawn(1);
+                        if (bonus != null)
                         {
-                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, bonusRespawnAngs[1]!, new Vector_t(0, 0, 0));
+                            player.PlayerPawn.Value!.Teleport(Utils.ParseVector_t(bonus.positionString!), Utils.ParseQAngle_t(bonus.rotationString!), new Vector_t(0, 0, 0));
                         }
                         else
                         {
-                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+
+                            if (bonusRespawnAngs.TryGetValue(1, out QAngle_t? bonusAng) && bonusAng != null)
+                            {
+                                player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, bonusRespawnAngs[1]!, new Vector_t(0, 0, 0));
+                            }
+                            else
+                            {
+                                player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                            }
                         }
                         Utils.LogDebug($"{player.PlayerName} css_rb {1} to {bonusRespawnPoses[1]}");
                     }
@@ -968,11 +977,19 @@ namespace SharpTimer
 
                 if (bonusRespawnPoses[bonusX] != null)
                 {
-                    if (bonusRespawnAngs.TryGetValue(bonusX, out QAngle_t? bonusAng) && bonusAng != null)
-                        player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, bonusRespawnAngs[bonusX]!, new Vector_t(0, 0, 0));
+                    var bonus = playerTimers[slot].GetBonusCustomSpawn(bonusX);
+                    if (bonus != null)
+                    {
+                        Utils.PrintToChat(player, Localizer["teleported_to_bonus", bonusX]);
+                        player.PlayerPawn.Value!.Teleport(Utils.ParseVector_t(bonus.positionString!), Utils.ParseQAngle_t(bonus.rotationString!), new Vector_t(0, 0, 0));
+                    }
                     else
-                        player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
-
+                    {
+                        if (bonusRespawnAngs.TryGetValue(bonusX, out QAngle_t? bonusAng) && bonusAng != null)
+                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, bonusRespawnAngs[bonusX]!, new Vector_t(0, 0, 0));
+                        else
+                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                    }
                     Utils.LogDebug($"{player.PlayerName} css_rb {bonusX} to {bonusRespawnPoses[bonusX]}");
                 }
                 else
@@ -1023,14 +1040,25 @@ namespace SharpTimer
             Vector_t currentPosition = player.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.ToVector_t() ?? new Vector_t(0, 0, 0);
             QAngle_t currentRotation = player.PlayerPawn.Value!.EyeAngles.ToQAngle_t();
 
+            string positionString = $"{currentPosition.X.ToString(CultureInfo.InvariantCulture)} {currentPosition.Y.ToString(CultureInfo.InvariantCulture)} {currentPosition.Z.ToString(CultureInfo.InvariantCulture)}";
+            string rotationString = $"{currentRotation.X.ToString(CultureInfo.InvariantCulture)} {currentRotation.Y.ToString(CultureInfo.InvariantCulture)} {currentRotation.Z.ToString(CultureInfo.InvariantCulture)}";
+
+            if (playerTimers[slot].currentTrack != 0)
+            {
+                if (playerTimers[slot].IsBonusTimerRunning)
+                {
+                    Utils.PrintToChat(player, Localizer["error_spawnpos_bonus_timer_running"]);
+                    return;
+                }
+                playerTimers[slot].SetBonusCustomSpawn(playerTimers[slot].currentTrack, positionString, rotationString);
+                Utils.PrintToChat(player, Localizer["saved_custom_respawnpos_bonus", playerTimers[slot].currentTrack]);
+                return;
+            }
+
             if (useTriggers == true)
             {
                 if (Utils.IsVectorInsideBox(currentPosition + new Vector_t(0, 0, 10), currentMapStartTriggerMaxs.GetValueOrDefault(), currentMapStartTriggerMins.GetValueOrDefault(), false))
                 {
-                    // Convert position and rotation to strings
-                    string positionString = $"{currentPosition.X.ToString(CultureInfo.InvariantCulture)} {currentPosition.Y.ToString(CultureInfo.InvariantCulture)} {currentPosition.Z.ToString(CultureInfo.InvariantCulture)}";
-                    string rotationString = $"{currentRotation.X.ToString(CultureInfo.InvariantCulture)} {currentRotation.Y.ToString(CultureInfo.InvariantCulture)} {currentRotation.Z.ToString(CultureInfo.InvariantCulture)}";
-
                     playerTimers[slot].SetRespawnPos = positionString;
                     playerTimers[slot].SetRespawnAng = rotationString;
                     Utils.PrintToChat(player, Localizer["saved_custom_respawnpos"]);
@@ -1042,10 +1070,6 @@ namespace SharpTimer
             {
                 if (Utils.IsVectorInsideBox(currentPosition + new Vector_t(0, 0, 10), currentMapStartC1, currentMapStartC2, true))
                 {
-                    // Convert position and rotation to strings
-                    string positionString = $"{currentPosition.X.ToString(CultureInfo.InvariantCulture)} {currentPosition.Y.ToString(CultureInfo.InvariantCulture)} {currentPosition.Z.ToString(CultureInfo.InvariantCulture)}";
-                    string rotationString = $"{currentRotation.X.ToString(CultureInfo.InvariantCulture)} {currentRotation.Y.ToString(CultureInfo.InvariantCulture)} {currentRotation.Z.ToString(CultureInfo.InvariantCulture)}";
-
                     playerTimers[slot].SetRespawnPos = positionString;
                     playerTimers[slot].SetRespawnAng = rotationString;
                     Utils.PrintToChat(player, Localizer["saved_custom_respawnpos"]);

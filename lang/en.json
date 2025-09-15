@@ -11,7 +11,11 @@
   "timer_disabled": "Timer: {red}Disabled",
   "timer_cancelled": "Timer cancelled due to illegal skip attempt",
   "timer_reset": "You got reset due to illegal skip attempt",
-
+  
+  // Custom spawnpos bonus
+  "error_spawnpos_bonus_timer_running": "Cannot set custom spawnpos for bonus while timer is running",
+  "saved_custom_respawnpos_bonus": "Saved custom the custom spawnpos for bonus {lime}{0}{default}",
+  
   // Records
   "no_records_available": "No records available for {0}",
   "no_records_available_bonus": "No records available for Bonus {0} on {1}",
