@@ -97,11 +97,7 @@ public partial class SharpTimer : BasePlugin
     {
         if (isLinux)
             RunCommand?.Unhook(OnRunCommandPre, HookMode.Pre);
-        
-        /*
-        Disabled CS UPDATE Sep 18
         StateTransition.Unhook(Hook_StateTransition, HookMode.Post);
-        */
         RemoveDamage?.Unhook();
 
         RemoveListener<Listeners.OnMapStart>(OnMapStartHandler);
