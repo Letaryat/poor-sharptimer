@@ -44,10 +44,7 @@ namespace SharpTimer
         public ITagApi? TagApi { get; set; }
 
         public IRunCommand? RunCommand;
-        /*
-        Disabled CS UPDATE Sep 16
         private static readonly MemoryFunctionVoid<CCSPlayerPawn, CSPlayerState> StateTransition = new(GameData.GetSignature("StateTransition"));
-        */
         private readonly INetworkServerService networkServerService = new();
         private int movementServices;
         private int movementPtr;

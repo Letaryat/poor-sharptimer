@@ -65,10 +65,7 @@ public partial class SharpTimer : BasePlugin
 
         if (isLinux)
             RunCommand?.Hook(OnRunCommandPre, HookMode.Pre);
-        /*
-        Disabled CS UPDATE Sep 18
         StateTransition.Hook(Hook_StateTransition, HookMode.Post);
-        */
         RemoveDamage?.Hook();
 
         RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);
