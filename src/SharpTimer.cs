@@ -65,6 +65,7 @@ public partial class SharpTimer : BasePlugin
 
         if (isLinux)
             RunCommand?.Hook(OnRunCommandPre, HookMode.Pre);
+            
         StateTransition.Hook(Hook_StateTransition, HookMode.Post);
         RemoveDamage?.Hook();
 
@@ -98,6 +99,7 @@ public partial class SharpTimer : BasePlugin
         if (isLinux)
             RunCommand?.Unhook(OnRunCommandPre, HookMode.Pre);
         StateTransition.Unhook(Hook_StateTransition, HookMode.Post);
+
         RemoveDamage?.Unhook();
 
         RemoveListener<Listeners.OnMapStart>(OnMapStartHandler);
