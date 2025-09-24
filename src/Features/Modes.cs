@@ -40,7 +40,7 @@ public partial class SharpTimer
     {
         _configValues = new ModeConfig[]
         {
-            new(Mode.Standard, 150f, 10f, 37.5f, 5.2f),
+            new(Mode.Standard, 150f, 10f, 30.0f, 5.2f),
             new(Mode._85t, 150f, 10f, 37.41f, 5.2f),
             new(Mode._102t, 150f, 10f, 43.55f, 5.2f),
             new(Mode._128t, 150f, 10f, 52.59f, 5.2f),
