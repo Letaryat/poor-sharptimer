@@ -80,6 +80,8 @@ SharpTimer is a "simple" Surf/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Count
 
 [**SharpTimerModelSetter** *(optional but recommended for custom player models)*](https://github.com/johandrevwyk/STCustomModels)
 
+[**CS2-Tags** *(optional but if you use ranks its required for chat/scoreboard tags)*](https://github.com/schwarper/cs2-tags)
+
 [**MovementUnlocker** *(optional but recommended for surf and bhop servers)*](https://github.com/Source2ZE/MovementUnlocker)
 
 [**RampBugFix** *(optional but recommended for surf servers)*](https://github.com/Interesting-exe/CS2Fixes-RampbugFix/)
@@ -90,7 +92,7 @@ SharpTimer is a "simple" Surf/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Count
 
 [**CS2-TeleportAnglesFix** *(optional but recommended)*](https://github.com/M-archand/CS2-TeleportAnglesFix)
 
-[**STFixes** *(optional but recommended)*](https://github.com/rcnoob/STFixes)
+[**STFixes-metamod** *(optional but recommended)*](https://github.com/SharpTimer/STFixes-metamod)
 
 [**Flashing HUD Fix** *(optional but recommended)*](https://github.com/deabb/CS2FlashingHtmlHudFix)
 
