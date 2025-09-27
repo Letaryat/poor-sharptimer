@@ -61,19 +61,22 @@ namespace SharpTimer
         {
             playerTimers[player.Slot].currentStyle = 0; // reset currentStyle
             playerTimers[player.Slot].changedStyle = true;
-            player!.Pawn.Value!.GravityScale = 1f;
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
         }
 
         public void SetLowGravity(CCSPlayerController player)
         {
             playerTimers[player.Slot].currentStyle = 1; // 1 = low-gravity
-            player!.Pawn.Value!.GravityScale = 0.5f;
             playerTimers[player.Slot].changedStyle = true;
+            player!.Pawn.Value!.GravityScale       = 0.5f;
+            player!.Pawn.Value!.ActualGravityScale = 0.5f;
         }
         public void SetHighGravity(CCSPlayerController player)
         {
             playerTimers[player.Slot].currentStyle = 5; // 5 = high-gravity
-            player!.Pawn.Value!.GravityScale = 1.5f;
+            player!.Pawn.Value!.GravityScale       = 1.5f;
+            player!.Pawn.Value!.ActualGravityScale = 1.5f;
             playerTimers[player.Slot].changedStyle = true;
         }
         public void SetSlowMo(CCSPlayerController player)
@@ -85,55 +88,75 @@ namespace SharpTimer
 
         public void SetSideways(CCSPlayerController player)
         {
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
             playerTimers[player.Slot].currentStyle = 2; // 2 = sideways
             playerTimers[player.Slot].changedStyle = true;
         }
         public void SetHalfSideways(CCSPlayerController player)
         {
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
             playerTimers[player.Slot].currentStyle = 9; // 9 = halfsideways
             playerTimers[player.Slot].changedStyle = true;
         }
         public void SetFastForward(CCSPlayerController player)
         {
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
             playerTimers[player.Slot].currentStyle = 10; // 10 = fastforward
             playerTimers[player.Slot].changedStyle = true;
         }
 
         public void SetOnlyW(CCSPlayerController player)
         {
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
             playerTimers[player.Slot].currentStyle = 3; // 3 = only w
             playerTimers[player.Slot].changedStyle = true;
         }
         public void SetOnlyA(CCSPlayerController player)
         {
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
             playerTimers[player.Slot].currentStyle = 6; // 6 = only a
             playerTimers[player.Slot].changedStyle = true;
         }
         public void SetOnlyD(CCSPlayerController player)
         {
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
             playerTimers[player.Slot].currentStyle = 7; // 7 = only d
             playerTimers[player.Slot].changedStyle = true;
         }
         public void SetOnlyS(CCSPlayerController player)
         {
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
             playerTimers[player.Slot].currentStyle = 8; // 8 = only s
             playerTimers[player.Slot].changedStyle = true;
         }
 
         public void Set400Vel(CCSPlayerController player)
         {
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
             playerTimers[player.Slot].currentStyle = 4; // 4 = 400vel
             playerTimers[player.Slot].changedStyle = true;
         }
         
         public void SetParachute(CCSPlayerController player)
         {
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
             playerTimers[player.Slot].currentStyle = 11; // 11 = parachute
             playerTimers[player.Slot].changedStyle = true;
         }
         
         public void SetTAS(CCSPlayerController player)
         {
+            player!.Pawn.Value!.GravityScale       = 1f;
+            player!.Pawn.Value!.ActualGravityScale = 1f;
             playerTimers[player.Slot].currentStyle = 12; // 12 = TAS
             playerTimers[player.Slot].changedStyle = true;
         }

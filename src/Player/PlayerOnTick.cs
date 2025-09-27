@@ -157,6 +157,13 @@ namespace SharpTimer
                         if (playerTimer.currentStyle.Equals(10) && !playerPawn.GroundEntity.IsValid && currentTick % 2 != 0) //check if ff
                             IncreaseVelocity(player);
 
+                        //Apply every tick incase a player touches a ladder, takes dmg etc etc
+                        if (playerTimer.currentStyle.Equals(1) || playerTimer.currentStyle.Equals(5)) {
+                             var gravityValue                       = playerTimer.currentStyle.Equals(1) ? 0.5f : 1.5f;  
+                             player!.Pawn.Value!.GravityScale       = gravityValue;
+                             player!.Pawn.Value!.ActualGravityScale = gravityValue;
+                        }
+
                         if (playerTimer.changedStyle)
                         {
                             _ = Task.Run(async () => await RankCommandHandler(player, steamID, slot, playerName, true, playerTimer.currentStyle));
