@@ -1,4 +1,6 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Memory;
 using FixVectorLeak;
 
 namespace SharpTimer
@@ -7,6 +9,8 @@ namespace SharpTimer
     {
         public void setStyle(CCSPlayerController player, int style)
         {
+            playerTimers[player.Slot].RespawnPos = "";
+            playerTimers[player.Slot].BonusRespawnPos = "";
             AddTimer(0.1f, () =>
             {
                 SetNormalStyle(player);

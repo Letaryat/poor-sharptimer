@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Globalization;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory;
 using System.Runtime.CompilerServices;
@@ -94,7 +95,7 @@ public struct Vector_t : IAdditionOperators<Vector_t, Vector_t, Vector_t>,
 
     public readonly override string ToString()
     {
-        return $"{X:n2} {Y:n2} {Z:n2}";
+        return string.Format(CultureInfo.InvariantCulture, "{0:F2} {1:F2} {2:F2}", X, Y, Z);
     }
 
     public static Vector_t operator +(Vector_t a, Vector_t b)
@@ -211,7 +212,7 @@ public struct QAngle_t : IAdditionOperators<QAngle_t, QAngle_t, QAngle_t>,
 
     public readonly override string ToString()
     {
-        return $"{X:n2} {Y:n2} {Z:n2}";
+        return string.Format(CultureInfo.InvariantCulture, "{0:F2} {1:F2} {2:F2}", X, Y, Z);
     }
 
     public static QAngle_t operator +(QAngle_t a, QAngle_t b)

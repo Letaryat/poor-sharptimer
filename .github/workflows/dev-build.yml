@@ -1,0 +1,47 @@
+name: Dev Build With runtime
+
+on:
+    push:
+        branches: [ dev ]
+    workflow_dispatch:
+      inputs:
+        dummy:
+          description: 'Only runs on dev branch'
+          required: false
+          default: ''
+
+jobs:
+  build-and-zip:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Build SharpTimerAPI
+      run: dotnet build SharpTimerAPI/SharpTimerAPI.csproj --configuration Debug
+      
+    - name: Build SharpTimer Plugin
+      run: dotnet build src/SharpTimer.csproj --configuration Debug
+
+    - name: List Plugin directory
+      run: ls -l src/Plugin/Globals.cs
+
+    - name: Get version from ModuleVersion
+      id: get_version
+      run: |
+        VERSION=$(grep -oP 'ModuleVersion\s*=>\s*\$?"\K[^"]+' src/Plugin/Globals.cs | head -n1)
+        if [ -z "$VERSION" ]; then VERSION="dev"; fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: SharpTimer_with_runtime_${{ steps.get_version.outputs.version }}
+        path: Build/
+        retention-days: 30

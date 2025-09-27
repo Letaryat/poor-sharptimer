@@ -4,23 +4,65 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <OutputPath>$(ProjectDir)..\Build\plugins\SharpTimer\</OutputPath>
+        <OutputPath>$(ProjectDir)..\Build\addons\counterstrikesharp\plugins\SharpTimer\</OutputPath>
 		<GenerateDependencyFile>false</GenerateDependencyFile>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
 	
     <ItemGroup>
-        <PackageReference Include="CounterStrikeSharp.API" Version="1.0.318">
+        <PackageReference Include="CounterStrikeSharp.API" Version="1.0.337">
 			<PrivateAssets>none</PrivateAssets>
 			<ExcludeAssets>runtime</ExcludeAssets>
 			<IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
         <PackageReference Include="Nexd.MySQL" Version="1.0.2" />
         <PackageReference Include="Npgsql" Version="8.0.3" />
-        <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
+        <PackageReference Include="Microsoft.Data.SQLite" Version="8.0.8" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.6" />
         <ProjectReference Include="..\SharpTimerAPI\SharpTimerAPI.csproj" />
         <Reference Include="API/TagsApi.dll" />
     </ItemGroup>
+
+    <Target Name="CopyCfgFolder" AfterTargets="Build" Condition="'$(SkipCopyCfgFolder)' != 'true'">
+        <ItemGroup>
+            <CfgFiles Include="$(ProjectDir)..\cfg\SharpTimer\**\*.*" />
+        </ItemGroup>
+        <Copy
+            SourceFiles="@(CfgFiles)"
+            DestinationFiles="@(CfgFiles->'$(ProjectDir)..\Build\cfg\SharpTimer\%(RecursiveDir)%(Filename)%(Extension)')"
+            SkipUnchangedFiles="true" />
+    </Target>
+
+    <Target Name="CopygamedataFolder" AfterTargets="Build" Condition="'$(SkipCopygamedataFolder)' != 'true'">
+    <ItemGroup>
+        <GamedataFiles Include="$(ProjectDir)..\gamedata\**\*.*" />
+    </ItemGroup>
+    <Copy
+        SourceFiles="@(GamedataFiles)"
+        DestinationFiles="@(GamedataFiles->'$(ProjectDir)..\Build\addons\counterstrikesharp\gamedata\%(RecursiveDir)%(Filename)%(Extension)')"
+        SkipUnchangedFiles="true" />
+    </Target>
+
+    <Target Name="CopyLangFolder" AfterTargets="Build" Condition="'$(SkipCopyLangFolder)' != 'true'">
+    <ItemGroup>
+        <LangFiles Include="$(ProjectDir)..\lang\**\*.*" />
+    </ItemGroup>
+    <Copy
+        SourceFiles="@(LangFiles)"
+        DestinationFiles="@(LangFiles->'$(OutputPath)\lang\%(RecursiveDir)%(Filename)%(Extension)')"
+        SkipUnchangedFiles="true" />
+    </Target>
+
+    <Target Name="CopyBDFolder" AfterTargets="Build" Condition="'$(SkipCopyBDFolder)' != 'true'">
+    <ItemGroup>
+        <BDFiles Include="$(ProjectDir)..\src\DB\Migrations\**\*.*" />
+    </ItemGroup>
+    <Copy
+        SourceFiles="@(BDFiles)"
+        DestinationFiles="@(BDFiles->'$(OutputPath)\Database\Migrations\%(RecursiveDir)%(Filename)%(Extension)')"
+        SkipUnchangedFiles="true" />
+    </Target>
 
     <Target Name="ExcludeStoreApiFiles" AfterTargets="Build">
 		<Delete Files="$(OutputPath)SharpTimer.pdb" />

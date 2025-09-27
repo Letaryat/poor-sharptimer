@@ -13,18 +13,75 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Globalization;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
-
+using System.Globalization;
+using System.Reflection;
 
 namespace SharpTimer
 {
     public partial class SharpTimer
     {
-        
+        private void CheckMissingFakeConvars()
+        {
+            try
+            {
+                var cfgPath = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "config.cfg");
+
+                if (!File.Exists(cfgPath))
+                    return;
+
+                // Check existing fake convars in config
+                var present = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var raw in File.ReadLines(cfgPath))
+                {
+                    var line = raw.Trim();
+                    if (string.IsNullOrEmpty(line)) continue;
+                    if (line.StartsWith("//")) continue;
+
+                    int i = 0;
+                    while (i < line.Length && !char.IsWhiteSpace(line[i])) i++;
+                    if (i == 0) continue;
+
+                    var token = line[..i];
+                    if (token.StartsWith("sharptimer_", StringComparison.OrdinalIgnoreCase))
+                        present.Add(token);
+                }
+
+                // Check expected fake convars
+                var expected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var methods = typeof(SharpTimer).GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+                foreach (var m in methods)
+                {
+                    foreach (var cad in m.GetCustomAttributesData())
+                    {
+                        if (cad.AttributeType.Name == "ConsoleCommandAttribute" && cad.ConstructorArguments.Count >= 1)
+                        {
+                            var arg0 = cad.ConstructorArguments[0].Value;
+                            if (arg0 is string commandName && commandName.StartsWith("sharptimer_", StringComparison.OrdinalIgnoreCase))
+                                expected.Add(commandName);
+                        }
+                    }
+                }
+
+                var missing = expected.Except(present).OrderBy(x => x).ToList();
+
+                if (missing.Count > 0)
+                {
+                    Utils.LogError($"[CVAR] {missing.Count} fake convar(s) are missing in cfg/SharpTimer/config.cfg:");
+                    foreach (var name in missing)
+                        Utils.LogError($"[CVAR] Missing -> {name} (Falling back to default)");
+                }
+            }
+            catch (Exception ex)
+            {
+                Utils.LogError($"Error in CheckMissingFakeConvars: {ex.Message}");
+            }
+        }
+
         [ConsoleCommand("sharptimer_hostname", "Default Server Hostname.")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerServerHostname(CCSPlayerController? player, CommandInfo command)
@@ -602,6 +659,15 @@ namespace SharpTimer
 
             replayBotName = $"{args}";
         }
+        
+        [ConsoleCommand("sharptimer_replays_use_binary", "Save replays as binary files instead of json. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerReplaysUseBinary(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            useBinaryReplays = bool.TryParse(args, out bool useBinaryReplaysValue) ? useBinaryReplaysValue : args != "0" && useBinaryReplays;
+        }
 
         /*[ConsoleCommand("sharptimer_vip_gif_host", "URL where VIP gifs are being hosted on. Default: 'https://files.catbox.moe'")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
@@ -631,7 +697,24 @@ namespace SharpTimer
             }
             else
             {
-                Utils.LogError("Invalid global ache refresh interval value. Please provide a positive float.");
+                Utils.LogError("Invalid global cache refresh interval value. Please provide a positive value.");
+            }
+        }
+        
+        [ConsoleCommand("sharptimer_record_cache_interval", "Total timespan in which records will be cached. Default value : 60")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerRecordCacheConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (int.TryParse(args, out int value) && value > 0)
+            {
+                recordCacheInterval = value;
+                Utils.LogDebug($"SharpTimer record cache refresh interval set to {value} seconds.");
+            }
+            else
+            {
+                Utils.LogError("Invalid record cache refresh interval value. Please provide a positive value.");
             }
         }
 
@@ -807,6 +890,261 @@ namespace SharpTimer
             }
 
             apiKey = $"{args}";
+        }
+        
+        [ConsoleCommand("sharptimer_default_mode", "Set default mode for all players on connect")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerDefaultModeConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+
+            if (TryParseMode(args.ToLower(), out Mode newMode))
+            {
+                defaultMode = newMode;
+                Utils.LogDebug($"Default mode set to: {GetModeName(defaultMode)}");
+            }
+            else
+            {
+                Utils.LogError($"Invalid mode: {args}");
+            }
+        }
+        
+        [ConsoleCommand("sharptimer_enable_standard_mode", "Enable or disable standard mode. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnableStandardModeConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (!(bool.TryParse(args, out bool value) ? value : args != "0"))
+                ModeManager.DisableMode(Mode.Standard);
+        }
+        
+        [ConsoleCommand("sharptimer_enable_85t_mode", "Enable or disable 85t mode. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnable85tModeConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (!(bool.TryParse(args, out bool value) ? value : args != "0"))
+                ModeManager.DisableMode(Mode._85t);
+        }
+        
+        [ConsoleCommand("sharptimer_enable_102t_mode", "Enable or disable 102t mode. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnable102tModeConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (!(bool.TryParse(args, out bool value) ? value : args != "0"))
+                ModeManager.DisableMode(Mode._102t);
+        }
+        
+        [ConsoleCommand("sharptimer_enable_128t_mode", "Enable or disable 128t mode. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnable128tModeConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (!(bool.TryParse(args, out bool value) ? value : args != "0"))
+                ModeManager.DisableMode(Mode._128t);
+        }
+        
+        [ConsoleCommand("sharptimer_enable_source_mode", "Enable or disable source mode. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnableSourceModeConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (!(bool.TryParse(args, out bool value) ? value : args != "0"))
+                ModeManager.DisableMode(Mode.Source);
+        }
+        
+        [ConsoleCommand("sharptimer_enable_bhop_mode", "Enable or disable bhop mode. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnableBhopModeConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (!(bool.TryParse(args, out bool value) ? value : args != "0"))
+                ModeManager.DisableMode(Mode.Bhop);
+        }
+        
+        [ConsoleCommand("sharptimer_enable_custom_mode", "Enable or disable custom mode. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerEnableCustomModeConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (!(bool.TryParse(args, out bool value) ? value : args != "0"))
+                ModeManager.DisableMode(Mode.Custom);
+        }
+        
+        [ConsoleCommand("sharptimer_mode_multiplier_standard", "Point modifier for standard mode. Default value: 1")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerStandardModeMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out double pointModifier) && pointModifier is >= 0 and <= 2)
+            {
+                standardModeModifier = pointModifier;
+                Utils.LogDebug($"SharpTimer standard mode point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                Utils.LogError("Invalid standard mode point modifier. Please provide a positive integer.");
+            }
+        }
+        
+        [ConsoleCommand("sharptimer_mode_multiplier_85t", "Point modifier for 85t mode. Default value: 0.9")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimer85tModeMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out double pointModifier) && pointModifier is >= 0 and <= 2)
+            {
+                _85tModeModifier = pointModifier;
+                Utils.LogDebug($"SharpTimer 85t mode point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                Utils.LogError("Invalid 85t mode point modifier. Please provide a positive integer.");
+            }
+        }
+        
+        [ConsoleCommand("sharptimer_mode_multiplier_102t", "Point modifier for 102t mode. Default value: 0.85")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerArcadeModeMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out double pointModifier) && pointModifier is >= 0 and <= 2)
+            {
+                _102tModeModifier = pointModifier;
+                Utils.LogDebug($"SharpTimer 102t mode point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                Utils.LogError("Invalid 102t mode point modifier. Please provide a positive integer.");
+            }
+        }
+        
+        [ConsoleCommand("sharptimer_mode_multiplier_128t", "Point modifier for 128t mode. Default value: 0.8")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimer128tModeMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out double pointModifier) && pointModifier is >= 0 and <= 2)
+            {
+                _128tModeModifier = pointModifier;
+                Utils.LogDebug($"SharpTimer 128t mode point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                Utils.LogError("Invalid 128t mode point modifier. Please provide a positive integer.");
+            }
+        }
+        
+        [ConsoleCommand("sharptimer_mode_multiplier_source", "Point modifier for source mode. Default value: 1.1")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerSourceModeMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out double pointModifier) && pointModifier is >= 0 and <= 2)
+            {
+                sourceModeModifier = pointModifier;
+                Utils.LogDebug($"SharpTimer source mode point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                Utils.LogError("Invalid source mode point modifier. Please provide a positive integer.");
+            }
+        }
+        [ConsoleCommand("sharptimer_mode_multiplier_bhop", "Point modifier for bhop mode. Default value: 0.8")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerBhopModeMultiplierConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (double.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out double pointModifier) && pointModifier is >= 0 and <= 2)
+            {
+                bhopModeModifier = pointModifier;
+                Utils.LogDebug($"SharpTimer bhop mode point modifier set to {pointModifier}.");
+            }
+            else
+            {
+                Utils.LogError("Invalid bhop mode point modifier. Please provide a positive integer.");
+            }
+        }
+        
+        [ConsoleCommand("sharptimer_mode_custom_aa", "Custom airaccelerate float. Default value: 150")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerCustomAirAccelConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (float.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out float custom) && custom is >= 0)
+            {
+                customAirAccel = custom;
+                Utils.LogDebug($"SharpTimer custom airaccel set to {custom}.");
+            }
+            else
+            {
+                Utils.LogError("Invalid custom airaccel. Please provide a positive integer.");
+            }
+        }
+        [ConsoleCommand("sharptimer_mode_custom_accel", "Custom accel float. Default value: 10")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerCustomAccelConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (float.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out float custom) && custom is >= 0)
+            {
+                customAccel = custom;
+                Utils.LogDebug($"SharpTimer custom accel set to {custom}.");
+            }
+            else
+            {
+                Utils.LogError("Invalid custom accel. Please provide a positive integer.");
+            }
+        }
+        
+        [ConsoleCommand("sharptimer_mode_custom_wishspeed", "Custom wishspeed float. Default value: 30")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerCustomWishspeedConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (float.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out float custom) && custom is >= 0)
+            {
+                customWishSpeed = custom;
+                Utils.LogDebug($"SharpTimer custom wishspeed set to {custom}.");
+            }
+            else
+            {
+                Utils.LogError("Invalid custom wishspeed. Please provide a positive integer.");
+            }
+        }
+        
+        [ConsoleCommand("sharptimer_mode_custom_friction", "Custom friction float. Default value: 5.2")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerCustomFrictionConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            if (float.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out float custom) && custom is >= 0)
+            {
+                customFriction = custom;
+                Utils.LogDebug($"SharpTimer custom friction set to {custom}.");
+            }
+            else
+            {
+                Utils.LogError("Invalid custom friction. Please provide a positive integer.");
+            }
         }
 
         [ConsoleCommand("sharptimer_enable_checkpoint_verification", "Enable or disable checkpoint verification system. Default value: true")]
@@ -1082,6 +1420,15 @@ namespace SharpTimer
 
             resetTriggerTeleportSpeedEnabled = bool.TryParse(args, out bool resetTriggerTeleportSpeedEnabledValue) ? resetTriggerTeleportSpeedEnabledValue : args != "0" && resetTriggerTeleportSpeedEnabled;
         }
+        
+        [ConsoleCommand("sharptimer_startzone_single_jump", "When true, players are only allowed to jump once in the startzone. Default value: false")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerStartzoneSingleJumpBoolConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+
+            startzoneSingleJumpEnabled = bool.TryParse(args, out bool value) ? value : args != "0" && startzoneSingleJumpEnabled;
+        }
 
         [ConsoleCommand("sharptimer_max_start_speed_enabled", "Whether the players speed should be limited on exiting the starting trigger or not. Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
@@ -1101,7 +1448,6 @@ namespace SharpTimer
             if (int.TryParse(args, out int speed) && speed > 0)
             {
                 maxStartingSpeed = speed;
-                Server.ExecuteCommand($"sv_maxspeed {maxStartingSpeed}");
                 Utils.LogDebug($"SharpTimer max trigger speed set to {speed}.");
             }
             else

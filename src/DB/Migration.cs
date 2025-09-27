@@ -2,7 +2,7 @@ using MySqlConnector;
 using Npgsql;
 using System.Data;
 using System.Data.Common;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace SharpTimer;
 
@@ -14,16 +14,16 @@ public partial class SharpTimer
         switch (dbType)
         {
             case DatabaseType.MySQL:
-                migrationsDirectory = ModuleDirectory + "/Database/Migrations/MySQL";
+                migrationsDirectory = Path.Combine(ModuleDirectory, "Database", "Migrations", "MySQL");
                 break;
             case DatabaseType.PostgreSQL:
-                migrationsDirectory = ModuleDirectory + "/Database/Migrations/PostgreSQL/";
+                migrationsDirectory = Path.Combine(ModuleDirectory, "Database", "Migrations", "PostgreSQL");
                 break;
             case DatabaseType.SQLite:
-                migrationsDirectory = ModuleDirectory + "/Database/Migrations/SQLite/";
+                migrationsDirectory = Path.Combine(ModuleDirectory, "Database", "Migrations", "SQLite");
                 break;
         }
-
+        
         var files = Directory.GetFiles(migrationsDirectory, "*.sql")
                              .OrderBy(f => f);
 
@@ -49,12 +49,12 @@ public partial class SharpTimer
                                          """, (NpgsqlConnection)connection);
                     break;
                 case DatabaseType.SQLite:
-                    cmd = new SQLiteCommand("""
-                                                     CREATE TABLE IF NOT EXISTS st_migrations (
-                                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                                         version VARCHAR(255) NOT NULL
-                                                     );
-                                         """, (SQLiteConnection)connection);
+                    cmd = new SqliteCommand("""
+                                                        CREATE TABLE IF NOT EXISTS st_migrations (
+                                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                            version VARCHAR(255) NOT NULL
+                                                        );
+                                            """, (SqliteConnection)connection);
                     break;
             }
 
@@ -83,7 +83,7 @@ public partial class SharpTimer
                         cmdMigration = new NpgsqlCommand(sqlScript, (NpgsqlConnection)connection);
                         break;
                     case DatabaseType.SQLite:
-                        cmdMigration = new SQLiteCommand(sqlScript, (SQLiteConnection)connection);
+                        cmdMigration = new SqliteCommand(sqlScript, (SqliteConnection)connection);
                         break;
 
                 }
@@ -112,7 +112,7 @@ public partial class SharpTimer
                 cmd = new NpgsqlCommand("SELECT version FROM st_migrations ORDER BY id DESC LIMIT 1;", (NpgsqlConnection)connection);
                 break;
             case DatabaseType.SQLite:
-                cmd = new SQLiteCommand("SELECT version FROM st_migrations ORDER BY id DESC LIMIT 1;", (SQLiteConnection)connection);
+                cmd = new SqliteCommand("SELECT version FROM st_migrations ORDER BY id DESC LIMIT 1;", (SqliteConnection)connection);
                 break;
         }
         using (cmd)
@@ -134,7 +134,7 @@ public partial class SharpTimer
                 cmd = new NpgsqlCommand("INSERT INTO st_migrations (version) VALUES (@Version);", (NpgsqlConnection)connection);
                 break;
             case DatabaseType.SQLite:
-                cmd = new SQLiteCommand("INSERT INTO st_migrations (version) VALUES (@Version);", (SQLiteConnection)connection);
+                cmd = new SqliteCommand("INSERT INTO st_migrations (version) VALUES (@Version);", (SqliteConnection)connection);
                 break;
 
         }

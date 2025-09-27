@@ -77,4 +77,36 @@ public class SharpTimerAPI_Database : ISharpTimerDatabase
         }).ToList();
         return mappedRecords;
     }
+    
+    public async Task<Dictionary<int, ISharpTimerDatabase.PlayerRecord>> GetTopLocalPlayersAsync(int limit = 0, int bonusX = 0, string mapName = "", int style = 0, string mode = "", string type = "")
+    {
+        var sortedRecords = await SharpTimer.Instance.GetTopPlayersFromDatabase(limit, bonusX, mapName, style, mode, type);
+        var mappedRecords = sortedRecords.ToDictionary(
+            kvp => kvp.Key,
+            kvp => new ISharpTimerDatabase.PlayerRecord
+            {
+                RecordID = kvp.Value.RecordID,
+                PlayerName = kvp.Value.PlayerName,
+                SteamID = kvp.Value.SteamID,
+                MapName = kvp.Value.MapName,
+                TimerTicks = kvp.Value.TimerTicks,
+                Replay = kvp.Value.Replay,
+                Completions = kvp.Value.Completions
+            });
+        return mappedRecords;
+    }
+    public async Task<Dictionary<int, ISharpTimerDatabase.PlayerPoints>> GetTopLocalPointsAsync(int limit = 0)
+    {
+        var sortedPoints = await SharpTimer.Instance.GetTopPointsFromDatabase(limit);
+        var mappedPoints = sortedPoints.ToDictionary(
+            kvp => kvp.Key,
+            kvp => new ISharpTimerDatabase.PlayerPoints
+            {
+                PlayerName = kvp.Value.PlayerName,
+                SteamID = kvp.Value.SteamID,
+                GlobalPoints = kvp.Value.GlobalPoints,
+                Rank = kvp.Value.Placement
+            });
+        return mappedPoints;
+    }
 }

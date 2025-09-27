@@ -1,0 +1,54 @@
+name: Dev Update Only
+
+on:
+  push:
+    branches: [ dev ]
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Update type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - dev
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Get current version
+      id: get_current_version
+      run: |
+        VERSION=$(grep -oP 'ModuleVersion\s*=>\s*\$?"\K[^"]+' src/Plugin/Globals.cs | head -n1)
+        if [ -z "$VERSION" ]; then VERSION="dev"; fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Build projects
+      run: |
+        dotnet restore SharpTimer-main.sln
+        dotnet build SharpTimerAPI/SharpTimerAPI.csproj --configuration Debug --no-restore
+        dotnet build src/SharpTimer.csproj --configuration Debug --no-restore \
+          -p:CopyLocalLockFileAssemblies=false \
+          -p:SkipCopyCfgFolder=true \
+          -p:SkipCopygamedataFolder=true \
+          -p:SkipCopyLangFolder=true \
+          -p:SkipCopyBDFolder=true
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: SharpTimer_${{ steps.get_current_version.outputs.version }}
+        path: Build/
+        retention-days: 30

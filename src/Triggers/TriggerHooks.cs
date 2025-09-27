@@ -65,20 +65,20 @@ namespace SharpTimer
                         playerTimers[slot].CurrentMapStage = 1;
                     else
                     {
-                        _ = Task.Run(async () => await HandlePlayerStageTimes(player, callerHandle, slot, steamID, playerName));
+                        _ = Task.Run(async () => await HandlePlayerStageTimes(player, callerHandle, slot, steamID, playerName, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
                         return HookResult.Continue;
                     }
                 }
 
                 if (useCheckpointTriggers == true && cpTriggers.ContainsKey(callerHandle) && playerTimers[slot].IsTimerBlocked == false && playerTimers[slot].IsTimerRunning == true)
                 {
-                    _ = Task.Run(async () => await HandlePlayerCheckpointTimes(player, callerHandle, slot, steamID, playerName));
+                    _ = Task.Run(async () => await HandlePlayerCheckpointTimes(player, callerHandle, slot, steamID, playerName, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
                     return HookResult.Continue;
                 }
 
                 if (useBonusCheckpointTriggers == true && bonusCheckpointTriggers.ContainsKey(callerHandle) && playerTimers[slot].IsTimerBlocked == false && playerTimers[slot].IsBonusTimerRunning == true)
                 {
-                    _ = Task.Run(async () => await HandlePlayerBonusCheckpointTimes(player, callerHandle, slot, steamID, playerName));
+                    _ = Task.Run(async () => await HandlePlayerBonusCheckpointTimes(player, callerHandle, slot, steamID, playerName, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
                     return HookResult.Continue;
                 }
 
@@ -95,25 +95,25 @@ namespace SharpTimer
                     if(playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
                     {
                         playerTimer.inStartzone = true;
+        
+                        InvalidateTimer(player, callerHandle);
+
+                        if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn?.Value?.AbsVelocity.Length() ?? 0) > maxStartingSpeed) ||
+                            (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn?.Value?.AbsVelocity.Length2D() ?? 0) > maxStartingSpeed))
+                        {
+                            Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                            adjustVelocity(player, maxStartingSpeed, false);
+                        }
+
+                        playerTimer.CurrentZoneInfo = new()
+                        {
+                            InMainMapStartZone = true,
+                            InBonusStartZone = false,
+                            CurrentBonusNumber = 0
+                        };
+
+                        Utils.LogDebug($"Player {playerName} entered StartZone");
                     }
-
-                    InvalidateTimer(player, callerHandle);
-
-                    if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxStartingSpeed))
-                    {
-                        Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, maxStartingSpeed, false);
-                    }
-
-                    playerTimers[slot].CurrentZoneInfo = new()
-                    {
-                        InMainMapStartZone = true,
-                        InBonusStartZone = false,
-                        CurrentBonusNumber = 0
-                    };
-
-                    Utils.LogDebug($"Player {playerName} entered StartZone");
 
                     return HookResult.Continue;
                 }
@@ -135,8 +135,8 @@ namespace SharpTimer
                 {
                     InvalidateTimer(player, callerHandle);
 
-                    if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxBonusStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxBonusStartingSpeed))
+                    if ((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn?.Value?.AbsVelocity.Length() ?? 0) > maxBonusStartingSpeed) ||
+                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn?.Value?.AbsVelocity.Length2D() ?? 0) > maxBonusStartingSpeed))
                     {
                         Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
                         adjustVelocity(player, maxBonusStartingSpeed, false);
@@ -215,24 +215,30 @@ namespace SharpTimer
                     return HookResult.Continue;
                 }
 
-                if (IsValidStartTriggerName(callerName) && !playerTimers[slot].IsTimerBlocked)
+                if (IsValidStartTriggerName(callerName))
                 {
                     if(playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
                     {
+                        if (playerTimer.IsTimerBlocked)
+                            return HookResult.Continue;
+                        
                         playerTimer.inStartzone = false;
-                    }
-                    OnTimerStart(player);
-                    if (enableReplays) OnRecordingStart(player);
+                        
+                        OnTimerStart(player);
+                        if (enableReplays) OnRecordingStart(player);
 
-                    if (((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxStartingSpeed)) &&
-                        !currentMapOverrideMaxSpeedLimit!.Contains(callerName) && currentMapOverrideMaxSpeedLimit != null)
-                    {
-                        Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
-                        adjustVelocity(player, maxStartingSpeed, false);
-                    }
+                        if (((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn?.Value?.AbsVelocity.Length() ?? 0) > maxStartingSpeed) ||
+                             (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn?.Value?.AbsVelocity.Length2D() ?? 0) > maxStartingSpeed)) &&
+                            !currentMapOverrideMaxSpeedLimit!.Contains(callerName) && currentMapOverrideMaxSpeedLimit != null)
+                        {
+                            Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
+                            adjustVelocity(player, maxStartingSpeed, false);
+                        }
 
-                    Utils.LogDebug($"Player {playerName} left StartZone");
+                        playerTimers[slot].CurrentZoneInfo.InMainMapStartZone = false;
+
+                        Utils.LogDebug($"Player {playerName} left StartZone");
+                    }
 
                     return HookResult.Continue;
                 }
@@ -244,17 +250,17 @@ namespace SharpTimer
                     OnTimerStart(player, StartBonusX);
                     if (enableReplays) OnRecordingStart(player, StartBonusX);
 
-                    if (((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length()) > maxBonusStartingSpeed) ||
-                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn.Value!.AbsVelocity.Length2D()) > maxBonusStartingSpeed)) &&
+                    if (((maxStartingSpeedEnabled == true && use2DSpeed == false && Math.Round(player.PlayerPawn?.Value?.AbsVelocity.Length() ?? 0) > maxBonusStartingSpeed) ||
+                        (maxStartingSpeedEnabled == true && use2DSpeed == true && Math.Round(player.PlayerPawn?.Value?.AbsVelocity.Length2D() ?? 0) > maxBonusStartingSpeed)) &&
                         !currentMapOverrideMaxSpeedLimit!.Contains(callerName) && currentMapOverrideMaxSpeedLimit != null)
                     {
                         Action<CCSPlayerController?, float, bool> adjustVelocity = use2DSpeed ? AdjustPlayerVelocity2D : AdjustPlayerVelocity;
                         adjustVelocity(player, maxBonusStartingSpeed, false);
                     }
 
-                    Utils.LogDebug($"Player {playerName} left BonusStartZone {StartBonusX}");
+                    playerTimers[slot].CurrentZoneInfo.InBonusStartZone = false;
 
-                    return HookResult.Continue;
+                    Utils.LogDebug($"Player {playerName} left BonusStartZone {StartBonusX}");
                 }
                 return HookResult.Continue;
             }

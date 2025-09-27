@@ -60,111 +60,6 @@ namespace SharpTimer
             return IsAllowedPlayer(player) || IsAllowedSpectator(player);
         }
 
-        async Task IsPlayerATester(string steamId64, int slot)
-        {
-            try
-            {
-                string response = await httpClient.GetStringAsync(testerPersonalGifsSource);
-
-                using (JsonDocument jsonDocument = JsonDocument.Parse(response))
-                {
-                    if (playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
-                    {
-                        playerTimer.IsTester = jsonDocument.RootElement.TryGetProperty(steamId64, out JsonElement steamData);
-
-                        if (playerTimer.IsTester)
-                        {
-                            if (steamData.TryGetProperty("SmolGif", out JsonElement smolGifElement))
-                            {
-                                playerTimer.TesterSmolGif = smolGifElement.GetString() ?? "";
-                            }
-
-                            if (steamData.TryGetProperty("BigGif", out JsonElement bigGifElement))
-                            {
-                                playerTimer.TesterBigGif = bigGifElement.GetString() ?? "";
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Utils.LogError($"Error in IsPlayerATester: player not on server anymore");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Utils.LogError($"Error in IsPlayerATester: {ex.Message}");
-            }
-        }
-
-        async Task<string> GetTesterBigGif(string steamId64)
-        {
-            try
-            {
-                string response = await httpClient.GetStringAsync(testerPersonalGifsSource);
-
-                using (JsonDocument jsonDocument = JsonDocument.Parse(response))
-                {
-                    jsonDocument.RootElement.TryGetProperty(steamId64, out JsonElement steamData);
-
-                    if (steamData.TryGetProperty("BigGif", out JsonElement bigGifElement))
-                        return bigGifElement.GetString() ?? "";
-                    else
-                        return "";
-                }
-            }
-            catch (Exception ex)
-            {
-                Utils.LogError($"Error in GetTesterBigGif: {ex.Message}");
-                return "";
-            }
-        }
-
-        async Task<string> GetTesterSmolGif(string steamId64)
-        {
-            try
-            {
-                string response = await httpClient.GetStringAsync(testerPersonalGifsSource);
-
-                using (JsonDocument jsonDocument = JsonDocument.Parse(response))
-                {
-                    jsonDocument.RootElement.TryGetProperty(steamId64, out JsonElement steamData);
-
-                    if (steamData.TryGetProperty("SmolGif", out JsonElement smolGifElement))
-                        return smolGifElement.GetString() ?? "";
-                    else
-                        return "";
-                }
-            }
-            catch (Exception ex)
-            {
-                Utils.LogError($"Error in GetTesterSmolGif: {ex.Message}");
-                return "";
-            }
-        }
-
-        async Task<bool> IsSteamIDaTester(string steamId64)
-        {
-            try
-            {
-                string response = await httpClient.GetStringAsync(testerPersonalGifsSource);
-
-                using (JsonDocument jsonDocument = JsonDocument.Parse(response))
-                {
-                    if (jsonDocument.RootElement.TryGetProperty(steamId64, out JsonElement isTester))
-                        return true;
-                    else
-                        return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Utils.LogError($"Error in IsSteamIDaTester: {ex.Message}");
-                return false;
-            }
-        }
-
-
         private void CheckPlayerCoords(CCSPlayerController? player, Vector_t playerSpeed)
         {
             try
@@ -186,8 +81,8 @@ namespace SharpTimer
                 }
                 if (!useTriggersAndFakeZones)
                 {
-                    isInsideStartBox = Utils.IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2);
-                    isInsideEndBox = Utils.IsVectorInsideBox(playerPos, currentMapEndC1, currentMapEndC2);
+                    isInsideStartBox = Utils.IsVectorInsideBox(playerPos, currentMapStartC1, currentMapStartC2, true);
+                    isInsideEndBox = Utils.IsVectorInsideBox(playerPos, currentMapEndC1, currentMapEndC2, true);
                 }
                 bool[] isInsideBonusStartBox = new bool[11];
                 bool[] isInsideBonusEndBox = new bool[11];
@@ -209,8 +104,8 @@ namespace SharpTimer
                         }
                         else
                         {
-                            isInsideBonusStartBox[bonus] = Utils.IsVectorInsideBox(playerPos, currentBonusStartC1[bonus], currentBonusStartC2[bonus]);
-                            isInsideBonusEndBox[bonus] = Utils.IsVectorInsideBox(playerPos, currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
+                            isInsideBonusStartBox[bonus] = Utils.IsVectorInsideBox(playerPos, currentBonusStartC1[bonus], currentBonusStartC2[bonus], true);
+                            isInsideBonusEndBox[bonus] = Utils.IsVectorInsideBox(playerPos, currentBonusEndC1[bonus], currentBonusEndC2[bonus], true);
                         }
                     }
                 }

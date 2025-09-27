@@ -1,0 +1,37 @@
+name: Dev Build ST
+
+on:
+  push:
+    branches: [ dev ]
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore src/SharpTimer.csproj
+
+    - name: Build DLL
+      run: dotnet build src/SharpTimer.csproj --configuration Release --no-restore
+
+    - name: Publish
+      run: dotnet publish src/SharpTimer.csproj -c Release -o publish
+
+    - name: Upload plugin DLL
+      uses: actions/upload-artifact@v4
+      with:
+        name: plugin-dll
+        path: publish/*.dll
+

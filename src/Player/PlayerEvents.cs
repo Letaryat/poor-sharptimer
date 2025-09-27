@@ -48,40 +48,43 @@ namespace SharpTimer
 
                 try
                 {
+                    connectedPlayers.Remove(slot);
+                    playerTimers.Remove(slot);
+                    playerReplays.Remove(slot);
+                    
                     connectedPlayers[slot] = new CCSPlayerController(player.Handle);
-                    playerTimers[slot] = new PlayerTimerInfo();
+                    var playerTime = new PlayerTimerInfo();
+                    playerTimers[slot] = playerTime;
+                    
+                    if (enableReplays) 
+                        playerReplays[slot] = new PlayerReplays();
 
-                    if (playerTimers.TryGetValue(slot, out var playerTime))
-                    {
-                        if (enableReplays)
-                            playerReplays[slot] = new PlayerReplays();
+                    if (AdminManager.PlayerHasPermissions(player, "@css/root")) 
+                        playerTime.ZoneToolWire = new Dictionary<int, CBeam>();
 
-                        if (AdminManager.PlayerHasPermissions(player, "@css/root"))
-                            playerTime.ZoneToolWire = new Dictionary<int, CBeam>();
+                    playerTime.MovementService = new CCSPlayer_MovementServices(player.PlayerPawn.Value.MovementServices!.Handle); 
+                    playerTime.StageTimes = new Dictionary<int, int>();
+                    playerTime.StageVelos = new Dictionary<int, string>();
+                    playerTime.CurrentMapStage = 0;
+                    playerTime.CurrentMapCheckpoint = 0;
+                    playerTime.IsRecordingReplay = false;
+                    playerTime.SetRespawnPos = null;
+                    playerTime.SetRespawnAng = null;
+                    playerTime.SoundsEnabled = soundsEnabledByDefault;
 
-                        playerTime.MovementService = new CCSPlayer_MovementServices(player.PlayerPawn.Value.MovementServices!.Handle);
-                        playerTime.StageTimes = new Dictionary<int, int>();
-                        playerTime.StageVelos = new Dictionary<int, string>();
-                        playerTime.CurrentMapStage = 0;
-                        playerTime.CurrentMapCheckpoint = 0;
-                        playerTime.IsRecordingReplay = false;
-                        playerTime.SetRespawnPos = null;
-                        playerTime.SetRespawnAng = null;
-                        playerTime.SoundsEnabled = soundsEnabledByDefault;
-
-                        SetNormalStyle(player);
-                    }
+                    SetNormalStyle(player);
+                    
 
                     if (isForBot == false)
                     {
                         string steamID = player.SteamID.ToString();
+                        
+                        _ = Task.Run(async () =>
+                        {
+                            await GetPlayerStats(player, steamID, playerName, player.Slot, true);
+                        });
 
-                        _ = Task.Run(async () => await IsPlayerATester(steamID, slot));
-
-                        if (enableDb)
-                            _ = Task.Run(async () => await GetPlayerStats(player, steamID, playerName, slot, true));
-
-                        if (cmdJoinMsgEnabled == true)
+                        if (cmdJoinMsgEnabled)
                             PrintAllEnabledCommands(player);
 
                         if (connectMsgEnabled == true && !enableDb)
@@ -95,13 +98,11 @@ namespace SharpTimer
                 }
                 finally
                 {
-                    if (connectedPlayers[slot] == null)
+                    if (connectedPlayers.TryGetValue(slot, out var playerController) && playerController == null)
                         connectedPlayers.Remove(slot);
 
-                    if (playerTimers[slot] == null)
-                    {
+                    if (playerTimers.TryGetValue(slot, out var playerTimer) && playerTimer == null)
                         playerTimers.Remove(slot);
-                    }
                 }
             }
             catch (Exception ex)

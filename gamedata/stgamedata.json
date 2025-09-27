@@ -1,0 +1,34 @@
+{
+  "RunCommand": {
+    "signatures": {
+      "library": "server",
+      "windows": "48 89 5C 24 20 55 56 57 41 54 41 55 41 56 41 57 48 83 EC 20",
+      "linux": "55 48 89 E5 41 57 49 89 FF 41 56 41 55 49 89 F5 41 54 53 48 83 EC ?? 48 8B 7F"
+    }
+  },
+  "StateTransition": {
+    "signatures": {
+      "library": "server",
+      "windows": "48 83 EC ? 48 89 5C 24 ? 48 89 74 24 ? 8B F2",
+      "linux": "55 48 89 E5 41 55 41 54 41 89 F4 53 48 89 FB 48 83 EC ? 39 B7 ? ? ? ?"
+    }
+  },
+  "INetworkServerService_GetIGameServer": {
+    "offsets": {
+      "windows": 23,
+      "linux": 24
+    }
+  },
+  "INetworkGameServer_Slots": {
+    "offsets": {
+      "windows": 624,
+      "linux": 640
+    }
+  },
+  "CServerSideClient_m_nForceWaitForTick": {
+    "offsets": {
+      "windows": 340,
+      "linux": 348
+    }
+  }
+}

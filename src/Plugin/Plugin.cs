@@ -3,6 +3,8 @@ using CounterStrikeSharp.API.Modules.Timers;
 using FixVectorLeak;
 using System.Text;
 using System.Text.Json;
+using CounterStrikeSharp.API.Modules.Cvars;
+using Serilog;
 
 namespace SharpTimer;
 
@@ -25,7 +27,6 @@ public partial class SharpTimer
                 {
                     //Utils.LogDebug("Re-Executing SharpTimer/custom_exec");
                     Server.ExecuteCommand("execifexists SharpTimer/custom_exec.cfg");
-
                     if (execCustomMapCFG == true)
                     {
                         string MapExecFile = Utils.GetClosestMapCFGMatch();
@@ -37,11 +38,11 @@ public partial class SharpTimer
                 }, TimerFlags.STOP_ON_MAPCHANGE);
 
                 if (removeCrouchFatigueEnabled == true) Server.ExecuteCommand("sv_timebetweenducks 0");
-
+                Server.ExecuteCommand("log off"); // prevent crippling console spam from modes
                 //bonusRespawnPoses.Clear();
                 bonusRespawnAngs.Clear();
 
-                cpTriggers.Clear();         // make sure old data is flushed in case new map uses fake zones
+                cpTriggers.Clear(); // make sure old data is flushed in case new map uses fake zones
                 cpTriggerCount = 0;
                 bonusCheckpointTriggers.Clear();
                 stageTriggers.Clear();
@@ -53,7 +54,6 @@ public partial class SharpTimer
 
                 if (!sqlCheck)
                 {
-
                     if (useMySQL)
                     {
                         string mysqlConfigFileName = "SharpTimer/mysqlConfig.json";
@@ -79,18 +79,62 @@ public partial class SharpTimer
                         dbType = DatabaseType.SQLite;
                         enableDb = true;
                     }
-                    using (var connection = OpenConnection())
+
+                    _ = Task.Run(async () =>
                     {
-                        _ = CheckTablesAsync();
-                        ExecuteMigrations(connection);
-                    }
+                        try
+                        {
+                            using (var connection = OpenConnection())
+                            {
+                                await CheckTablesAsync();
+                                ExecuteMigrations(connection);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Utils.LogError($"Migration error: {ex.Message};");
+                        }
+                    });
                     sqlCheck = true;
                 }
 
-                if (Directory.Exists($"{gameDir}/addons/StripperCS2/maps/{Server.MapName}"))
+                string ip = Utils.GetIPAndPort().Item1;
+                int port = Utils.GetIPAndPort().Item2;
+                long addonID = GetAddonID();
+                validPlugins = CheckPlugins();
+                validCvars = CheckCvars();
+
+                Server.NextFrame(async () =>
+                {
+                    validKey = await CheckKeyAsync();
+                    validHash = await CheckHashAsync();
+                    if (!validKey || !validHash || !validPlugins || !validCvars)
+                        globalDisabled = true;
+
+                    int mapId = await GetMapIDAsync(addonID);
+                    await CacheMapData(mapId, addonID, mapName);
+                    await CacheWorldRecords(true);
+                    await CacheGlobalPoints(true);
+
+                    int serverId = await GetServerIDAsync(ip, port);
+                    CacheServerID(serverId);
+                    if (serverId == 0)
+                    {
+                        // ip and port do not match what we have in the global db
+                        globalDisabled = true;
+                    }
+                });
+
+                if (Directory.Exists($"{gameDir}/csgo/addons/StripperCS2/maps/{Server.MapName}"))
                 {
                     globalDisabled = true;
                     Utils.LogError("StripperCS2 detected for current map; disabling globalapi");
+                }
+
+                if (!File.Exists($"{gameDir}/csgo/addons/metamod/stfixes-metamod.vdf"))
+                {
+                    globalDisabled = true;
+                    Utils.LogError("stfixes-metamod is not installed; disabling globalapi");
                 }
 
                 if (currentMapOverrideDisableTelehop!.Length > 0)
@@ -99,11 +143,17 @@ public partial class SharpTimer
                     Utils.LogError("OverrideDisableTelehop detected for current map; disabling globalapi");
                 }
 
-                _ = Task.Run(async () => await CacheWorldRecords());
-                AddTimer(globalCacheInterval, async () => await CacheWorldRecords(), TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+                if (!isLinux)
+                    globalDisabled = true;
 
-                _ = Task.Run(async () => await CacheGlobalPoints());
-                AddTimer(globalCacheInterval, async () => await CacheGlobalPoints(), TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+                if (!globalDisabled)
+                {
+                    AddTimer(globalCacheInterval, async () => await CacheWorldRecords(),
+                        TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+                    AddTimer(globalCacheInterval, async () => await CacheGlobalPoints(),
+                        TimerFlags.REPEAT | TimerFlags.STOP_ON_MAPCHANGE);
+                }
+                InitializeModeConfigs();
             });
         }
         catch (Exception ex)
@@ -119,7 +169,6 @@ public partial class SharpTimer
             Utils.LogDebug($"Loading MapData on RoundStart...");
 
             currentMapName = mapName;
-            currentAddonID = GetAddonID();
             totalBonuses = new int[11];
 
             string recordsFileName = $"SharpTimer/PlayerRecords/";
@@ -209,6 +258,7 @@ public partial class SharpTimer
                     bonusdataPaths[10] = Path.Join(gameDir + "/csgo/cfg", bonusdataFileNames[10]);
                 }
             }
+
             Server.ExecuteCommand($"execifexists SharpTimer/config.cfg");
             Utils.LogDebug("Re-Executing custom_exec with 1sec delay...");
             var custom_exec_delay = AddTimer(1.0f, () =>
@@ -216,7 +266,7 @@ public partial class SharpTimer
                 Utils.LogDebug("Re-Executing SharpTimer/custom_exec");
                 Server.ExecuteCommand("execifexists SharpTimer/custom_exec.cfg");
 
-                if (execCustomMapCFG == true)
+                if (execCustomMapCFG)
                 {
                     string MapExecFile = Utils.GetClosestMapCFGMatch();
                     if (!string.IsNullOrEmpty(MapExecFile))
@@ -225,9 +275,9 @@ public partial class SharpTimer
                         Utils.LogError("MapExec Error: file name returned null");
                 }
             }, TimerFlags.STOP_ON_MAPCHANGE);
-
-            if (adServerRecordEnabled == true) ADtimerServerRecord();
-            if (adMessagesEnabled == true) ADtimerMessages();
+            
+            if (adServerRecordEnabled) ADtimerServerRecord();
+            if (adMessagesEnabled) ADtimerMessages();
 
             if (Utils.PlayersCount() > 0 && enableReplays && enableSRreplayBot && replayBotController == null)
                 Server.NextFrame(() => _ = Task.Run(SpawnReplayBot));
@@ -253,11 +303,21 @@ public partial class SharpTimer
                     JsonElement rankElement = property.Value;
                     RankData rankData = new RankData
                     {
-                        Title = rankElement.TryGetProperty("title", out JsonElement titleElement) ? titleElement.GetString()! : string.Empty,
-                        Percent = rankElement.TryGetProperty("percent", out var percentElement) ? percentElement.GetDouble() : 0,
-                        Placement = rankElement.TryGetProperty("placement", out var placementElement) ? placementElement.GetInt32() : 0,
-                        Color = rankElement.TryGetProperty("color", out JsonElement colorElement) ? colorElement.GetString()! : string.Empty,
-                        Icon = rankElement.TryGetProperty("icon", out JsonElement iconElement) ? iconElement.GetString()! : string.Empty,
+                        Title = rankElement.TryGetProperty("title", out JsonElement titleElement)
+                            ? titleElement.GetString()!
+                            : string.Empty,
+                        Percent = rankElement.TryGetProperty("percent", out var percentElement)
+                            ? percentElement.GetDouble()
+                            : 0,
+                        Placement = rankElement.TryGetProperty("placement", out var placementElement)
+                            ? placementElement.GetInt32()
+                            : 0,
+                        Color = rankElement.TryGetProperty("color", out JsonElement colorElement)
+                            ? colorElement.GetString()!
+                            : string.Empty,
+                        Icon = rankElement.TryGetProperty("icon", out JsonElement iconElement)
+                            ? iconElement.GetString()!
+                            : string.Empty,
                     };
 
                     rankDataList.Add(rankData);
@@ -271,13 +331,14 @@ public partial class SharpTimer
                 }
 
                 rankDataList = rankDataList
-                    .OrderBy(r => r.Placement > 0 ? 0 : 1)  // Placement > 0 should come first
-                    .ThenBy(r => r.Placement)               // sort Placement (low to high)
-                    .ThenBy(r => r.Percent)                 // sort Percent (low to high)
+                    .OrderBy(r => r.Placement > 0 ? 0 : 1) // Placement > 0 should come first
+                    .ThenBy(r => r.Placement) // sort Placement (low to high)
+                    .ThenBy(r => r.Percent) // sort Percent (low to high)
                     .ToList();
 
                 foreach (var rank in rankDataList)
-                    rankSummary.AppendLine($"Title: {rank.Title}, Percent: {rank.Percent}, Placement: {rank.Placement}");
+                    rankSummary.AppendLine(
+                        $"Title: {rank.Title}, Percent: {rank.Percent}, Placement: {rank.Placement}");
 
                 Utils.LogDebug(rankSummary.ToString());
             }
@@ -291,16 +352,21 @@ public partial class SharpTimer
             //Bonus fake zone check
             foreach (int bonus in totalBonuses)
             {
-                if (bonus == 0) { }
+                if (bonus == 0)
+                {
+                }
                 else
                 {
                     using JsonDocument? bonusJsonDocument = Utils.LoadJsonOnMainThread(bonusdataPaths[bonus]);
                     if (bonusJsonDocument != null)
                     {
-                        var mapInfo = JsonSerializer.Deserialize<MapInfo>(bonusJsonDocument.RootElement.GetRawText(), jsonSerializerOptions);
+                        var mapInfo = JsonSerializer.Deserialize<MapInfo>(bonusJsonDocument.RootElement.GetRawText(),
+                            jsonSerializerOptions);
                         Utils.LogDebug($"Map data json found for map: {currentMapName}, bonus {bonus}!");
 
-                        if (!string.IsNullOrEmpty(mapInfo!.BonusStartC1) && !string.IsNullOrEmpty(mapInfo.BonusStartC2) && !string.IsNullOrEmpty(mapInfo.BonusEndC1) && !string.IsNullOrEmpty(mapInfo.BonusEndC2) && !string.IsNullOrEmpty(mapInfo.BonusRespawnPos))
+                        if (!string.IsNullOrEmpty(mapInfo!.BonusStartC1) &&
+                            !string.IsNullOrEmpty(mapInfo.BonusStartC2) && !string.IsNullOrEmpty(mapInfo.BonusEndC1) &&
+                            !string.IsNullOrEmpty(mapInfo.BonusEndC2) && !string.IsNullOrEmpty(mapInfo.BonusRespawnPos))
                         {
                             useTriggers = false;
                             if (FindEndTriggerPos() != null)
@@ -310,21 +376,28 @@ public partial class SharpTimer
                             currentBonusStartC2[bonus] = Utils.ParseVector_t(mapInfo.BonusStartC2);
                             currentBonusEndC1[bonus] = Utils.ParseVector_t(mapInfo.BonusEndC1);
                             currentBonusEndC2[bonus] = Utils.ParseVector_t(mapInfo.BonusEndC2);
-                            currentBonusEndPos[bonus] = Utils.CalculateMiddleVector_t(currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
+                            currentBonusEndPos[bonus] =
+                                Utils.CalculateMiddleVector_t(currentBonusEndC1[bonus], currentBonusEndC2[bonus]);
                             bonusRespawnPoses[bonus] = Utils.ParseVector_t(mapInfo.BonusRespawnPos);
-                            Utils.LogDebug($"Found Fake Bonus {bonus} Trigger Corners: START {currentBonusStartC1[bonus]}, {currentBonusStartC2[bonus]} | END {currentBonusEndC1[bonus]}, {currentBonusEndC2[bonus]}");
+                            Utils.LogDebug(
+                                $"Found Fake Bonus {bonus} Trigger Corners: START {currentBonusStartC1[bonus]}, {currentBonusStartC2[bonus]} | END {currentBonusEndC1[bonus]}, {currentBonusEndC2[bonus]}");
 
                             // Disable global for lackluster maps
                             globalDisabled = true;
                         }
-                        if (!currentBonusStartC1[bonus].Equals(new()) && !currentBonusStartC2[bonus].Equals(new()) && !currentBonusEndC1[bonus].Equals(new()) && !currentBonusEndC2[bonus].Equals(new()))
+
+                        if (!currentBonusStartC1[bonus].Equals(new()) && !currentBonusStartC2[bonus].Equals(new()) &&
+                            !currentBonusEndC1[bonus].Equals(new()) && !currentBonusEndC2[bonus].Equals(new()))
                         {
-                            Utils.DrawWireframe3D(currentBonusStartC1[bonus], currentBonusStartC2[bonus], startBeamColor);
-                            Utils.DrawWireframe3D(currentBonusEndC1[bonus], currentBonusEndC2[bonus], endBeamColor);
+                            Utils.DrawWireframe3D(currentBonusStartC1[bonus], currentBonusStartC2[bonus],
+                                startBeamColor, true);
+                            Utils.DrawWireframe3D(currentBonusEndC1[bonus], currentBonusEndC2[bonus], endBeamColor,
+                                true);
                         }
                     }
                 }
             }
+
             //Main fake zone check
             using JsonDocument? jsonDocument = Utils.LoadJsonOnMainThread(mapdataPath);
             if (jsonDocument != null)
@@ -332,7 +405,8 @@ public partial class SharpTimer
                 var mapInfo = JsonSerializer.Deserialize<MapInfo>(jsonDocument.RootElement.GetRawText());
                 Utils.LogDebug($"Map data json found for map: {currentMapName}!");
 
-                if (!string.IsNullOrEmpty(mapInfo!.MapStartC1) && !string.IsNullOrEmpty(mapInfo.MapStartC2) && !string.IsNullOrEmpty(mapInfo.MapEndC1) && !string.IsNullOrEmpty(mapInfo.MapEndC2))
+                if (!string.IsNullOrEmpty(mapInfo!.MapStartC1) && !string.IsNullOrEmpty(mapInfo.MapStartC2) &&
+                    !string.IsNullOrEmpty(mapInfo.MapEndC1) && !string.IsNullOrEmpty(mapInfo.MapEndC2))
                 {
                     useTriggers = false;
                     Utils.LogDebug($"useTriggers: {useTriggers}!");
@@ -341,7 +415,8 @@ public partial class SharpTimer
                     currentMapEndC1 = Utils.ParseVector_t(mapInfo.MapEndC1);
                     currentMapEndC2 = Utils.ParseVector_t(mapInfo.MapEndC2);
                     currentEndPos = Utils.CalculateMiddleVector_t(currentMapEndC1, currentMapEndC2);
-                    Utils.LogDebug($"Found Fake Trigger Corners: START {currentMapStartC1}, {currentMapStartC2} | END {currentMapEndC1}, {currentMapEndC2}");
+                    Utils.LogDebug(
+                        $"Found Fake Trigger Corners: START {currentMapStartC1}, {currentMapStartC2} | END {currentMapEndC1}, {currentMapEndC2}");
 
                     // Disable global for lackluster maps
                     globalDisabled = true;
@@ -389,7 +464,8 @@ public partial class SharpTimer
                     }
                     catch (FormatException)
                     {
-                        Utils.LogError("Invalid string format for OverrideDisableTelehop... Example: 's1_end, s2_end, s3_end, s4_end, s5_end, s6_end, s7_end, s8_end'");
+                        Utils.LogError(
+                            "Invalid string format for OverrideDisableTelehop... Example: 's1_end, s2_end, s3_end, s4_end, s5_end, s6_end, s7_end, s8_end'");
                     }
                 }
                 else
@@ -411,7 +487,6 @@ public partial class SharpTimer
                         {
                             Utils.LogDebug($"OverrideMaxSpeedLimit for trigger: {trigger}");
                         }
-
                     }
                     catch (Exception ex)
                     {
@@ -455,40 +530,43 @@ public partial class SharpTimer
 
                 if (!string.IsNullOrEmpty(mapInfo.MapTier))
                 {
-                    AddTimer(10.0f, () => //making sure this happens after remote_data is fetched due to github being slow sometimes
-                    {
-                        try
+                    AddTimer(10.0f,
+                        () => //making sure this happens after remote_data is fetched due to github being slow sometimes
                         {
-                            currentMapTier = int.Parse(mapInfo.MapTier);
-                            Utils.LogDebug($"Overriding MapTier to {currentMapTier}");
-                        }
-                        catch (FormatException)
-                        {
-                            Utils.LogError("Invalid int string format for MapTier");
-                        }
-                    }, TimerFlags.STOP_ON_MAPCHANGE);
+                            try
+                            {
+                                currentMapTier = int.Parse(mapInfo.MapTier);
+                                Utils.LogDebug($"Overriding MapTier to {currentMapTier}");
+                            }
+                            catch (FormatException)
+                            {
+                                Utils.LogError("Invalid int string format for MapTier");
+                            }
+                        }, TimerFlags.STOP_ON_MAPCHANGE);
                 }
 
                 if (!string.IsNullOrEmpty(mapInfo.MapType))
                 {
-                    AddTimer(10.0f, () => //making sure this happens after remote_data is fetched due to github being slow sometimes
-                    {
-                        try
+                    AddTimer(10.0f,
+                        () => //making sure this happens after remote_data is fetched due to github being slow sometimes
                         {
-                            currentMapType = mapInfo.MapType;
-                            Utils.LogDebug($"Overriding MapType to {currentMapType}");
-                        }
-                        catch (FormatException)
-                        {
-                            Utils.LogError("Invalid string format for MapType");
-                        }
-                    }, TimerFlags.STOP_ON_MAPCHANGE);
+                            try
+                            {
+                                currentMapType = mapInfo.MapType;
+                                Utils.LogDebug($"Overriding MapType to {currentMapType}");
+                            }
+                            catch (FormatException)
+                            {
+                                Utils.LogError("Invalid string format for MapType");
+                            }
+                        }, TimerFlags.STOP_ON_MAPCHANGE);
                 }
 
-                if (useTriggers == false && !currentMapStartC1.Equals(new()) && !currentMapStartC2.Equals(new()) && !currentMapEndC1.Equals(new()) && !currentMapEndC2.Equals(new()))
+                if (useTriggers == false && !currentMapStartC1.Equals(new()) && !currentMapStartC2.Equals(new()) &&
+                    !currentMapEndC1.Equals(new()) && !currentMapEndC2.Equals(new()))
                 {
-                    Utils.DrawWireframe3D(currentMapStartC1, currentMapStartC2, startBeamColor);
-                    Utils.DrawWireframe3D(currentMapEndC1, currentMapEndC2, endBeamColor);
+                    Utils.DrawWireframe3D(currentMapStartC1, currentMapStartC2, startBeamColor, true);
+                    Utils.DrawWireframe3D(currentMapEndC1, currentMapEndC2, endBeamColor, true);
                 }
                 else
                 {
@@ -496,8 +574,8 @@ public partial class SharpTimer
 
                     if (startRight == null || startLeft == null || endRight == null || endLeft == null) return;
 
-                    Utils.DrawWireframe3D(startRight.Value, startLeft.Value, startBeamColor);
-                    Utils.DrawWireframe3D(endRight.Value, endLeft.Value, endBeamColor);
+                    Utils.DrawWireframe3D(startRight.Value, startLeft.Value, startBeamColor, false);
+                    Utils.DrawWireframe3D(endRight.Value, endLeft.Value, endBeamColor, false);
                 }
 
                 if (useTriggers == true || useTriggersAndFakeZones == true)
@@ -529,10 +607,12 @@ public partial class SharpTimer
                 else
                     Utils.LogDebug($"Hooking Trigger RespawnPos Success! {currentRespawnPos}");
 
-                if (useTriggers == false && !currentMapStartC1.Equals(new()) && !currentMapStartC2.Equals(new()) && !currentMapEndC1.Equals(new()) && !currentMapEndC2.Equals(new()) && useTriggersAndFakeZones == false)
+                if (useTriggers == false && !currentMapStartC1.Equals(new()) && !currentMapStartC2.Equals(new()) &&
+                    !currentMapEndC1.Equals(new()) && !currentMapEndC2.Equals(new()) &&
+                    useTriggersAndFakeZones == false)
                 {
-                    Utils.DrawWireframe3D(currentMapStartC1, currentMapStartC2, startBeamColor);
-                    Utils.DrawWireframe3D(currentMapEndC1, currentMapEndC2, endBeamColor);
+                    Utils.DrawWireframe3D(currentMapStartC1, currentMapStartC2, startBeamColor, false);
+                    Utils.DrawWireframe3D(currentMapEndC1, currentMapEndC2, endBeamColor, false);
                 }
                 else
                 {
@@ -541,8 +621,8 @@ public partial class SharpTimer
                     if (startRight == null || startLeft == null || endRight == null || endLeft == null)
                         return;
 
-                    Utils.DrawWireframe3D(startRight.Value, startLeft.Value, startBeamColor);
-                    Utils.DrawWireframe3D(endRight.Value, endLeft.Value, endBeamColor);
+                    Utils.DrawWireframe3D(startRight.Value, startLeft.Value, startBeamColor, false);
+                    Utils.DrawWireframe3D(endRight.Value, endLeft.Value, endBeamColor, false);
                 }
 
                 useTriggers = true;
@@ -578,6 +658,7 @@ public partial class SharpTimer
         entityCache.Triggers.Clear();
         entityCache.InfoTeleportDestinations.Clear();
         entityCache.UpdateCache();
+        //ClearGlobalCache();
 
         useTriggers = true;
         useTriggersAndFakeZones = false;
@@ -610,9 +691,10 @@ public partial class SharpTimer
         globalPointsMultiplier = 1.0f;
     }
 
-    public async Task<(string, string, string)> GetMapRecordSteamID(int bonusX = 0, int top10 = 0)
+    public async Task<(string, string, int)> GetMapRecordSteamID(int bonusX = 0, int top10 = 0)
     {
-        string mapRecordsPath = Path.Combine(playerRecordsPath!, bonusX == 0 ? $"{currentMapName}.json" : $"{currentMapName}_bonus{bonusX}.json");
+        string mapRecordsPath = Path.Combine(playerRecordsPath!,
+            bonusX == 0 ? $"{currentMapName}.json" : $"{currentMapName}_bonus{bonusX}.json");
 
         Dictionary<string, PlayerRecord> records;
 
@@ -622,7 +704,8 @@ public partial class SharpTimer
             {
                 if (jsonDocument != null)
                 {
-                    records = JsonSerializer.Deserialize<Dictionary<string, PlayerRecord>>(jsonDocument.RootElement.GetRawText()) ?? [];
+                    records = JsonSerializer.Deserialize<Dictionary<string, PlayerRecord>>(jsonDocument.RootElement
+                        .GetRawText()) ?? [];
                 }
                 else
                 {
@@ -638,7 +721,7 @@ public partial class SharpTimer
 
         string steamId64 = "null";
         string playerName = "null";
-        string timerTicks = "null";
+        int timerTicks = 0;
 
         if (top10 != 0 && top10 <= records.Count)
         {
@@ -646,7 +729,7 @@ public partial class SharpTimer
             var record = sortedRecords[top10 - 1];
             steamId64 = record.Key;
             playerName = record.Value.PlayerName!;
-            timerTicks = Utils.FormatTime(record.Value.TimerTicks);
+            timerTicks = record.Value.TimerTicks;
         }
         else
         {
@@ -655,7 +738,7 @@ public partial class SharpTimer
             {
                 steamId64 = minTimerTicksRecord.Key;
                 playerName = minTimerTicksRecord.Value.PlayerName!;
-                timerTicks = Utils.FormatTime(minTimerTicksRecord.Value.TimerTicks);
+                timerTicks = minTimerTicksRecord.Value.TimerTicks;
             }
         }
 
@@ -670,12 +753,11 @@ public partial class SharpTimer
         {
             Task.Run(async () =>
             {
-                Utils.LogDebug($"Getting Server Record AD using database");
-                var sortedRecords = await GetSortedRecordsFromDatabase(100);
-
                 Utils.LogDebug($"Running Server Record AD...");
 
-                if (sortedRecords.Count == 0)
+                Dictionary<int, PlayerRecord> cachedSortedRecords = await GetSortedRecordsFromDatabase(1, 0, "", 0, GetModeName(defaultMode));
+                
+                if (cachedSortedRecords.Count == 0)
                 {
                     Utils.LogDebug($"No Server Records for this map yet!");
                     return;
@@ -683,12 +765,11 @@ public partial class SharpTimer
 
                 Server.NextFrame(() => Utils.PrintToChatAll(Localizer["current_sr", currentMapName!]));
 
-                var serverRecord = sortedRecords.FirstOrDefault();
+                var serverRecord = cachedSortedRecords.FirstOrDefault();
                 string playerName = serverRecord.Value.PlayerName!; // Get the player name from the dictionary value
                 int timerTicks = serverRecord.Value.TimerTicks; // Get the timer ticks from the dictionary value
-                Server.NextFrame(() => Utils.PrintToChatAll(Localizer["current_sr_player", playerName, Utils.FormatTime(timerTicks)]));
-
-                SortedCachedRecords = sortedRecords;
+                Server.NextFrame(() =>
+                    Utils.PrintToChatAll(Localizer["current_sr_player", playerName, Utils.FormatTime(timerTicks)]));
             });
         }, TimerFlags.REPEAT);
 
@@ -707,12 +788,14 @@ public partial class SharpTimer
             if (File.Exists(customAdMessageFilePath))
             {
                 string[] customAdMessages = File.ReadAllLines(customAdMessageFilePath, System.Text.Encoding.UTF8);
-                var nonEmptyCustomAds = customAdMessages.Where(ad => !string.IsNullOrEmpty(ad) && !ad.TrimStart().StartsWith("//")).ToList();
+                var nonEmptyCustomAds = customAdMessages
+                    .Where(ad => !string.IsNullOrEmpty(ad) && !ad.TrimStart().StartsWith("//")).ToList();
 
                 allAdMessages.AddRange(nonEmptyCustomAds);
             }
 
-            Server.NextFrame(() => Utils.PrintToChatAll($"{Utils.ReplaceVars(allAdMessages[new Random().Next(allAdMessages.Count)])}"));
+            Server.NextFrame(() =>
+                Utils.PrintToChatAll($"{Utils.ReplaceVars(allAdMessages[new Random().Next(allAdMessages.Count)])}"));
         }, TimerFlags.REPEAT);
 
         isADMessagesTimerRunning = true;
@@ -745,5 +828,4 @@ public partial class SharpTimer
 
         return adMessages;
     }
-
 }

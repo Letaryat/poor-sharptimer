@@ -24,6 +24,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using FixVectorLeak;
+using CounterStrikeSharp.API.Modules.Commands.Targeting;
 
 namespace SharpTimer
 {
@@ -141,17 +142,17 @@ namespace SharpTimer
         public void LogDebug(string msg)
         {
             if (Plugin.enableDebug == true)
-                Plugin.Logger.LogInformation($"\u001b[33m[LogDebug] \u001b[37m{msg}");
+                Plugin.Logger.LogInformation($"[ST-DEBUG] {msg}");
         }
 
         public void LogError(string msg)
         {
-            Plugin.Logger.LogError($"\u001b[31m[LogError] \u001b[37m{msg}");
+            Plugin.Logger.LogError($"[ST-ERROR] {msg}");
         }
 
         public void ConPrint(string msg)
         {
-            Plugin.Logger.LogInformation($"\u001b[36m[SharpTimer] \u001b[37m{msg}");
+            Plugin.Logger.LogInformation($"[SharpTimer] {msg}");
         }
 
         public string FormatTime(int ticks)
@@ -167,6 +168,30 @@ namespace SharpTimer
             }
 
             return $"{totalMinutes:D1}:{timeSpan.Seconds:D2}.{milliseconds}";
+        }
+        
+        public string FormatDecimalTime(decimal time)
+        {
+            int totalMilliseconds = (int)(time * 1000);
+            int hours = totalMilliseconds / 3600000;
+            int minutes = (totalMilliseconds % 3600000) / 60000;
+            int seconds = (totalMilliseconds % 60000) / 1000;
+            int milliseconds = totalMilliseconds % 1000;
+
+            if (hours > 0)
+                return $"{hours}:{minutes:D2}:{seconds:D2}.{milliseconds:D3}";
+
+            return $"{minutes:D2}:{seconds:D2}.{milliseconds:D3}";
+        }
+        
+        public decimal TicksToDecimal(int ticks)
+        {
+            return Math.Round(ticks / 64.0m, 3);
+        }
+        
+        public int DecimalToTicks(decimal time)
+        {
+            return (int)Math.Round(time * 64);
         }
 
         public string FormatTimeDifference(int currentTicks, int previousTicks, bool noColor = false)
@@ -365,16 +390,16 @@ namespace SharpTimer
             LogDebug($"Beam Spawned at S:{startPos} E:{beam.EndPos}");
         }
 
-        public void DrawWireframe3D(Vector_t corner1, Vector_t corner8, string _color)
+        public void DrawWireframe3D(Vector_t corner1, Vector_t corner8, string _color, bool fakezone)
         {
             Vector_t corner2 = new(corner1.X, corner8.Y, corner1.Z);
             Vector_t corner3 = new(corner8.X, corner8.Y, corner1.Z);
             Vector_t corner4 = new(corner8.X, corner1.Y, corner1.Z);
 
-            Vector_t corner5 = new(corner8.X, corner1.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
-            Vector_t corner6 = new(corner1.X, corner1.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
-            Vector_t corner7 = new(corner1.X, corner8.Y, corner8.Z + (Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
-            if (Plugin.Box3DZones) corner8 = new(corner8.X, corner8.Y, corner8.Z + Plugin.fakeTriggerHeight);
+            Vector_t corner5 = new(corner8.X, corner1.Y, corner8.Z + (fakezone && Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            Vector_t corner6 = new(corner1.X, corner1.Y, corner8.Z + (fakezone && Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            Vector_t corner7 = new(corner1.X, corner8.Y, corner8.Z + (fakezone && Plugin.Box3DZones ? Plugin.fakeTriggerHeight : 0));
+            if (Plugin.Box3DZones) corner8 = new(corner8.X, corner8.Y, corner8.Z + (fakezone ? Plugin.fakeTriggerHeight : 0));
 
             //top square
             DrawLaserBetween(corner1, corner2, _color);
@@ -395,7 +420,7 @@ namespace SharpTimer
             DrawLaserBetween(corner4, corner5, _color);
         }
 
-        public bool IsVectorInsideBox(Vector_t playerVector, Vector_t corner1, Vector_t corner2)
+        public bool IsVectorInsideBox(Vector_t playerVector, Vector_t corner1, Vector_t corner2, bool fakezone)
         {
             float minX = Math.Min(corner1.X, corner2.X);
             float minY = Math.Min(corner1.Y, corner2.Y);
@@ -403,7 +428,7 @@ namespace SharpTimer
 
             float maxX = Math.Max(corner1.X, corner2.X);
             float maxY = Math.Max(corner1.Y, corner2.Y);
-            float maxZ = Math.Max(corner1.Z, corner2.Z + Plugin.fakeTriggerHeight);
+            float maxZ = Math.Max(corner1.Z, corner2.Z + (fakezone ? Plugin.fakeTriggerHeight : 0));
 
             return playerVector.X >= minX && playerVector.X <= maxX &&
                    playerVector.Y >= minY && playerVector.Y <= maxY &&
@@ -677,12 +702,19 @@ namespace SharpTimer
         {
             if (Plugin.disableRemoteData)
             {
-                return Plugin.currentMapName switch
-                {
-                    var name when name!.StartsWith("bhop_") => Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "bhop_.json")!,
-                    var name when name!.StartsWith("surf_") => Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json"),
-                    _ => null
-                } ?? Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", "surf_.json");
+                var mapName = Plugin.currentMapName;
+                if (string.IsNullOrEmpty(mapName))
+                    return "";
+
+                // Extract the prefix (part before and including the underscore)
+                int underscoreIndex = mapName.IndexOf('_');
+                if (underscoreIndex == -1)
+                    return "";
+
+                string prefix = mapName.Substring(0, underscoreIndex + 1); // e.g., "bhop_" or "surf_"
+                string jsonPath = Path.Join(Plugin.gameDir, "csgo", "cfg", "SharpTimer", "MapData", "local_data", $"{prefix}.json");
+
+                return File.Exists(jsonPath) ? jsonPath : "";
             }
             return Plugin.currentMapName switch
             {
@@ -869,17 +901,36 @@ namespace SharpTimer
             }
         }
 
-        public (string, string) GetHostnameAndIp()
+        public (string, int) GetIPAndPort()
         {
-            string ip = $"{GetServerIp()}:{ConVar.Find("hostport")!.GetPrimitiveValue<int>()}";
-            string hostname = ConVar.Find("hostname")!.StringValue;
+            string ip = $"{GetServerIp()}";
+            int port = ConVar.Find("hostport")!.GetPrimitiveValue<int>();
 
-            return (hostname, ip);
+            return (ip, port);
         }
 
         public void PrintToChat(CCSPlayerController player, string message)
         {
             player.PrintToChat($" {Localizer["prefix"]} {message}");
+        }
+
+        public void PrintToSpec(CCSPlayerController target, string message)
+        {
+            if (target == null || !target.IsValid) return;
+            var targetPawn = target.PlayerPawn?.Value;
+            if (targetPawn == null || !targetPawn.IsValid) return;
+            foreach (var spectator in Utilities.GetPlayers())
+            {
+                if (spectator == null || !spectator.IsValid) continue;
+                if (spectator.TeamNum != (byte)CsTeam.Spectator) continue;
+                var obsPawn = spectator.PlayerPawn?.Value;
+                if (obsPawn == null || !obsPawn.IsValid) continue;
+
+                if (spectator.Pawn.Value!.ObserverServices!.ObserverTarget.Index == target.Pawn.Index)
+                {
+                    spectator.PrintToChat($"{Localizer["prefix"]} *{target.PlayerName}* - {message}");
+                }
+            }
         }
 
         public void PrintToChatAll(string message)
