@@ -119,7 +119,7 @@ namespace SharpTimer
                         }
 
                         /* single startzone jump */
-                        if (startzoneSingleJumpEnabled)
+                        if (startzoneSingleJumpEnabled && !playerTimer.IsTimerBlocked)
                         {
                             bool wasOnGround = playerTimer.WasOnGroundLastTick;
                             playerTimer.WasOnGroundLastTick = playerPawn.GroundEntity.IsValid;
