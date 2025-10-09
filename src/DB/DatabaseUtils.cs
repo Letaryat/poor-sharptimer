@@ -972,10 +972,13 @@ namespace SharpTimer
                                 }
                                 else if (!onlySRReplay)
                                 {
-                                    if(useBinaryReplays)
-                                        _ = Task.Run(async () => await DumpReplayToBinary(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
-                                    else
-                                        _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
+                                    if (timerTicks < dBtimerTicks)
+                                    {
+                                        if (useBinaryReplays)
+                                            _ = Task.Run(async () => await DumpReplayToBinary(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
+                                        else
+                                            _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
+                                    }
                                 }
                                 
                             }
@@ -1113,10 +1116,13 @@ namespace SharpTimer
                                 }
                                 else if (!onlySRReplay)
                                 {
-                                    if(useBinaryReplays)
-                                        _ = Task.Run(async () => await DumpReplayToBinary(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
-                                    else
-                                        _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
+                                    if (timerTicks < dBtimerTicks)
+                                    {
+                                        if (useBinaryReplays)
+                                            _ = Task.Run(async () => await DumpReplayToBinary(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
+                                        else
+                                            _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
+                                    }
                                 }
                                 
                             }
