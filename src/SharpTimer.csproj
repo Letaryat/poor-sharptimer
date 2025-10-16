@@ -11,7 +11,7 @@
     </PropertyGroup>
 	
     <ItemGroup>
-        <PackageReference Include="CounterStrikeSharp.API" Version="1.0.337">
+        <PackageReference Include="CounterStrikeSharp.API" Version="1.0.342">
 			<PrivateAssets>none</PrivateAssets>
 			<ExcludeAssets>runtime</ExcludeAssets>
 			<IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -28,40 +28,28 @@
         <ItemGroup>
             <CfgFiles Include="$(ProjectDir)..\cfg\SharpTimer\**\*.*" />
         </ItemGroup>
-        <Copy
-            SourceFiles="@(CfgFiles)"
-            DestinationFiles="@(CfgFiles->'$(ProjectDir)..\Build\cfg\SharpTimer\%(RecursiveDir)%(Filename)%(Extension)')"
-            SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(CfgFiles)" DestinationFiles="@(CfgFiles->'$(ProjectDir)..\Build\cfg\SharpTimer\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     </Target>
 
     <Target Name="CopygamedataFolder" AfterTargets="Build" Condition="'$(SkipCopygamedataFolder)' != 'true'">
     <ItemGroup>
         <GamedataFiles Include="$(ProjectDir)..\gamedata\**\*.*" />
     </ItemGroup>
-    <Copy
-        SourceFiles="@(GamedataFiles)"
-        DestinationFiles="@(GamedataFiles->'$(ProjectDir)..\Build\addons\counterstrikesharp\gamedata\%(RecursiveDir)%(Filename)%(Extension)')"
-        SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(GamedataFiles)" DestinationFiles="@(GamedataFiles->'$(ProjectDir)..\Build\addons\counterstrikesharp\gamedata\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     </Target>
 
     <Target Name="CopyLangFolder" AfterTargets="Build" Condition="'$(SkipCopyLangFolder)' != 'true'">
     <ItemGroup>
         <LangFiles Include="$(ProjectDir)..\lang\**\*.*" />
     </ItemGroup>
-    <Copy
-        SourceFiles="@(LangFiles)"
-        DestinationFiles="@(LangFiles->'$(OutputPath)\lang\%(RecursiveDir)%(Filename)%(Extension)')"
-        SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(LangFiles)" DestinationFiles="@(LangFiles->'$(OutputPath)\lang\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     </Target>
 
     <Target Name="CopyBDFolder" AfterTargets="Build" Condition="'$(SkipCopyBDFolder)' != 'true'">
     <ItemGroup>
         <BDFiles Include="$(ProjectDir)..\src\DB\Migrations\**\*.*" />
     </ItemGroup>
-    <Copy
-        SourceFiles="@(BDFiles)"
-        DestinationFiles="@(BDFiles->'$(OutputPath)\Database\Migrations\%(RecursiveDir)%(Filename)%(Extension)')"
-        SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(BDFiles)" DestinationFiles="@(BDFiles->'$(OutputPath)\Database\Migrations\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     </Target>
 
     <Target Name="ExcludeStoreApiFiles" AfterTargets="Build">
