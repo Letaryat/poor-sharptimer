@@ -66,7 +66,7 @@ public partial class SharpTimer : BasePlugin
         try
         {
             if (isLinux)
-                RunCommand.Hook(OnRunCommand, HookMode.Pre);
+                RunCommand.Hook(OnRunCommandPre, HookMode.Pre);
         }
         catch (Exception)
         {
