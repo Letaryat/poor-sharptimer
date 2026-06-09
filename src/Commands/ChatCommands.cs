@@ -968,65 +968,16 @@ namespace SharpTimer
             }
         }
 
-        [ConsoleCommand("css_rb", "Teleports you to Bonus start")]
-        [ConsoleCommand("css_b", "alias for !rb")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void RespawnBonusPlayer(CCSPlayerController? player, CommandInfo command)
+        public void RespawnBonusPlayerHelper(CCSPlayerController player, int bonusX)
         {
             try
             {
                 if (!IsAllowedPlayer(player) || respawnEnabled == false)
                     return;
 
-                var slot = player!.Slot;
-                var playerName = player.PlayerName;
-                var steamID = player.SteamID.ToString();
-
-                Utils.LogDebug($"{playerName} calling css_rb...");
-
-                if (CommandCooldown(player))
-                    return;
-
+                var slot = player.Slot;
                 if (ReplayCheck(player))
                     return;
-
-                //defaults to !b 1 without any args
-                if (command.ArgString == null || command.ArgString == "")
-                {
-                    if (bonusRespawnPoses[1] != null)
-                    {
-                        if (bonusRespawnAngs.TryGetValue(1, out QAngle_t? bonusAng) && bonusAng != null)
-                        {
-                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, bonusRespawnAngs[1]!, new Vector_t(0, 0, 0));
-                        }
-                        else
-                        {
-                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
-                        }
-                        Utils.LogDebug($"{player.PlayerName} css_rb {1} to {bonusRespawnPoses[1]}");
-                    }
-                    else
-                    {
-                        Utils.PrintToChat(player, Localizer["no_respawnpos_bonus_index", 1]);
-                    }
-                    Server.NextFrame(() =>
-                    {
-                        playerTimers[slot].IsTimerRunning = false;
-                        playerTimers[slot].TimerTicks = 0;
-                        playerTimers[slot].IsBonusTimerRunning = false;
-                        playerTimers[slot].BonusTimerTicks = 0;
-                        playerTimers[slot].IsTimerBlocked = false;
-                    });
-                    PlaySound(player, respawnSound);
-                    return;
-                }
-
-                if (!int.TryParse(command.ArgString, out int bonusX))
-                {
-                    Utils.LogDebug("css_rb conversion failed. The input string is not a valid integer.");
-                    Utils.PrintToChat(player, Localizer["no_respawnpos_bonus_rb"]);
-                    return;
-                }
 
                 // Remove checkpoints for the current player
                 if (!playerTimers[slot].IsTimerBlocked)
@@ -1034,17 +985,23 @@ namespace SharpTimer
                     playerCheckpoints.Remove(slot);
                 }
 
-                if (bonusRespawnPoses[bonusX] != null)
+                if (bonusRespawnPoses.TryGetValue(bonusX, out var pos) && pos != null)
                 {
                     if (bonusRespawnAngs.TryGetValue(bonusX, out QAngle_t? bonusAng) && bonusAng != null)
-                        player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, bonusRespawnAngs[bonusX]!, new Vector_t(0, 0, 0));
+                        player.PlayerPawn.Value!.Teleport(pos, bonusAng, new Vector_t(0, 0, 0));
                     else
-                        player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                        player.PlayerPawn.Value!.Teleport(pos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
 
-                    Utils.LogDebug($"{player.PlayerName} css_rb {bonusX} to {bonusRespawnPoses[bonusX]}");
+                    Utils.LogDebug($"{player.PlayerName} css_rb {bonusX} to {pos}");
                 }
                 else
-                    Utils.PrintToChat(player, Localizer["no_respawnpos_bonus"]);
+                {
+                    if (bonusX == 1)
+                        Utils.PrintToChat(player, Localizer["no_respawnpos_bonus_index", 1]);
+                    else
+                        Utils.PrintToChat(player, Localizer["no_respawnpos_bonus"]);
+                    return;
+                }
 
                 Server.NextFrame(() =>
                 {
@@ -1059,8 +1016,35 @@ namespace SharpTimer
             }
             catch (Exception ex)
             {
-                Utils.LogError($"Exception in RespawnBonusPlayer: {ex.Message}");
+                Utils.LogError($"Exception in RespawnBonusPlayerHelper: {ex.Message}");
             }
+        }
+
+        [ConsoleCommand("css_rb", "Teleports you to Bonus start")]
+        [ConsoleCommand("css_b", "alias for !rb")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void RespawnBonusPlayer(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsAllowedPlayer(player))
+                return;
+
+            Utils.LogDebug($"{player!.PlayerName} calling css_rb...");
+
+            if (CommandCooldown(player))
+                return;
+
+            int bonusX = 1;
+            if (!string.IsNullOrEmpty(command.ArgString))
+            {
+                if (!int.TryParse(command.ArgString, out bonusX))
+                {
+                    Utils.LogDebug("css_rb conversion failed. The input string is not a valid integer.");
+                    Utils.PrintToChat(player, Localizer["no_respawnpos_bonus_rb"]);
+                    return;
+                }
+            }
+
+            RespawnBonusPlayerHelper(player, bonusX);
         }
 
         [ConsoleCommand("css_startpos", "Saves a custom respawn point within the start trigger")]
@@ -1564,20 +1548,34 @@ namespace SharpTimer
             if (CommandCooldown(player))
                 return;
 
+            if (!playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
+            {
+                Utils.PrintToChat(player, Localizer["error_occured"]);
+                Utils.LogDebug("Failed to get playerTimer.");
+                return;
+            }
+
+            if (playerTimer.IsBonusTimerRunning || playerTimer.BonusStage != 0)
+            {
+                int bonusX = playerTimer.BonusStage != 0 ? playerTimer.BonusStage : 1;
+                RespawnBonusPlayerHelper(player, bonusX);
+                return;
+            }
+
             if (stageTriggerCount == 0)
             {
                 if (enableRsOnLinear) {
-                    player.ExecuteClientCommandFromServer("css_r");
+                    RespawnPlayerCommand(player, command);
                     return;
                 }
                 Utils.PrintToChat(player, Localizer["map_no_stages"]);
                 return;
             }
 
-            if (!playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer) || playerTimer.CurrentMapStage == 0)
+            if (playerTimer.CurrentMapStage == 0)
             {
                 Utils.PrintToChat(player, Localizer["error_occured"]);
-                Utils.LogDebug("Failed to get playerTimer or playerTimer.CurrentMapStage == 0.");
+                Utils.LogDebug("playerTimer.CurrentMapStage == 0.");
                 return;
             }
 
