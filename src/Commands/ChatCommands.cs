@@ -947,7 +947,7 @@ namespace SharpTimer
 
             Utils.LogDebug($"Handling !sr for {_playerName}...");
             
-            var sortedRecords = await GetSortedRecordsFromDatabase();
+            var sortedRecords = await GetSortedRecordsFromDatabase(1, 0, "", 0, GetModeName(defaultMode));
 
             if (sortedRecords.Count == 0)
                 return;
