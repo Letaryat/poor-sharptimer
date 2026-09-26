@@ -81,7 +81,7 @@ namespace SharpTimer
                         
                         _ = Task.Run(async () =>
                         {
-                            await GetPlayerStats(player, steamID, playerName, player.Slot, true);
+                            await GetPlayerStats(player, steamID, playerName, slot, true);
                         });
 
                         if (cmdJoinMsgEnabled)

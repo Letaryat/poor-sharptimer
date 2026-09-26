@@ -66,7 +66,10 @@ namespace SharpTimer
                     else
                     {
                         bool playerValid = IsAllowedPlayer(player);
-                        _ = Task.Run(async () => await HandlePlayerStageTimes(player, callerHandle, slot, steamID, playerName, playerTimers[slot].currentStyle, playerTimers[slot].Mode, playerValid));
+                        int hookStyle = playerTimers[slot].currentStyle;
+                        string hookMode = playerTimers[slot].Mode;
+                        string hookSpeed = GetCurrentPlayerSpeed(player);
+                        _ = Task.Run(async () => await HandlePlayerStageTimes(player, callerHandle, slot, steamID, playerName, hookStyle, hookMode, playerValid, hookSpeed));
                         return HookResult.Continue;
                     }
                 }
@@ -74,14 +77,20 @@ namespace SharpTimer
                 if (useCheckpointTriggers == true && cpTriggers.ContainsKey(callerHandle) && playerTimers[slot].IsTimerBlocked == false && playerTimers[slot].IsTimerRunning == true)
                 {
                     bool playerValid = IsAllowedPlayer(player);
-                    _ = Task.Run(async () => await HandlePlayerCheckpointTimes(player, callerHandle, slot, steamID, playerName, playerTimers[slot].currentStyle, playerTimers[slot].Mode, playerValid));
+                    int hookStyle = playerTimers[slot].currentStyle;
+                    string hookMode = playerTimers[slot].Mode;
+                    string hookSpeed = GetCurrentPlayerSpeed(player);
+                    _ = Task.Run(async () => await HandlePlayerCheckpointTimes(player, callerHandle, slot, steamID, playerName, hookStyle, hookMode, playerValid, hookSpeed));
                     return HookResult.Continue;
                 }
 
                 if (useBonusCheckpointTriggers == true && bonusCheckpointTriggers.ContainsKey(callerHandle) && playerTimers[slot].IsTimerBlocked == false && playerTimers[slot].IsBonusTimerRunning == true)
                 {
                     bool playerValid = IsAllowedPlayer(player);
-                    _ = Task.Run(async () => await HandlePlayerBonusCheckpointTimes(player, callerHandle, slot, steamID, playerName, playerTimers[slot].currentStyle, playerTimers[slot].Mode, playerValid));
+                    int hookStyle = playerTimers[slot].currentStyle;
+                    string hookMode = playerTimers[slot].Mode;
+                    string hookSpeed = GetCurrentPlayerSpeed(player);
+                    _ = Task.Run(async () => await HandlePlayerBonusCheckpointTimes(player, callerHandle, slot, steamID, playerName, hookStyle, hookMode, playerValid, hookSpeed));
                     return HookResult.Continue;
                 }
 

@@ -350,17 +350,21 @@ namespace SharpTimer
             if (stageTriggers.Count != 0) playerTimers[slot].StageTimes!.Clear(); //remove previous stage times if the map has stages
             if (stageTriggers.Count != 0) playerTimers[slot].StageVelos!.Clear(); //remove previous stage velo if the map has stages
 
-            if (IsAllowedPlayer(player))
+            Server.NextFrame(() =>
             {
+                if (!IsAllowedPlayer(player))
+                {
+                    Utils.LogError($"Error in ReplayHandler: player not allowed or not on server anymore");
+                    return;
+                }
+
                 if (wr)
-                    Server.NextFrame(() => Utils.PrintToChat(player, Localizer["replaying_world_top", top10]));
+                    Utils.PrintToChat(player, Localizer["replaying_world_top", top10]);
                 else if (!self)
-                    Server.NextFrame(() => Utils.PrintToChat(player, Localizer["replaying_server_top", top10]));
+                    Utils.PrintToChat(player, Localizer["replaying_server_top", top10]);
                 else
-                    Server.NextFrame(() => Utils.PrintToChat(player, Localizer["replaying_pb"]));
-            }
-            else
-                Utils.LogError($"Error in ReplayHandler: player not allowed or not on server anymore");
+                    Utils.PrintToChat(player, Localizer["replaying_pb"]);
+            });
         }
 
         [ConsoleCommand("css_stop", "stops the current replay")]
@@ -702,7 +706,8 @@ namespace SharpTimer
 
             if (CommandCooldown(player)) return;
 
-            _ = Task.Run(async () => await PrintGlobalRankAsync(player));
+            int slot = player.Slot;
+            _ = Task.Run(async () => await PrintGlobalRankAsync(player, slot));
         }
 
         [ConsoleCommand("css_topbonus", "Prints top players of this map bonus")]
@@ -827,25 +832,19 @@ namespace SharpTimer
 
         public async Task RankCommandHandler(CCSPlayerController? player, string steamId, int slot, string playerName, bool sendRankToHUD = false, int style = 0, string mode = "")
         {
-            if (player!.IsBot || player.SteamID.ToString() == "0")
+            if (player == null || steamId == "0")
                 return;
 
             try
             {
-                if (!IsPlayerOrSpectator(player))
-                {
-                    Utils.LogError($"Error in RankCommandHandler: Player not allowed or not on server anymore");
-                    return;
-                }
-
                 //Utils.LogDebug($"Handling !rank for {playerName}...");
 
                 string ranking, rankIcon, mapPlacement, serverPoints = "", serverPlacement = "";
                 bool useGlobalRanks = enableDb && globalRanksEnabled;
 
-                ranking = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, false, 0, style, false, mode);
-                rankIcon = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName, true) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, true, false, 0, style, false, mode);
-                mapPlacement = await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, true, 0, style, false, mode);
+                ranking = useGlobalRanks ? await GetPlayerServerPlacement(steamId, playerName) : await GetPlayerMapPlacementWithTotal(steamId, playerName, false, false, 0, style, false, mode);
+                rankIcon = useGlobalRanks ? await GetPlayerServerPlacement(steamId, playerName, true) : await GetPlayerMapPlacementWithTotal(steamId, playerName, true, false, 0, style, false, mode);
+                mapPlacement = await GetPlayerMapPlacementWithTotal(steamId, playerName, false, true, 0, style, false, mode);
 
                 // Build bonus cache off-thread into a local map, publish to playerTimers on the main thread below
                 var cachedBonusInfo = new Dictionary<int, PlayerBonusPlacementInfo>();
@@ -857,7 +856,7 @@ namespace SharpTimer
                     /// Skip this bonus since the player doesn't have a saved time
                     if (bonusPbTicks <= 0) continue;
 
-                    var bonusPlacement = await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, true, bonusNumber, style, false, mode);
+                    var bonusPlacement = await GetPlayerMapPlacementWithTotal(steamId, playerName, false, true, bonusNumber, style, false, mode);
 
                     Utils.LogDebug($"Adding bonus info for Bonus {bonusNumber}");
                     Utils.LogDebug($"PbTicks: {bonusPbTicks}");
@@ -872,8 +871,8 @@ namespace SharpTimer
 
                 if (useGlobalRanks)
                 {
-                    serverPoints = await GetPlayerServerPlacement(player, steamId, playerName, false, false, true);
-                    serverPlacement = await GetPlayerServerPlacement(player, steamId, playerName, false, true, false);
+                    serverPoints = await GetPlayerServerPlacement(steamId, playerName, false, false, true);
+                    serverPlacement = await GetPlayerServerPlacement(steamId, playerName, false, true, false);
                 }
 
                 int pbTicks = enableDb ? await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, 0, style, mode) : await GetPreviousPlayerRecord(steamId, 0);
@@ -942,7 +941,7 @@ namespace SharpTimer
 
         public async Task SRCommandHandler(CCSPlayerController? player, string _playerName)
         {
-            if (!IsPlayerOrSpectator(player) || rankEnabled == false)
+            if (player == null || rankEnabled == false)
                 return;
 
             Utils.LogDebug($"Handling !sr for {_playerName}...");
@@ -954,6 +953,7 @@ namespace SharpTimer
 
             Server.NextFrame(() =>
             {
+                if (!IsPlayerOrSpectator(player)) return;
                 Utils.PrintToChat(player!, Localizer["current_sr", currentMapName!]);
             });
 
@@ -963,6 +963,7 @@ namespace SharpTimer
                 int timerTicks = kvp.Value.TimerTicks;
                 Server.NextFrame(() =>
                 {
+                    if (!IsPlayerOrSpectator(player)) return;
                     Utils.PrintToChat(player!, Localizer["current_sr_player", playerName!, Utils.FormatTime(timerTicks)]);
                 });
             }

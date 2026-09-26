@@ -173,17 +173,11 @@ namespace SharpTimer
             }
         }
 
-        public async Task DumpReplayToJson(CCSPlayerController player, string steamID, int slot, int bonusX = 0,
+        public async Task DumpReplayToJson(string steamID, int slot, int bonusX = 0,
             int style = 0, string mode = "")
         {
             await Task.Run(() =>
             {
-                if (!IsAllowedPlayer(player))
-                {
-                    Utils.LogError($"Error in DumpReplayToJson: Player not allowed or not on server anymore");
-                    return;
-                }
-
                 string fileName = $"{steamID}_replay.json";
                 string playerReplaysDirectory;
                 playerReplaysDirectory = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData",
@@ -215,17 +209,11 @@ namespace SharpTimer
             });
         }
 
-        public async Task DumpReplayToBinary(CCSPlayerController player, string steamID, int playerSlot, int bonusX = 0,
+        public async Task DumpReplayToBinary(string steamID, int playerSlot, int bonusX = 0,
             int style = 0, string mode = "")
         {
             await Task.Run(() =>
             {
-                if (!IsAllowedPlayer(player))
-                {
-                    Utils.LogError($"Error in DumpReplayToBinary: Player not allowed or not on server anymore");
-                    return;
-                }
-
                 string fileName = $"{steamID}_replay.dat";
                 string playerReplaysDirectory;
                 playerReplaysDirectory = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "PlayerReplayData",
@@ -551,9 +539,11 @@ namespace SharpTimer
                                 // start bot replay
                                 OnPlayerConnect(bot, true);
                                 ChangePlayerName(bot, replayBotName);
-                                playerTimers[bot.Slot].IsTimerBlocked = true;
+                                int botSlot = bot.Slot;
+                                string botMode = GetModeName(defaultMode);
+                                playerTimers[botSlot].IsTimerBlocked = true;
                                 _ = Task.Run(async () =>
-                                    await ReplayHandler(bot, bot.Slot, "1", "69", "unknown", 0, 0, false, GetModeName(defaultMode)));
+                                    await ReplayHandler(bot, botSlot, "1", "69", "unknown", 0, 0, false, botMode));
                                 Utils.LogDebug($"Starting replay for {bot.PlayerName}");
                             }
                             else
