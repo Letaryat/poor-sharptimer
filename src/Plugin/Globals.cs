@@ -42,11 +42,9 @@ namespace SharpTimer
         public ITagApi? TagApi { get; set; }
 
         public IRunCommand? RunCommand;
-        private static readonly MemoryFunctionVoid<CCSPlayerPawn, CSPlayerState> StateTransition = new(GameData.GetSignature("StateTransition"));
-        private readonly INetworkServerService networkServerService = new();
+        public ISnapBaseAngles SnapBaseAngles = new DisabledSnapBaseAngles();
         private int movementServices;
         private int movementPtr;
-        private readonly CSPlayerState[] _oldPlayerState = new CSPlayerState[65];
         
         public const int REPLAY_VERSION = 1;
 

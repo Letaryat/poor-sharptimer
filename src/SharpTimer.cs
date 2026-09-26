@@ -148,13 +148,13 @@ public partial class SharpTimer : BasePlugin
 
         try
         {
-            StateTransition.Hook(Hook_StateTransition, HookMode.Post);
+            SnapBaseAngles = new SnapBaseAngles();
         }
         catch (Exception)
         {
-            Utils.LogError($"StateTransition hook failed. Signature is likely outdated. Check for the latest stgamedata.json file on GitHub. State tracking features disabled until updated.");
+            Utils.LogError($"SnapBaseAngles bind failed. Signature is likely outdated. Check for the latest stgamedata.json file on GitHub. Teleport view angles will not snap until updated.");
         }
-        
+
         if (disableDamage)
             RegisterListener<Listeners.OnPlayerTakeDamagePre>(OnPlayerTakeDamagePre);
 
@@ -188,7 +188,6 @@ public partial class SharpTimer : BasePlugin
         if (isLinux)
             RunCommand?.Unhook(OnRunCommandPre, HookMode.Pre);
 
-        StateTransition.Unhook(Hook_StateTransition, HookMode.Post);
         if (disableDamage)
             RemoveListener<Listeners.OnPlayerTakeDamagePre>(OnPlayerTakeDamagePre);
 
@@ -356,33 +355,14 @@ public partial class SharpTimer : BasePlugin
         return HookResult.Continue;
     }
 
-    private HookResult Hook_StateTransition(DynamicHook h)
+    private void TeleportPlayerWithViewAngles(CCSPlayerController player, Vector_t? position, QAngle_t angles, Vector_t? velocity)
     {
-        var player = h.GetParam<CCSPlayerPawn>(0).OriginalController.Value;
-        var state = h.GetParam<CSPlayerState>(1);
+        var pawn = player.PlayerPawn.Value;
+        if (pawn == null || !pawn.IsValid)
+            return;
 
-        if (player is null) return HookResult.Continue;
-
-        if (state != _oldPlayerState[player.Index])
-        {
-            if (state == CSPlayerState.STATE_OBSERVER_MODE ||
-                _oldPlayerState[player.Index] == CSPlayerState.STATE_OBSERVER_MODE)
-                ForceFullUpdate(player);
-        }
-
-        _oldPlayerState[player.Index] = state;
-
-        return HookResult.Continue;
-    }
-
-    private void ForceFullUpdate(CCSPlayerController? player)
-    {
-        if (player is null || !player.IsValid) return;
-
-        var networkGameServer = networkServerService.GetIGameServer();
-        networkGameServer.GetClientBySlot(player.Slot)?.ForceFullUpdate();
-
-        player.PlayerPawn.Value?.Teleport(null, player.PlayerPawn.Value.EyeAngles, null);
+        pawn.Teleport(position, angles, velocity);
+        SnapBaseAngles.Snap(pawn, angles);
     }
 
     private void CheckTransmit(CCheckTransmitInfoList infoList)
@@ -438,7 +418,6 @@ public partial class SharpTimer : BasePlugin
             return HookResult.Continue;
 
         OnPlayerConnect(player);
-        _oldPlayerState[player.Index] = CSPlayerState.STATE_WELCOME;
 
         return HookResult.Continue;
     }

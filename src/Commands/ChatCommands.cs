@@ -997,11 +997,11 @@ namespace SharpTimer
                     {
                         if (bonusRespawnAngs.TryGetValue(1, out QAngle_t? bonusAng) && bonusAng != null)
                         {
-                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, bonusRespawnAngs[1]!, new Vector_t(0, 0, 0));
+                            TeleportPlayerWithViewAngles(player, bonusRespawnPoses[1]!, bonusAng.Value, new Vector_t(0, 0, 0));
                         }
                         else
                         {
-                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                            TeleportPlayerWithViewAngles(player, bonusRespawnPoses[1]!, player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
                         }
                         Utils.LogDebug($"{player.PlayerName} css_rb {1} to {bonusRespawnPoses[1]}");
                     }
@@ -1037,9 +1037,9 @@ namespace SharpTimer
                 if (bonusRespawnPoses[bonusX] != null)
                 {
                     if (bonusRespawnAngs.TryGetValue(bonusX, out QAngle_t? bonusAng) && bonusAng != null)
-                        player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, bonusRespawnAngs[bonusX]!, new Vector_t(0, 0, 0));
+                        TeleportPlayerWithViewAngles(player, bonusRespawnPoses[bonusX]!, bonusAng.Value, new Vector_t(0, 0, 0));
                     else
-                        player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                        TeleportPlayerWithViewAngles(player, bonusRespawnPoses[bonusX]!, player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
 
                     Utils.LogDebug($"{player.PlayerName} css_rb {bonusX} to {bonusRespawnPoses[bonusX]}");
                 }
@@ -1170,7 +1170,7 @@ namespace SharpTimer
 
                 if (stageTriggerPoses.TryGetValue(stageX, out Vector_t? stagePos) && stagePos != null)
                 {
-                    player.PlayerPawn.Value!.Teleport(stagePos, stageTriggerAngs[stageX] ?? player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                    TeleportPlayerWithViewAngles(player, stagePos, stageTriggerAngs[stageX] ?? player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
                     Utils.LogDebug($"{player.PlayerName} css_stage {stageX} to {stagePos}");
                 }
                 else
@@ -1508,16 +1508,16 @@ namespace SharpTimer
                     if (currentRespawnPos != null && playerTimers[slot].SetRespawnPos == null)
                     {
                         if (currentRespawnAng != null)
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, currentRespawnAng, new Vector_t(0, 0, 0));
+                            TeleportPlayerWithViewAngles(player, currentRespawnPos, currentRespawnAng.Value, new Vector_t(0, 0, 0));
                         else
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                            TeleportPlayerWithViewAngles(player, currentRespawnPos, player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
 
                         Utils.LogDebug($"{player.PlayerName} css_r to {currentRespawnPos}");
                     }
                     else
                     {
                         if (playerTimers[slot].SetRespawnPos != null && playerTimers[slot].SetRespawnAng != null)
-                            player.PlayerPawn.Value!.Teleport(Utils.ParseVector_t(playerTimers[slot].SetRespawnPos!), Utils.ParseQAngle_t(playerTimers[slot].SetRespawnAng!), new Vector_t(0, 0, 0));
+                            TeleportPlayerWithViewAngles(player, Utils.ParseVector_t(playerTimers[slot].SetRespawnPos!), Utils.ParseQAngle_t(playerTimers[slot].SetRespawnAng!), new Vector_t(0, 0, 0));
                         else
                             Utils.PrintToChat(player, Localizer["no_respawnpos"]);
                     }
@@ -1525,7 +1525,7 @@ namespace SharpTimer
                 else
                 {
                     if (currentEndPos != null)
-                        player.PlayerPawn.Value!.Teleport(currentEndPos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                        TeleportPlayerWithViewAngles(player, currentEndPos, player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
                     else
                         Utils.PrintToChat(player, Localizer["no_endpos"]);
                 }
@@ -1587,7 +1587,7 @@ namespace SharpTimer
             {
                 if (stageTriggerPoses.TryGetValue(currStage, out Vector_t? stagePos) && stagePos != null)
                 {
-                    player.PlayerPawn.Value!.Teleport(stagePos, stageTriggerAngs[currStage] ?? player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                    TeleportPlayerWithViewAngles(player, stagePos, stageTriggerAngs[currStage] ?? player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
 
                     Utils.LogDebug($"{playerName} css_rs");
                 }
@@ -1813,7 +1813,7 @@ namespace SharpTimer
 
                 if (player != null && IsAllowedPlayer(foundPlayer) && playerTimers[slot].IsTimerBlocked)
                 {
-                    player.PlayerPawn.Value!.Teleport(foundPlayer.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.ToVector_t(),
+                    TeleportPlayerWithViewAngles(player, foundPlayer.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.ToVector_t(),
                         foundPlayer.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
 
                     Utils.LogDebug($"{player.PlayerName} css_goto to {foundPlayer.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin.ToVector_t()}");
@@ -1939,11 +1939,11 @@ namespace SharpTimer
             // Teleport the player to the most recent checkpoint, including the saved rotation
             if (removeCpRestrictEnabled == true)
             {
-                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
+                TeleportPlayerWithViewAngles(player, position, rotation, speed);
             }
             else
             {
-                player.PlayerPawn.Value!.Teleport(position, rotation, new Vector_t(0, 0, 0));
+                TeleportPlayerWithViewAngles(player, position, rotation, new Vector_t(0, 0, 0));
             }
 
             // Play a sound or provide feedback to the player
@@ -2002,7 +2002,7 @@ namespace SharpTimer
                 Vector_t speed = Utils.ParseVector_t(previousCheckpoint.SpeedString ?? "0 0 0");
 
                 // Teleport the player to the previous checkpoint, including the saved rotation
-                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
+                TeleportPlayerWithViewAngles(player, position, rotation, speed);
 
                 // Play a sound or provide feedback to the player
                 PlaySound(player, tpSound);
@@ -2060,7 +2060,7 @@ namespace SharpTimer
                 Vector_t speed = Utils.ParseVector_t(nextCheckpoint.SpeedString ?? "0 0 0");
 
                 // Teleport the player to the next checkpoint, including the saved rotation
-                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
+                TeleportPlayerWithViewAngles(player, position, rotation, speed);
 
                 // Play a sound or provide feedback to the player
                 PlaySound(player, tpSound);
