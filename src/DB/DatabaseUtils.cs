@@ -968,27 +968,25 @@ namespace SharpTimer
 
                             if (enableReplays)
                             {
-                                if (onlySRReplay && (prevSRTimerTicks == 0 || prevSRTimerTicks > timerTicks))
+                                bool shouldDump = onlySRReplay
+                                    ? (prevSRTimerTicks == 0 || prevSRTimerTicks > timerTicks) && (dBtimerTicks == 0 || timerTicks < dBtimerTicks)
+                                    : (dBtimerTicks == 0 || timerTicks < dBtimerTicks);
+
+                                if (shouldDump)
                                 {
-                                    if (dBtimerTicks == 0 || timerTicks < dBtimerTicks)
+                                    Server.NextFrame(() =>
                                     {
+                                        if (!IsAllowedPlayer(player)) return;
+                                        if (!playerTimers.TryGetValue(slot, out var replayTimer)) return;
+                                        int replayStyle = replayTimer.currentStyle;
+                                        string replayMode = replayTimer.Mode;
+
                                         if (useBinaryReplays)
-                                            _ = Task.Run(async () => await DumpReplayToBinary(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
+                                            _ = Task.Run(async () => await DumpReplayToBinary(steamId, slot, bonusX, replayStyle, replayMode));
                                         else
-                                            _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
-                                    }
+                                            _ = Task.Run(async () => await DumpReplayToJson(steamId, slot, bonusX, replayStyle, replayMode));
+                                    });
                                 }
-                                else if (!onlySRReplay)
-                                {
-                                    if (dBtimerTicks == 0 || timerTicks < dBtimerTicks)
-                                    {
-                                        if (useBinaryReplays)
-                                            _ = Task.Run(async () => await DumpReplayToBinary(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
-                                        else
-                                            _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
-                                    }
-                                }
-                                
                             }
 
                             Server.NextFrame(() =>
@@ -1127,27 +1125,25 @@ namespace SharpTimer
 
                             if (enableReplays)
                             {
-                                if (onlySRReplay && (prevSRTimerTicks == 0 || prevSRTimerTicks > timerTicks))
+                                bool shouldDump = onlySRReplay
+                                    ? (prevSRTimerTicks == 0 || prevSRTimerTicks > timerTicks) && (dBtimerTicks == 0 || timerTicks < dBtimerTicks)
+                                    : (dBtimerTicks == 0 || timerTicks < dBtimerTicks);
+
+                                if (shouldDump)
                                 {
-                                    if (dBtimerTicks == 0 || timerTicks < dBtimerTicks)
+                                    Server.NextFrame(() =>
                                     {
+                                        if (!IsAllowedPlayer(player)) return;
+                                        if (!playerTimers.TryGetValue(slot, out var replayTimer)) return;
+                                        int replayStyle = replayTimer.currentStyle;
+                                        string replayMode = replayTimer.Mode;
+
                                         if (useBinaryReplays)
-                                            _ = Task.Run(async () => await DumpReplayToBinary(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
+                                            _ = Task.Run(async () => await DumpReplayToBinary(steamId, slot, bonusX, replayStyle, replayMode));
                                         else
-                                            _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
-                                    }
+                                            _ = Task.Run(async () => await DumpReplayToJson(steamId, slot, bonusX, replayStyle, replayMode));
+                                    });
                                 }
-                                else if (!onlySRReplay)
-                                {
-                                    if (dBtimerTicks == 0 || timerTicks < dBtimerTicks)
-                                    {
-                                        if (useBinaryReplays)
-                                            _ = Task.Run(async () => await DumpReplayToBinary(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
-                                        else
-                                            _ = Task.Run(async () => await DumpReplayToJson(player!, steamId, slot, bonusX, playerTimers[slot].currentStyle, playerTimers[slot].Mode));
-                                    }
-                                }
-                                
                             }
 
                             Server.NextFrame(() =>
@@ -1228,7 +1224,7 @@ namespace SharpTimer
             Utils.LogDebug($"Trying to get player stats from database for {playerName}");
             try
             {
-                if (player == null || !player.IsValid || player.IsBot) return;
+                if (player == null) return;
                 if (!(connectedPlayers.ContainsKey(slot) && playerTimers.ContainsKey(slot))) return;
 
                 int timeNowUnix = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -1445,7 +1441,7 @@ namespace SharpTimer
                                     break;
                                 case DatabaseType.SQLite:
                                     upsertQuery =
-                                        $@"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints, HideWeapon, HidePlayers, Mode, HideChatSpeed) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints, @HideWeapon, @HidePlayers, @Mode)";
+                                        $@"REPLACE INTO {PlayerStatsTable} (PlayerName, SteamID, TimesConnected, LastConnected, HideTimerHud, HideKeys, SoundsEnabled, PlayerFov, IsVip, BigGifID, GlobalPoints, HideWeapon, HidePlayers, Mode, HideChatSpeed) VALUES (@PlayerName, @SteamID, @TimesConnected, @LastConnected, @HideTimerHud, @HideKeys, @SoundsEnabled, @PlayerFov, @IsVip, @BigGifID, @GlobalPoints, @HideWeapon, @HidePlayers, @Mode, @HideChatSpeed)";
                                     upsertCommand = new SqliteCommand(upsertQuery, (SqliteConnection)connection);
                                     break;
                                 default:
@@ -1491,7 +1487,7 @@ namespace SharpTimer
         }
 
         public async Task SavePlayerStageTimeToDatabase(CCSPlayerController? player, int timerTicks, int stage,
-            string velocity, string steamId, string playerName, int slot, bool playerCheck, int bonusX = 0, int style = 0)
+            string velocity, string steamId, string playerName, int slot, bool playerCheck, int bonusX = 0, int style = 0, string mode = "")
         {
             Utils.LogDebug(
                 $"Trying to save player {(bonusX != 0 ? $"bonus {bonusX} stage {stage} time" : $"stage {stage} time")} to database for {playerName} {timerTicks}");
@@ -1650,13 +1646,13 @@ namespace SharpTimer
                             upsertCommand!.AddParameterWithValue("@Stage", stage);
                             upsertCommand!.AddParameterWithValue("@Velocity", velocity);
                             upsertCommand!.AddParameterWithValue("@Style", style);
-                            upsertCommand!.AddParameterWithValue("@Mode", playerTimers[slot].Mode);
+                            upsertCommand!.AddParameterWithValue("@Mode", mode);
                             //no points for stage times until points overhaul
                             //if (enableDb && globalRanksEnabled == true && ((dBtimesFinished <= maxGlobalFreePoints && globalRanksFreePointsEnabled == true) || beatPB)) await SavePlayerPoints(steamId, playerName, slot, playerPoints, dBtimerTicks, beatPB, bonusX, style);
                             //dont save stagetimes unless they complete map
                             //if ((stageTriggerCount != 0 || cpTriggerCount != 0) && bonusX == 0 && enableDb && timerTicks < dBtimerTicks) Server.NextFrame(() => _ = Task.Run(async () => await DumpPlayerStageTimesToJson(player, steamId, slot)));
-                            var prevSRID = await GetStageRecordSteamIDFromDatabase(stage, style, playerTimers[player.Slot].Mode);
-                            var prevSR = await GetPreviousPlayerStageRecordFromDatabase(player, prevSRID.Item1,
+                            var prevSRID = await GetStageRecordSteamIDFromDatabase(stage, style, mode);
+                            var prevSR = await GetPreviousPlayerStageRecordFromDatabase(prevSRID.Item1,
                                 currentMapNamee, stage, prevSRID.Item2, bonusX);
                             await upsertCommand!.ExecuteNonQueryAsync();
                             Server.NextFrame(() =>
@@ -1667,7 +1663,7 @@ namespace SharpTimer
                                 {
                                     if (!IsAllowedPlayer(player)) return;
                                     _ = Task.Run(async () => await PrintStageTimeToChat(player!,
-                                        steamId, playerName, dBtimerTicks, timerTicks, stage, bonusX, prevSR));
+                                        steamId, playerName, dBtimerTicks, timerTicks, stage, bonusX, prevSR, style, mode));
                                 });
                         }
                     }
@@ -1713,9 +1709,9 @@ namespace SharpTimer
                             upsertCommand!.AddParameterWithValue("@Stage", stage);
                             upsertCommand!.AddParameterWithValue("@Velocity", velocity);
                             upsertCommand!.AddParameterWithValue("@Style", style);
-                            upsertCommand!.AddParameterWithValue("@Mode", playerTimers[slot].Mode);
-                            var prevSRID = await GetStageRecordSteamIDFromDatabase(stage, style, playerTimers[player.Slot].Mode);
-                            var prevSR = await GetPreviousPlayerStageRecordFromDatabase(player, prevSRID.Item1,
+                            upsertCommand!.AddParameterWithValue("@Mode", mode);
+                            var prevSRID = await GetStageRecordSteamIDFromDatabase(stage, style, mode);
+                            var prevSR = await GetPreviousPlayerStageRecordFromDatabase(prevSRID.Item1,
                                 currentMapNamee, stage, prevSRID.Item2, bonusX);
                             await upsertCommand!.ExecuteNonQueryAsync();
                             //no points until points overhaul
@@ -1730,7 +1726,7 @@ namespace SharpTimer
                                 {
                                     if (!IsAllowedPlayer(player)) return;
                                     _ = Task.Run(async () => await PrintStageTimeToChat(player!,
-                                        steamId, playerName, dBtimerTicks, timerTicks, stage, bonusX, prevSR));
+                                        steamId, playerName, dBtimerTicks, timerTicks, stage, bonusX, prevSR, style, mode));
                                 });
                         }
                     }
@@ -2888,18 +2884,13 @@ namespace SharpTimer
             return 0;
         }
 
-        public async Task<int> GetPreviousPlayerStageRecordFromDatabase(CCSPlayerController? player, string steamId,
+        public async Task<int> GetPreviousPlayerStageRecordFromDatabase(string steamId,
             string currentMapName, int stage, string playerName, int bonusX = 0)
         {
             Utils.LogDebug(
                 $"Trying to get Previous {(bonusX != 0 ? $"bonus {bonusX} stage {stage} time" : $"stage {stage} time")} from database for {playerName}");
             try
             {
-                if (!IsPlayerOrSpectator(player))
-                {
-                    return 0;
-                }
-
                 string currentMapNamee = bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}";
 
                 using (IDbConnection connection = await OpenConnectionAsync())
@@ -2957,19 +2948,13 @@ namespace SharpTimer
             return 0;
         }
 
-        public async Task<int> GetPlayerPointsFromDatabase(CCSPlayerController? player, string steamId,
-            string playerName)
+        public async Task<int> GetPlayerPointsFromDatabase(string steamId, string playerName)
         {
             Utils.LogDebug("Trying GetPlayerPointsFromDatabase");
             int playerPoints = 0;
 
             try
             {
-                if (!IsPlayerOrSpectator(player))
-                {
-                    return playerPoints;
-                }
-
                 using (var connection = await OpenConnectionAsync())
                 {
                     await CreatePlayerStatsTableAsync(connection);

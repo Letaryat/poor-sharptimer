@@ -42,11 +42,9 @@ namespace SharpTimer
         public ITagApi? TagApi { get; set; }
 
         public IRunCommand? RunCommand;
-        private static readonly MemoryFunctionVoid<CCSPlayerPawn, CSPlayerState> StateTransition = new(GameData.GetSignature("StateTransition"));
-        private readonly INetworkServerService networkServerService = new();
+        public ISnapBaseAngles SnapBaseAngles = new DisabledSnapBaseAngles();
         private int movementServices;
         private int movementPtr;
-        private readonly CSPlayerState[] _oldPlayerState = new CSPlayerState[65];
         
         public const int REPLAY_VERSION = 1;
 
@@ -149,7 +147,7 @@ namespace SharpTimer
         public bool useBinaryReplays = true;
         public bool onlySRReplay = false;
         public bool enableSRreplayBot = false;
-        public CCSPlayerController? replayBotController;
+        public int replayBotSlot = -1;
         public string replayBotName = "";
         public int maxReplayFrames = 19200;
         // Global API is intentionally disabled, apiKey is forced blank. Preserved for posterity.

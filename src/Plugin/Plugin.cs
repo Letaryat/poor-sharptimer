@@ -294,7 +294,7 @@ public partial class SharpTimer
             if (adServerRecordEnabled) ADtimerServerRecord();
             if (adMessagesEnabled) ADtimerMessages();
 
-            if (Utils.PlayersCount() > 0 && enableReplays && enableSRreplayBot && replayBotController == null)
+            if (Utils.PlayersCount() > 0 && enableReplays && enableSRreplayBot && replayBotSlot == -1)
                 Server.NextFrame(() => _ = Task.Run(SpawnReplayBot));
 
             _ = Task.Run(Utils.GetMapInfo);

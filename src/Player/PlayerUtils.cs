@@ -325,13 +325,10 @@ namespace SharpTimer
             }
         }
 
-        public async Task<string> GetPlayerMapPlacementWithTotal(CCSPlayerController? player, string steamId, string playerName, bool getRankImg = false, bool getPlacementOnly = false, int bonusX = 0, int style = 0, bool getPercentileOnly = false, string mode = "")
+        public async Task<string> GetPlayerMapPlacementWithTotal(string steamId, string playerName, bool getRankImg = false, bool getPlacementOnly = false, int bonusX = 0, int style = 0, bool getPercentileOnly = false, string mode = "")
         {
             try
             {
-                if (!IsPlayerOrSpectator(player))
-                    return "";
-
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
 
                 int savedPlayerTime = await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, bonusX, style, mode);
@@ -437,21 +434,18 @@ namespace SharpTimer
                 return 0;
             }
         }
-        public async Task<string> GetPlayerStagePlacementWithTotal(CCSPlayerController? player, string steamId, string playerName, int stage, bool getRankImg = false, bool getPlacementOnly = false, int bonusX = 0)
+        public async Task<string> GetPlayerStagePlacementWithTotal(string steamId, string playerName, int stage, int style, string mode, bool getRankImg = false, bool getPlacementOnly = false, int bonusX = 0)
         {
             try
             {
-                if (!IsPlayerOrSpectator(player))
-                    return "";
-
                 string currentMapNamee = bonusX == 0 ? currentMapName! : $"{currentMapName}_bonus{bonusX}";
 
-                int savedPlayerTime = await GetPreviousPlayerStageRecordFromDatabase(player, steamId, currentMapName!, stage, playerName, bonusX);
+                int savedPlayerTime = await GetPreviousPlayerStageRecordFromDatabase(steamId, currentMapName!, stage, playerName, bonusX);
 
                 if (savedPlayerTime == 0)
                     return getRankImg ? UnrankedIcon : UnrankedTitle;
 
-                Dictionary<string, PlayerRecord> sortedRecords = await GetSortedStageRecordsFromDatabase(stage, 0, bonusX, currentMapNamee, playerTimers[player!.Slot].currentStyle, playerTimers[player.Slot].Mode);
+                Dictionary<string, PlayerRecord> sortedRecords = await GetSortedStageRecordsFromDatabase(stage, 0, bonusX, currentMapNamee, style, mode);
 
                 int placement = sortedRecords.Count(kv => kv.Value.TimerTicks < savedPlayerTime) + 1;
                 int totalPlayers = sortedRecords.Count;
@@ -466,14 +460,11 @@ namespace SharpTimer
             }
         }
 
-        public async Task<string> GetPlayerServerPlacement(CCSPlayerController? player, string steamId, string playerName, bool getRankImg = false, bool getPlacementOnly = false, bool getPointsOnly = false)
+        public async Task<string> GetPlayerServerPlacement(string steamId, string playerName, bool getRankImg = false, bool getPlacementOnly = false, bool getPointsOnly = false)
         {
             try
             {
-                if (!IsPlayerOrSpectator(player))
-                    return "";
-
-                int savedPlayerPoints = enableDb ? await GetPlayerPointsFromDatabase(player, steamId, playerName) : 0;
+                int savedPlayerPoints = enableDb ? await GetPlayerPointsFromDatabase(steamId, playerName) : 0;
 
                 if (getPointsOnly)
                     return savedPlayerPoints.ToString();
@@ -643,13 +634,7 @@ namespace SharpTimer
 
         public async Task PrintMapTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int bonusX = 0, int timesFinished = 0, int style = 0, int prevSR = 0, string mode = "")
         {
-            if (!IsAllowedPlayer(player))
-            {
-                Utils.LogError($"Error in PrintMapTimeToChat: Player {playerName} not allowed or not on server anymore");
-                return;
-            }
-
-            string ranking = await GetPlayerMapPlacementWithTotal(player, steamID, playerName, false, true, bonusX, style, false, mode);
+            string ranking = await GetPlayerMapPlacementWithTotal(steamID, playerName, false, true, bonusX, style, false, mode);
 
             bool newSR = Utils.GetNumberBeforeSlash(ranking) == 1 && (oldticks > newticks || oldticks == 0);
             bool beatPB = oldticks > newticks;
@@ -664,6 +649,7 @@ namespace SharpTimer
 
             Server.NextFrame(() =>
             {
+                bool playerValid = IsAllowedPlayer(player);
                 if (newSR)
                 {
                     if (prevSR != 0)
@@ -674,34 +660,36 @@ namespace SharpTimer
                     else
                     {
                         Utils.PrintToChatAll(Localizer["new_server_record", playerName]);
-                        PlaySound(player, srSound, srSoundAll);
+                        if (playerValid) PlaySound(player, srSound, srSoundAll);
                     }
-                    if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
+                    if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX, style));
                 }
                 else if (beatPB)
                 {
                     if (bonusX != 0) Utils.PrintToChatAll(Localizer["new_pb_record_bonus", playerName, bonusX]);
                     else Utils.PrintToChatAll(Localizer["new_pb_record", playerName]);
-                    if (discordWebhookPrintPB && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
-                    PlaySound(player, pbSound);
+                    if (discordWebhookPrintPB && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX, style));
+                    if (playerValid) PlaySound(player, pbSound);
                 }
                 else
                 {
                     if (bonusX != 0) Utils.PrintToChatAll(Localizer["map_finish_bonus", playerName, bonusX]);
                     else Utils.PrintToChatAll(Localizer["map_finish", playerName]);
-                    if (discordWebhookPrintPB && discordWebhookEnabled && timesFinished == 1 && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
-                    PlaySound(player, timerSound);
+                    if (discordWebhookPrintPB && discordWebhookEnabled && timesFinished == 1 && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX, style));
+                    if (playerValid) PlaySound(player, timerSound);
                 }
 
                 if (enableDb || bonusX != 0)
                     Utils.PrintToChatAll(Localizer["map_finish_rank", ranking, timesFinished]);
 
                 Utils.PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
-                if (enableStyles && playerTimers[player.Slot].currentStyle != 0) Utils.PrintToChatAll(Localizer["timer_style", GetNamedStyle(style)]);
+                if (enableStyles && style != 0) Utils.PrintToChatAll(Localizer["timer_style", GetNamedStyle(style)]);
                 if (mode != GetModeName(defaultMode))Utils.PrintToChatAll(Localizer["timer_mode", mode]);
                 if (enableReplays && enableSRreplayBot && newSR && (oldticks > newticks || oldticks == 0) && mode == GetModeName(defaultMode))
                     _ = Task.Run(async () => await SpawnReplayBot());
                 
+                if (!playerValid) return;
+
                 try
                 {
                     StEventSenderCapability.Get()
@@ -713,15 +701,9 @@ namespace SharpTimer
                 }
             });
         }
-        public async Task PrintStageTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int stage, int bonusX = 0, int prevSR = 0)
+        public async Task PrintStageTimeToChat(CCSPlayerController player, string steamID, string playerName, int oldticks, int newticks, int stage, int bonusX = 0, int prevSR = 0, int style = 0, string mode = "")
         {
-            if (!IsAllowedPlayer(player))
-            {
-                Utils.LogError($"Error in PrintStageTimeToChat: Player {playerName} not allowed or not on server anymore");
-                return;
-            }
-
-            string ranking = await GetPlayerStagePlacementWithTotal(player, steamID, playerName, stage, false, true, bonusX);
+            string ranking = await GetPlayerStagePlacementWithTotal(steamID, playerName, stage, style, mode, false, true, bonusX);
 
             bool newSR = Utils.GetNumberBeforeSlash(ranking) == 1 && (oldticks > newticks || oldticks == 0);
             bool beatPB = oldticks > newticks;
@@ -736,6 +718,7 @@ namespace SharpTimer
 
             Server.NextFrame(() =>
             {
+                bool playerValid = IsAllowedPlayer(player);
                 if (newSR)
                 {
                     if (prevSR != 0)
@@ -748,10 +731,10 @@ namespace SharpTimer
                         : "new_cp_server_record";
                     Utils.PrintToChatAll(Localizer[recordKey, playerName]);
 
-                    PlaySound(player, srSound, stageSoundAll ? true : false);
+                    if (playerValid) PlaySound(player, srSound, stageSoundAll ? true : false);
                     Utils.PrintToChatAll(Localizer["timer_time", newTime, timeDifference]);
                     //TODO: Discord webhook stage sr
-                    // if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
+                    // if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX, style));
                 }
             });
         }

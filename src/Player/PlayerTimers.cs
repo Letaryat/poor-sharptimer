@@ -171,11 +171,11 @@ namespace SharpTimer
             playerTimers[player.Slot].IsRecordingReplay = false;
         }
 
-        private async Task HandlePlayerStageTimes(CCSPlayerController player, nint triggerHandle, int slot, string playerSteamID, string playerName, int style, string mode, bool playerCheck)
+        private async Task HandlePlayerStageTimes(CCSPlayerController player, nint triggerHandle, int slot, string playerSteamID, string playerName, int style, string mode, bool playerCheck, string currentSpeed)
         {
             try
             {
-                if (!IsAllowedPlayer(player))
+                if (!playerCheck)
                     return;
 
                 Utils.LogDebug($"Player {playerName} has a stage trigger with handle {triggerHandle}");
@@ -186,8 +186,6 @@ namespace SharpTimer
                     var playerStageTicks = playerTimers[slot].StageTicks;
                     var formattedStageTicks = Utils.FormatTime(playerStageTicks);
                     var prevStage = stageTrigger - 1;
-
-                    string currentSpeed = GetCurrentPlayerSpeed(player);
 
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     if (playerTimers[slot] == null || playerTimers[slot].CurrentMapStage == stageTrigger) return;
@@ -251,9 +249,9 @@ namespace SharpTimer
                         }
                     });
                     
-                    if (playerTimers.TryGetValue(player.Slot, out var timer) && timer?.currentStyle == 0)
+                    if (playerTimers.TryGetValue(slot, out var timer) && timer?.currentStyle == 0)
                     {
-                        await SavePlayerStageTimeToDatabase(player, playerStageTicks, prevStage, currentSpeed, playerSteamID, playerName, slot, playerCheck);
+                        await SavePlayerStageTimeToDatabase(player, playerStageTicks, prevStage, currentSpeed, playerSteamID, playerName, slot, playerCheck, mode: mode);
                     }
                 }
             }
@@ -263,11 +261,11 @@ namespace SharpTimer
             }
         }
 
-        private async Task HandlePlayerCheckpointTimes(CCSPlayerController player, nint triggerHandle, int slot, string playerSteamID, string playerName, int style, string mode, bool playerCheck)
+        private async Task HandlePlayerCheckpointTimes(CCSPlayerController player, nint triggerHandle, int slot, string playerSteamID, string playerName, int style, string mode, bool playerCheck, string currentSpeed)
         {
             try
             {
-                if (!IsAllowedPlayer(player))
+                if (!playerCheck)
                     return;
 
                 if (cpTriggers.TryGetValue(triggerHandle, out int cpTrigger))
@@ -291,7 +289,7 @@ namespace SharpTimer
                     var (previousStageTime, previousStageSpeed) = await GetStageRecordFromDatabase(cpTrigger, playerSteamID, style, mode);
                     var (srStageTime, srStageSpeed) = await GetStageRecordFromDatabase(cpTrigger, srSteamID, style, mode);
 
-                    string currentStageSpeed = GetCurrentPlayerSpeed(player);
+                    string currentStageSpeed = currentSpeed;
 
                     Server.NextFrame(() =>
                     {
@@ -354,9 +352,9 @@ namespace SharpTimer
                         }
                     });
 
-                    if (playerTimers.TryGetValue(player.Slot, out var timer) && timer?.currentStyle == 0)
+                    if (playerTimers.TryGetValue(slot, out var timer) && timer?.currentStyle == 0)
                     {
-                        await SavePlayerStageTimeToDatabase(player, playerTimerTicks, cpTrigger, currentStageSpeed, playerSteamID, playerName, slot, playerCheck);
+                        await SavePlayerStageTimeToDatabase(player, playerTimerTicks, cpTrigger, currentStageSpeed, playerSteamID, playerName, slot, playerCheck, mode: mode);
                     }
                 }
             }
@@ -366,11 +364,11 @@ namespace SharpTimer
             }
         }
 
-        private async Task HandlePlayerBonusCheckpointTimes(CCSPlayerController player, nint triggerHandle, int slot, string playerSteamID, string playerName, int style, string mode, bool playerCheck)
+        private async Task HandlePlayerBonusCheckpointTimes(CCSPlayerController player, nint triggerHandle, int slot, string playerSteamID, string playerName, int style, string mode, bool playerCheck, string currentSpeed)
         {
             try
             {
-                if (!IsAllowedPlayer(player))
+                if (!playerCheck)
                     return;
 
                 if (bonusCheckpointTriggers.TryGetValue(triggerHandle, out int bonusCheckpointTrigger))
@@ -393,7 +391,7 @@ namespace SharpTimer
                     var (previousStageTime, previousStageSpeed) = await GetStageRecordFromDatabase(bonusCheckpointTrigger, playerSteamID, style, mode);
                     var (srStageTime, srStageSpeed) = await GetStageRecordFromDatabase(bonusCheckpointTrigger, srSteamID, style, mode);
 
-                    string currentStageSpeed = GetCurrentPlayerSpeed(player);
+                    string currentStageSpeed = currentSpeed;
 
                     Server.NextFrame(() =>
                     {
@@ -460,9 +458,9 @@ namespace SharpTimer
                         }
                     });
 
-                    if (playerTimers.TryGetValue(player.Slot, out var timer) && timer?.currentStyle == 0)
+                    if (playerTimers.TryGetValue(slot, out var timer) && timer?.currentStyle == 0)
                     {
-                        await SavePlayerStageTimeToDatabase(player, playerTimerTicks, bonusCheckpointTrigger, currentStageSpeed, playerSteamID, playerName, slot, playerCheck);
+                        await SavePlayerStageTimeToDatabase(player, playerTimerTicks, bonusCheckpointTrigger, currentStageSpeed, playerSteamID, playerName, slot, playerCheck, mode: mode);
                     }
                 }
             }
