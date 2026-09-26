@@ -365,12 +365,41 @@ public partial class SharpTimer : BasePlugin
         SnapBaseAngles.Snap(pawn, angles);
     }
 
+    // Reused across ticks
+    private readonly List<uint> _hideTransmitPawnIndices = new(64);
+
     private void CheckTransmit(CCheckTransmitInfoList infoList)
     {
-        IEnumerable<CCSPlayerController> players =
-            Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
+        // Early out
+        bool anyHiding = false;
+        foreach (var t in playerTimers.Values)
+        {
+            if (t != null && t.HidePlayers)
+            {
+                anyHiding = true;
+                break;
+            }
+        }
 
-        if (!players.Any())
+        if (!anyHiding)
+            return;
+
+        // Collect every player pawn index once per tick
+        var pawnIndices = _hideTransmitPawnIndices;
+        pawnIndices.Clear();
+        foreach (var target in Utilities.GetPlayers())
+        {
+            if (target == null || target.IsHLTV || !target.IsValid)
+                continue;
+
+            var pawnHandle = target.Pawn;
+            if (pawnHandle == null || !pawnHandle.IsValid)
+                continue;
+
+            pawnIndices.Add(pawnHandle.Index);
+        }
+
+        if (pawnIndices.Count == 0)
             return;
 
         foreach ((CCheckTransmitInfo info, CCSPlayerController? player) in infoList)
@@ -378,35 +407,24 @@ public partial class SharpTimer : BasePlugin
             if (player == null || player.IsBot || !player.IsValid || player.IsHLTV)
                 continue;
 
-            if (!connectedPlayers.TryGetValue(player.Slot, out var connected) || connected == null)
+            int slot = player.Slot;
+            if (!playerTimers.TryGetValue(slot, out var timer) || timer == null || !timer.HidePlayers)
                 continue;
 
-            if (!playerTimers.TryGetValue(player.Slot, out var timer) || timer == null || !timer.HidePlayers)
+            if (!connectedPlayers.ContainsKey(slot))
                 continue;
 
-            foreach (var target in Utilities.GetPlayers())
+            var viewerPawn = player.Pawn?.Value;
+            if (viewerPawn == null || viewerPawn.As<CCSPlayerPawnBase>().PlayerState == CSPlayerState.STATE_OBSERVER_MODE)
+                continue;
+
+            uint ownIndex = viewerPawn.Index;
+            foreach (uint pawnIndex in pawnIndices)
             {
-                if (target == null || target.IsHLTV || !target.IsValid)
+                if (pawnIndex == ownIndex)
                     continue;
 
-                var pawn = target.Pawn?.Value;
-                if (pawn is null)
-                    continue;
-
-                var playerPawn = player.Pawn.Value?.As<CCSPlayerPawnBase>().PlayerState;
-                if (playerPawn == null || playerPawn == CSPlayerState.STATE_OBSERVER_MODE)
-                    continue;
-
-                if (pawn == player.Pawn.Value)
-                    continue;
-
-                if ((LifeState_t)pawn.LifeState != LifeState_t.LIFE_ALIVE)
-                {
-                    info.TransmitEntities.Remove(pawn);
-                    continue;
-                }
-
-                info.TransmitEntities.Remove(pawn);
+                info.TransmitEntities.Remove(pawnIndex);
             }
         }
     }
