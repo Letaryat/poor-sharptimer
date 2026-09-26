@@ -159,6 +159,8 @@ public partial class SharpTimer : BasePlugin
             RegisterListener<Listeners.OnPlayerTakeDamagePre>(OnPlayerTakeDamagePre);
 
         RegisterListener<Listeners.OnMapStart>(OnMapStartHandler);
+        RegisterListener<Listeners.OnMapEnd>(OnMapEndHandler);
+        RegisterListener<Listeners.OnClientDisconnect>(OnClientDisconnectHandler);
         RegisterListener<Listeners.OnTick>(PlayerOnTick);
         RegisterListener<Listeners.CheckTransmit>(CheckTransmit);
 
@@ -192,6 +194,8 @@ public partial class SharpTimer : BasePlugin
             RemoveListener<Listeners.OnPlayerTakeDamagePre>(OnPlayerTakeDamagePre);
 
         RemoveListener<Listeners.OnMapStart>(OnMapStartHandler);
+        RemoveListener<Listeners.OnMapEnd>(OnMapEndHandler);
+        RemoveListener<Listeners.OnClientDisconnect>(OnClientDisconnectHandler);
         RemoveListener<Listeners.OnTick>(PlayerOnTick);
         RemoveListener<Listeners.CheckTransmit>(CheckTransmit);
 

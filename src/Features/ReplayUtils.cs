@@ -507,7 +507,7 @@ namespace SharpTimer
                     Server.ExecuteCommand("bot_chatter off");
                     Server.ExecuteCommand("bot_controllable 0");
                     Server.ExecuteCommand("bot_kick");
-                    replayBotController = null;
+                    replayBotSlot = -1;
 
                     AddTimer(3.0f, () =>
                     {
@@ -524,7 +524,7 @@ namespace SharpTimer
                             var bot = Utilities.GetPlayers().Where(b => b.IsBot && !b.IsHLTV).FirstOrDefault();
                             if (bot != null)
                             {
-                                replayBotController = bot;
+                                replayBotSlot = bot.Slot;
                                 Utils.LogDebug($"Found replay bot: {bot.PlayerName}");
 
                                 var botPlayerPawn = bot.PlayerPawn();
@@ -554,7 +554,7 @@ namespace SharpTimer
 
                             // kick unused bots if there are any
                             var bots = Utilities.GetPlayers()
-                                .Where(b => b.IsBot && !b.IsHLTV && b != replayBotController);
+                                .Where(b => b.IsBot && !b.IsHLTV && b.Slot != replayBotSlot);
                             foreach (var kicked in bots)
                             {
                                 OnPlayerDisconnect(kicked, true);

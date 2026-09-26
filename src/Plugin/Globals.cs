@@ -147,7 +147,7 @@ namespace SharpTimer
         public bool useBinaryReplays = true;
         public bool onlySRReplay = false;
         public bool enableSRreplayBot = false;
-        public CCSPlayerController? replayBotController;
+        public int replayBotSlot = -1;
         public string replayBotName = "";
         public int maxReplayFrames = 19200;
         // Global API is intentionally disabled, apiKey is forced blank. Preserved for posterity.

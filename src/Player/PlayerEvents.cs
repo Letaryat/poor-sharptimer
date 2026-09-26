@@ -13,7 +13,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Admin;
 
@@ -117,44 +116,79 @@ namespace SharpTimer
 
             try
             {
-                if (connectedPlayers.TryGetValue(player.Slot, out var connectedPlayer))
+                int slot = player.Slot;
+                bool wasTracked = connectedPlayers.ContainsKey(slot);
+                string playerName = player.IsValid ? player.PlayerName : $"slot {slot}";
+
+                RemovePlayerState(slot);
+
+                if (wasTracked && connectMsgEnabled == true && isForBot == false)
+                    Utils.PrintToChatAll(Localizer["disconnect_message", playerName]);
+            }
+            catch (Exception ex)
+            {
+                Utils.LogError($"Error in OnPlayerDisconnect: {ex.Message}");
+            }
+        }
+
+        private void OnClientDisconnectHandler(int slot)
+        {
+            RemovePlayerState(slot);
+        }
+
+        private void RemovePlayerState(int slot)
+        {
+            try
+            {
+                bool wasTracked = connectedPlayers.Remove(slot);
+                playerTimers.Remove(slot);
+                playerCheckpoints.Remove(slot);
+                playerReplays.Remove(slot);
+                connectedAFKPlayers.Remove(slot);
+                playerCache.PlayerID.Remove(slot);
+
+                List<uint>? staleKeys = null;
+                foreach (var kv in specTargets)
                 {
+                    if (kv.Value == null || kv.Value.Slot == slot)
+                        (staleKeys ??= []).Add(kv.Key);
+                }
 
-                    connectedPlayers.Remove(player.Slot);
+                if (staleKeys != null)
+                {
+                    foreach (var key in staleKeys)
+                        specTargets.Remove(key);
+                }
 
-                    //schizo removing data from memory
-                    playerTimers[player.Slot] = new PlayerTimerInfo();
-                    playerTimers.Remove(player.Slot);
+                if (replayBotSlot == slot)
+                    replayBotSlot = -1;
 
-                    //schizo removing data from memory
-                    playerCheckpoints[player.Slot] = new List<PlayerCheckpoint>();
-                    playerCheckpoints.Remove(player.Slot);
-
-                    specTargets.Remove(player.Pawn.Value!.EntityHandle.Index);
-
-                    if (enableReplays)
-                    {
-                        //schizo removing data from memory
-                        playerReplays[player.Slot] = new PlayerReplays();
-                        playerReplays.Remove(player.Slot);
-                    }
-
-                    Utils.LogDebug($"Removed player {connectedPlayer.PlayerName} with UserID {connectedPlayer.UserId} from connectedPlayers.");
-                    Utils.LogDebug($"Removed specTarget index {player.Pawn.Value.EntityHandle.Index} from specTargets.");
+                if (wasTracked)
+                {
+                    Utils.LogDebug($"Removed slot {slot} from connectedPlayers.");
                     Utils.LogDebug($"Total players connected: {connectedPlayers.Count}");
                     Utils.LogDebug($"Total playerTimers: {playerTimers.Count}");
                     Utils.LogDebug($"Total specTargets: {specTargets.Count}");
-
-                    if (connectMsgEnabled == true && isForBot == false)
-                    {
-                        Utils.PrintToChatAll(Localizer["disconnect_message", connectedPlayer.PlayerName]);
-                    }
                 }
             }
             catch (Exception ex)
             {
-                Utils.LogError($"Error in OnPlayerDisconnect (probably replay bot related lolxd): {ex.Message}");
+                Utils.LogError($"Error in RemovePlayerState for slot {slot}: {ex.Message}");
             }
+        }
+
+        private void OnMapEndHandler()
+        {
+            connectedPlayers.Clear();
+            playerTimers.Clear();
+            playerCheckpoints.Clear();
+            playerReplays.Clear();
+            connectedAFKPlayers.Clear();
+            specTargets.Clear();
+            playerCache.PlayerID.Clear();
+            replayBotSlot = -1;
+
+            Utils.LogDebug("OnMapEnd: cleared per-player state.");
         }
     }
 }
