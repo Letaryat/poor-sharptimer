@@ -592,7 +592,7 @@ namespace SharpTimer
             }
         }
 
-        public async Task<(int, int, int)> GetGlobalRank(CCSPlayerController player)
+        public async Task<(int, int, int)> GetGlobalRank(int slot)
         {
             if (apiKey == "")
                 return (0, 0, 0);
@@ -601,7 +601,7 @@ namespace SharpTimer
             {
                 var payload = new
                 {
-                    player_id = playerCache.PlayerID[player.Slot]
+                    player_id = playerCache.PlayerID[slot]
                 };
                 string jsonPayload = JsonSerializer.Serialize(payload);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
@@ -650,14 +650,15 @@ namespace SharpTimer
             return (0, 0, 0);
         }
 
-        public async Task PrintGlobalRankAsync(CCSPlayerController player)
+        public async Task PrintGlobalRankAsync(CCSPlayerController player, int slot)
         {
             if (apiKey == "")
                 return;
             
-            var (points, rank, totalPlayers) = await GetGlobalRank(player);
+            var (points, rank, totalPlayers) = await GetGlobalRank(slot);
             Server.NextFrame(() =>
             {
+                if (!IsPlayerOrSpectator(player)) return;
                 if (totalPlayers == 0)
                 {
                     Utils.PrintToChat(player, $"{Localizer["global_unranked"]}");

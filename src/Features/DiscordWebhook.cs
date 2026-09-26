@@ -91,7 +91,7 @@ namespace SharpTimer
             }
         }
 
-        public async Task DiscordRecordMessage(CCSPlayerController? player, string playerName, string runTime, string steamID, string placement, int timesFinished, bool isSR = false, string timeDifference = "", int bonusX = 0)
+        public async Task DiscordRecordMessage(string playerName, string runTime, string steamID, string placement, int timesFinished, bool isSR = false, string timeDifference = "", int bonusX = 0, int styleId = 0)
         {
             try
             {
@@ -113,7 +113,7 @@ namespace SharpTimer
 
                 string mapImg = await GetMapImage(bonusX);
                 bool isFirstTime = string.IsNullOrEmpty(timeDifference);
-                string style = GetNamedStyle(playerTimers[player!.Slot].currentStyle);
+                string style = GetNamedStyle(styleId);
 
                 using var client = new HttpClient();
 

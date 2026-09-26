@@ -350,17 +350,21 @@ namespace SharpTimer
             if (stageTriggers.Count != 0) playerTimers[slot].StageTimes!.Clear(); //remove previous stage times if the map has stages
             if (stageTriggers.Count != 0) playerTimers[slot].StageVelos!.Clear(); //remove previous stage velo if the map has stages
 
-            if (IsAllowedPlayer(player))
+            Server.NextFrame(() =>
             {
+                if (!IsAllowedPlayer(player))
+                {
+                    Utils.LogError($"Error in ReplayHandler: player not allowed or not on server anymore");
+                    return;
+                }
+
                 if (wr)
-                    Server.NextFrame(() => Utils.PrintToChat(player, Localizer["replaying_world_top", top10]));
+                    Utils.PrintToChat(player, Localizer["replaying_world_top", top10]);
                 else if (!self)
-                    Server.NextFrame(() => Utils.PrintToChat(player, Localizer["replaying_server_top", top10]));
+                    Utils.PrintToChat(player, Localizer["replaying_server_top", top10]);
                 else
-                    Server.NextFrame(() => Utils.PrintToChat(player, Localizer["replaying_pb"]));
-            }
-            else
-                Utils.LogError($"Error in ReplayHandler: player not allowed or not on server anymore");
+                    Utils.PrintToChat(player, Localizer["replaying_pb"]);
+            });
         }
 
         [ConsoleCommand("css_stop", "stops the current replay")]
@@ -702,7 +706,8 @@ namespace SharpTimer
 
             if (CommandCooldown(player)) return;
 
-            _ = Task.Run(async () => await PrintGlobalRankAsync(player));
+            int slot = player.Slot;
+            _ = Task.Run(async () => await PrintGlobalRankAsync(player, slot));
         }
 
         [ConsoleCommand("css_topbonus", "Prints top players of this map bonus")]
@@ -827,25 +832,19 @@ namespace SharpTimer
 
         public async Task RankCommandHandler(CCSPlayerController? player, string steamId, int slot, string playerName, bool sendRankToHUD = false, int style = 0, string mode = "")
         {
-            if (player!.IsBot || player.SteamID.ToString() == "0")
+            if (player == null || steamId == "0")
                 return;
 
             try
             {
-                if (!IsPlayerOrSpectator(player))
-                {
-                    Utils.LogError($"Error in RankCommandHandler: Player not allowed or not on server anymore");
-                    return;
-                }
-
                 //Utils.LogDebug($"Handling !rank for {playerName}...");
 
                 string ranking, rankIcon, mapPlacement, serverPoints = "", serverPlacement = "";
                 bool useGlobalRanks = enableDb && globalRanksEnabled;
 
-                ranking = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, false, 0, style, false, mode);
-                rankIcon = useGlobalRanks ? await GetPlayerServerPlacement(player, steamId, playerName, true) : await GetPlayerMapPlacementWithTotal(player, steamId, playerName, true, false, 0, style, false, mode);
-                mapPlacement = await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, true, 0, style, false, mode);
+                ranking = useGlobalRanks ? await GetPlayerServerPlacement(steamId, playerName) : await GetPlayerMapPlacementWithTotal(steamId, playerName, false, false, 0, style, false, mode);
+                rankIcon = useGlobalRanks ? await GetPlayerServerPlacement(steamId, playerName, true) : await GetPlayerMapPlacementWithTotal(steamId, playerName, true, false, 0, style, false, mode);
+                mapPlacement = await GetPlayerMapPlacementWithTotal(steamId, playerName, false, true, 0, style, false, mode);
 
                 // Build bonus cache off-thread into a local map, publish to playerTimers on the main thread below
                 var cachedBonusInfo = new Dictionary<int, PlayerBonusPlacementInfo>();
@@ -857,7 +856,7 @@ namespace SharpTimer
                     /// Skip this bonus since the player doesn't have a saved time
                     if (bonusPbTicks <= 0) continue;
 
-                    var bonusPlacement = await GetPlayerMapPlacementWithTotal(player, steamId, playerName, false, true, bonusNumber, style, false, mode);
+                    var bonusPlacement = await GetPlayerMapPlacementWithTotal(steamId, playerName, false, true, bonusNumber, style, false, mode);
 
                     Utils.LogDebug($"Adding bonus info for Bonus {bonusNumber}");
                     Utils.LogDebug($"PbTicks: {bonusPbTicks}");
@@ -872,8 +871,8 @@ namespace SharpTimer
 
                 if (useGlobalRanks)
                 {
-                    serverPoints = await GetPlayerServerPlacement(player, steamId, playerName, false, false, true);
-                    serverPlacement = await GetPlayerServerPlacement(player, steamId, playerName, false, true, false);
+                    serverPoints = await GetPlayerServerPlacement(steamId, playerName, false, false, true);
+                    serverPlacement = await GetPlayerServerPlacement(steamId, playerName, false, true, false);
                 }
 
                 int pbTicks = enableDb ? await GetPreviousPlayerRecordFromDatabase(steamId, currentMapName!, playerName, 0, style, mode) : await GetPreviousPlayerRecord(steamId, 0);
@@ -942,7 +941,7 @@ namespace SharpTimer
 
         public async Task SRCommandHandler(CCSPlayerController? player, string _playerName)
         {
-            if (!IsPlayerOrSpectator(player) || rankEnabled == false)
+            if (player == null || rankEnabled == false)
                 return;
 
             Utils.LogDebug($"Handling !sr for {_playerName}...");
@@ -954,6 +953,7 @@ namespace SharpTimer
 
             Server.NextFrame(() =>
             {
+                if (!IsPlayerOrSpectator(player)) return;
                 Utils.PrintToChat(player!, Localizer["current_sr", currentMapName!]);
             });
 
@@ -963,6 +963,7 @@ namespace SharpTimer
                 int timerTicks = kvp.Value.TimerTicks;
                 Server.NextFrame(() =>
                 {
+                    if (!IsPlayerOrSpectator(player)) return;
                     Utils.PrintToChat(player!, Localizer["current_sr_player", playerName!, Utils.FormatTime(timerTicks)]);
                 });
             }
@@ -997,11 +998,11 @@ namespace SharpTimer
                     {
                         if (bonusRespawnAngs.TryGetValue(1, out QAngle_t? bonusAng) && bonusAng != null)
                         {
-                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, bonusRespawnAngs[1]!, new Vector_t(0, 0, 0));
+                            TeleportPlayerWithViewAngles(player, bonusRespawnPoses[1]!, bonusAng.Value, new Vector_t(0, 0, 0));
                         }
                         else
                         {
-                            player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[1]!, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                            TeleportPlayerWithViewAngles(player, bonusRespawnPoses[1]!, player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
                         }
                         Utils.LogDebug($"{player.PlayerName} css_rb {1} to {bonusRespawnPoses[1]}");
                     }
@@ -1037,9 +1038,9 @@ namespace SharpTimer
                 if (bonusRespawnPoses[bonusX] != null)
                 {
                     if (bonusRespawnAngs.TryGetValue(bonusX, out QAngle_t? bonusAng) && bonusAng != null)
-                        player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, bonusRespawnAngs[bonusX]!, new Vector_t(0, 0, 0));
+                        TeleportPlayerWithViewAngles(player, bonusRespawnPoses[bonusX]!, bonusAng.Value, new Vector_t(0, 0, 0));
                     else
-                        player.PlayerPawn.Value!.Teleport(bonusRespawnPoses[bonusX]!, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                        TeleportPlayerWithViewAngles(player, bonusRespawnPoses[bonusX]!, player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
 
                     Utils.LogDebug($"{player.PlayerName} css_rb {bonusX} to {bonusRespawnPoses[bonusX]}");
                 }
@@ -1170,7 +1171,7 @@ namespace SharpTimer
 
                 if (stageTriggerPoses.TryGetValue(stageX, out Vector_t? stagePos) && stagePos != null)
                 {
-                    player.PlayerPawn.Value!.Teleport(stagePos, stageTriggerAngs[stageX] ?? player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                    TeleportPlayerWithViewAngles(player, stagePos, stageTriggerAngs[stageX] ?? player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
                     Utils.LogDebug($"{player.PlayerName} css_stage {stageX} to {stagePos}");
                 }
                 else
@@ -1508,16 +1509,16 @@ namespace SharpTimer
                     if (currentRespawnPos != null && playerTimers[slot].SetRespawnPos == null)
                     {
                         if (currentRespawnAng != null)
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, currentRespawnAng, new Vector_t(0, 0, 0));
+                            TeleportPlayerWithViewAngles(player, currentRespawnPos, currentRespawnAng.Value, new Vector_t(0, 0, 0));
                         else
-                            player.PlayerPawn.Value!.Teleport(currentRespawnPos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                            TeleportPlayerWithViewAngles(player, currentRespawnPos, player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
 
                         Utils.LogDebug($"{player.PlayerName} css_r to {currentRespawnPos}");
                     }
                     else
                     {
                         if (playerTimers[slot].SetRespawnPos != null && playerTimers[slot].SetRespawnAng != null)
-                            player.PlayerPawn.Value!.Teleport(Utils.ParseVector_t(playerTimers[slot].SetRespawnPos!), Utils.ParseQAngle_t(playerTimers[slot].SetRespawnAng!), new Vector_t(0, 0, 0));
+                            TeleportPlayerWithViewAngles(player, Utils.ParseVector_t(playerTimers[slot].SetRespawnPos!), Utils.ParseQAngle_t(playerTimers[slot].SetRespawnAng!), new Vector_t(0, 0, 0));
                         else
                             Utils.PrintToChat(player, Localizer["no_respawnpos"]);
                     }
@@ -1525,7 +1526,7 @@ namespace SharpTimer
                 else
                 {
                     if (currentEndPos != null)
-                        player.PlayerPawn.Value!.Teleport(currentEndPos, player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                        TeleportPlayerWithViewAngles(player, currentEndPos, player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
                     else
                         Utils.PrintToChat(player, Localizer["no_endpos"]);
                 }
@@ -1587,7 +1588,7 @@ namespace SharpTimer
             {
                 if (stageTriggerPoses.TryGetValue(currStage, out Vector_t? stagePos) && stagePos != null)
                 {
-                    player.PlayerPawn.Value!.Teleport(stagePos, stageTriggerAngs[currStage] ?? player.PlayerPawn.Value?.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
+                    TeleportPlayerWithViewAngles(player, stagePos, stageTriggerAngs[currStage] ?? player.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
 
                     Utils.LogDebug($"{playerName} css_rs");
                 }
@@ -1813,7 +1814,7 @@ namespace SharpTimer
 
                 if (player != null && IsAllowedPlayer(foundPlayer) && playerTimers[slot].IsTimerBlocked)
                 {
-                    player.PlayerPawn.Value!.Teleport(foundPlayer.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.ToVector_t(),
+                    TeleportPlayerWithViewAngles(player, foundPlayer.Pawn.Value!.CBodyComponent?.SceneNode?.AbsOrigin.ToVector_t(),
                         foundPlayer.PlayerPawn.Value!.EyeAngles.ToQAngle_t(), new Vector_t(0, 0, 0));
 
                     Utils.LogDebug($"{player.PlayerName} css_goto to {foundPlayer.Pawn.Value.CBodyComponent?.SceneNode?.AbsOrigin.ToVector_t()}");
@@ -1939,11 +1940,11 @@ namespace SharpTimer
             // Teleport the player to the most recent checkpoint, including the saved rotation
             if (removeCpRestrictEnabled == true)
             {
-                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
+                TeleportPlayerWithViewAngles(player, position, rotation, speed);
             }
             else
             {
-                player.PlayerPawn.Value!.Teleport(position, rotation, new Vector_t(0, 0, 0));
+                TeleportPlayerWithViewAngles(player, position, rotation, new Vector_t(0, 0, 0));
             }
 
             // Play a sound or provide feedback to the player
@@ -2002,7 +2003,7 @@ namespace SharpTimer
                 Vector_t speed = Utils.ParseVector_t(previousCheckpoint.SpeedString ?? "0 0 0");
 
                 // Teleport the player to the previous checkpoint, including the saved rotation
-                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
+                TeleportPlayerWithViewAngles(player, position, rotation, speed);
 
                 // Play a sound or provide feedback to the player
                 PlaySound(player, tpSound);
@@ -2060,7 +2061,7 @@ namespace SharpTimer
                 Vector_t speed = Utils.ParseVector_t(nextCheckpoint.SpeedString ?? "0 0 0");
 
                 // Teleport the player to the next checkpoint, including the saved rotation
-                player.PlayerPawn.Value!.Teleport(position, rotation, speed);
+                TeleportPlayerWithViewAngles(player, position, rotation, speed);
 
                 // Play a sound or provide feedback to the player
                 PlaySound(player, tpSound);
