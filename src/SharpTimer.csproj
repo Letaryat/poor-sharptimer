@@ -19,8 +19,8 @@
         <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
         <PackageReference Include="Nexd.MySQL" Version="1.0.2" />
         <PackageReference Include="Npgsql" Version="10.0.3" />
-        <PackageReference Include="Microsoft.Data.SQLite" Version="10.0.12" />
-        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
+        <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.12" />
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.11" />
         <ProjectReference Include="..\SharpTimerAPI\SharpTimerAPI.csproj" />
         <Reference Include="API/TagsApi.dll" />
     </ItemGroup>
