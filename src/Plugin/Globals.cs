@@ -28,7 +28,7 @@ namespace SharpTimer
     public partial class SharpTimer
     {
         public override string ModuleName => "SharpTimer";
-        public override string ModuleVersion => $"0.4.1";
+        public override string ModuleVersion => $"0.4.2";
         public override string ModuleAuthor => "ST Community";
 
         public static SharpTimer Instance = new();

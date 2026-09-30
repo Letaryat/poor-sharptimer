@@ -2,7 +2,7 @@
   "RunCommand": {
     "signatures": {
       "library": "server",
-      "windows": "40 55 56 57 48 81 EC ? ? ? ? 0F 29 74 24",
+      "windows": "48 83 EC ? C6 44 24 ? ? 4C 8B C1",
       "linux": "55 48 8D 05 ? ? ? ? 48 89 E5 41 57 49 89 FF 41 56 48 8D 3D ? ? ? ? 41 55 49 89 F5"
     }
   },
