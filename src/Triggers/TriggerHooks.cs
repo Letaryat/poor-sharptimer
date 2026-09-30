@@ -31,7 +31,9 @@ namespace SharpTimer
 
                 if (activator.DesignerName != "player" || useTriggers == false) return HookResult.Continue;
 
-                var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
+                var stCtrl = new CCSPlayerPawn(activator.Handle).Controller.Value;
+                if (stCtrl == null) return HookResult.Continue;
+                var player = new CCSPlayerController(stCtrl.Handle);
 
                 if (player == null)
                 {
@@ -200,7 +202,9 @@ namespace SharpTimer
 
                 if (activator.DesignerName != "player" || useTriggers == false) return HookResult.Continue;
 
-                var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
+                var stCtrl = new CCSPlayerPawn(activator.Handle).Controller.Value;
+                if (stCtrl == null) return HookResult.Continue;
+                var player = new CCSPlayerController(stCtrl.Handle);
 
                 if (player == null)
                 {
@@ -300,7 +304,9 @@ namespace SharpTimer
                     return HookResult.Continue;
                 }
 
-                var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
+                var stCtrl = new CCSPlayerPawn(activator.Handle).Controller.Value;
+                if (stCtrl == null) return HookResult.Continue;
+                var player = new CCSPlayerController(stCtrl.Handle);
 
                 if (player == null || player.IsBot || player.IsHLTV || !player.IsValid)
                 {
@@ -337,7 +343,9 @@ namespace SharpTimer
                     return HookResult.Continue;
                 }
 
-                var player = new CCSPlayerController(new CCSPlayerPawn(activator.Handle).Controller.Value!.Handle);
+                var stCtrl = new CCSPlayerPawn(activator.Handle).Controller.Value;
+                if (stCtrl == null) return HookResult.Continue;
+                var player = new CCSPlayerController(stCtrl.Handle);
 
                 if (player == null || player.IsBot || player.IsHLTV || !player.IsValid)
                 {
