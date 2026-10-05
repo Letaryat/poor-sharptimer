@@ -778,7 +778,8 @@ namespace SharpTimer
         {
             string args = command.ArgString;
 
-            if (int.TryParse(args, out int tickrate) && tickrate >= 0 && tickrate <= 64)
+            // 0 is rejected: the HUD throttle divides by it (currentTick % (64 / hudTickrate)).
+            if (int.TryParse(args, out int tickrate) && tickrate >= 1 && tickrate <= 64)
             {
                 hudTickrate = tickrate;
                 Utils.LogDebug($"SharpTimer hud updates per second: {tickrate}");
