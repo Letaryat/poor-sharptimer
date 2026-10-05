@@ -1092,6 +1092,7 @@ namespace SharpTimer
             if (float.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out float custom) && custom is >= 0)
             {
                 customAirAccel = custom;
+                InitializeModeConfigs();
                 Utils.LogDebug($"SharpTimer custom airaccel set to {custom}.");
             }
             else
@@ -1108,6 +1109,7 @@ namespace SharpTimer
             if (float.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out float custom) && custom is >= 0)
             {
                 customAccel = custom;
+                InitializeModeConfigs();
                 Utils.LogDebug($"SharpTimer custom accel set to {custom}.");
             }
             else
@@ -1125,6 +1127,7 @@ namespace SharpTimer
             if (float.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out float custom) && custom is >= 0)
             {
                 customWishSpeed = custom;
+                InitializeModeConfigs();
                 Utils.LogDebug($"SharpTimer custom wishspeed set to {custom}.");
             }
             else
@@ -1142,6 +1145,7 @@ namespace SharpTimer
             if (float.TryParse(args, NumberStyles.Any, CultureInfo.InvariantCulture, out float custom) && custom is >= 0)
             {
                 customFriction = custom;
+                InitializeModeConfigs();
                 Utils.LogDebug($"SharpTimer custom friction set to {custom}.");
             }
             else
