@@ -809,6 +809,12 @@ public partial class SharpTimer
                 allAdMessages.AddRange(nonEmptyCustomAds);
             }
 
+            // Disabled features add empty strings to this pool, so the random pick could print
+            // a blank line. Drop them, and skip the interval when nothing is left (Next(0) on
+            // an empty list would throw every interval).
+            allAdMessages.RemoveAll(string.IsNullOrWhiteSpace);
+            if (allAdMessages.Count == 0) return;
+
             Server.NextFrame(() =>
                 Utils.PrintToChatAll($"{Utils.ReplaceVars(allAdMessages[new Random().Next(allAdMessages.Count)])}"));
         }, TimerFlags.REPEAT);
