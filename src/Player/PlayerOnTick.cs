@@ -303,15 +303,18 @@ namespace SharpTimer
                             }
                         }
 
-                        // timer hud content
-                        if (currentTick % (64 / hudTickrate) != 0)
-                            continue;
+                        // timer hud content. Throttled with an if-block, not `continue`, so the
+                        // OldJumpPressed reset below runs every tick and not only on HUD ticks (it is
+                        // read for start-zone jump suppression). The reset stays after the HUD build
+                        // because GetHudContent reads the flag for the keys 'J' indicator.
+                        if (currentTick % (64 / hudTickrate) == 0)
+                        {
+                            string hudContent = GetHudContent(playerTimer, player);
 
-                        string hudContent = GetHudContent(playerTimer, player);
+                            if (!string.IsNullOrEmpty(hudContent))
+                                player.PrintToCenterHtml(hudContent);
+                        }
 
-                        if (!string.IsNullOrEmpty(hudContent))
-                            player.PrintToCenterHtml(hudContent);
-                        
                         // idk what this is for
                         playerTimer.MovementService!.LegacyJump.OldJumpPressed = false;
                     }
@@ -384,7 +387,7 @@ namespace SharpTimer
 
             string syncLine =
                 $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> " +
-                $"<font class='fontSize-l horizontal-center color='{secondaryHUDcolor}'>{playerTimer.Sync:F2}%</font> " +
+                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>{playerTimer.Sync:F2}%</font> " +
                 $"<br>";
 
             string infoLine = "";
@@ -422,8 +425,8 @@ namespace SharpTimer
                 ? $"<font class='fontSize-s stratum-bold-italic' color='gray'>" +
 
                     $"{playerTimer.CachedPB} " +
-                    $"[{playerTimer.CachedMapPlacement}] " +
-                    $"{(RankIconsEnabled ? $" |</font> <img src='{playerTimer.RankHUDIcon}'><font class='fontSize-s stratum-bold-italic' color='gray'>" : "")}" +
+                    $"{BracketPlacement(playerTimer.CachedMapPlacement)} " +
+                    $"{(RankIconsEnabled && IsImageUrl(playerTimer.RankHUDIcon) ? $" |</font> <img src='{playerTimer.RankHUDIcon}'><font class='fontSize-s stratum-bold-italic' color='gray'>" : "")}" +
                     $"{(enableStyles && playerTimer.currentStyle != 0 ? $" | {GetNamedStyle(playerTimer.currentStyle)}" : "")} | {playerTimer.Mode}<br>" +
                     $"{GetMapDataLine()}" +
                     $"</font>"
