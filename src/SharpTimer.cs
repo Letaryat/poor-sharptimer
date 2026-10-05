@@ -141,18 +141,19 @@ public partial class SharpTimer : BasePlugin
             if (isLinux)
                 RunCommand.Hook(OnRunCommandPre, HookMode.Pre);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Utils.LogError($"RunCommand hook failed. Signature is likely outdated. Check for the latest stgamedata.json file on GitHub. Movement features disabled until updated.");
+            // Include the exception text, to tell an unresolved signature from a failed hook install.
+            Utils.LogError($"RunCommand hook failed ({ex.Message}). Signature is likely outdated. Check for the latest stgamedata.json file on GitHub. Movement features disabled until updated.");
         }
 
         try
         {
             SnapBaseAngles = new SnapBaseAngles();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Utils.LogError($"SnapBaseAngles bind failed. Signature is likely outdated. Check for the latest stgamedata.json file on GitHub. Teleport view angles will not snap until updated.");
+            Utils.LogError($"SnapBaseAngles bind failed ({ex.Message}). Signature is likely outdated. Check for the latest stgamedata.json file on GitHub. Teleport view angles will not snap until updated.");
         }
 
         if (disableDamage)

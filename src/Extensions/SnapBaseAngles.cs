@@ -23,6 +23,14 @@ public class SnapBaseAngles : ISnapBaseAngles
     public SnapBaseAngles()
     {
         _snap = new(GameData.GetSignature("SnapBaseAngles"));
+
+        // CounterStrikeSharp swallows a missing signature while it builds the function
+        // (empty catch in BaseMemoryFunction.CreateValveFunctionBySignature), which leaves a
+        // null pointer in an object that constructed fine. Throw, so the caller keeps the
+        // DisabledSnapBaseAngles fallback instead of every teleport failing with
+        // "Invalid function pointer".
+        if (_snap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("SnapBaseAngles signature did not resolve");
     }
 
     public unsafe void Snap(CCSPlayerPawn pawn, QAngle_t angles)
