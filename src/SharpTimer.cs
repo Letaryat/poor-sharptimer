@@ -229,7 +229,7 @@ public partial class SharpTimer : BasePlugin
 
         var userCmd = new CUserCmd(h.GetParam<IntPtr>(movementPtr));
         var baseCmd = userCmd.GetBaseCmd();
-        var getMovementButton = userCmd.GetMovementButton();
+        var inputMask = userCmd.GetInputMask();
 
         if (player != null && !player.IsBot && player.IsValid && !player.IsHLTV)
         {
@@ -237,11 +237,12 @@ public partial class SharpTimer : BasePlugin
             {
                 ApplyModeCvars(player);
 
-                var moveForward = getMovementButton.Contains("Forward");
-                var moveBackward = getMovementButton.Contains("Backward");
-                var moveLeft = getMovementButton.Contains("Left");
-                var moveRight = getMovementButton.Contains("Right");
-                var usingUse = getMovementButton.Contains("Use");
+                // Bits as in CUserCmd.buttonNames: Forward 8, Backward 16, Use 32, Left 512, Right 1024.
+                var moveForward = (inputMask & 8UL) != 0;
+                var moveBackward = (inputMask & 16UL) != 0;
+                var moveLeft = (inputMask & 512UL) != 0;
+                var moveRight = (inputMask & 1024UL) != 0;
+                var usingUse = (inputMask & 32UL) != 0;
                 
                 // AC Stuff
                 if (useAnticheat)

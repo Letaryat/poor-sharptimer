@@ -9,7 +9,8 @@ public class CUserCmd
         Handle = pointer;
     }
 
-    private Dictionary<long, string> buttonNames = new Dictionary<long, string>
+    // static: the table never changes, and a CUserCmd is created for every processed command.
+    private static readonly Dictionary<long, string> buttonNames = new Dictionary<long, string>
     {
         {1, "Left Click"},
         {2, "Jump"},
@@ -37,8 +38,6 @@ public class CUserCmd
         
         // System.Console.WriteLine(moveMent); // Use this to see the value of the button you are pressing
 
-        var binary = Convert.ToString(inputs, 2);
-        binary = binary.PadLeft(64, '0');
         
         var movementButtons = new List<String>();
 
