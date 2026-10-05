@@ -37,23 +37,61 @@ namespace SharpTimer
 
     partial class SharpTimer
     {
+        // Opens a connection with up to 3 attempts. A single failed open used to drop a
+        // finished run in SavePlayerTimeToDatabase, and with a networked MySQL/PostgreSQL
+        // backend a restart or a connect timeout is routine. Applies to every caller.
         public async Task<IDbConnection> OpenConnectionAsync()
         {
-            IDbConnection? connection = null;
-            switch (dbType)
+            const int maxAttempts = 3;
+            Exception? last = null;
+
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
-                case DatabaseType.MySQL:
-                    connection = new MySqlConnection(await GetConnectionStringFromConfigFile());
-                    await (connection as MySqlConnection)!.OpenAsync();
-                    break;
-                case DatabaseType.PostgreSQL:
-                    connection = new NpgsqlConnection(await GetConnectionStringFromConfigFile());
-                    await (connection as NpgsqlConnection)!.OpenAsync();
-                    break;
-                case DatabaseType.SQLite:
-                    connection = new SqliteConnection(await GetConnectionStringFromConfigFile());
-                    await (connection as SqliteConnection)!.OpenAsync();
-                    break;
+                try
+                {
+                    return await OpenConnectionOnceAsync();
+                }
+                catch (Exception ex)
+                {
+                    last = ex;
+                    if (attempt < maxAttempts)
+                    {
+                        // 200 ms, then 600 ms.
+                        await Task.Delay(attempt * 200 + (attempt - 1) * 200);
+                    }
+                }
+            }
+
+            Utils.LogError($"DB connect failed after {maxAttempts} attempts: {last?.Message}");
+            throw last!;
+        }
+
+        private async Task<IDbConnection> OpenConnectionOnceAsync()
+        {
+            IDbConnection? connection = null;
+            // Dispose a connection whose OpenAsync threw, so a retry does not leak it.
+            try
+            {
+                switch (dbType)
+                {
+                    case DatabaseType.MySQL:
+                        connection = new MySqlConnection(await GetConnectionStringFromConfigFile());
+                        await (connection as MySqlConnection)!.OpenAsync();
+                        break;
+                    case DatabaseType.PostgreSQL:
+                        connection = new NpgsqlConnection(await GetConnectionStringFromConfigFile());
+                        await (connection as NpgsqlConnection)!.OpenAsync();
+                        break;
+                    case DatabaseType.SQLite:
+                        connection = new SqliteConnection(await GetConnectionStringFromConfigFile());
+                        await (connection as SqliteConnection)!.OpenAsync();
+                        break;
+                }
+            }
+            catch
+            {
+                connection?.Dispose();
+                throw;
             }
 
             if (connection!.State != ConnectionState.Open)
@@ -1215,6 +1253,32 @@ namespace SharpTimer
                 Server.NextFrame(() =>
                     Utils.LogError(
                         $"Error saving player {(bonusX != 0 ? $"bonus {bonusX} time" : "time")} to database: {ex.Message}"));
+
+                // Keep the run instead of dropping it: append one JSON line per lost run to
+                // cfg/SharpTimer/failed-records.jsonl with everything needed to re-insert it.
+                // Its own try/catch, so a failure here cannot mask the original error.
+                try
+                {
+                    string deadLetter = Path.Join(gameDir, "csgo", "cfg", "SharpTimer", "failed-records.jsonl");
+                    string line = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        ts = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                        map = bonusX == 0 ? currentMapName : $"{currentMapName}_bonus{bonusX}",
+                        steamId,
+                        playerName,
+                        timerTicks,
+                        bonusX,
+                        style,
+                        mode,
+                        error = ex.Message
+                    });
+                    File.AppendAllText(deadLetter, line + Environment.NewLine);
+                }
+                catch (Exception dlEx)
+                {
+                    Server.NextFrame(() =>
+                        Utils.LogError($"Dead-letter write failed, run is unrecoverable: {dlEx.Message}"));
+                }
             }
         }
 
