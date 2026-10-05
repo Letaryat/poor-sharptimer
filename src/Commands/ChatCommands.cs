@@ -1725,7 +1725,10 @@ namespace SharpTimer
         [CommandHelper(minArgs: 1, usage: "[mode]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void ModeCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (!IsAllowedPlayer(player) || goToEnabled == false) return;
+            // Gate on having more than one enabled mode. This read goToEnabled (the !goto
+            // toggle), so !mode could not be configured independently of !goto.
+            if (!IsAllowedPlayer(player)) return;
+            if (ModeManager.GetEnabledModes().Count() <= 1) return;
             Utils.LogDebug($"{playerName} calling css_mode...");
 
             if (CommandCooldown(player))
