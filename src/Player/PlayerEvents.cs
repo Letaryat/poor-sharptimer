@@ -20,7 +20,16 @@ namespace SharpTimer
 {
     public partial class SharpTimer
     {
-        private void OnPlayerConnect(CCSPlayerController? player, bool isForBot = false)
+        // How long OnPlayerConnect waits for the pawn: 25 x 0.2 s = 5 s.
+        private const int PawnWaitAttempts = 25;
+        private const float PawnWaitInterval = 0.2f;
+
+        // The pawn often does not exist yet at EventPlayerConnectFull. The old check,
+        // `player.PlayerPawn == null`, can never be true (PlayerPawn is a handle), so
+        // `.Value!` threw, the catch logged "Object reference not set", and the player had
+        // no timer for the whole session. Retry until the pawn and its MovementServices
+        // exist, bounded so a player who leaves during the wait stops retrying.
+        private void OnPlayerConnect(CCSPlayerController? player, bool isForBot = false, int attempt = 0)
         {
             try
             {
@@ -30,15 +39,21 @@ namespace SharpTimer
                     return;
                 }
 
-                if (player.PlayerPawn == null)
+                var pawn = player.PlayerPawn?.Value;
+                if (pawn == null || pawn.MovementServices == null)
                 {
-                    Utils.LogError("PlayerPawn is null.");
-                    return;
-                }
+                    if (attempt < PawnWaitAttempts && player.IsValid)
+                    {
+                        AddTimer(PawnWaitInterval, () =>
+                        {
+                            if (player != null && player.IsValid)
+                                OnPlayerConnect(player, isForBot, attempt + 1);
+                        });
+                        return;
+                    }
 
-                if (player.PlayerPawn.Value!.MovementServices == null)
-                {
-                    Utils.LogError("MovementServices is null.");
+                    Utils.LogError($"PlayerPawn/MovementServices still null after {attempt} " +
+                                   $"attempts ({attempt * PawnWaitInterval:F1}s); giving up on this connect.");
                     return;
                 }
 
@@ -61,7 +76,7 @@ namespace SharpTimer
                     if (AdminManager.PlayerHasPermissions(player, "@css/root")) 
                         playerTime.ZoneToolWire = new Dictionary<int, CBeam>();
 
-                    playerTime.MovementService = new CCSPlayer_MovementServices(player.PlayerPawn.Value.MovementServices!.Handle); 
+                    playerTime.MovementService = new CCSPlayer_MovementServices(pawn.MovementServices!.Handle);
                     playerTime.StageTimes = new Dictionary<int, int>();
                     playerTime.StageVelos = new Dictionary<int, string>();
                     playerTime.CurrentMapStage = 0;
