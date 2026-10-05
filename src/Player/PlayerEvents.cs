@@ -133,7 +133,11 @@ namespace SharpTimer
 
         private void OnClientDisconnectHandler(int slot)
         {
-            RemovePlayerState(slot);
+            // Defer one frame. EventPlayerDisconnect prints the leave message only while the
+            // slot is still tracked, so when this listener ran first the message was lost.
+            // Deferring lets the event see the slot in either order; RemovePlayerState is
+            // idempotent.
+            CounterStrikeSharp.API.Server.NextFrame(() => RemovePlayerState(slot));
         }
 
         private void RemovePlayerState(int slot)
