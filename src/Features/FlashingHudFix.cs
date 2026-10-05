@@ -29,8 +29,13 @@ namespace SharpTimer
                 var gameRulesProxy = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").FirstOrDefault();
                 _gameRules = gameRulesProxy?.GameRules;
             }
-            else
+            else if (!_gameRules.WarmupPeriod)
             {
+                // Skip during warmup. RestartRoundTime idles at 0, so this expression is otherwise
+                // always true and pins m_bGameRestart, and the engine's warmup-end handling does not
+                // arm mp_roundtime while that flag is set. A never-ending-round mode
+                // (mp_maxrounds 1 + mp_ignore_round_win_conditions 1) then keeps the 999 s warmup
+                // round time for the whole map. Live play is unaffected. See #184.
                 _gameRules.GameRestart = _gameRules.RestartRoundTime < Server.CurrentTime;
             }
         }
