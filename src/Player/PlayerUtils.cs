@@ -52,7 +52,12 @@ namespace SharpTimer
 
             if (cpEnabled)
             {
-                if (currentMapName!.Contains("surf_"))
+                // currentMapName is null from plugin load at server start (Server.MapName is
+                // null before the first map) until a round starts with players present, so
+                // dereferencing it here threw a NullReferenceException on every join in that
+                // window. Fall back to the live map name, then to an empty string.
+                string helpMap = currentMapName ?? Server.MapName ?? string.Empty;
+                if (helpMap.Contains("surf_"))
                 {
                     player.PrintToConsole($"{Localizer["console_saveloc"]}");
                     player.PrintToConsole($"{Localizer["console_loadloc"]}");
