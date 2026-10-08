@@ -236,6 +236,13 @@ namespace SharpTimer
                         
                         playerTimer.inStartzone = false;
                         
+                        // Start the run on the stage of the start zone being left. The stage is otherwise set only when
+                        // a player enters a start zone, and a reset without a trigger handle (the spawn and team handlers'
+                        // next-frame InvalidateTimer, round end) can land after that entry, so the run would leave on
+                        // stage 0 and finish one stage short.
+                        if (useStageTriggers && stageTriggers.TryGetValue(caller.Handle, out int startStage))
+                            playerTimer.CurrentMapStage = startStage;
+
                         OnTimerStart(player);
                         if (enableReplays) OnRecordingStart(player);
 
