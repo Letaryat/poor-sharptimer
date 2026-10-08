@@ -1,8 +1,11 @@
 # SharpTimer
 SharpTimer is a CS2 Timer plugin for Surf/Bhop/MG/Deathrun using CounterStrikeSharp<br>
 
+> [!CAUTION]
+> This plugin is not being actively developed. It will receive updates for game breaking updates that change gamedata signatures or schema **only**. For an actively maintained CS2 Surf plugin, please use [cs2surf-metamod](https://github.com/rcnoob/cs2surf-metamod) by [rcnoob](https://github.com/rcnoob).
+
 > [!NOTE]
-> The original creator of SharpTimer is dea_bb, who discontinued support for the project after version 0.2.6. This fork is now occassionaly maintaned by the community.
+> The original creator of SharpTimer is dea_bb, who discontinued support for the project after version 0.2.6. This fork is now occasionally maintained by the community.
 
 ## **Join Our Discord For Support**
 
