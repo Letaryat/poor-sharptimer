@@ -74,8 +74,14 @@ namespace SharpTimer
                     }
                 }
 
-                if (useCheckpointTriggers == true && cpTriggers.ContainsKey(callerHandle) && playerTimers[slot].IsTimerBlocked == false && playerTimers[slot].IsTimerRunning == true)
+                if (useCheckpointTriggers == true && cpTriggers.TryGetValue(callerHandle, out int cpNumber) && playerTimers[slot].IsTimerBlocked == false && playerTimers[slot].IsTimerRunning == true)
                 {
+                    // Each checkpoint number counts once per run. A second trigger with the same number
+                    // (one per route on a split map) or a re-touch is not a new checkpoint. Runs on the
+                    // game thread, like the resets that clear the set.
+                    if (!playerTimers[slot].PassedMapCheckpoints.Add(cpNumber))
+                        return HookResult.Continue;
+
                     bool playerValid = IsAllowedPlayer(player);
                     int hookStyle = playerTimers[slot].currentStyle;
                     string hookMode = playerTimers[slot].Mode;

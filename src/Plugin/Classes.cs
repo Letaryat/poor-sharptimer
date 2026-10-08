@@ -176,6 +176,7 @@ namespace SharpTimer
         public Dictionary<int, string>? StageVelos { get; set; }
         public int CurrentMapStage { get; set; }
         public int CurrentMapCheckpoint { get; set; }
+        public HashSet<int> PassedMapCheckpoints { get; set; } = new(); // checkpoint numbers passed this run
         public CCSPlayer_MovementServices? MovementService { get; set; }
         public double Sync { get; set; }
         public int GoodSync { get; set; }

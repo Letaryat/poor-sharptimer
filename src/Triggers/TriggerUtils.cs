@@ -447,6 +447,12 @@ namespace SharpTimer
                 }
             }
 
+            // A map can give one checkpoint number to more than one trigger, one per route on a split
+            // map. A run passes each number once, so the finish check needs the number of distinct
+            // checkpoints, not of triggers.
+            cpTriggerCount = cpTriggers.Values.Distinct().Count();
+            Utils.LogDebug($"Found {cpTriggers.Count} Checkpoint triggers for {cpTriggerCount} distinct checkpoints");
+
             useCheckpointTriggers = cpTriggerCount != 0;
 
             Utils.LogDebug($"Found a max of {cpTriggerCount} Checkpoint triggers");

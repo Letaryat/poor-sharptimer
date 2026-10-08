@@ -536,6 +536,7 @@ namespace SharpTimer
                     if (playerTimer.StageVelos != null)
                         playerTimer.StageVelos.Clear();
                     playerTimer.CurrentMapCheckpoint = 0;
+                    playerTimer.PassedMapCheckpoints.Clear();
                 }
             }
         }

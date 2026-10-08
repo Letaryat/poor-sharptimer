@@ -1502,6 +1502,7 @@ namespace SharpTimer
                 {
                     playerTimers[slot].StageTimes!.Clear();
                     playerTimers[slot].CurrentMapCheckpoint = 0;
+                    playerTimers[slot].PassedMapCheckpoints.Clear();
                 }
 
                 if (toEnd == false)
